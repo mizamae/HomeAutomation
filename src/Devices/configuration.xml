@@ -1,0 +1,71 @@
+<?xml version = "1.0" ?>
+<X>
+	<NETWORK>
+	</NETWORK>
+	<MASTER_IO>
+		<GPIO number='4' label='Activate A/C' direction='OUT' default='0'></GPIO>
+		<GPIO number='17' label='A/C status' direction='IN' default='0'></GPIO>
+		<GPIO number='22' label='DHT11 salon' direction='SENS'></GPIO>
+	</MASTER_IO>
+	<DEVICE_DATA dcode='1'>
+		<DEVICE_TYPE>GAPQv1</DEVICE_TYPE>
+		<ORDERS>
+			<CMD order='D1_ON' label='Activate digital pin 1' pin='1' value='1'></CMD>
+			<CMD order='D1_OFF' label='Deactivate digital pin 1' pin='1' value='0'></CMD>
+			<CMD order='LOG=1' label='Start logging' pin='' value=''></CMD>
+		</ORDERS>
+		<DATAGRAM request='powers' dcode='0' sample='60'>
+			<DATA label='STATUS' type='integer' units='bits'>
+				<BIT pos='0' label='Lights circuit tripped'></BIT>
+				<BIT pos='1' label='General plugs circuit tripped'></BIT>
+				<BIT pos='2' label='Fridge plug circuit tripped'></BIT>
+				<BIT pos='3' label='Oven plug circuit tripped'></BIT>
+				<BIT pos='4' label='Washing machine plug circuit tripped'></BIT>
+				<BIT pos='5' label='Differential tripped'></BIT>
+				<BIT pos='6' label='Internal alarm'></BIT>
+				<BIT pos='7' label='spare'></BIT>
+			</DATA>
+			<DATA label='P' type='float' units='kW'></DATA>
+			<DATA label='Q' type='float' units='kVAr'></DATA>
+			<DATA label='S' type='float' units='kVAs'></DATA>
+			<DATA label='PF' type='float' units='percent'></DATA>
+            <DATA label='Vrms' type='float' units='V'></DATA>
+			<DATA label='Irms' type='float' units='A'></DATA>
+			<DATA label='f' type='float' units='Hz'></DATA>
+		</DATAGRAM>
+<!-- 		<DATAGRAM request='instant' dcode='1' sample='60'>
+			<DATA label='Vrms' type='float' units='V'></DATA>
+			<DATA label='Irms' type='float' units='A'></DATA>
+			<DATA label='f' type='float' units='Hz'></DATA>
+		</DATAGRAM> -->
+		<!-- <DATAGRAM request='async' dcode='2' sample='0'> -->
+			<!-- <DATA label='WARNINGS' type='integer' units='bits'> -->
+				<!-- <BIT pos='0' label='Overpower'></BIT> -->
+				<!-- <BIT pos='1' label='Voltage out of range'></BIT> -->
+				<!-- <BIT pos='2' label='Reverse power'></BIT> -->
+				<!-- <BIT pos='3' label='Max reactive power'></BIT> -->
+				<!-- <BIT pos='4' label='Phase loss'></BIT> -->
+				<!-- <BIT pos='5' label='Overfrequency'></BIT> -->
+				<!-- <BIT pos='6' label='Underfrequency'></BIT> -->
+				<!-- <BIT pos='7' label='General alarm'></BIT> -->
+			<!-- </DATA> -->
+		<!-- </DATAGRAM> -->
+	</DEVICE_DATA>
+	<DEVICE_DATA dcode='2'>
+		<DEVICE_TYPE>DHT11</DEVICE_TYPE>
+		<DATAGRAM request='data' dcode='0' sample='1'>
+			<DATA label='T' type='integer' units='centdeg'></DATA>
+			<DATA label='RH' type='integer' units='percent'></DATA>
+            <DATA label='DewPoint' type='float' units='centdeg'></DATA>
+		</DATAGRAM>
+	</DEVICE_DATA>
+    <DEVICE_DATA dcode='3'>
+		<DEVICE_TYPE>DHT22</DEVICE_TYPE>
+		<DATAGRAM request='data' dcode='0' sample='1'>
+			<DATA label='T' type='float' units='centdeg'></DATA>
+			<DATA label='RH' type='float' units='percent'></DATA>
+            <DATA label='DewPoint' type='float' units='centdeg'></DATA>
+            <DATA label='HeatIndex' type='float' units='centdeg'></DATA>
+		</DATAGRAM>
+	</DEVICE_DATA>
+</X>

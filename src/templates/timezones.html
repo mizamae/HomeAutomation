@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load tz %}
+
+
+{% block title %}{{ block.super }}Home{% endblock %}
+
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="downloads" %}
+{% endblock %}
+
+
+{% block splash %}
+
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
+
+
+{% endblock splash %}
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:4em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+<!-- Benefits of the Django application -->
+
+<div class="container">
+		
+		{% get_current_timezone as TIME_ZONE %}
+		<form action="{% url 'settimezone' %}" method="POST">
+		    {% csrf_token %}
+		    <label for="timezone">Time zone:</label>
+		    <select name="timezone">
+		        {% for tz in timezones %}
+		        <option value="{{ tz }}"{% if tz == TIME_ZONE %} selected{% endif %}>{{ tz }}</option>
+		        {% endfor %}
+		    </select>
+		    <input type="submit" value="Set" />
+		</form>
+		<p></p>
+	    <a class="btn btn-primary" href="{% url 'advancedDevice' %}"  role="button">{% trans "Return" %} &raquo;</a></p>
+</div><!-- /.container -->
+
+
+{% endblock container %}
+
+{% block scripts %}
+<script src="{% static 'site/js/site.js' %}"></script>	
+
+
+{% endblock scripts %}
+

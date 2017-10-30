@@ -1,0 +1,48 @@
+server {  
+    listen  80;
+
+    server_name mizamae2.ddns.net;
+    charset     utf-8;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+	autoindex on;
+        alias /home/pi/HomeAutomation/site/static/;
+    }
+    location /media/{
+	autoindex on;
+	alias /home/pi/HomeAutomation/src/media/;
+    }
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/run/HomeAutomation.sock;
+    }
+}
+
+server {  
+    listen  80;
+
+    server_name 192.168.0.160;
+    charset     utf-8;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+	autoindex on;
+        alias /home/pi/HomeAutomation/site/static/;
+    }
+    location /media/{
+	autoindex on;
+	alias /home/pi/HomeAutomation/src/media/;
+    }
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/run/HomeAutomation.sock;
+    }
+}
+
+server {
+    listen 80 default_server;
+    return 444;
+}

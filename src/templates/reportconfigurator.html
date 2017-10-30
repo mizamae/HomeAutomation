@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ block.super }}Power2U{% endblock %}
+
+  {% block extrahead %}
+  	<link rel="stylesheet" type="text/css" href="{% static 'site/css/multi-select.css' %}">
+<!--   	<link rel="stylesheet" type="text/css" href="{% static 'site/css/context.standalone.css' %}"> -->
+    <style>
+    	.base{
+    	margin-left:2%;
+    	margin-top:3em;
+    	}
+	    .row,.row-graph{
+	    	
+	    	height: 50%;
+	    }
+	    .row{
+	    	width:100%;
+	    }
+
+	    .ms-container {
+	        width: 100%;
+	    }
+    </style>   
+    
+  {% endblock extrahead %}
+  {% block container %}
+
+
+  <div id="base" class='base'>
+  	<div class='row'>
+  		<form method="POST" id="post-form" class="ReportForm" action="{% url 'repbuilder' 0 %}"> <!--    -->
+		    {% csrf_token %}
+		    <input id='submit' disabled=true type="submit" class="btn btn-primary" value= {% trans "SAVE REPORT" %} />
+		    <a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main " %} &raquo;</a>
+		    <a id='new_report'  class="btn btn-primary" href="{% url 'repbuilder' 0 %}"  role="button" style="visibility:hidden;">{% trans "Configure new report " %} &raquo;</a></p>
+		    <div id="results">
+	            <div id='error_print' class="alert alert-danger" style="display : none;"></div>
+	            <div id='info_print' class="alert alert-info" style="display : none;"></div>
+	 		</div> <!-- errors go here -->
+	 		<!-- {% for field in Form %}
+			    <div id='fieldWrapper{{ forloop.counter }}' class="fieldWrapper">
+			        <h3>{{ field.label }} {{ field }} {{ field.help_text }}</h3>
+			    </div>
+			{% endfor %} -->
+            <div id="formFields"> 
+            {% crispy Form %}
+            </div>
+		</form>
+<!--   	  	<h3>{% trans "Title for the report " %}<input id="report_title"	value="Title for report"	style="text-align:center;"/></h3> -->
+	 </div>
+<!-- 	 <a class="btn btn-primary" role="button" style='margin-top:5em;' onclick="AddChart();">Add new chart &raquo;</a> -->
+	 
+	 	
+  </div>
+  
+  <script src="{% static 'site/js/jquery.multi-select.js' %}"></script>
+  
+  {% endblock container %}
+  
+  {% block scripts %}
+  <script type="text/javascript">
+  	
+  	
+  	var djangoData,numCharts=0,variablesToPlot=[];// this is an array with as many items [1st dim] as graphs configured and as many items in the 2nd dim as variables
+  	
+    function onload_func()
+    {
+    	djangoData = JSON.parse('{{ data|safe }}');
+    	if (djangoData.confirmation=='OK')
+    	{
+    		
+    	}
+    	else
+    	{   
+    		var base=document.getElementById('base');
+    		var addChart = document.createElement('a');
+    		addChart.className = "btn btn-primary";
+    		addChart.role="button";
+    		addChart.id="addChart";
+    		addChart.style='margin-top:5em;'
+    		addChart.innerHTML='{% trans "Add new chart" %}'+" &raquo;"
+        	base.appendChild(addChart);
+    		$('#addChart').bind('click', AddChart);
+    		create_chart_html();
+    		add_multiselect('#var-options1');
+    		var error_print=document.getElementById('error_print');
+    		error_print.style.visibility='hidden';
+    		var field=document.getElementById('fieldWrapper1');
+    		field.style.display='block';
+    	}    	
+    }
+    function create_chart_html()
+    {
+    	var base=document.getElementById('base');
+    	numCharts++;
+    	variablesToPlot[numCharts]=[];
+    	// the row div
+    	var DivRow = document.createElement('div');
+    	DivRow.className = 'row row-graph chart-row';
+    	DivRow.id='row'+numCharts.toString();
+    	base.appendChild(DivRow)
+    	// the col div
+    	var DivCol = document.createElement('div');
+    	DivCol.className = "col-sm-12 col-lg-6";
+    	DivRow.appendChild(DivCol);
+    	// the h2 title
+    	var h2 = document.createElement('h2'); 
+    	h2.className='chart_title_label';
+        h2.innerHTML="{% trans 'Selection for chart ' %}" + numCharts.toString();
+    	DivCol.appendChild(h2);
+    	// button delete
+    	var btnDelete=document.createElement('button');
+    	btnDelete.type='button';
+    	btnDelete.className="btn btn-default btn-sm delete-chart pull-right";
+    	var span=document.createElement('span');
+    	span.className="glyphicon glyphicon-remove-circle";
+    	var t = document.createTextNode('{% trans " Remove chart " %}');
+    	btnDelete.appendChild(span);
+    	btnDelete.appendChild(t);
+    	btnDelete.id='deleteChart'+numCharts.toString();
+        
+    	h2.appendChild(btnDelete);
+    	$('#deleteChart'+numCharts.toString()).bind('click', function(){ 
+														    		var ID=this.id;	// gets the ID of the actuating button
+																	var num=parseInt(ID.replace('deleteChart',''));
+    																remove_chart_html.call(this, num); });
+    	// the label
+    	var h4 = document.createElement('h4');
+        h4.innerHTML="{% trans "Title : " %}"
+    	DivCol.appendChild(h4);
+    	// the title inputtext
+    	var title= document.createElement('input');
+    	title.id='title'+numCharts.toString();
+    	title.className='chart_title_input'
+    	h4.appendChild(title);
+    	// the select
+    	var Select = document.createElement('select');
+    	Select.id = 'var-options'+ numCharts.toString();
+    	Select.className='multiple_select';
+    	Select.multiple='multiple';
+    	DivCol.appendChild(Select);    	
+    }
+    function remove_chart_html(num)
+    {    	
+    	var base=document.getElementById('base');
+    	var DivRow=document.getElementById('row'+num.toString());
+    	variablesToPlot[num]=[];
+    	numCharts--;
+    	if (num > -1) {
+    		variablesToPlot.splice(num, 1);
+    	}
+    	
+    	base.removeChild(DivRow);
+		
+    	var row_graph=document.getElementsByClassName('row row-graph chart-row');
+    	var titles_label=document.getElementsByClassName('chart_title_label');
+    	var btnDeletegraph=document.getElementsByClassName('btn btn-default btn-sm delete-chart');   	
+    	var titles_input=document.getElementsByClassName('chart_title_input');	
+    	var multiple_select=document.getElementsByClassName('multiple_select');
+    	var multiple_select_container=document.getElementsByClassName('ms-container');
+    	
+    	
+    	
+    	
+    	var i=0;
+    	for (i=0;i<titles_label.length;i++)
+    	{
+    		row_graph[i].id='row'+(i+1).toString();
+    		titles_label[i].childNodes[0].data='Selection for chart '+(i+1).toString()+'   ';
+    		btnDeletegraph[i].id='deleteChart'+(i+1).toString();
+    		titles_input[i].id='title'+(i+1).toString();
+    		multiple_select[i].id='var-options'+(i+1).toString();  		
+    		multiple_select_container[i].id='ms-var-options'+(i+1).toString();  
+    	}
+    }
+    
+    function add_multiselect(appendTO)
+    {
+    	var i,numitem=0;
+    	$(appendTO).multiSelect({
+      		selectableHeader: "<div class='custom-header' style='text-align: center;'><h4>{% trans "Selectable items" %}</h4></div>",
+      		selectionHeader: "<div class='custom-header' style='text-align: center;'><h4>{% trans "Selected items" %}</h4></div>",
+      	// assigns the function callbacks after selecting/deselecting an item
+      		afterSelect: function(values){// to add the variable to the graph
+	      			var res=values[0].split(':');
+      				var ID=this.$element[0].id;	// gets the ID of the actuating multiselect control
+      				var num=parseInt(ID.replace('var-options',''));
+	      			if (res.length>=7)
+	      			{	variablesToPlot[num].push({'device':res[0],'table':res[1],'name':res[2],'bitPos':res[3],'label':res[4],'extrapolate':res[5],'type':res[6]});}
+	      			else
+	      			{	variablesToPlot[num].push({'device':res[0],'table':res[1],'name':res[2],'bitPos':null,'label':null,'extrapolate':res[3],'type':res[4]});}
+	      			$('#submit').prop( "disabled", false );
+	    		    }
+	      			,
+    		  afterDeselect: function(values){// to delete the variable from the graph
+	    			var res=values[0].split(':');
+	    			var varToDelete={'table':res[0],'name':res[1],'bitPos':res[2],'label':res[3]};
+	    			var ID=this.$element[0].id;	// gets the ID of the actuating multiselect control
+      				var num=parseInt(ID.replace('var-options',''));
+	    			var i=0;
+	    			for( i=variablesToPlot[num].length-1; i>=0; i--) {
+	    			    if( (variablesToPlot[num][i].table == varToDelete.table) && (variablesToPlot[num][i].name == varToDelete.name) && (variablesToPlot[num][i].bitPos == varToDelete.bitPos)) 
+	    			    { 
+	    			    	variablesToPlot[num].splice(i,1);
+	    			    }
+	    			}
+	    			for (i=1;i<variablesToPlot.length;i++)
+	    			{
+	    				if (variablesToPlot[i].length>0){
+	    					$('#submit').prop( "disabled", false );break;
+	    				}
+	    				else{$('#submit').prop( "disabled", true );}
+	    			}
+    		 	}
+      	});
+    	
+    	
+    	for (i = 0; i < djangoData.length; i++) 
+    	{  
+    		var optgrp = document.createElement("optgroup");
+    		optgrp.label= djangoData[i].deviceName;
+    		
+    		var j=0;
+    		for (j=0; j<djangoData[i].variables.length;j++)
+    		{
+    			if (djangoData[i].variables[j].type == "analog")
+    			{
+	    			var opt = document.createElement("option");
+	    			opt.value= djangoData[i].variables[j].device+':'+djangoData[i].variables[j].table+':'+ djangoData[i].variables[j].tag+
+                                        ':'+djangoData[i].variables[j].extrapolate+':'+djangoData[i].variables[j].type;
+	    			opt.innerHTML = djangoData[i].variables[j].tag.replace('_',' [').replace('percent','&#37').replace('centdeg','&degC') + ']';
+	    			optgrp.appendChild(opt);
+    			}else
+    			{
+    				var bits=0;
+    				for (bits=0;bits<djangoData[i].variables[j].bitText.length;bits++)
+    				{
+    					var opt_bits = document.createElement("option");
+    					opt_bits.value= djangoData[i].variables[j].device+':'+djangoData[i].variables[j].table+':'+ 
+                                        djangoData[i].variables[j].tag+':'+ bits.toString()+':'+djangoData[i].variables[j].bitText[bits]+
+                                        ':'+djangoData[i].variables[j].extrapolate+':'+djangoData[i].variables[j].type;
+    					opt_bits.innerHTML = djangoData[i].variables[j].bitText[bits];   	
+    					optgrp.appendChild(opt_bits);
+    				}  				
+    			}
+    			
+    			numitem++;
+    		}
+    		$(appendTO).append(optgrp);
+    	}
+    	$(appendTO).multiSelect('refresh');   	
+    }
+    function AddChart()
+    {
+    	create_chart_html();
+    	add_multiselect('#var-options'+ numCharts.toString());    	
+    }
+    function SaveReport()
+    {
+    	var i=1;var json=[];
+    	for (i=1;i<variablesToPlot.length;i++)
+		{
+    		if (variablesToPlot[i].length>0)
+    		{
+    			var title=document.getElementById('title'+i.toString()).value;
+    			json[i]=variablesToPlot[i].slice(); // to copy by value
+    			json[i].splice(0,0,{'chart_title':title});//inserts it in the first pos	
+    		}
+		}
+    	title=document.getElementById('id_ReportTitle').value;
+        periodicity=document.getElementById('id_Periodicity').value;
+        aggregation=document.getElementById('id_DataAggregation').value;
+    	json[0]={'report_title':title,'Periodicity':periodicity,'DataAggregation':aggregation};
+    	json=JSON.stringify(json);
+    	console.log(json);
+    	$.ajax({
+    		"url": "{% url 'repbuilder' 0 %}",
+    	    "type": "post",
+    	    "data": json, //Data that we prepared previously,
+    	    "dataType": "html",
+    	    success : function(result){
+    	    	
+    	    	var response=JSON.parse(result);
+    	    	console.log(response);
+    	    	if (response.Confirmation=="OK")
+    	    	{
+    	    		console.log(response.Confirmation);
+    	    		var error_print=document.getElementById('error_print');
+    	    		error_print.style.visibility='hidden';
+    	    		var info_print=document.getElementById('info_print');
+    	    		info_print.innerHTML='Report saved OK';
+    	    		info_print.style.display='block';
+    	    		info_print.style.visibility='visible';
+    	    		var new_report=document.getElementById('new_report');
+    	    		new_report.style.visibility='visible';
+    	    		var submitbtn=document.getElementById('submit');
+    	    		submitbtn.disabled=true;
+    	    		var addChartbtn=document.getElementById('addChart');
+    	    		addChartbtn.style.display='none';	
+    	    		var form=document.getElementById('formFields');
+                    form.style.display='none';
+    	    		var base=document.getElementById('base');
+    	        	
+    	        	for (i=1;i<variablesToPlot.length;i++)
+    	    		{
+    	        		var DivRow=document.getElementById('row'+i.toString());
+    	        		base.removeChild(DivRow);
+    	    		}
+    	    	}
+    	    	else
+    	    	{
+    	    		console.log(response.Error.ReportTitle);
+    	    		var error_print=document.getElementById('error_print');
+    	    		error_print.style.display='block';
+    	    		error_print.style.visibility='visible';
+    	    		error_print.innerHTML=response.Error.ReportTitle.toString();
+    	    		
+    	    	}
+    	        //document.write(ret);
+    	    },
+    	 // handle a non-successful response
+    	 	beforeSend: function(xhr, settings) {
+    	 		function getCookie(name) {
+    	 		    var cookieValue = null;
+    	 		    if (document.cookie && document.cookie !== '') {
+    	 		        var cookies = document.cookie.split(';');
+    	 		        for (var i = 0; i < cookies.length; i++) {
+    	 		            var cookie = jQuery.trim(cookies[i]);
+    	 		            // Does this cookie string begin with the name we want?
+    	 		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    	 		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    	 		                break;
+    	 		            }
+    	 		        }
+    	 		    }
+    	 		    return cookieValue;
+    	 		}
+		        if ( !this.crossDomain) {
+		            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		        }
+		    },
+            error : function(xhr,errmsg,err) {
+                $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+                    " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+    	})
+    	
+    }
+    
+ // Submit post on submit
+    $('#post-form').on('submit', function(event){
+    	event.preventDefault();
+        console.log("form submitted!")  // sanity check
+        SaveReport();
+    });
+ 	
+    
+   </script>
+<!--    <script src={% static 'site/js/context.js' %}></script>  -->
+<!--    <script src={% static 'site/js/demo.js' %}></script> -->
+  {% endblock scripts %}

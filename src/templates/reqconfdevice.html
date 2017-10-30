@@ -1,0 +1,42 @@
+{% extends "adddevice.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+{% block confDev %}
+
+	<p class="lead">Requested Conf.xml at IP: <strong>10.10.10.254</strong></p>
+	
+	{% if Status != 'NoDevice' and Status != '' %}
+		{% if Status == "ConfigOK" %}
+	    	<p class="lead"><font color="green"><b>{% trans "Found" %} {{ Form.DeviceType.value }}</b></font></p>
+	    {% elif Status == "RegisteredOK" %}
+	    	<p class="lead"><font color="green"><b>{% trans "Device registered OK with the name" %} {{ Form.DeviceName.value }}</b></font></p>
+            <!-- {% for Form in Forms %}
+                {% crispy Form %}
+            {% endfor %} -->
+	    	<p><a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a></p>
+	    {% else %}	    	
+	    	<p class="lead"><font color="red"><b>{% trans "Something failed" %}</b></font></p>
+	    {% endif %}
+	    {% if Status == "ConfigOK" %}
+			{% crispy Form %}
+      	{% endif %}
+	{% else %}
+	    <p class="lead"><font color="red">{% trans "No device found." %}</font></p>
+	    <p><a class="btn btn-primary" href="{% url 'home' %}" id="step2button" role="button">{% trans "Back" %} &raquo;</a></p>
+	{% endif %}
+
+
+{% endblock confDev %}
+{% block scripts %}
+<script>
+	function onload_func()
+	{
+		document.getElementById('step1').style.display = 'none';
+		document.getElementById('step1button').style.display = 'none';
+		document.getElementById('step2').style.display = 'none';
+		document.getElementById('step2button').style.display = 'none';
+		document.getElementById('step3').style.display = 'none';		
+	}
+</script>	
+
+{% endblock scripts %}		

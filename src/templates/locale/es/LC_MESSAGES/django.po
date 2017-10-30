@@ -1,0 +1,705 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-10-24 14:14+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: DHT11.html:44 DHT22.html:44 GPIOs.html:49 showdevices.html:128
+msgid "Pin"
+msgstr "Pin"
+
+#: DHT11.html:45 DHT22.html:45 GAPQv1.html:45
+msgid "Type"
+msgstr "Tipo"
+
+#: DHT11.html:124 DHT22.html:124 GAPQv1.html:121 GPIOs.html:90
+#: timezones.html:49
+msgid "Return"
+msgstr "Volver "
+
+#: DeviceGraph.html:104 DeviceGraphGoogleCharts.html:98 DeviceGraph_v0.html:98
+msgid "Graphs for the device "
+msgstr "Gr&aacute;ficas del dispositivo "
+
+#: DeviceGraph.html:106 DeviceGraphGoogleCharts.html:100
+#: DeviceGraph_v0.html:100
+msgid "Graphs from a device"
+msgstr "Gr&aacute;ficas del dispositivo"
+
+#: GAPQv1.html:44
+msgid "IP address"
+msgstr "Direcci&oacute;n IP"
+
+#: GPIOs.html:36
+msgid "List of GPIOs"
+msgstr "Listado de E/S"
+
+#: GPIOs.html:37
+msgid ""
+"In the following table, you'll find all the available GPIOs for the Master "
+"unit."
+msgstr ""
+"En la siguiente tabla, puedes encontrar todas las E/S configuradas en la "
+"unidad Master."
+
+#: GPIOs.html:50
+msgid "Description"
+msgstr "Descripci&oacute;n"
+
+#: GPIOs.html:51
+msgid "Current value"
+msgstr "Valor actual"
+
+#: GPIOs.html:52
+msgid "Action"
+msgstr "Acci&oacute;n"
+
+#: GPIOs.html:70
+msgid "Toggle"
+msgstr "Cambiar estado"
+
+#: GPIOs.html:78
+msgid "No IOs configured!!"
+msgstr "No hay E/S configuradas!!"
+
+#: _navbar.html:3
+msgid "About"
+msgstr "Acerca de"
+
+#: about.html:30
+msgid "Meet The Team"
+msgstr "Conoce al equipo"
+
+#: about.html:31
+msgid "The Wonderful People Behind the Project"
+msgstr "La Gente Maravillosa Detr&aacute;s de este Proyecto"
+
+#: about.html:38
+msgid "Original developer"
+msgstr "Promotor"
+
+#: about.html:44
+msgid "Visual interface designer"
+msgstr "Dise&ntilde;adora de la interfaz visual"
+
+#: about.html:57
+msgid "Our Location"
+msgstr "Nuestra ubicaci&oacute;n"
+
+#: adddevice.html:23
+msgid "Adding a new device"
+msgstr "A&ntilde;adir dispositivos"
+
+#: adddevice.html:24
+msgid "Following the steps below,"
+msgstr "Siguiendo los siguientes pasos,"
+
+#: adddevice.html:24
+msgid "the process of registering a new compatible device "
+msgstr "el proceso de registrar un nuevo dispositivo compatible "
+
+#: adddevice.html:24
+msgid "is like stealing a sweet to a 2 year old kid."
+msgstr "es como robar un caramelo a un ni&ntilde;o de 2 a&ntilde;os."
+
+#: adddevice.html:25
+msgid "Configure the device at IP address 10.10.10.254"
+msgstr "Configura el dispositivo con la direccion IP 10.10.10.254"
+
+#: adddevice.html:26
+msgid "Done!"
+msgstr "&iexcl;Hecho!"
+
+#: adddevice.html:27
+msgid "Hit this button to scan for the device at IP 10.10.10.254"
+msgstr ""
+"Pulsa este bot&oacute;n para buscar el dispositivo en la IP 10.10.10.254"
+
+#: adddevice.html:28
+msgid "Scan "
+msgstr "Buscar"
+
+#: adddevice.html:29
+msgid "Setup the device name"
+msgstr "Introduce el nombre del dispositivo"
+
+#: adddevice.html:35
+msgid "A device was found but did not acknowledged the SetConf order."
+msgstr ""
+"Se encontr&oacute; un dispositivo pero no confirm&oacute; la orden de "
+"SetConf."
+
+#: advanced_device.html:48
+msgid "Edit the configuration file"
+msgstr "Editar el archivo de configuraci&oacute;n"
+
+#: advanced_device.html:49
+msgid "Here you can edit the configuration file for this application."
+msgstr ""
+"Aqu&iacute; puedes editar el archivo de configuraci&oacute;n de esta "
+"aplicacion."
+
+#: advanced_device.html:50
+msgid "Edit file"
+msgstr "Editar archivo"
+
+#: advanced_device.html:53
+msgid "Generate Arduino code"
+msgstr "Generar c&oacute;digo Arduino"
+
+#: advanced_device.html:54
+msgid ""
+"Here the Arduino source code templates for the devices you have configured "
+"in the xml file will be generated."
+msgstr ""
+"Aqui podras generar plantillas de c&oacute;digo Arduino para los "
+"dispositivos que tengasconfigurados en el archivo xml de configuraci&oacute;"
+"n."
+
+#: advanced_device.html:56 home_device.html:122 home_device.html:124
+msgid "Let's do it"
+msgstr "Vamos!"
+
+#: advanced_device.html:60
+msgid "Control Master's unit GPIOs"
+msgstr "Controlar las E/S de la unidad Master"
+
+#: advanced_device.html:61
+msgid ""
+"Here the General Purpose Input/Output (GPIO) pins can be accessed. This way "
+"you can manually control the state of the digital outputs "
+msgstr ""
+"Aqu&iacute; puedes acceder a las Entradas/Salidas (E/S) de uso general. De "
+"esta forma, puedes controlar de forma manual el estado de las salidas "
+"digitales "
+
+#: advanced_device.html:62
+msgid "and/or monitor the state of the digital inputs."
+msgstr "y/o monitorizar el estado de las entradas digitales."
+
+#: advanced_device.html:65
+msgid "Let's go"
+msgstr "Vamos!"
+
+#: advanced_device.html:71
+msgid "Select your timezone"
+msgstr "Selecciona tu zona horaria"
+
+#: advanced_device.html:72
+msgid "Here you can edit the timezone for this application."
+msgstr "Aqu&iacute; puedes seleccionar tu zona horaria"
+
+#: advanced_device.html:73
+msgid "Select timezone"
+msgstr "Seleccionar zona horaria"
+
+#: advanced_device.html:79 home_device.html:187
+msgid "Please log in if you want to do something else..."
+msgstr "Por favor, logueate si quieres hacer algo mas..."
+
+#: home_device.html:36
+msgid "Knowledge is power..."
+msgstr "Conocer es poder..."
+
+#: home_device.html:50
+msgid "and we want to empower you"
+msgstr "y queremos darte el poder"
+
+#: home_device.html:51
+msgid "with an open-hardware environment"
+msgstr "mediante un ecosistema de dispositivos de hardware abierto"
+
+#: home_device.html:52
+msgid "that will gather tons of information about your daily life."
+msgstr ""
+"que recoger&aacute; toneladas de informaci&oacute;n sobre tu vida diaria."
+
+#: home_device.html:53
+msgid "Wanna see more?"
+msgstr "&iquest;Quieres ver mas?"
+
+#: home_device.html:64
+msgid "OK great! you want to see more right?"
+msgstr "&iexcl;Genial! &iquest;Quieres ver mas no?"
+
+#: home_device.html:65
+msgid "What if I would tell you that you will know..."
+msgstr "Que tal si te dijera que podr&iacute;as conocer..."
+
+#: home_device.html:68
+msgid "your electricity consumption pattern."
+msgstr "tu patr&oacute;n de consumo el&eacute;ctrico."
+
+#: home_device.html:69
+msgid "your heating operation across the day."
+msgstr "el funcionamiento de tu calefacci&oacute;n a lo largo del dia."
+
+#: home_device.html:70
+msgid "the temperature and humidity anywhere in your house."
+msgstr "la temperatura y humedad ambiental en tu casa."
+
+#: home_device.html:71
+msgid "who and when enters/leaves home."
+msgstr "qui&eacute;n y cuando entra/sale de tu casa."
+
+#: home_device.html:72
+msgid "and anything else you can imagine..."
+msgstr "y cualquier otra cosa que te imagines..."
+
+#: home_device.html:118
+msgid "Register new device"
+msgstr "Registrar un nuevo dispositivo"
+
+#: home_device.html:119
+msgid "Here you can setup a new "
+msgstr "Aqu&iacute; puedes configurar un nuevo dispositivo compatible con "
+
+#: home_device.html:119
+msgid " compatible device"
+msgstr " dispositivo compatible"
+
+#: home_device.html:129
+msgid "Browse the installation"
+msgstr "Mi instalaci&oacute;n"
+
+#: home_device.html:130
+msgid ""
+"Here you can see all the devices that are currently configured in your "
+"installation. You can start or stop the polling on a certain device."
+msgstr ""
+"Aqu&iacute; puedes ver todos los dispositivos que hay configurados "
+"actualmente en tu instalaci&oacute;n. Puedes iniciar o detener el registro "
+"de un determinado dispositivo."
+
+#: home_device.html:131
+msgid "View devices"
+msgstr "Ver dispositivos"
+
+#: home_device.html:134
+msgid "Reports"
+msgstr "Informes"
+
+#: home_device.html:135
+msgid ""
+"Here you can configure and view tailor-made reports showing the information "
+"from any of your devices."
+msgstr ""
+"Aqu&iacute; puedes configurar y ver informes a medida que muestren la "
+"informaci&oacute;n de cualquiera de tus dispositivos."
+
+#: home_device.html:138 home_device.html:140
+msgid "Configure"
+msgstr "Configurar"
+
+#: home_device.html:143 home_device.html:145
+msgid "View"
+msgstr "Ver"
+
+#: home_device.html:152
+msgid "Device historic plots"
+msgstr "Gr&aacute;ficas de un dispositivo"
+
+#: home_device.html:153
+msgid ""
+"Here you can see the charts with the information recorded from your devices "
+"from the very beginning."
+msgstr ""
+"Aqu&iacute; puedes ver la informaci&oacute;n registrada por tus dispositivos "
+"desde el instante inicial."
+
+#: home_device.html:156 home_device.html:158
+msgid "View plots"
+msgstr "Ver gr&aacute;ficos"
+
+#: home_device.html:163
+msgid "Spare"
+msgstr "Reserva"
+
+#: home_device.html:164
+msgid "Nothing established yet..."
+msgstr "No hay nada definido todavia..."
+
+#: home_device.html:171
+msgid "Advanced features"
+msgstr "Acciones avanzadas"
+
+#: home_device.html:172
+msgid "Here you can do some advanced stuff."
+msgstr "Aqu&iacute; puedes hacer algunas cosillas mas avanzadas. "
+
+#: home_device.html:174
+msgid "Let me in"
+msgstr "Dejame entrar"
+
+#: registration/logged_out.html:9
+msgid "Thanks for spending some quality time with the Web site today."
+msgstr "Gracias por pasar un rato de calidad en la aplicaci&oacute; hoy."
+
+#: registration/logged_out.html:11
+msgid "Log in again"
+msgstr "Logu&eacute;ate de nuevo"
+
+#: registration/password_change_done.html:6
+#: registration/password_change_form.html:6
+#: registration/password_reset_complete.html:6
+#: registration/password_reset_confirm.html:6
+#: registration/password_reset_done.html:6
+#: registration/password_reset_form.html:6
+msgid "Home"
+msgstr "Home"
+
+#: registration/password_change_done.html:7
+#: registration/password_change_form.html:7
+#: registration/password_change_form.html:11
+#: registration/password_change_form.html:12
+msgid "Password change"
+msgstr "Cambiar contrase&ntilde;a"
+
+#: registration/password_change_done.html:11
+#: registration/password_change_done.html:12
+msgid "Password change successful"
+msgstr "Contrase&ntilde;a cambiada correctamente"
+
+#: registration/password_change_done.html:16
+msgid "Your password was changed."
+msgstr "Tu Contrase&ntilde;a se ha cambiado."
+
+#: registration/password_change_form.html:19
+msgid "Please correct the error below."
+msgstr "Por favor, corrige el siguiente error."
+
+#: registration/password_change_form.html:19
+msgid "Please correct the errors below."
+msgstr "Por favor, corrige los siguientes errores."
+
+#: registration/password_change_form.html:23
+msgid ""
+"Please enter your old password, for security's sake, and then enter your new "
+"password twice so we can verify you typed it in correctly."
+msgstr ""
+"Por favor mete tu contrase&ntilde;a antigua por seguridad, y a "
+"continuaci&oacute;n la nuevacontrase&ntilde;a dos veces para garantizar que "
+"la has escrito correctamente."
+
+#: registration/password_change_form.html:63
+#: registration/password_reset_confirm.html:42
+msgid "Change my password"
+msgstr "Cambiar mi contrase&ntilde;a"
+
+#: registration/password_reset_complete.html:7
+#: registration/password_reset_complete.html:11
+#: registration/password_reset_complete.html:12
+msgid "Password reset complete"
+msgstr "La contrase&ntilde;a se ha reseteado"
+
+#: registration/password_reset_complete.html:16
+msgid "Your password has been set.  You may go ahead and log in now."
+msgstr "Tu contrase&ntilde;a se ha registrado. Ya puedes seguir y loguearte."
+
+#: registration/password_reset_complete.html:18
+msgid "Log in"
+msgstr "Log in"
+
+#: registration/password_reset_confirm.html:7
+msgid "Password reset confirmation"
+msgstr "Confirmaci&oacute;n de contrase&ntilde;a reseteada"
+
+#: registration/password_reset_confirm.html:11
+#: registration/password_reset_confirm.html:12
+#: registration/password_reset_done.html:7
+#: registration/password_reset_form.html:7
+#: registration/password_reset_form.html:11
+#: registration/password_reset_form.html:12
+msgid "Password reset"
+msgstr "Reseteo de contrase&ntilde;a"
+
+#: registration/password_reset_confirm.html:18
+msgid "Enter new password"
+msgstr "Contrase&ntilde;a reseteada"
+
+#: registration/password_reset_confirm.html:20
+msgid ""
+"Please enter your new password twice so we can verify you typed it in "
+"correctly."
+msgstr ""
+"Por favor mete tu contrase&ntilde;a nueva dos veces para garantizar que la "
+"has escrito correctamente."
+
+#: registration/password_reset_confirm.html:25
+msgid "New password:"
+msgstr "Contrase&ntilde;a nueva"
+
+#: registration/password_reset_confirm.html:34
+msgid "Confirm password:"
+msgstr "Confirmar contrase&ntilde;a"
+
+#: registration/password_reset_confirm.html:48
+msgid "Password reset unsuccessful"
+msgstr "Error en el reseteo de contrase&ntilde;a"
+
+#: registration/password_reset_confirm.html:50
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used.  Please request a new password reset."
+msgstr ""
+
+#: registration/password_reset_done.html:11
+#: registration/password_reset_done.html:12
+msgid "Password reset successful"
+msgstr "contrase&ntilde;a reseteada con exito"
+
+#: registration/password_reset_done.html:16
+msgid ""
+"We've emailed you instructions for setting your password to the email "
+"address you submitted. You should be receiving it shortly."
+msgstr ""
+
+#: registration/password_reset_form.html:16
+msgid ""
+"Forgotten your password? Enter your email address below, and we'll email "
+"instructions for setting a new one."
+msgstr ""
+"&iquest;Has olvidado tu contrase&ntilde;a? Introduce tu email y te "
+"mandar&eacute; un malcon intrucciones para establecer una nueva."
+
+#: registration/password_reset_form.html:21
+msgid "Email address:"
+msgstr "Direcci&oacute;n Email"
+
+#: registration/password_reset_form.html:30
+msgid "Reset my password"
+msgstr "Resetea mi contrase&ntilde;a"
+
+#: reportItemsList.html:32
+msgid "List of saved reports"
+msgstr "Lista de los informes guardados"
+
+#: reportItemsList.html:35 reportTemplate.html:106
+msgid "Report "
+msgstr "Informes"
+
+#: reportItemsList.html:45 reportItemsList.html:54
+msgid "From"
+msgstr "Desde"
+
+#: reportItemsList.html:46 reportItemsList.html:55
+msgid "To"
+msgstr "Hasta"
+
+#: reportItemsList.html:47
+msgid "Link"
+msgstr "Link"
+
+#: reportItemsList.html:57
+msgid "View report"
+msgstr "Ver informe"
+
+#: reportItemsList.html:67 reqconfdevice.html:13 showdevices.html:188
+msgid "Return to Main"
+msgstr "Volver "
+
+#: reportTemplate.html:106
+msgid " corresponding to dates between "
+msgstr " correspondiente a las fechas entre "
+
+#: reportTemplate.html:106
+msgid " and "
+msgstr " y "
+
+#: reportTemplate.html:108
+msgid "Something is not correct"
+msgstr "Algo no esta cirrecto"
+
+#: reportconfigurator.html:37
+msgid "SAVE REPORT"
+msgstr "GUARDAR INFORME"
+
+#: reportconfigurator.html:38
+msgid "Return to Main "
+msgstr "Volver "
+
+#: reportconfigurator.html:39
+msgid "Configure new report "
+msgstr "Configurar nuevo informe "
+
+#: reportconfigurator.html:53
+msgid "Title for the report "
+msgstr "T&iacute;tulo del informe "
+
+#: reportconfigurator.html:85
+msgid "Add new chart"
+msgstr "A&ntilde;adir gr&aacute;fico"
+
+#: reportconfigurator.html:113
+msgid "Selection for chart "
+msgstr "Seleccion para el gr&aacute;fico "
+
+#: reportconfigurator.html:121
+msgid " Remove chart "
+msgstr " Eliminar grafico "
+
+#: reportconfigurator.html:133
+msgid "Title : "
+msgstr "Titulo : "
+
+#: reportconfigurator.html:185
+msgid "Selectable items"
+msgstr "Items seleccionables"
+
+#: reportconfigurator.html:186
+msgid "Selected items"
+msgstr "Items seleccionados"
+
+#: reqconfdevice.html:10
+msgid "Found"
+msgstr "Encontrado"
+
+#: reqconfdevice.html:12
+msgid "Device registered OK with the name"
+msgstr "Dispositivo registrado correctamente con nombre"
+
+#: reqconfdevice.html:15
+msgid "Something failed"
+msgstr "Algo ha fallado"
+
+#: reqconfdevice.html:21
+msgid "No device found."
+msgstr "No se ha encontrado ning&uacute;n dispositivo"
+
+#: reqconfdevice.html:22
+msgid "Back"
+msgstr "Volver"
+
+#: showdevices.html:32
+#, fuzzy
+#| msgid "Device state"
+msgid "Device List"
+msgstr "Estado del dispositivo"
+
+#: showdevices.html:35
+msgid "REMOTE DEVICES"
+msgstr "DISPOSITIVOS REMOTOS"
+
+#: showdevices.html:50 showdevices.html:127
+msgid "Device name"
+msgstr "Nombre del dispositivo"
+
+#: showdevices.html:51 showdevices.html:63
+msgid "Device IP"
+msgstr "Direcci&oacute;n IP"
+
+#: showdevices.html:52 showdevices.html:64 showdevices.html:129
+#: showdevices.html:141
+msgid "Device type"
+msgstr "Tipo de dispositivo"
+
+#: showdevices.html:53 showdevices.html:130
+msgid "Device state"
+msgstr "Estado del dispositivo"
+
+#: showdevices.html:54 showdevices.html:131
+msgid "Delete device"
+msgstr "Eliminar dispositivo"
+
+#: showdevices.html:55 showdevices.html:96 showdevices.html:132
+#: showdevices.html:173
+msgid "Last updated"
+msgstr "Ultima actualizaci&oacute;n"
+
+#: showdevices.html:56 showdevices.html:133
+msgid "Device webpage"
+msgstr "Web del dispositivo"
+
+#: showdevices.html:62 showdevices.html:139
+msgid "Device Name"
+msgstr "Nombre del dispositivo"
+
+#: showdevices.html:69 showdevices.html:146
+msgid "RUN"
+msgstr "MARCHA"
+
+#: showdevices.html:87 showdevices.html:164
+msgid "STOP"
+msgstr "PARO"
+
+#: showdevices.html:99 showdevices.html:176
+msgid "Advanced"
+msgstr "Avanzado"
+
+#: showdevices.html:108
+msgid "There are no registered remote devices in the installation."
+msgstr "No hay dispositivos remotos registrados en la instalaci&oacute;n"
+
+#: showdevices.html:112
+msgid "LOCAL DEVICES"
+msgstr "DISPOSITIVOS LOCALES"
+
+#: showdevices.html:140
+msgid "Device Pin"
+msgstr "Pin del dispositivo"
+
+#: showdevices.html:185
+msgid "There are no registered local devices in the installation."
+msgstr "No hay dispositivos locales registrados en la instalaci&oacute;n"
+
+#: showdevices.html:287 showdevices.html:341
+msgid " Start "
+msgstr " Marcha "
+
+#: showdevices.html:292 showdevices.html:346
+msgid " Stop "
+msgstr " Paro "
+
+#~ msgid "Load the configuration of the GPIOs from XML"
+#~ msgstr "Cargar la configuraci&oacute;n de las E/S desde el XML"
+
+#~ msgid "Compatible devices"
+#~ msgstr "Dispositivos compatibles"
+
+#~ msgid "Here you can see all the "
+#~ msgstr "Aqu&iacute; puedes ver todos los "
+
+#~ msgid " compatible devices"
+#~ msgstr " dispositivos compatibles"
+
+#~ msgid " device's design guide"
+#~ msgstr " guia de dise&ntilde;o del dispositivo"
+
+#~ msgid "Here you can follow a step by step procedure to create a fully "
+#~ msgstr ""
+#~ "Aqu&iacute; puedes seguir un procedimiento paso a paso para crear un "
+#~ "dispositivo compatible con "
+
+#~ msgid "compatible device."
+#~ msgstr "."
+
+#~ msgid "View the guide"
+#~ msgstr "Ver el manual"
+
+#~ msgid "Here you can revise and analize the data gathered from your devices."
+#~ msgstr ""
+#~ "Aqui puedes revisar y analizar la informacion obtenida por tus "
+#~ "dispositivos."
+
+#~ msgid "View reports"
+#~ msgstr "Ver informes"
+
+#~ msgid "View saved reports"
+#~ msgstr "Ver informes"
+
+#~ msgid "Here you can see the reports that have been generated."
+#~ msgstr "Aqu&iacute; puedes ver los informes que se han ido generando."

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ block.super }}Power2U{% endblock %}
+
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="home" %}
+{% endblock %}
+
+{% block navbar-right %}
+  {% if not user.is_authenticated %}
+<a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
+<a class="btn btn-primary" href="{% url 'accounts:signup' %}" role="button">Sign up</a>
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block container %}
+    <div class="container">
+
+      <div class="starter-template">
+        <h1>{% trans "Adding a new device" %}</h1>
+        <p class="lead">{% trans "Following the steps below," %}<br> {% trans "the process of registering a new compatible device " %}<br>{% trans "is like stealing a sweet to a 2 year old kid." %}</p>
+        <p class="lead" id="step1">1.- {% trans "Configure the device at IP address 10.10.10.254" %}
+        <button class="btn btn-primary" id="step1button" onclick="button1clicked();" role="button">{% trans "Done!" %}&raquo;</button></p>
+        <p class="lead" id="step2">2.- {% trans "Hit this button to scan for the device at IP 10.10.10.254" %}
+        <a class="btn btn-primary" href="{% url 'reqconf' 254 %}" id="step2button" onclick="button2clicked();" role="button">{% trans "Scan " %}&raquo;</a></p>
+        <p class="lead" id="step3">3.- {% trans "Setup the device name" %}</p>
+        {% block confDev %}
+
+        {% endblock confDev %}
+        
+        {% if Status == "ConfigNoOK" %}
+            <p class="lead"><font color="red"><b>{% trans "A device was found but did not acknowledged the SetConf order." %}</b></font></p>
+        {% endif %}
+      </div>
+
+    </div><!-- /.container -->
+{% endblock container %} 
+
+{% block scripts %}
+    
+<script>
+	function onload_func()
+	{
+		document.getElementById('step2').style.display = 'none';
+		document.getElementById('step2button').style.display = 'none';
+		document.getElementById('step3').style.display = 'none';
+		//document.getElementById('deviceForm').style.display = 'none';			
+	}
+	
+	function	button1clicked()
+	{	
+		document.getElementById('step2').style.display = document.getElementById('step1').style.display;
+		document.getElementById('step2button').style.display = document.getElementById('step1button').style.display;
+		document.getElementById('step1').disabled=true
+		document.getElementById('step1button').style.display='none'
+	}
+	
+	function	button2clicked()
+	{	
+		document.getElementById('step2').disabled=true
+		document.getElementById('step2button').disabled=true
+		document.getElementById('step2button').style.display='none'
+	}
+				
+</script>	
+
+{% endblock scripts %}	

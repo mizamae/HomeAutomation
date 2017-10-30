@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=/home/pi/HomeAutomation/src
+ExecStart=/usr/local/bin/gunicorn --access-logfile - --workers 2 --bind unix:/home/pi/run/HomeAutomation.sock HomeAutomation.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

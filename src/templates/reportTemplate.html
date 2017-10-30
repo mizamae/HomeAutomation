@@ -1,0 +1,613 @@
+<!--WARNING: THE FEATURE OF AGGREGATING DATA ON AN HOURLY BASIS ONLY WORKS PROPERLY WITH ONE DATAGRAM DEFINED.
+                    THE ISSUE COMES WHEN REDRAWING THE GRAPH IN FUNCTION toggleHourlyDataAnalogCharts
+ -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% load staticfiles %}
+
+{% block title %}{{ block.super }}Power2U{% endblock %}
+
+  {% block extrahead %}
+    <style>
+    .charts {
+    	width: 100%;
+    	height: 50%;
+    }
+    .row-graph{
+    	position:relative;
+    	top:2em;
+    	margin-left: 5px;
+    	max-height:100%;
+    }
+    .col-lg-3{
+    	border:1px solid black;
+    }
+    .btn {
+    	font-size: 10px;
+    }
+    .treeview, .treeview ul {
+    margin:0;
+    padding:0;
+    list-style:none;
+    
+	color: #369;
+	}
+	.treeview ul {
+	    margin-left:1em;
+	    position:relative
+	}
+	.treeview ul ul {
+	    margin-left:.5em
+	}
+	.treeview ul:before {
+	    content:"";
+	    display:block;
+	    width:0;
+	    position:absolute;
+	    top:0;
+	    left:0;
+	    border-left:1px solid;
+	    
+	    /* creates a more theme-ready standard for the bootstrap themes */
+	    bottom:15px;
+	}
+	.treeview li {
+	    margin:0;
+	    padding:0 1em;
+	    line-height:2em;
+	    font-weight:700;
+	    position:relative
+	}
+	.treeview ul li:before {
+	    content:"";
+	    display:block;
+	    width:10px;
+	    height:0;
+	    border-top:1px solid;
+	    margin-top:-1px;
+	    position:absolute;
+	    top:1em;
+	    left:0
+	}
+	.tree-indicator {
+	    margin-right:5px;
+	    
+	    cursor:pointer;
+	}
+	.treeview li a {
+	    text-decoration: none;
+	    color:inherit;
+	    
+	    cursor:pointer;
+	}
+	.treeview li button, .treeview li button:active, .treeview li button:focus {
+	    text-decoration: none;
+	    color:inherit;
+	    border:none;
+	    background:transparent;
+	    margin:0px 0px 0px 0px;
+	    padding:0px 0px 0px 0px;
+	    outline: 0;
+	}
+    .container {
+        width: 100%;
+    }
+    </style>
+    <script type="text/javascript" src="{% static 'site/js/moment-with-locales.min.js'%}" ></script>
+    <script type="text/javascript" src="{% static 'site/js/bootstrap-datetimepicker.min.js'%}" charset="UTF-8"></script>
+    <link href="{% static 'site/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
+  {% endblock extrahead %}
+  {% block container %}
+  <div class="container">
+	  <div id="row1" class="row row-graph">
+	  {% if reportTitle %}
+	  <h2>{% trans "Report " %} {{ reportTitle }} {% trans " corresponding to dates between " %} {{ fromDate }} {% trans " and " %} {{ toDate }}</h2>
+	  {% else %}
+	  <h2>{% trans "Something is not correct" %}</h2>
+	  {% endif %}
+	  </div>
+	  <div id="base" class="row row-graph" >  	
+	  </div>
+  </div>
+  {% endblock container %}
+  
+  {% block scripts %}
+  	<script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script type="text/javascript">
+    var language,datesFormat,decimalSeparator,thousandsSeparator;
+	var djangoData;
+	var graphic_class="col-sm-8 col-lg-9";
+	var statistics_class="col-sm-4 col-lg-3";
+	var ChartsHeight=500,ChartsHeightStep=50;
+    var hourly_data=false,daily_data=false;
+	window.onload=function(){
+		Highcharts.setOptions({
+		    global: {
+		        useUTC: false
+		    }
+		});
+		loadData();
+		};
+	
+	function checkLanguage()
+	{
+		{% get_current_language as LANGUAGE_CODE %}
+	    {% if LANGUAGE_CODE == 'es' %}
+	    	language='es';
+	    	datesFormat='dd/mm/yyyy hh:ii:ss';
+            decimalSeparator=",";
+            thousandsSeparator="."
+	    {% else %}
+	    	language='en';
+	    	datesFormat='yyyy-mm-dd hh:ii:ss';
+            decimalSeparator=".";
+            thousandsSeparator=","
+	    {% endif %}
+	}
+	
+    function loadData()
+    {
+    	try
+    	{
+	    	djangoData = JSON.parse('{{ reportData|safe }}').charts;
+	    	var i;
+	    	var base=document.getElementById('base');
+	    	var buttonINCHeight=document.createElement('a');
+	    	buttonINCHeight.className="btn btn-default btn-xl";
+	    	buttonINCHeight.role="button";
+	    	buttonINCHeight.innerHTML="+";
+	    	buttonINCHeight.id="incHeight"
+	    	buttonINCHeight.addEventListener("click", function(){ ChartsHeight+=ChartsHeightStep;resizePlots(ChartsHeight); });
+			base.appendChild(buttonINCHeight);
+			var buttonDECHeight=document.createElement('a');
+			buttonDECHeight.className="btn btn-default btn-xl";
+			buttonDECHeight.role="button";
+			buttonDECHeight.innerHTML="-";
+			buttonDECHeight.id="decHeight"
+			buttonDECHeight.addEventListener("click", function(){ ChartsHeight-=ChartsHeightStep;resizePlots(ChartsHeight); });
+			base.appendChild(buttonDECHeight);
+            var buttonDownload=document.createElement('a');
+			buttonDownload.className="btn btn-default btn-xl";
+			buttonDownload.role="button";
+			buttonDownload.innerHTML="Download data";
+			buttonDownload.id="downloadData"
+			buttonDownload.addEventListener("click", function(){ downloadData(); });
+			base.appendChild(buttonDownload);
+	    	for (i = 0; i < djangoData.length; i++) 
+	    	{  
+				var arrayData=djangoData[i].rows;
+				var DataLabels=djangoData[i].cols;
+				
+		    	if (DataLabels.length>0)
+		    	{
+		    		var subindex='analog';	
+		    		// analog chart drawing
+					var iDiv = document.createElement('div');
+			    	iDiv.id = 'row_chart'.concat(i.toString(),subindex);
+			    	iDiv.className = "row row-graph";
+					base.appendChild(iDiv);
+					
+					var iDiv2 = document.createElement('div');
+			    	iDiv2.id = 'chart_col'.concat(i.toString(),subindex);
+			    	iDiv2.className = graphic_class;
+			    	iDiv.appendChild(iDiv2);
+			    	
+			    	var iDiv3 = document.createElement('div');
+			    	iDiv3.id = 'stats_col'.concat(i.toString(),subindex);
+			    	iDiv3.className = statistics_class;
+			    	iDiv.appendChild(iDiv3);
+		    		drawChart(arrayData,DataLabels,djangoData[i].chart_title,'chart_col'.concat(i.toString(),subindex),false);
+			    	var stats= document.getElementById('stats_col'.concat(i.toString(),subindex));
+			    	var list = document.createElement('ul');
+			    	list.className="treeview";
+			    	stats.appendChild(list);
+			    	var stats_data=djangoData[i].statistics;
+			    	var stats_labels=[];
+			    	for(var name in stats_data) {
+			    		if ((name!='number') && (name!='num_rows'))
+			    		{
+			    			stats_labels.push(name);
+			    		}
+			    	}
+			    	var j,k;
+			    	var text=''
+			    	for (j = 0; j < djangoData[i].cols.length; j++) // iterates over the number of columns of the chart
+			    	{			
+			    		var label=	djangoData[i].cols[j].label; // j+1 to avoid the timestamp col	
+                        var datatype=	djangoData[i].cols[j].type;
+			    		var variable = document.createElement('li');
+			    		var stats_list = document.createElement('ul');
+			    		if (!label.includes('_bits'))
+			    		{
+			    			label=parseLabel(label);
+			    		}
+			    		variable.appendChild(document.createTextNode(label));
+			    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
+				    	{ 
+			    			var item = document.createElement('li');
+			    			if (datatype=='analog')
+			    			{
+			    				if (!stats_labels[k].includes('on_') && !stats_labels[k].includes('off_'))
+			    				{
+                                    if (stats_data[stats_labels[k]][j]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j].toFixed(2));}
+                                    else {text=text.concat(stats_labels[k],' value: ',null)}
+			    					item.appendChild(document.createTextNode(text));
+			    					stats_list.appendChild(item);
+			    					text='';
+			    				}
+			    			}else
+                            {
+                                if (stats_labels[k].includes('on_') || stats_labels[k].includes('off_'))
+			    				{
+                                    text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j],' [s]');
+			    					item.appendChild(document.createTextNode(text));
+			    					stats_list.appendChild(item);
+			    					text='';
+			    				}
+                            }
+				    	}
+			    		variable.appendChild(stats_list);
+			    		if (!label.includes('_bits')){
+			    			list.appendChild(variable);
+			    		}
+			    	}
+		    	}	
+	    	}
+	    	convert_treeviews();
+    	}
+    	catch(err)
+    	{console.log('Error: ' + err.toString())}
+    }
+    
+    
+
+    function downloadData()
+    {
+        var csvContent = 'Report;{{ reportTitle }} \n';
+        csvContent+='Initial date;{{ fromDate }} \n';
+        csvContent+='Final date;{{ toDate }} \n';
+        Date.prototype.ddmmyyyy = function() {
+          var mm = this.getMonth() + 1; // getMonth() is zero-based
+          var dd = this.getDate();
+          var date=[  (dd>9 ? '' : '0') + dd,
+                    (mm>9 ? '' : '0') + mm,
+                    this.getFullYear()
+                    ].join('/');
+          var hh=this.getHours();
+          var ii=this.getMinutes();
+          var ss=this.getSeconds();
+          var time=[    (hh>9 ? '':'0')+hh,
+                        (ii>9 ? '':'0')+ii,
+                        (ss>9 ? '':'0')+ss
+                    ].join(':')
+          return date+";"+time;
+        };
+        
+        for (i = 0; i < djangoData.length; i++) 
+        {  
+            var arrayData=djangoData[i].rows;
+            var DataLabels=djangoData[i].cols;
+            csvContent+= "Date;Time;"        
+            for(var j=0; j<DataLabels.length;j++)
+            {	
+                var label=parseLabel(DataLabels[j].label);
+                csvContent += j < DataLabels.length ? label+";": label+ "\n";
+            }
+            //console.log(csvContent);
+            csvContent+="\n";
+            for(var j=0; j<arrayData.x_axis.length;j++)
+            {	
+                var date=eval("new " + arrayData.x_axis[j].v).ddmmyyyy();
+                var row=arrayData.y_axis[j].join(";");
+
+                csvContent += date + ";"+row.split(thousandsSeparator).join(decimalSeparator)+"\n"; // to replace all the occurences in the row
+            }
+            //console.log(csvContent);
+        }
+        var a         = document.createElement('a');
+        a.href        = 'data:attachment/csv,' +  encodeURIComponent(csvContent);
+        a.target      = '_blank';
+        a.download    = '{{ reportTitle }}_{{ fromDate|date:"d-m-Y H-i" }}_{{ toDate|date:"d-m-Y H-i" }}'+'.csv';
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+    
+    function parseLabel(label)
+    {
+        if (label.includes('_bits'))
+        {
+            vector=label.split('_');
+            label=vector[0];
+            for (var i=1;i<vector.length-1;i++)
+            {
+                label=label+'_'+vector[i];
+            }
+            
+        }
+        if (label.includes('_')){label=label.replace("_"," [").concat("]");}
+		label=label.replace("percent","%");
+		label=label.replace("centdeg","\xB0C");
+    	return label;
+    }
+    function resizePlots(height=0)
+    {
+    	Highcharts.each(Highcharts.charts, function (chart) {
+            if (chart!=undefined)
+            {
+                var container='#'.concat(chart.renderTo.id);
+                var chartwidth = $(container).width();
+                if (height==0)
+                {
+                    chart.setSize(chartwidth,chartwidth/2);//setSize (Number width, Number height, [Mixed animation])
+                }else
+                {
+                    ChartsHeightAfterToggle=chartwidth;
+                    if (container.includes("digital")){chart.setSize(chartwidth,height/2);}
+                    else {chart.setSize(chartwidth,height);}
+                }
+            }
+            
+        });
+    } 
+    function	checkBit(number,n)
+		{	
+            if (number != null)
+            {
+                var	mask	=	1	<<	n;
+                if	((number	&	mask)	!=	0)	{return	1;}else	{return	0;}
+            }else{return null;}
+		}	
+        
+	function drawChart(data,labels,title,chartId,HourlyData=false,DailyData=false) 
+	{
+		var seriesOptions = [],seriesCounter = 0;
+	    
+		var x_axis=data.x_axis;
+        data=data.y_axis;
+		var chartwidth = $('#'.concat(chartId)).width();
+		max=null;
+        min=null;
+        var height=ChartsHeight;
+        var firstDate=eval("new " + x_axis[0].v);
+        var dateformat='%e/%b/%Y %H:%M';
+        var appendix='',max_data,min_data;
+        var error_multiplier; // to avoid sowing error bars if data is null
+        var xaxisInterval=3600 * 1000;
+	   	for (var j=0;j<data[0].length;j++)
+	   	{
+	   		variable_data = [];
+            error_data=[];
+			column=j;
+            if (1==1)
+            {
+                var current_hour=eval("new " + x_axis[0].v).getHours();
+                var current_day=eval("new " + x_axis[0].v).getDay();
+                var accumulated=0.,count=0;
+                max_data=-10000000000;
+                min_data=10000000000;
+                
+                for (var i=0;i<x_axis.length;i++)
+                {
+                    fecha=eval("new " + x_axis[i].v);
+                    variable_data.push([Date.parse(fecha),data[i][column]]);
+                }
+                
+                if (DailyData){xaxisInterval=24*3600 * 1000;}
+                seriesOptions[seriesCounter] = {
+                        name: parseLabel(labels[column].label),
+                        data: variable_data,
+                        lineWidth: 2,
+                        //type: 'spline',
+                        marker: {
+                            enabled: null,
+                            radius: 3
+                        },
+                    };
+                seriesCounter++;
+                if (HourlyData || DailyData)
+                {
+                    seriesOptions[seriesCounter] = {
+                        name: parseLabel(labels[column].label)+' error',
+                        data: error_data,
+                        type: 'errorbar',
+                        tooltip: {
+                            pointFormat: '(error range: {point.low}-{point.high})<br/>'
+                        }
+                    };
+                    seriesCounter++;
+                }
+            }
+	   	}
+	   	
+	   	Highcharts.chart(chartId, {
+	   		title:{
+	   		    text: title
+	   			},
+	   		chart: {
+	   			zoomType: 'x',
+	   	        height: height,
+	   	     	width:chartwidth,
+	   	        //type: 'line'
+                panning: true,
+                panKey:'ctrl',
+	   	    },
+	        xAxis: {
+	            type: 'datetime',
+                tickInterval:xaxisInterval,
+	            crosshair: true,
+                events: {
+                    setExtremes: syncExtremes
+                },
+	        },
+	        yAxis: {
+                min:min,
+                max:max,
+	        },
+            
+	        legend: {
+	            enabled: true
+	        },
+	        tooltip: {
+                pointFormatter: function () {
+                    if (this.series.type!='errorbar')
+                    {
+                        var errorSeries = this.series.chart
+                                .series[this.series.index + 1],
+                            errorPoint = errorSeries && errorSeries.points[this.index];
+
+                        var s = Highcharts.dateFormat(dateformat,new Date(this.x))+appendix+'<br/>' + this.series.name + "= " + this.y.toFixed(2);
+
+                        if (HourlyData || DailyData) {
+                            s += ' (Max.: ' + errorPoint.low.toFixed(2) + ' - Min.:' + errorPoint.high.toFixed(2) + ')';
+                            
+                        }
+                        return s;
+                    }
+                }
+	        },
+            plotOptions:{
+                series:{
+                    pointStart:firstDate,
+                    pointInterval: xaxisInterval,
+                    connectNulls: true
+                },
+//                errorbar: {
+//                    tooltip: {
+//                        enabled: HourlyData
+//                    }
+//                }
+            },
+	        series: seriesOptions
+	    });
+	}
+	
+
+	/**
+	 * Highlight a point by showing tooltip, setting hover state and draw crosshair
+	 */
+	Highcharts.Point.prototype.highlight = function (event) {
+	    this.onMouseOver(); // Show the hover marker
+	    this.series.chart.tooltip.refresh(this); // Show the tooltip
+	    this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
+	};
+	
+	/**
+	 * Synchronize zooming through the setExtremes event handler.
+	 */
+	function syncExtremes(e) {
+	    var thisChart = this.chart;
+
+	    if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+	        Highcharts.each(Highcharts.charts, function (chart) {
+	            if (chart !== thisChart && chart != undefined) {
+	                if (chart.xAxis[0].setExtremes) { // It is null while updating
+	                    chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: 'syncExtremes' });
+	                }
+	            }
+	        });
+	    }
+	}
+
+	
+	function getCol(matrix, col){
+	       var column = [];
+	       for(var i=0; i<matrix.length; i++){
+	          column.push(matrix[i][col]);
+	       }
+	       return column;
+	    }
+	
+	$(function () {
+		checkLanguage();
+        $('#datetimepicker11').datetimepicker({
+            inline: true,
+            sideBySide: true,
+            language:language,
+            format: datesFormat, /*remove this line if you want to use time as well */
+            todayBtn:'linked',
+            todayHighlight:1,
+            fontAwesome:true,
+            weekStart:1,
+            startView: 1,
+            minView:0,
+            maxView:3,
+            autoclose:true
+        });
+        $('#datetimepicker12').datetimepicker({
+            inline: true,
+            sideBySide: true,
+            language:language,
+            format: datesFormat, /*remove this line if you want to use time as well */
+            todayBtn:'linked',
+            todayHighlight:1,
+            fontAwesome:true,
+            weekStart:1,
+            startView: 1,
+            minView:0,
+            maxView:3,
+            autoclose:true
+        });
+    });
+	$(window).resize(function(){
+		resizePlots();
+		});
+
+    $.fn.extend({
+		treeview:	function() {
+			return this.each(function() {
+				// Initialize the top levels;
+				var tree = $(this);
+				
+				tree.addClass('treeview-tree');
+				tree.find('li').each(function() {
+					var stick = $(this);
+				});
+				tree.find('li').has("ul").each(function () {
+					var branch = $(this); //li with children ul
+					
+					branch.prepend("<i class='tree-indicator glyphicon glyphicon-chevron-right'></i>");
+					branch.addClass('tree-branch');
+					branch.on('click', function (e) {
+						if (this == e.target) {
+							var icon = $(this).children('i:first');
+							
+							icon.toggleClass("glyphicon-chevron-down glyphicon-chevron-right");
+							$(this).children().children().toggle();
+						}
+					})
+					branch.children().children().toggle();
+					
+					/**
+					 *	The following snippet of code enables the treeview to
+					 *	function when a button, indicator or anchor is clicked.
+					 *
+					 *	It also prevents the default function of an anchor and
+					 *	a button from firing.
+					 */
+					branch.children('.tree-indicator, button, a').click(function(e) {
+						branch.click();
+						
+						e.preventDefault();
+					});
+				});
+			});
+		}
+	});
+
+	/**
+	 *	The following snippet of code automatically converst
+	 *	any '.treeview' DOM elements into a treeview component.
+	 */
+	function convert_treeviews() {
+		$('.treeview').each(function () {
+			var tree = $(this);
+			tree.treeview();
+		})
+	}
+    </script>
+  {% endblock scripts %}

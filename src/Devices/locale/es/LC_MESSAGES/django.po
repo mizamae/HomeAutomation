@@ -1,0 +1,194 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-10-24 14:14+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps.py:14
+msgid "Devices common"
+msgstr "Común a todos los dispositivos"
+
+#: forms.py:35
+msgid "Set the connection of the device"
+msgstr "Selecciona la conexión del dispositivo"
+
+#: forms.py:36
+msgid "Enter the type of the device"
+msgstr "Selecciona el tipo de dispositivo"
+
+#: forms.py:37
+msgid "Enter the description of the device"
+msgstr "Introduce la descripción del dispositivo"
+
+#: forms.py:38
+msgid "Select the minimum sample time for the device [s]"
+msgstr "Introduce el tiempo de sampleo minimo del dispositivo [s]"
+
+#: forms.py:39
+msgid "Upload an image for the DeviceType"
+msgstr "Carga una imagen para el tipop de dispositivo"
+
+#: forms.py:47 forms.py:154
+msgid "Submit"
+msgstr "Enviar"
+
+#: forms.py:68
+msgid "Title of the report"
+msgstr "Titulo del informe"
+
+#: forms.py:69
+msgid "Setup the periodicity"
+msgstr "Introduce la periodicidad"
+
+#: forms.py:70
+msgid "Setup the aggregation of the data"
+msgstr "Introduce el factor de agregación de los datos"
+
+#: forms.py:92
+msgid ""
+"Incompatibility - The aggregation cannot be bigger than the periodicity."
+msgstr ""
+"Incompatibilidad - El factor de agregación no puede ser mayor que el de "
+"periodicidad."
+
+#: forms.py:106
+msgid "You cannot select two items for the same position!!"
+msgstr "No puedes seleccionar dos items en la misma posicion"
+
+#: forms.py:114
+msgid "Select the device"
+msgstr "Selecciona el dispositivo"
+
+#: forms.py:115
+msgid "From"
+msgstr "Desde"
+
+#: forms.py:116
+msgid "To"
+msgstr "Hasta"
+
+#: forms.py:128
+msgid "Main Unit"
+msgstr ""
+
+#: models.py:45
+msgid "Device type"
+msgstr "Tipo de dispositivo"
+
+#: models.py:46
+msgid "Device types"
+msgstr "Tipos de dispositivos"
+
+#: models.py:59
+msgid "Every day"
+msgstr "Todos los dias"
+
+#: models.py:60
+msgid "Every week"
+msgstr "Todas las semanas"
+
+#: models.py:61
+msgid "Every month"
+msgstr "Todos los meses"
+
+#: models.py:64
+msgid "No aggregation"
+msgstr "Sin agregación"
+
+#: models.py:65
+msgid "Hourly"
+msgstr "Horaria"
+
+#: models.py:66
+msgid "Daily"
+msgstr "Diaria"
+
+#: models.py:67
+msgid "Monthly"
+msgstr "Mensual"
+
+#: models.py:69
+msgid "Invalid report title - This title already exists in the DB."
+msgstr "Título de informe erróneo - El título ya existe en la BBDD."
+
+#: models.py:70
+msgid "How often the report will be generated"
+msgstr "Con cuanta frcuencia se generaran los informes"
+
+#: models.py:71
+msgid "Data directly from the DB or averaged over a period"
+msgstr ""
+"Datos directamente de la BBDD o promediados a lo largo de algun periodo"
+
+#: models.py:114
+msgid "Report"
+msgstr "Informe"
+
+#: models.py:115
+msgid "Reports"
+msgstr "Informes"
+
+#: models.py:134
+msgid "Generated report"
+msgstr "Informe generado"
+
+#: models.py:135
+msgid "Generated reports"
+msgstr "Informes generados"
+
+#: models.py:161
+msgid "Digital field"
+msgstr "Campo digital"
+
+#: models.py:162
+msgid "Digital fields"
+msgstr "Campos digitales"
+
+#: models.py:181
+msgid "Analog field"
+msgstr "Campo analógico"
+
+#: models.py:182
+msgid "Analog fields"
+msgstr "Campos analógicos"
+
+#: models.py:205
+msgid "Datagram"
+msgstr "Trama"
+
+#: models.py:206
+msgid "Datagrams"
+msgstr "Tramas"
+
+#: models.py:272
+msgid "Item"
+msgstr "Elemento"
+
+#: models.py:273
+msgid "Items"
+msgstr "Elementos"
+
+#: models.py:298
+msgid "Command"
+msgstr "Orden"
+
+#: models.py:299
+msgid "Commands"
+msgstr "Órdenes"
+
+#~ msgid "Invalid Report Title - Should have minimum 4 characters"
+#~ msgstr "Título del informe erróneo - Debe tener un mínimo de 4 caracteres"
