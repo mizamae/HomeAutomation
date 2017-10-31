@@ -132,21 +132,13 @@ class ReportItems(models.Model):
 class DigitalItemModel(models.Model):
     DBTag = models.CharField(max_length=25,blank = True,editable=False,null=True)
     HumanTag = models.CharField(max_length=20,unique=True)
-    Bit0 = models.CharField(max_length=50)
-    Bit1 = models.CharField(max_length=50)
-    Bit2 = models.CharField(max_length=50)
-    Bit3 = models.CharField(max_length=50)
-    Bit4 = models.CharField(max_length=50)
-    Bit5 = models.CharField(max_length=50)
-    Bit6 = models.CharField(max_length=50)
-    Bit7 = models.CharField(max_length=50)
     
     def clean(self):
         ' some non-utf-8 characters might be inserted so they need to be taken care of'
         self.DBTag=self.HumanTag.replace(' ','_')+'_[bits]'
     
     def getText(self):
-        return self.HumanTag+'_'+'bits'+'_'+self.Bit0+'$'+self.Bit1+'$'+self.Bit2+'$'+self.Bit3+'$'+self.Bit4+'$'+self.Bit5+'$'+self.Bit6+'$'+self.Bit7
+        return self.HumanTag+'_'+'bits'
         
     def __str__(self):
         return self.HumanTag
@@ -241,15 +233,15 @@ def getDatagramStructure(devicetype,ID='*'):
         analogItems=datagram.AnItems.all()
         for item in analogItems:
             Itemorder=ItemOrdering.objects.get(AnItem=item,datagram=datagram)
-            names.insert(Itemorder.order-1,Itemorder.AnItem.HumanTag+'_'+Itemorder.AnItem.Units)
-            datatypes.insert(Itemorder.order-1,Itemorder.AnItem.DataType)
-            types.insert(Itemorder.order-1,'analog')
+            names.insert(Itemorder.order,Itemorder.AnItem.HumanTag+'_'+Itemorder.AnItem.Units)
+            datatypes.insert(Itemorder.order,Itemorder.AnItem.DataType)
+            types.insert(Itemorder.order,'analog')
         digitalItems=datagram.DgItems.all()
         for item in digitalItems:
             Itemorder=ItemOrdering.objects.get(DgItem=item,datagram=datagram)
-            names.insert(Itemorder.order-1,Itemorder.DgItem.getText())
-            datatypes.insert(Itemorder.order-1,'INTEGER')
-            types.insert(Itemorder.order-1,'digital')
+            names.insert(Itemorder.order,Itemorder.DgItem.getText())
+            datatypes.insert(Itemorder.order,'INTEGER')
+            types.insert(Itemorder.order,'digital')
         if datagram.isSynchronous():
             sample=1
         else:

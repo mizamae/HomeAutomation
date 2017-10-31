@@ -3,17 +3,17 @@
 {% load i18n %}
 {% block confDev %}
 
-	<p class="lead">Requested Conf.xml at IP: <strong>10.10.10.254</strong></p>
 	
 	{% if Status != 'NoDevice' and Status != '' %}
 		{% if Status == "ConfigOK" %}
-	    	<p class="lead"><font color="green"><b>{% trans "Found" %} {{ Form.DeviceType.value }}</b></font></p>
+	    	<p class="lead"><font color="green"><b>{% trans "Found" %} {{ Form.Type.value }}</b></font></p>
 	    {% elif Status == "RegisteredOK" %}
-	    	<p class="lead"><font color="green"><b>{% trans "Device registered OK with the name" %} {{ Form.DeviceName.value }}</b></font></p>
-            <!-- {% for Form in Forms %}
-                {% crispy Form %}
-            {% endfor %} -->
-	    	<p><a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a></p>
+	    	<p class="lead"><font color="green"><b>{% trans "Device registered OK with the name" %} {{ DeviceName }}</b></font></p>
+	    	<h2 class="lead"><b>{% trans "Setting up the custom labels for the variables" %}</b></h2>
+            {% crispy Form %}
+        {% elif Status == "FinishedOK" %}
+        	<p class="lead"><font color="green"><b>{% trans "Configuration for device " %} {{ DeviceName }} {% trans " finished OK" %}</b></font></p>
+        	<p><a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a></p>
 	    {% else %}	    	
 	    	<p class="lead"><font color="red"><b>{% trans "Something failed" %}</b></font></p>
 	    {% endif %}
@@ -21,6 +21,7 @@
 			{% crispy Form %}
       	{% endif %}
 	{% else %}
+		<p class="lead">Requested Conf.xml at IP: <strong>10.10.10.254</strong></p>
 	    <p class="lead"><font color="red">{% trans "No device found." %}</font></p>
 	    <p><a class="btn btn-primary" href="{% url 'home' %}" id="step2button" role="button">{% trans "Back" %} &raquo;</a></p>
 	{% endif %}

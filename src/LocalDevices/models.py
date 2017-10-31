@@ -38,7 +38,7 @@ class DeviceModel(models.Model):
     RTsampletime=models.PositiveIntegerField(default=600)
     LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
-    #CustomLabels= models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
+    CustomLabels= models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     
     objects = DeviceModelManager()
     

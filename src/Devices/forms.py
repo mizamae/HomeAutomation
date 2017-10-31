@@ -14,7 +14,7 @@ import Devices.GlobalVars
 import LocalDevices.models
 import RemoteDevices.models
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
+from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
 
 import logging
 logger = logging.getLogger("project")
@@ -53,36 +53,81 @@ class DeviceTypeForm(ModelForm):
 
 class DatagramCustomLabelsForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        super(DeviceTypeForm, self).__init__(*args, **kwargs)
+        datagram_info = kwargs.pop('datagram_info')
+        super(DatagramCustomLabelsForm, self).__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance
         # It builds a default layout with all its fields
         self.helper = FormHelper(self)
         self.helper.labels_uppercase = True
         self.helper.label_class = 'col-sm-4'
         self.helper.field_class = 'col-sm-6'
-#         self.helper.form_id = 'id-DeviceForm'
+        self.helper.form_id = 'DatagramCustomLabelsForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
         
-        datagramlayout=[]
+        self.helper.layout = Layout()
         
-        try:
-            fields = kwargs.pop('fields')
-            super(DatagramCustomLabelsForm, self).__init__(*args, **kwargs)
-
-            for i, field in enumerate(fields):
-                self.fields['variable_%s' % i] = forms.CharField(label=field,required=False)
-                layout.append(Field('variable_%s' % i, css_class='input-sm'))
+        DeviceName=datagram_info[0]['DeviceName']
             
-            layout.append(Submit('submit', _('Submit'),css_class='btn-primary'))
-            self.helper.layout = Layout(layout)
-        except:
-            pass
-    
+        self.fields['DeviceName'] = forms.CharField(label=_('Name of the device'),required=True)
+        self.fields['DeviceName'].initial = DeviceName
+        self.fields['DeviceName'].widget = forms.HiddenInput()
+        self.helper.layout.append(Field('DeviceName', css_class='input-sm'))
+        
+        self.units=[]
+        for data in datagram_info:
+            fields=data['fields']
+            types=data['types']
+            identifier=data['ID']
+            self.helper.layout.append(HTML("<h3><b>Datagram: "+identifier+"</b></h3>"))
+            for i, field in enumerate(fields):
+                
+                if types[i]== 'analog':
+                    self.units.append(data['fields'][i].split('_')[-1])
+                    fieldName=identifier+'_analogvariable_%s' % i
+                    self.fields[fieldName] = forms.CharField(label=field,required=True)
+                    self.fields[fieldName].initial = field
+                    self.helper.layout.append(Field(fieldName, css_class='input-sm'))
+                else:
+                    self.units.append('bits')
+                    fieldName=identifier+'_digitalvariable_%s' % i
+                    self.helper.layout.append(HTML("<hr>"))
+                    for k in range(0,8):
+                        self.fields[fieldName+'_bit%s' % k] = forms.CharField(label=field+ ' bit%s' % k,required=True)
+                        self.fields[fieldName+'_bit%s' % k].initial = 'bit%s' % k
+                        #self.helper.layout.append(Field(fieldName+'_bit%s' % k, css_class='col-xs-1'))
+                        self.helper.layout.append(fieldName+'_bit%s' % k)
+                    self.helper.layout.append(HTML("<hr>"))
+            self.helper.layout.append(HTML("<h2></h2>"))
+        self.helper.layout.append(Submit('submit', _('Save'),css_class='btn-primary'))
+        
     def get_variablesLabels(self):
-        for name, value in self.cleaned_data.items():
-            if name.startswith('variable_'):
-                yield (self.fields[name].label, value)
+        CustomLabels={}
+        count=0
+        field_number=0
+        for field in self.fields:
+            if field.find('variable')>=0:
+                field_value=self.cleaned_data[field]
+                info=field.split('_')
+                identifier=info[0]
+                if not identifier in CustomLabels:
+                    CustomLabels[identifier]=[]
+                if field.find('analog')>=0:
+                    CustomLabels[identifier].append(field_value+'_'+self.units[field_number])
+                    count=0
+                    field_number+=1
+                else:
+                    if count==0:
+                        CustomLabels[identifier].append(field_value)
+                        count=count+1
+                    else:
+                        CustomLabels[identifier][-1]+='$'+field_value
+                        count=count+1
+                
+                if count>=8:
+                    count=0
+                    field_number+=1
+        return CustomLabels
                 
 class ReportForm(ModelForm):  
     

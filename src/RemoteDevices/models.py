@@ -48,6 +48,7 @@ class DeviceModel(models.Model):
     LastUpdated = models.DateTimeField(blank = True,null=True)
     DeviceHTTPCode = models.IntegerField(blank = True,editable=False,null=True)  # gathers the HTTP response code from the device 200=OK
     Error=models.CharField(max_length=100,blank = True,editable=False,null=True)
+    CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     
     objects = DeviceModelManager()
         

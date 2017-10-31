@@ -188,20 +188,22 @@
       		afterSelect: function(values){// to add the variable to the graph
 	      			var res=values[0].split(':');
       				var ID=this.$element[0].id;	// gets the ID of the actuating multiselect control
+      				values=JSON.parse(values);
       				var num=parseInt(ID.replace('var-options',''));
-	      			if (res.length>=7)
-	      			{	variablesToPlot[num].push({'device':res[0],'table':res[1],'name':res[2],'bitPos':res[3],'label':res[4],'extrapolate':res[5],'type':res[6]});}
-	      			else
-	      			{	variablesToPlot[num].push({'device':res[0],'table':res[1],'name':res[2],'bitPos':null,'label':null,'extrapolate':res[3],'type':res[4]});}
+	      			variablesToPlot[num].push({'device':values.device,'table':values.table,'name':values.tag,
+	      										'bitPos':values.bitPos,'label':values.label,'extrapolate':values.extrapolate,'type':values.type});
 	      			$('#submit').prop( "disabled", false );
 	    		    }
-	      			,
+    			,
     		  afterDeselect: function(values){// to delete the variable from the graph
-	    			var res=values[0].split(':');
-	    			var varToDelete={'table':res[0],'name':res[1],'bitPos':res[2],'label':res[3]};
+    			  	values=JSON.parse(values);
+	    			//var res=values[0].split(':');
+	    			var varToDelete={'table':values.table,'name':values.tag,'bitPos':values.bitPos,'label':values.label};
 	    			var ID=this.$element[0].id;	// gets the ID of the actuating multiselect control
       				var num=parseInt(ID.replace('var-options',''));
 	    			var i=0;
+	    			
+	    			
 	    			for( i=variablesToPlot[num].length-1; i>=0; i--) {
 	    			    if( (variablesToPlot[num][i].table == varToDelete.table) && (variablesToPlot[num][i].name == varToDelete.name) && (variablesToPlot[num][i].bitPos == varToDelete.bitPos)) 
 	    			    { 
@@ -218,7 +220,6 @@
     		 	}
       	});
     	
-    	
     	for (i = 0; i < djangoData.length; i++) 
     	{  
     		var optgrp = document.createElement("optgroup");
@@ -230,20 +231,34 @@
     			if (djangoData[i].variables[j].type == "analog")
     			{
 	    			var opt = document.createElement("option");
-	    			opt.value= djangoData[i].variables[j].device+':'+djangoData[i].variables[j].table+':'+ djangoData[i].variables[j].tag+
-                                        ':'+djangoData[i].variables[j].extrapolate+':'+djangoData[i].variables[j].type;
-	    			opt.innerHTML = djangoData[i].variables[j].tag.replace('_',' [').replace('percent','&#37').replace('centdeg','&degC') + ']';
+	    			var value={};
+					value.device=djangoData[i].variables[j].device;
+					value.table=djangoData[i].variables[j].table;
+					value.tag=djangoData[i].variables[j].tag;
+					value.label=djangoData[i].variables[j].label;
+					value.extrapolate=djangoData[i].variables[j].extrapolate;
+					value.type=djangoData[i].variables[j].type;
+					value=JSON.stringify(value);
+					opt.value=value;					
+	    			opt.innerHTML = djangoData[i].variables[j].label;
 	    			optgrp.appendChild(opt);
     			}else
     			{
     				var bits=0;
-    				for (bits=0;bits<djangoData[i].variables[j].bitText.length;bits++)
+    				for (bits=0;bits<djangoData[i].variables[j].label.length;bits++)
     				{
     					var opt_bits = document.createElement("option");
-    					opt_bits.value= djangoData[i].variables[j].device+':'+djangoData[i].variables[j].table+':'+ 
-                                        djangoData[i].variables[j].tag+':'+ bits.toString()+':'+djangoData[i].variables[j].bitText[bits]+
-                                        ':'+djangoData[i].variables[j].extrapolate+':'+djangoData[i].variables[j].type;
-    					opt_bits.innerHTML = djangoData[i].variables[j].bitText[bits];   	
+    					var value={};
+    					value.device=djangoData[i].variables[j].device;
+    					value.table=djangoData[i].variables[j].table;
+    					value.tag=djangoData[i].variables[j].tag;
+    					value.bitPos=bits.toString();
+    					value.label=djangoData[i].variables[j].label[bits];
+    					value.extrapolate=djangoData[i].variables[j].extrapolate;
+    					value.type=djangoData[i].variables[j].type;
+    					value=JSON.stringify(value);
+    					opt_bits.value=value;
+    					opt_bits.innerHTML = djangoData[i].variables[j].label[bits];   	
     					optgrp.appendChild(opt_bits);
     				}  				
     			}

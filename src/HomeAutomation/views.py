@@ -105,43 +105,71 @@ def DeleteDevice(request,devicename):
 def ConfDevice(request,code):
     state=''
     if request.method == 'POST': # the form has been submited
-        form = RemoteDevices.forms.DeviceForm(request.POST)
-        code=str(form['DeviceCode'].value())
-        name=form['DeviceName'].value()
-        logger.info('Trying to register the device with code ' + code + ' with the new name ' + name)  
-        # Check if the form is valid:
-        if form.is_valid():
-            logger.info('Form submitted is valid')  
-            code=form.cleaned_data['DeviceCode']
-            name=form.cleaned_data['DeviceName']
-            IP=form.cleaned_data['DeviceIP']
-            DeviceType =form.cleaned_data['Type']  
-            Sampletime =form.cleaned_data['Sampletime']  
-            logger.warning('Found a device type '+str(DeviceType))
-            code=int(code)
-            RemoteDevices.models.DeviceModel.objects.create_Device(DeviceName=name,DeviceCode=code,DeviceIP=IP,DeviceType=DeviceType,
-                                                             DeviceState='STOPPED',Sampletime=Sampletime)
-            state='RegisteredOK'
-            
-            datagrams=Devices.models.DatagramModel.objects.filter(Type=DeviceType)
-            
-            # forms=[]
-            # for datagram in datagrams:
-                # fields=datagram.get_variables
-                # logger.info(str(fields))
-                # forms.append(Devices.forms.DatagramCustomLabelsForm(fields=fields))
-            
-            # logger.info('Forms: ' + str(forms))
-            # return render(request,'reqconfdevice.html',
-                      # {'Status':state,'Forms': forms})
-                      
-        else:
-            logger.warning('Error!!: Form submitted is NOT valid')  
-            logger.warning('Error!!: ' + str(form.errors))  
-            state='FieldNoOK'
-        return render(request,'reqconfdevice.html',
-                      {'Status':state,'Form': form})
-    else:   # the form is first loaded
+        if 'DeviceCode' in request.POST: # the device form has been submitted
+            form = RemoteDevices.forms.DeviceForm(request.POST)
+            code=str(form['DeviceCode'].value())
+            name=form['DeviceName'].value()
+            logger.info('Trying to register the device with code ' + code + ' with the new name ' + name)  
+            # Check if the form is valid:
+            if form.is_valid():
+                logger.info('Form submitted is valid')  
+                code=form.cleaned_data['DeviceCode']
+                name=form.cleaned_data['DeviceName']
+                IP=form.cleaned_data['DeviceIP']
+                DeviceType =form.cleaned_data['Type']  
+                Sampletime =form.cleaned_data['Sampletime']  
+                logger.warning('Found a device type '+str(DeviceType))
+                code=int(code)
+                RemoteDevices.models.DeviceModel.objects.create_Device(DeviceName=name,DeviceCode=code,DeviceIP=IP,DeviceType=DeviceType,
+                                                                 DeviceState='STOPPED',Sampletime=Sampletime)
+                state='RegisteredOK'
+                
+                #datagrams=Devices.models.DatagramModel.objects.filter(DeviceType=DeviceType)
+                datagrams=Devices.models.getDatagramStructure(devicetype=DeviceType)
+                
+                
+                datagram_info=[]
+                for datagram in datagrams:
+                    data={}
+                    data['fields']=datagram['names']
+                    data['types']=datagram['types']
+                    data['DeviceName']=name
+                    data['ID']=datagram['ID']
+                    datagram_info.append(data)
+                    
+                form=Devices.forms.DatagramCustomLabelsForm(None,datagram_info=datagram_info)
+    
+                return render(request,'reqconfdevice.html',
+                          {'Status':state,'DeviceName':name.upper(),'Form': form})                
+            else:
+                logger.warning('Error!!: Form submitted is NOT valid')  
+                logger.warning('Error!!: ' + str(form.errors))  
+                state='FieldNoOK'
+            return render(request,'reqconfdevice.html',
+                          {'Status':state,'Form': form})
+        else: # the datagram custom labels form has been submitted
+            DeviceName=request.POST['DeviceName']
+            device=RemoteDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
+            datagrams=Devices.models.getDatagramStructure(devicetype=device.Type)
+            datagram_info=[]
+            for datagram in datagrams:
+                data={}
+                data['fields']=datagram['names']
+                data['types']=datagram['types']
+                data['DeviceName']=DeviceName
+                data['ID']=datagram['ID']
+                datagram_info.append(data)
+            form = Devices.forms.DatagramCustomLabelsForm(request.POST,datagram_info=datagram_info)
+            if form.is_valid():
+                DeviceName=form.cleaned_data['DeviceName']
+                CustomLabels=form.get_variablesLabels()
+                device.CustomLabels=json.dumps(CustomLabels)
+                device.save()
+                #print('OK!!!')
+                state='FinishedOK'
+            return render(request,'reqconfdevice.html',
+                          {'Status':state,'Form': form})
+    else:   # the page is first loaded
         try :
             code=int(code)
         except ValueError:
@@ -184,6 +212,7 @@ def ConfDevice(request,code):
         return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})   
            
     return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})  
+
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_report'))
@@ -332,14 +361,24 @@ def device_report(request):
                 if len(datagrams)>=1:
                     i=0
                     for datagram_info in datagrams:
-                        datagram=datagram_info['ID']
-                        table=devicename+'_'+datagram
-                        names=datagram_info['names']
+                        datagramID=datagram_info['ID']
+                        labels=[]
+                        if DV.CustomLabels!='':
+                            CustomLabels=json.loads(DV.CustomLabels)
+                            labels=CustomLabels[datagram_info['ID']]
+                            Labeliterable=labels
+                        else:
+                            Labeliterable=datagram_info['names'][:]
+                    
+                        table=devicename+'_'+datagramID
+                        names=datagram_info['names'][:]
                         names.insert(0,'timestamp')
-                        types=datagram_info['datatypes']
+                        types=datagram_info['types']
                         types.insert(0,'datetime')
+                        labels=Labeliterable
+                        labels.insert(0,'timestamp')
                          
-                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,sampletime=sampletime)
+                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=sampletime)
                          
                         logger.debug(json.dumps(chart))    
                          
@@ -355,15 +394,18 @@ def device_report(request):
                             direction='OUT'
                         names=[]
                         types=[]
+                        labels=[]
                         for IO in IOs:
                             if IO.direction==direction:
-                                names.append({'label':IO.label,'pin':str(IO.pin)})
+                                names.append(str(IO.pin))
                                 types.append('digital')
+                                labels.append(IO.label)
                         
-                        names.insert(0,{'label':'timestamp','pin':'timestamp'})
+                        names.insert(0,'timestamp')
                         types.insert(0,'datetime')
+                        labels.insert(0,'timestamp')
                          
-                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,sampletime=0)
+                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
                          
                         logger.debug(json.dumps(chart))    
                          
@@ -375,7 +417,7 @@ def device_report(request):
         form=Devices.forms.DeviceGraphs()
         return render(request, 'DeviceGraph.html',{'Form': form})
 
-def generateChart(table,fromDate,toDate,names,types,sampletime):
+def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
     applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
     
@@ -385,14 +427,16 @@ def generateChart(table,fromDate,toDate,names,types,sampletime):
     i=0
     tempname=[]
     vars=''
-    for name,type in zip(names,types):
+    for name,type,label in zip(names,types,labels):
         logger.info(str(name))
-        if table=='inputs' or table=='outputs': # the main device is queried
-            vars+='"'+name['pin']+'"'+','
-            tempname.append({'label':name['label'],'type':type})
+        vars+='"'+name+'"'+','
+        if type=='analog':
+            tempname.append({'label':label,'type':type})
+        elif type=='digital':
+            labels=label.split('$')
+            tempname.append({'label':labels,'type':type})
         else:
-            vars+='"'+name+'"'+','
-            tempname.append({'label':name,'type':type})
+            tempname.append({'label':label,'type':type})
         
     vars=vars[:-1]
     chart['cols'].append(tempname)    
@@ -415,34 +459,79 @@ def generateChart(table,fromDate,toDate,names,types,sampletime):
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
         row=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
         if row != None:
-            for col in row:
-                temp.append(col)
-            now = timezone.now()
-            fecha={'v':'Date('+str(fromDate.year)+','+str(fromDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(fromDate.day)+','+str(0)+','+str(0)+','+str(1)+')'}
-            del temp[0] #removes the column with the original datetimes
-            temp.insert(0, fecha)
-            tempData.append(temp)
-            # extrapolate the last row from the DB
-            temp=[]
-            for col in row:
-                temp.append(col)                    
-            fecha={'v':'Date('+str(toDate.year)+','+str(toDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(toDate.day)+','+str(toDate.hour)+','+str(toDate.minute)+','+str(toDate.second)+')'}
-            del temp[0] #removes the column with the original datetimes
-            temp.insert(0, fecha)
-            tempData.append(temp)           
+            
+            for k,col in enumerate(row):
+                if types[k]=='analog':
+                    temp.append(col)
+                elif types[k]=='digital':
+                    data=[]
+                    for i in range(0,8):
+                        if col!=None:
+                            data.append(1 if (col & (1<<int(i)))>0 else 0)
+                        else:
+                            data.append(None)
+                    temp.append(data)
+                else:   # for the datetime
+                    temp.append(col)
+        else:
+            temp.append(fromDate)
+            for k,var in enumerate(vars.split(',')):
+                if types[k]=='analog':
+                    temp.append(None)
+                elif types[k]=='digital':
+                    data=[]
+                    for i in range(0,8):
+                            data.append(None)
+                    temp.append(data)
+        now = timezone.now()
+        fecha={'v':'Date('+str(fromDate.year)+','+str(fromDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(fromDate.day)+','+str(0)+','+str(0)+','+str(1)+')'}
+        del temp[0] #removes the column with the original datetimes
+        temp.insert(0, fecha)
+        tempData.append(temp)
+        # extrapolate the last row from the DB
+        temp=[]
+        if row != None:
+            for k,col in enumerate(row):
+                if types[k]=='analog':
+                    temp.append(col)
+                elif types[k]=='digital':
+                    data=[]
+                    for i in range(0,8):
+                        if col!=None:
+                            data.append(1 if (col & (1<<int(i)))>0 else 0)
+                        else:
+                            data.append(None)
+                    temp.append(data)
+                else:   # for the datetime
+                    temp.append(col)
+        else:
+            temp.append(toDate)
+            for k,var in enumerate(vars.split(',')):
+                if types[k]=='analog':
+                    temp.append(None)
+                elif types[k]=='digital':
+                    data=[]
+                    for i in range(0,8):
+                            data.append(None)
+                    temp.append(data)
+                
+        fecha={'v':'Date('+str(toDate.year)+','+str(toDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(toDate.day)+','+str(toDate.hour)+','+str(toDate.minute)+','+str(toDate.second)+')'}
+        del temp[0] #removes the column with the original datetimes
+        temp.insert(0, fecha)
+        tempData.append(temp)           
     else:
         if sampletime==0:
             row_ini=list(data_rows[0])
             row_ini[0]=fromDate.replace(tzinfo=None)
             data_rows.insert(0,tuple(row_ini)) # introduces in the first position a row dated in fromDate with the values of the first real register
             row_ini=data_rows[1]
-            i=2
-            for row in data_rows[2:]:
-                row_insert=list(row_ini)
-                row_insert[0]=row[0]-timezone.timedelta(seconds=1)
-                data_rows.insert(i,tuple(row_insert)) # introduces one row with the previous row values 1 sec before the new data to obtain square-shaped graph
-                i+=2
-                row_ini=row
+#             i=2
+#             for row in data_rows[2:]:
+#                 row_insert=list(row_ini)
+#                 row_insert[0]=row[0]-timezone.timedelta(seconds=1)
+#                 data_rows.insert(i,tuple(row_insert)) # introduces one row with the previous row values 1 sec before the new data to obtain square-shaped graph
+#                 i+=2
+#                 row_ini=row
             row_ini=list(data_rows[len(data_rows)-1])
             row_ini[0]=toDate.replace(tzinfo=None)
             data_rows.append(tuple(row_ini)) # introduces in the last position a row dated in toDate with the values of the last real register
@@ -455,63 +544,91 @@ def generateChart(table,fromDate,toDate,names,types,sampletime):
             #logger.info(str(fecha))      
             if isFirstRow==False:
                 sampletime=row[0]-prevRow[0]
-            tempStats['num_rows']+=1
+            if row[-1]!=None:
+                tempStats['num_rows']+=1
             k=0
             for col in row:
                 if col=='':
                     col=None
-                temp.append(col)
+                if types[k]=='analog':
+                    temp.append(col)
+                elif types[k]=='digital':
+                    data=[]
+                    for i in range(0,8):
+                        if col!=None:
+                            data.append(1 if (col & (1<<int(i)))>0 else 0)
+                        else:
+                            data.append(None)
+                    temp.append(data)
+                else:   # for the datetime
+                    temp.append(col)
                 if col!=None:
                     if k>=1: # to avoid including the timestamp in the statistics
                         if isFirstRow:
-                            tempStats['mean'].append(col)
-                            tempStats['max'].append(col)
-                            tempStats['min'].append(col)
-                            if col==1:
-                                tempStats['on_time'].append(sampletime)
-                                tempStats['off_time'].append(0)
-                            elif col==0:
+                            if types[k]=='analog':
+                                tempStats['mean'].append(col)
+                                tempStats['max'].append(col)
+                                tempStats['min'].append(col)
                                 tempStats['on_time'].append(0)
-                                tempStats['off_time'].append(sampletime)
+                                tempStats['off_time'].append(0)
                             else:
-                                tempStats['on_time'].append(0)
-                                tempStats['off_time'].append(0)
+                                vectON=[]
+                                vectOFF=[]
+                                for i in range(0,8):
+                                    data= 1 if (col & (1<<int(i)))>0 else 0
+                                    vectON.append(data*sampletime)
+                                    vectOFF.append((not data)*sampletime)
+                                tempStats['mean'].append(0)
+                                tempStats['max'].append(-10000000)
+                                tempStats['min'].append(10000000)
+                                tempStats['on_time'].append(vectON)
+                                tempStats['off_time'].append(vectOFF)
                         else:
                             #tempStats['mean'][k-1]=(tempStats['mean'][k-1]*(tempStats['number']-1)+col)/tempStats['number'] # moving average
                             try:
                                 #logger.debug('COL=' + str(col))
-                                tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'] # moving average
-                                if col>tempStats['max'][k-1]:
-                                    tempStats['max'][k-1]=col
-                                if col<tempStats['min'][k-1]:
-                                    tempStats['min'][k-1]=col
-                                if col==1:
-                                    tempStats['on_time'][k-1]+=sampletime.days*86400+sampletime.seconds
-                                if col==0:
-                                    tempStats['off_time'][k-1]+=sampletime.days*86400+sampletime.seconds
+                                if types[k]=='analog':
+                                    tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'] # moving average
+                                    if col>tempStats['max'][k-1]:
+                                        tempStats['max'][k-1]=col
+                                    if col<tempStats['min'][k-1]:
+                                        tempStats['min'][k-1]=col
+                                elif types[k]=='digital':
+                                    for i in range(0,8):
+                                        data= 1 if (col & (1<<int(i)))>0 else 0
+                                        tempStats['on_time'][k-1][i]+=data*(sampletime.days*86400+sampletime.seconds)
+                                        tempStats['off_time'][k-1][i]+=(not data)*(sampletime.days*86400+sampletime.seconds)
                             except IndexError: # this can happen when some variables are added to a datagram and want to show on a same plot the previous and the new datagram (with more variables)
-                                tempStats['mean'].append(col)
-                                tempStats['max'].append(col)
-                                tempStats['min'].append(col)
-                                if col==1:
-                                    tempStats['on_time'].append(sampletime.days*86400+sampletime.seconds)
-                                    tempStats['off_time'].append(0)
-                                elif col==0:
-                                    tempStats['on_time'].append(0)
-                                    tempStats['off_time'].append(sampletime.days*86400+sampletime.seconds)
+                                if types[k]=='analog':
+                                    tempStats['mean'].append(col)
+                                    tempStats['max'].append(col)
+                                    tempStats['min'].append(col)
+                                    tempStats['on_time'].append(None)
+                                    tempStats['off_time'].append(None)
                                 else:
-                                    tempStats['on_time'].append(0)
-                                    tempStats['off_time'].append(0)
-                                
+                                    tempStats['mean'].append(None)
+                                    tempStats['max'].append(None)
+                                    tempStats['min'].append(None)
+                                    vectON=[]
+                                    vectOFF=[]  
+                                    for i in range(0,8):
+                                        data= 1 if (col & (1<<int(i)))>0 else 0
+                                        vectON.append(data*(sampletime.days*86400+sampletime.seconds))
+                                        vectOFF.append((not data)*(sampletime.days*86400+sampletime.seconds))
+                                    tempStats['on_time'].append(vectON)
+                                    tempStats['off_time'].append(vectOFF)
+
                 k+=1
-            isFirstRow=False
+            
             del temp[0] #removes the column with the original datetimes
             temp.insert(0, fecha)
             tempData.append(temp)
             prevRow=row
+            isFirstRow=False    
          
     chart['rows']=tempData
     chart['statistics']=tempStats
+    #print (str(chart))
     return chart
     
 @login_required
