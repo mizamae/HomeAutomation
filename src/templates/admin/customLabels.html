@@ -1,0 +1,15 @@
+{% extends 'admin/base_site.html' %}
+{% load crispy_forms_tags %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+{% if Status == "RegisteredOK" %}
+	<h1 class="lead"><b>{% trans "Setting up the custom labels for " %} {{ DeviceName }}</b></h1>
+      {% crispy Form %}
+{% elif Status == "FinishedOK" %}
+  	<p class="lead"><font color="green"><b>{% trans "Definition of the custom labels for device " %} {{ DeviceName }} {% trans " finished OK" %}</b></font></p>
+  	<p><a class="btn btn-primary" href="{% url 'admin:index' %}"  role="button">{% trans "Return to Main" %} &raquo;</a></p>
+{% endif %}
+
+
+{% endblock content %}

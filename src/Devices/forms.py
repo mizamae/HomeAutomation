@@ -86,16 +86,16 @@ class DatagramCustomLabelsForm(forms.Form):
                     self.units.append(data['fields'][i].split('_')[-1])
                     fieldName=identifier+'_analogvariable_%s' % i
                     self.fields[fieldName] = forms.CharField(label=field,required=True)
-                    self.fields[fieldName].initial = field
+                    self.fields[fieldName].initial = data['initial_values'][i].replace('_'+self.units[-1],'')
                     self.helper.layout.append(Field(fieldName, css_class='input-sm'))
                 else:
                     self.units.append('bits')
                     fieldName=identifier+'_digitalvariable_%s' % i
                     self.helper.layout.append(HTML("<hr>"))
+                    initial_values=data['initial_values'][i].split('$')
                     for k in range(0,8):
                         self.fields[fieldName+'_bit%s' % k] = forms.CharField(label=field+ ' bit%s' % k,required=True)
-                        self.fields[fieldName+'_bit%s' % k].initial = 'bit%s' % k
-                        #self.helper.layout.append(Field(fieldName+'_bit%s' % k, css_class='col-xs-1'))
+                        self.fields[fieldName+'_bit%s' % k].initial = initial_values[k]
                         self.helper.layout.append(fieldName+'_bit%s' % k)
                     self.helper.layout.append(HTML("<hr>"))
             self.helper.layout.append(HTML("<h2></h2>"))

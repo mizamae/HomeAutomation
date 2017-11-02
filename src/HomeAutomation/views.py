@@ -213,6 +213,62 @@ def ConfDevice(request,code):
            
     return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})  
 
+@login_required
+@user_passes_test(lambda u: u.has_perm('RemoteDevices.add_device'))
+def adminSetCustomLabels(request,connection,devicePK):
+    if request.method == 'POST':
+        DeviceName=request.POST['DeviceName']
+        if connection=='remote':
+            device=RemoteDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
+        elif connection=='local':
+            device=LocalDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
+        datagrams=Devices.models.getDatagramStructure(devicetype=device.Type)
+        datagram_info=[]
+        for datagram in datagrams:
+            data={}
+            if device.CustomLabels=='':
+                data['initial_values']=datagram['names']
+            else:
+                CustomLabels=json.loads(device.CustomLabels)
+                data['initial_values']=CustomLabels[datagram['ID']]
+            data['fields']=datagram['names']
+            data['types']=datagram['types']
+            data['DeviceName']=DeviceName
+            data['ID']=datagram['ID']
+            datagram_info.append(data)
+        form = Devices.forms.DatagramCustomLabelsForm(request.POST,datagram_info=datagram_info)
+        if form.is_valid():
+            DeviceName=form.cleaned_data['DeviceName']
+            CustomLabels=form.get_variablesLabels()
+            device.CustomLabels=json.dumps(CustomLabels)
+            device.save()
+            state='FinishedOK'
+        return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':device.DeviceName.upper(),'Form': form})
+    else:
+        if connection=='remote':
+            selectedItem=RemoteDevices.models.DeviceModel.objects.get(pk=devicePK)
+        elif connection=='local':
+            selectedItem=LocalDevices.models.DeviceModel.objects.get(pk=devicePK)
+            
+        datagrams=Devices.models.getDatagramStructure(devicetype=selectedItem.Type)
+        datagram_info=[]
+        for datagram in datagrams:
+            data={}
+            if selectedItem.CustomLabels=='':
+                data['initial_values']=datagram['names']
+            else:
+                CustomLabels=json.loads(selectedItem.CustomLabels)
+                data['initial_values']=CustomLabels[datagram['ID']]
+                
+            data['fields']=datagram['names']
+            data['types']=datagram['types']
+            data['DeviceName']=selectedItem.DeviceName
+            data['ID']=datagram['ID']
+            datagram_info.append(data)
+            
+        form=Devices.forms.DatagramCustomLabelsForm(None,datagram_info=datagram_info)
+        state='RegisteredOK'
+        return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':selectedItem.DeviceName.upper(),'Form': form})
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_report'))
