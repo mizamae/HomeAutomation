@@ -14,3 +14,9 @@ sudo systemctl restart daphne gunicorn worker
 SETUP THE TIMEZONE FOR THE RASPBERRY:
 sudo dpkg-reconfigure tzdata
 sudo service cron restart
+
+WHEN THE CLOCK IS NOT SYNCH
+sudo /etc/init.d/ntp stop
+sudo ntpd -q -g
+sudo /etc/init.d/ntp start
+
