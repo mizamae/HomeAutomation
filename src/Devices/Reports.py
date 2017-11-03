@@ -93,6 +93,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             except:
                 extrapolate=''
                 datatype=''
+            
             variable=col['name']
             table=col['table']
             if aggregation!=0 and extrapolate!='keepPrevious':
@@ -121,6 +122,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             tempStats['num_rows']=0
             table=col['table']
             variable=col['name']
+                
             bitPos=col['bitPos']
             
             try:
@@ -203,7 +205,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                                 else:
                                     tempY[i][columnNumber]=data
                                 
-                            elif i>0 and i<len(tempX)-1:
+                            elif i>0 and x>localdate:
                                 num_items+=1
                                 tempY.insert(i,newRow[:])
                                 tempY[i][columnNumber]=data
@@ -225,7 +227,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                     isFirstRow=False
                     prevRow=row
             else:
-                sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" ORDER BY timestamp DESC LIMIT 1'
+                sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" ORDER BY timestamp DESC LIMIT 1'
                 row=AppDB.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
                 if row != None:
                     if extrapolate=='keepPrevious':

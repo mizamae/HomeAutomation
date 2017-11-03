@@ -12,12 +12,16 @@ import Devices.BBDD
 import logging
 logger = logging.getLogger("project")
 
-registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
                                            
 class MainDeviceVarModel(models.Model):
+    DATATYPE_CHOICES=(
+        (0,_('Float')),
+        (1,_('Integer'))
+    )
+    
     Label = models.CharField(max_length=50,primary_key=True)
     Value = models.DecimalField(max_digits=6, decimal_places=2)
+    Datatype=models.PositiveSmallIntegerField(choices=DATATYPE_CHOICES,default=0)
     Units = models.CharField(max_length=10)
     
     __original_Value = None
@@ -31,9 +35,11 @@ class MainDeviceVarModel(models.Model):
         
     def save(self, *args, **kwargs):
         if self.Value != self.__original_Value and self.__original_Value != '':
-             timestamp=timezone.now() #para hora con info UTC
-             registerDB.insert_event(TimeStamp=timestamp,Sender='pre_save',DeviceName=self.Label,EventType=registerDB.EVENT_TYPES['VAR_CHANGE'],value=self.__original_Value)
-             logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
+            registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+            timestamp=timezone.now()-datetime.timedelta(seconds=1) #para hora con info UTC
+            registerDB.insert_VARs_register(TimeStamp=timestamp)
+            logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
         self.__original_Value = self.Value
         super(MainDeviceVarModel, self).save(*args, **kwargs)
         
@@ -44,97 +50,128 @@ class MainDeviceVarModel(models.Model):
 @receiver(post_save, sender=MainDeviceVarModel, dispatch_uid="update_MainDeviceVarModel")
 def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
     timestamp=timezone.now() #para hora con info UTC
+    registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     
     if not kwargs['created']:   # an instance has been modified
         logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
+        registerDB.check_IOsTables()
     
-    registerDB.insert_event(TimeStamp=timestamp,Sender='post_save',DeviceName=instance.Label,EventType=registerDB.EVENT_TYPES['VAR_CHANGE'],value=instance.Value)
+    registerDB.insert_VARs_register(TimeStamp=timestamp)
+    
+class MainDeviceVarWeeklyScheduleModel(models.Model):
+    Label = models.CharField(max_length=50)
+    Active = models.BooleanField(default=False)
+    Var = models.ForeignKey(MainDeviceVarModel,on_delete=models.CASCADE)
+    LValue = models.DecimalField(max_digits=6, decimal_places=2)
+    HValue = models.DecimalField(max_digits=6, decimal_places=2)
+    
+    Days = models.ManyToManyField('HomeAutomation.inlineDaily',blank=True)
+    
+    def get_formset(self):
+        from django.forms import inlineformset_factory
+        MainDeviceVarWeeklyScheduleFormset = inlineformset_factory (MainDeviceVarDailyScheduleModel,MainDeviceVarWeeklyScheduleModel,fk_name)
+    
+    class Meta:
+        verbose_name = _('Main device var weekly schedule')
+        verbose_name_plural = _('Main device var weekly schedules') 
+        unique_together = (('Label', 'Var'))
 
-## THE AUTOMATION AND SCHEDULING OF THE VARS SHOULD BE IMPLEMENTED
+@receiver(post_save, sender=MainDeviceVarWeeklyScheduleModel, dispatch_uid="update_MainDeviceVarWeeklyScheduleModel")
+def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kwargs):
+    timestamp=timezone.now() #para hora con info UTC
     
-# class MainDeviceVarWeeklyScheduleModel(models.Model):
-    # Label = models.CharField(max_length=50)
-    # Active = models.BooleanField(default=False)
-    # Var = models.ForeignKey(MainDeviceVarModel,on_delete=models.CASCADE)
-    # LValue = models.DecimalField(max_digits=6, decimal_places=2)
-    # HValue = models.DecimalField(max_digits=6, decimal_places=2)
+    if not kwargs['created']:   # an instance has been modified
+        logger.info('Se ha modificado la planificacion semanal ' + str(instance.Label))
+    else:
+        logger.info('Se ha creado la planificacion semanal ' + str(instance.Label))
     
-    # Day1 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
-    # Day2 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
-    # Day3 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
-    # Day4 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
-    # Day5 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
-    # Day6 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
-    # Day7 = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel',blank=True)
+    if instance.Active:
+        logger.info('Se ha activado la planificacion semanal ' + str(instance.Label) + ' para la variable ' + str(instance.Var))
+        schedules=MainDeviceVarWeeklyScheduleModel.objects.filter(Var=instance.Var)
+        for schedule in schedules:
+            if schedule.Var!=instance.Var or schedule.Label!=instance.Label:
+                schedule.Active=False
+                schedule.save()
+        checkHourlySchedules()
     
-    # def get_formset(self):
-        # from django.forms import inlineformset_factory
-        # MainDeviceVarWeeklyScheduleFormset = inlineformset_factory (MainDeviceVarDailyScheduleModel,MainDeviceVarWeeklyScheduleModel,fk_name)
-    
-    # class Meta:
-        # verbose_name = _('Main device var weekly schedule')
-        # verbose_name_plural = _('Main device var weekly schedules') 
-        # unique_together = ('Label', 'Var')
+def checkHourlySchedules():
+    schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
+    timestamp=datetime.datetime.now()
+    weekDay=timestamp.weekday()
+    hour=timestamp.hour
+    for schedule in schedules:
+        if schedule.Active:
+            dailySchedules=schedule.inlinedaily_set.all()
+            for daily in dailySchedules:
+                if daily.Day==weekDay:
+                    Setpoint=getattr(daily,'Hour'+str(hour))
+                    if Setpoint==0:
+                        schedule.Var.Value=schedule.LValue
+                    else:
+                        schedule.Var.Value=schedule.HValue
+                    schedule.Var.save()
 
-# class MainDeviceVarDailyScheduleModel(models.Model):
-    # STATE_CHOICES=(
-        # (0,_('LOW')),
-        # (1,_('HIGH'))
-    # )
-    # WEEKDAYS = (
-      # (1, _("Monday")),
-      # (2, _("Tuesday")),
-      # (3, _("Wednesday")),
-      # (4, _("Thursday")),
-      # (5, _("Friday")),
-      # (6, _("Saturday")),
-      # (7, _("Sunday")),
-    # )
-
-    # Day = models.PositiveSmallIntegerField(choices=WEEKDAYS)
-    # WeeklySchedule = models.ForeignKey(MainDeviceVarWeeklyScheduleModel, on_delete=models.CASCADE)
+class inlineDaily(models.Model):
+    WEEKDAYS = (
+      (0, _("Monday")),
+      (1, _("Tuesday")),
+      (2, _("Wednesday")),
+      (3, _("Thursday")),
+      (4, _("Friday")),
+      (5, _("Saturday")),
+      (6, _("Sunday")),
+    )
+    STATE_CHOICES=(
+        (0,_('LOW')),
+        (1,_('HIGH'))
+    )
+    Day = models.PositiveSmallIntegerField(choices=WEEKDAYS)
+    Weekly = models.ForeignKey(MainDeviceVarWeeklyScheduleModel, on_delete=models.CASCADE)
+#     Daily = models.ForeignKey('HomeAutomation.MainDeviceVarDailyScheduleModel', on_delete=models.CASCADE)
+    Hour0 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour1 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour2 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour3 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour4 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour5 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour6 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour7 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour8 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour9 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour10 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour11 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour12 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour13 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour14 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour15 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour16 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour17 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour18 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour19 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour20 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour21 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour22 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour23 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
     
-    # Hour0 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour1 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour2 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour3 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour4 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour5 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour6 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour7 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour8 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour9 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour10 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour11 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour12 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour13 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour14 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour15 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour16 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour17 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour18 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour19 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour20 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour21 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour22 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
-    # Hour23 = models.PositiveSmallIntegerField(choices=STATE_CHOICES)
+    def __str__(self):
+        return self.get_Day_display()
     
-    # class Meta:
-        # unique_together = ('Day', 'WeeklySchedule')
-        # verbose_name = _('Main device var hourly schedule')
-        # verbose_name_plural = _('Main device var hourly schedules')
-        
+    class Meta:
+        unique_together = ('Day', 'Weekly')
+        verbose_name = _('Main device var hourly schedule')
+        verbose_name_plural = _('Main device var hourly schedules')
     
-# class AutomationRuleModel(models.Model):
-    # Identifier = models.CharField(max_length=50,primary_key=True)
-    # Expression = models.CharField(max_length=100)
-    # FrequencyCheck=models.DurationField(default=datetime.timedelta(minutes=10))   
+class AutomationRuleModel(models.Model):
+    Identifier = models.CharField(max_length=50,primary_key=True)
+    Expression = models.CharField(max_length=100)
+    FrequencyCheck=models.DurationField(default=datetime.timedelta(minutes=10))   
     
-    # def __str__(self):
-        # return self.Identifier
+    def __str__(self):
+        return self.Identifier
     
-    # class Meta:
-        # verbose_name = _('Automation rule')
-        # verbose_name_plural = _('Automation rules')
+    class Meta:
+        verbose_name = _('Automation rule')
+        verbose_name_plural = _('Automation rules')

@@ -31,6 +31,7 @@ import Devices.forms
 import Devices.models
 import Master_GPIOs.models
 import RemoteDevices.models
+import HomeAutomation.models
 
 import LocalDevices.models
 
@@ -331,6 +332,7 @@ def reportbuilder(request,number=0):
         LDVs=LocalDevices.models.DeviceModel.objects.all()
         DVs=[RDVs,LDVs]
         IOs=Master_GPIOs.models.IOmodel.objects.all()
+        MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
         tempvars=[]
         if len(IOs)>0:
             for IO in IOs:
@@ -340,10 +342,18 @@ def reportbuilder(request,number=0):
                     else:
                         table='outputs'
                     tempvars.append({'device':'Main','table':table,'tag':str(IO.pin),# this is to tell the template that it is a boolean value
-                                    'bitText':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})
+                                    'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})
                                     
             info.append({'deviceName':'Main','variables':tempvars})
-                
+        tempvars=[]
+        if len(MainVars)>0:
+            for VAR in MainVars:
+                table='MainVariables'
+                tempvars.append({'device':'Main','table':table,'tag':str(VAR.pk),# this is to tell the template that it is a boolean value
+                                'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog'})
+                                    
+            info.append({'deviceName':'Main','variables':tempvars})
+            
         for device in itertools.chain(*DVs):    # device[0]= DeviceName, device[1]=DeviceType  
             DEVICE_TYPE=str(device.Type.Code)
             #xmlroot = ET.parse(Devices.GlobalVars.XML_CONFFILE_PATH).getroot()
@@ -353,31 +363,38 @@ def reportbuilder(request,number=0):
             tempvars=[]
             for datagram in datagrams: 
                 table=device.DeviceName+'_'+datagram['ID']
-                #logger.info(str(datagram))
-                for i,var in enumerate(datagram['names']):                     
-                    bits='' 
+                labels=[]
+                if device.CustomLabels!='':
+                    CustomLabels=json.loads(device.CustomLabels)
+                    labels=CustomLabels[datagram['ID']]
+                    Labeliterable=labels
+                else:
+                    Labeliterable=datagram['names']
+                for i,var in enumerate(Labeliterable):                     
+                    CustomLabel='' 
                     #logger.debug(str(datagram))
                     type=datagram['types'][i]
                     if type=='digital':                                 
                         #logger.info(str(cell))                           
                         if str(var).find('$')>=0:
                             try:
-                                bits=str(var).split('_')[-1].split('$')
+                                CustomLabel=str(var).split('_')[-1].split('$')
                             except:
-                                bits=''
+                                CustomLabel=''
                             #logger.debug(str(bits))
                             pos=str(var).lower().find('_bits')
                             var=var[0:pos+5]
+                    else:
+                        CustomLabel=var
                             #logger.info(str(var))
                     if (str(var).lower()!='spare') and (str(var).lower()!='timestamp'):                                       
-                        tempvars.append({'device':device.DeviceName,'table':table,'tag':var,'type':type,'bitText':bits,'extrapolate':''})
+                        tempvars.append({'device':device.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,'extrapolate':''})
             info.append({'deviceName':device.DeviceName,'variables':tempvars})
         
         #logger.debug(info)       
         return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps(info)})    
     
-    return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps({'Error':'Database is not reachable'})})    
-
+    return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps({'Error':'Database is not reachable'})})   
 @login_required    
 def device_report(request):
      
@@ -442,6 +459,7 @@ def device_report(request):
             else:
                 logger.info('The device is the Main Unit')
                 IOs=Master_GPIOs.models.IOmodel.objects.all()
+                MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
                 if len(IOs)>0:
                     for table in ('inputs','outputs'):
                         if table=='inputs':
@@ -463,9 +481,27 @@ def device_report(request):
                          
                         chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
                          
-                        logger.debug(json.dumps(chart))    
-                         
-                        charts.append(chart) 
+                        #logger.debug(json.dumps(chart))    
+                        charts.append(chart)
+                if len(MainVars)>0:
+                    table='MainVariables'
+                    names=[]
+                    types=[]
+                    labels=[]
+                    for Var in MainVars:
+                        names.append(Var.pk)
+                        types.append('analog')
+                        labels.append(Var.Label)
+                    
+                    names.insert(0,'timestamp')
+                    types.insert(0,'datetime')
+                    labels.insert(0,'timestamp')
+                     
+                    chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
+                     
+                    #logger.debug(json.dumps(chart))    
+                     
+                    charts.append(chart) 
             return render(request, 'DeviceGraph.html', {'devicename':devicename.replace('_',' '),'chart': json.dumps(charts),'Form':form_clean})
         else:
             return render(request, 'DeviceGraph.html',{'Form': form})
@@ -484,7 +520,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
     tempname=[]
     vars=''
     for name,type,label in zip(names,types,labels):
-        logger.info(str(name))
+        #logger.info(str(name))
         vars+='"'+name+'"'+','
         if type=='analog':
             tempname.append({'label':label,'type':type})
@@ -504,7 +540,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
     data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
     
     tempData=[]
-    tempStats={'number':5,'num_rows':0,'mean':[],'max':[],'min':[],'on_time':[],'off_time':[]}
+    tempStats={'number':5,'num_rows':[],'mean':[],'max':[],'min':[],'on_time':[],'off_time':[]}
     isFirstRow=True
     
     local_tz=get_localzone()
@@ -581,13 +617,6 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
             row_ini[0]=fromDate.replace(tzinfo=None)
             data_rows.insert(0,tuple(row_ini)) # introduces in the first position a row dated in fromDate with the values of the first real register
             row_ini=data_rows[1]
-#             i=2
-#             for row in data_rows[2:]:
-#                 row_insert=list(row_ini)
-#                 row_insert[0]=row[0]-timezone.timedelta(seconds=1)
-#                 data_rows.insert(i,tuple(row_insert)) # introduces one row with the previous row values 1 sec before the new data to obtain square-shaped graph
-#                 i+=2
-#                 row_ini=row
             row_ini=list(data_rows[len(data_rows)-1])
             row_ini[0]=toDate.replace(tzinfo=None)
             data_rows.append(tuple(row_ini)) # introduces in the last position a row dated in toDate with the values of the last real register
@@ -600,8 +629,8 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
             #logger.info(str(fecha))      
             if isFirstRow==False:
                 sampletime=row[0]-prevRow[0]
-            if row[-1]!=None:
-                tempStats['num_rows']+=1
+#             if row[-1]!=None:
+#                 tempStats['num_rows']+=1
             k=0
             for col in row:
                 if col=='':
@@ -625,6 +654,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
                                 tempStats['mean'].append(col)
                                 tempStats['max'].append(col)
                                 tempStats['min'].append(col)
+                                tempStats['num_rows'].append(0)
                                 tempStats['on_time'].append(0)
                                 tempStats['off_time'].append(0)
                             else:
@@ -642,9 +672,10 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
                         else:
                             #tempStats['mean'][k-1]=(tempStats['mean'][k-1]*(tempStats['number']-1)+col)/tempStats['number'] # moving average
                             try:
+                                tempStats['num_rows'][k-1]+=1
                                 #logger.debug('COL=' + str(col))
                                 if types[k]=='analog':
-                                    tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'] # moving average
+                                    tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'][k-1] # moving average
                                     if col>tempStats['max'][k-1]:
                                         tempStats['max'][k-1]=col
                                     if col<tempStats['min'][k-1]:
@@ -659,6 +690,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
                                     tempStats['mean'].append(col)
                                     tempStats['max'].append(col)
                                     tempStats['min'].append(col)
+                                    tempStats['num_rows'].append(0)
                                     tempStats['on_time'].append(None)
                                     tempStats['off_time'].append(None)
                                 else:
@@ -722,10 +754,11 @@ def asynchronous_datagram(request):
             timestamp=timezone.now()  
             deviceCode=datagram[0]
             datagramCode=datagram[1]
-            datagramId=applicationDBs.devicesDB.get_datagramID(datagramCode=datagramCode)[0]
-            deviceName=applicationDBs.devicesDB.get_devicename(DeviceCode=deviceCode)[0]
+            device=RemoteDevices.models.DeviceModel.objects.get(DeviceCode=deviceCode)
+            datagramModel=Devices.models.DatagramModel.objects.filter(DeviceType=device.Type).filter(Code=int(datagramCode))[0]
             del datagram[0:2]
-            applicationDBs.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=deviceName, DatagramId=datagramId, 
+            if device!=None and datagramModel!=None:
+                applicationDBs.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=device.DeviceName, DatagramId=datagramModel.Identifier, 
                                               year=timestamp.year, values=datagram)
 
         else:

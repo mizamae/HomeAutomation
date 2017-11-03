@@ -10,7 +10,7 @@ from django.views import generic
 from django.forms import ModelForm
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
+from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
 
 import HomeAutomation.models
 
@@ -45,4 +45,19 @@ class MainDeviceVarForm(ModelForm):
         model = HomeAutomation.models.MainDeviceVarModel
         fields=['Label','Value','Units']
 
-
+class inlineDailyForm(ModelForm):  
+    def __init__(self, *args, **kwargs):
+        super(inlineDailyForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            if field.find('Hour')>=0:
+                self.fields[field].label=field.replace('Hour','') + ' H'
+        
+    def clean(self):
+        cleaned_data=super().clean() # to use the validation of the fields from the model
+        return cleaned_data
+    
+    class Meta:
+        model = HomeAutomation.models.inlineDaily
+        fields=['Day','Hour0','Hour1','Hour2','Hour3','Hour4','Hour5','Hour6','Hour7','Hour8','Hour9','Hour10'
+                ,'Hour11','Hour12','Hour13','Hour14','Hour15','Hour16','Hour17','Hour18','Hour19','Hour20','Hour21','Hour22','Hour23']
+        

@@ -13,6 +13,7 @@ import Devices.models
 import RemoteDevices.models
 import LocalDevices.models
 import Master_GPIOs.models
+import HomeAutomation.models
 import sqlite3 as dbapi
 import xml.etree.ElementTree as ET
 
@@ -309,6 +310,14 @@ class RegistersDatabase(Database):
                                 ); 
                                 '''  # the * will be replaced by the column names and $ by inputs or outputs
     SQLinsertIOs_statement = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
+    SQL_createMainVARs_table = ''' 
+                                CREATE TABLE IF NOT EXISTS $ (
+                                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    *
+                                    UNIQUE (timestamp)                    
+                                ); 
+                                '''  # the * will be replaced by the column names and $ by inputs or outputs
+    SQLinsertMainVARs_statement = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
                                  
     def __init__(self,location):
         super().__init__(location=location) # to execute the parent's constructor
@@ -371,6 +380,30 @@ class RegistersDatabase(Database):
         except:
             print ("Unexpected error in create_ios_table:", sys.exc_info()[1])
             logger.error ("Unexpected error in create_ios_table:"+ str(sys.exc_info()[1]))
+            
+    def create_mainVars_table(self,VARs,table_name='"MainVariables"'):
+        """
+        Creates the table corresponding to the variables defined in the Main unit
+        :param IOs: is a vector of strings with the names of the IOs
+        :param table_name: should be 'inputs' or 'outputs' 
+        """
+        if table_name.find('"')<0:
+            table_name='"'+table_name+'"'
+            
+        try:
+            if len(VARs)>0: 
+                temp_string=''
+                fieldType='float'
+                for VAR in VARs:
+                    temp_string+='"'+str(VAR) + '" ' + fieldType + ','
+                sql=self.SQL_createIOs_table.replace('*',temp_string).replace('$',table_name)
+                logger.info('SQL: ' + sql)
+                super().create_table(SQLstatement=sql)
+            else:
+                logger.info('Table '+table_name+' was not created because no Vars were defined.')
+        except:
+            print ("Unexpected error in create_mainVars_table:", sys.exc_info()[1])
+            logger.error ("Unexpected error in create_mainVars_table:"+ str(sys.exc_info()[1]))
     
 class DIY4dot0_Databases(object):
     EVENT_TYPES={
@@ -476,6 +509,29 @@ class DIY4dot0_Databases(object):
             else:
                 self.check_columns_registersDB(table='outputs',datagram=outputs)
                 
+        VARs=HomeAutomation.models.MainDeviceVarModel.objects.all()
+        vars={}
+        vars['names']=[]
+        vars['types']=[]
+        vars['datatypes']=[]
+        
+        for VAR in VARs:
+            vars['names'].append(str(VAR.pk))
+            vars['datatypes'].append('float')
+                
+        if len(vars['names'])>0:
+            table_to_find='MainVariables'
+            found=False
+            for row in rows:
+                if (row[1]==table_to_find):   # there is a table named inputs
+                    found=True
+                    break
+            if found is not True:
+                self.registersDB.create_mainVars_table(VARs=vars['names'])
+                logger.info('The table '+table_to_find+' was not created.') 
+            else:
+                self.check_columns_registersDB(table=table_to_find,datagram=vars)
+                
     def check_registersDB(self):
         
         rows=self.registersDB.retrieve_DB_structure(fields='*')   #('table', 'devices', 'devices', 4, "CREATE TABLE devices...)
@@ -567,7 +623,29 @@ class DIY4dot0_Databases(object):
             #fieldNames=[]
             datagramID=datagram['ID']
             self.create_single_registers_table(DeviceType=DeviceType,DatagramID=datagramID,DeviceName=DeviceName)
-       
+   
+    def insert_VARs_register(self,TimeStamp):
+
+        try:
+            VARs=HomeAutomation.models.MainDeviceVarModel.objects.all()
+            values=[TimeStamp]
+            valuesHolder='?,'
+            columns='timestamp,'
+            for VAR in VARs:
+                values.append(VAR.Value)
+                columns+='"'+str(VAR.pk)+'",'
+                valuesHolder+='?,'
+            columns=columns[:-1]
+            valuesHolder=valuesHolder[:-1]
+            table='MainVariables'
+                
+            sql=self.registersDB.SQLinsertMainVARs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
+            #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
+            #logger.info('SQL: ' + sql)
+            self.registersDB.insert_row(SQL_statement=sql, row_values=values)
+        except:
+            logger.error("Unexpected error in insert_MainVariables_register:" + str(sys.exc_info()[1]))
+            
     def insert_IOs_register(self,TimeStamp,direction):
         ''' direction == 'IN' for inputs
         '''

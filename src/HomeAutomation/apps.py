@@ -31,6 +31,7 @@ class HomeAutomationConfig(AppConfig):
                 import HomeAutomation.tasks
                 HomeAutomation.tasks.start_registersDBcompactingTask()
                 HomeAutomation.tasks.start_reportsGenerationTask()
+                HomeAutomation.tasks.start_HourlyTask()
                 logger.info('Initializing management tasks on the process ' + str(os.getpid()))
             
         

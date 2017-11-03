@@ -63,3 +63,18 @@ def start_reportsGenerationTask():
         scheduler.start()
     except:
         pass
+
+def HourlyTask():
+    logger.info('Checking hourly tasks...')
+    HomeAutomation.models.checkHourlySchedules()
+    pass
+
+def start_HourlyTask():
+    '''THIS TASK IS RUN EVERY HOUR.
+    '''
+    logger.info('Hourly task is added to scheduler on the process '+ str(os.getpid())) 
+    scheduler.add_job(func=HourlyTask,trigger='cron',id='HourlyTask',minute=0)
+    try:
+        scheduler.start()
+    except:
+        pass
