@@ -12,13 +12,13 @@ Welcome to HomeAutomation!
     git branch <branch-name>
     
 ## Implement the modifications
-    ### Integrate all the changes in the stage
+### Integrate all the changes in the stage
     
-        git add . 
+    git add . 
         
-    ### Commit to backup the progress
+### Commit to backup the progress
     
-        git commit
+    git commit
         
 ## When properly finished, checkout to the master branch
 
