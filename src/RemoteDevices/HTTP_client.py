@@ -1,3 +1,8 @@
+# HTTP CUSTOM ERROR CODES
+# - 800: The device responded with a different DeviceCode than the one expected
+# - 801: Error in the format of the datagram received
+# - 802: The device did not respond within the timeout margin default 1 sec)
+
 from django.utils import timezone
 import datetime
 import logging
@@ -17,9 +22,6 @@ import xml.etree.ElementTree as ET
 
 
 logger = logging.getLogger("project")
-
-# server='http://127.0.0.1'
-# webpage='index.htm'
 
 class HTTP_requests():
     def __init__(self,server,year=''):
@@ -151,26 +153,47 @@ class HTTP_requests():
                     #logger.info('The device responded:' + str(datagram))
                     if int(deviceCode)==DeviceCode:
                         del datagram[0:2]
+                        DV.Error=''
                         if writeToDB:
                             self.AppDB.check_registersDB()
                             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=deviceName, DatagramId=DatagramId, 
                                                               year=timestamp.year, values=datagram,NULL=False)
                             DV.LastUpdated=timestamp
-                            DV.save(update_fields=["LastUpdated"])
+                            DV.DeviceHTTPCode=r.status_code
+                            DV.save(update_fields=["LastUpdated","DeviceHTTPCode","Error"])
                             RemoteDevices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
                             return
                         else:
+                            if DV.DeviceHTTPCode!=200:
+                                DV.DeviceHTTPCode=r.status_code
+                                DV.save(update_fields=["DeviceHTTPCode","Error"])
                             return datagram
                     else:
+                        if DV.DeviceHTTPCode!=800:
+                            DV.DeviceHTTPCode=800
+                            DV.Error='The device responded with a different DeviceCode than the one expected'
+                            DV.save(update_fields=["DeviceHTTPCode","Error"])
                         logger.warning('The device responded with a different code. Expecting DeviceCode=' + str(DeviceCode)+' and the code ' 
                               + str(deviceCode) +' was received')
                 else:
+                    if DV.DeviceHTTPCode!=801:
+                        DV.DeviceHTTPCode=801
+                        DV.Error='Error in the format of the datagram received'
+                        DV.save(update_fields=["DeviceHTTPCode","Error"])
                     RemoteDevices.signals.Device_datagram_format_error.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
             else:
+                if DV.DeviceHTTPCode!=r.status_code:
+                    DV.DeviceHTTPCode=r.status_code
+                    DV.Error=_('Error ' + str(r.status_code))
+                    DV.save(update_fields=["DeviceHTTPCode","Error"])
                 RemoteDevices.signals.Device_datagram_exception.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,HTMLCode=r.status_code)
         except:
             
-            if str(sys.exc_info()[0]).find('requests.exceptions.ConnectTimeout')>=0:
+            if str(sys.exc_info()[0]).find('ConnectTimeout')>=0:
+                if DV.DeviceHTTPCode!=802:
+                    DV.DeviceHTTPCode=802
+                    DV.Error="The device did not respond within the timeout margin (default 1 sec)"
+                    DV.save(update_fields=["DeviceHTTPCode","Error"])
                 RemoteDevices.signals.Device_datagram_timeout.send(sender=None, DeviceIP=self.server,DeviceName=deviceName,DatagramId=DatagramId)
             else:
                 logger.error ("Unexpected error in request_datagram:" + str(sys.exc_info()[1]))

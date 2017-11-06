@@ -77,10 +77,10 @@
 		        	{% endif %}
 		        	</td>
 		        {% elif device.DeviceState == "RUNNING" %} 
-		        	{% if device.DeviceHTTPCode == 0 %}
+		        	{% if device.DeviceHTTPCode == 200 %}
 		        	<td data-title="Device state" bgcolor="#00FF00">{{ device.DeviceState }}</td>
 		        	{% else %}
-		        	<td data-title="Device state" bgcolor="#FACC2E">{{ device.DeviceState }}</td>
+		        	<td data-title="Device state" bgcolor="#FACC2E">{{ device.DeviceState }} <b><font color="red">{% trans " Error: " %} {{ device.DeviceHTTPCode }}</font></b></td>
 		        	{% endif %}
 		        	<td>
 					{% if perms.RemoteDevices.change_state %}
@@ -154,10 +154,10 @@
 		        	{% endif %}
 		        	</td>
 		        {% elif device.DeviceState == "RUNNING" %} 
-		        	{% if device.DeviceHTTPCode == 0 %}
+		        	{% if device.Connected %}
 		        	<td data-title="Device state" bgcolor="#00FF00">{{ device.DeviceState }}</td>
 		        	{% else %}
-		        	<td data-title="Device state" bgcolor="#FACC2E">{{ device.DeviceState }}</td>
+		        	<td data-title="Device state" bgcolor="#FACC2E">{{ device.DeviceState }} {% trans " Error " %}</td>
 		        	{% endif %}
 		        	<td>
 					{% if perms.LocalDevices.change_state %}
