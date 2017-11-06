@@ -21,11 +21,11 @@ This project has the following basic apps:
 
 Eventhough it may seem that the main objective of this project is to gather information about habits, daily patterns, etc, actually it is not. The main and initial objective of the project was diving into Python. One thing took to another and finally this project was raised. If one decides to accept the challenge of getting involved in this project (as a developer or a power-user), he/she will gain expertise and knowledge in the follwoing fields:
 
-* Programming in Python
-* Programming in JavaScript
-* Programming HTML & CSS
+* Programming in Python (40%)
+* Programming in JavaScript (20%)
+* Programming HTML & CSS (30%)
 * Hints on Linux OS
-* Programming C++ for Arduino
+* Programming C++ for Arduino (10%)
 
 ## Project roadmap
 
