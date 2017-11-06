@@ -395,6 +395,7 @@ def reportbuilder(request,number=0):
         return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps(info)})    
     
     return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps({'Error':'Database is not reachable'})})   
+
 @login_required    
 def device_report(request):
      
@@ -428,13 +429,12 @@ def device_report(request):
             charts=[]
             if DV!='MainUnit':  # a device is selected
                 DEVICE_TYPE=DV.Type.Code
-                logger.info('The device is a '+DEVICE_TYPE)
-                sampletime=DV.Sampletime
                 datagrams=Devices.models.getDatagramStructure(devicetype=DEVICE_TYPE)
                 if len(datagrams)>=1:
                     i=0
                     for datagram_info in datagrams:
                         datagramID=datagram_info['ID']
+                        sampletime=datagram_info['sample']*DV.Sampletime
                         labels=[]
                         if DV.CustomLabels!='':
                             CustomLabels=json.loads(DV.CustomLabels)
@@ -457,7 +457,6 @@ def device_report(request):
                          
                         charts.append(chart)                                           
             else:
-                logger.info('The device is the Main Unit')
                 IOs=Master_GPIOs.models.IOmodel.objects.all()
                 MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
                 if len(IOs)>0:
@@ -499,7 +498,7 @@ def device_report(request):
                      
                     chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
                      
-                    #logger.debug(json.dumps(chart))    
+                    logger.debug(json.dumps(chart))    
                      
                     charts.append(chart) 
             return render(request, 'DeviceGraph.html', {'devicename':devicename.replace('_',' '),'chart': json.dumps(charts),'Form':form_clean})
@@ -576,7 +575,9 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
                             data.append(None)
                     temp.append(data)
         now = timezone.now()
-        fecha={'v':'Date('+str(fromDate.year)+','+str(fromDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(fromDate.day)+','+str(0)+','+str(0)+','+str(1)+')'}
+        localdate = fromDate
+        localdate=localdate+localdate.utcoffset() 
+        fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-Devices.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(1)+')'}
         del temp[0] #removes the column with the original datetimes
         temp.insert(0, fecha)
         tempData.append(temp)
