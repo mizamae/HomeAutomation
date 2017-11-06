@@ -2,6 +2,7 @@ import logging
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 
+import HomeAutomation.models
 import Devices.GlobalVars
 import Devices.BBDD
 

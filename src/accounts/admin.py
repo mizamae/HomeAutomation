@@ -100,7 +100,7 @@ class MainDeviceVarModelAdmin(admin.ModelAdmin):
     def printValue(self,instance):
         return str(instance.Value)+' '+instance.Units
     
-    printValue.short_description = _("Value")
+    printValue.short_description = _("Current value")
     
     list_display = ('Label','printValue')
     form = MainDeviceVarForm
@@ -138,17 +138,36 @@ class inlineDailyAdmin(admin.TabularInline):
     #readonly_fields=('Day',)
     
 class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
-    #filter_horizontal = ('AnItems','DgItems')
     actions=['setAsActive']
-    list_display = ('Label','Active','Var')
+    list_display = ('Label','Active','Var','printValue','printSetpoint')
     ordering=('-Active','Label')
     inlines = (inlineDailyAdmin,)
     exclude = ('Days',)
     
-    def save_model(self, request, obj, form, change):
-        super(MainDeviceVarWeeklyScheduleModelAdmin, self).save_model(request, obj, form, change)
-        for day in obj.inlinedaily_set.all():
-            day.save()
+    def printValue(self,instance):
+        return str(instance.Var.Value)+' '+instance.Var.Units
+    printValue.short_description = _("Current value")
+    
+    def printSetpoint(self,instance):
+        import datetime
+        timestamp=datetime.datetime.now()
+        weekDay=timestamp.weekday()
+        hour=timestamp.hour
+        dailySchedules=instance.inlinedaily_set.all()
+        for daily in dailySchedules:
+            if daily.Day==weekDay:
+                Setpoint=getattr(daily,'Hour'+str(hour))
+                if Setpoint==0:
+                    return str(instance.LValue)+' '+instance.Var.Units
+                else:
+                    return str(instance.HValue)+' '+instance.Var.Units
+    printSetpoint.short_description = _("Current setpoint")
+    
+    def save_related(self, request, form, formsets, change):
+        super(MainDeviceVarWeeklyScheduleModelAdmin, self).save_related(request, form, formsets, change)
+        if change:
+            from HomeAutomation.models import checkHourlySchedules
+            checkHourlySchedules()
     
     def setAsActive(self,request, queryset):
         devices_selected=queryset.count()

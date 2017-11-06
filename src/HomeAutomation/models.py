@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 import datetime
+import sys
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
@@ -10,6 +11,7 @@ import Devices.GlobalVars
 import Devices.BBDD
 
 import logging
+
 logger = logging.getLogger("project")
 
                                            
@@ -69,7 +71,7 @@ class MainDeviceVarWeeklyScheduleModel(models.Model):
     HValue = models.DecimalField(max_digits=6, decimal_places=2)
     
     Days = models.ManyToManyField('HomeAutomation.inlineDaily',blank=True)
-    
+        
     def get_formset(self):
         from django.forms import inlineformset_factory
         MainDeviceVarWeeklyScheduleFormset = inlineformset_factory (MainDeviceVarDailyScheduleModel,MainDeviceVarWeeklyScheduleModel,fk_name)
@@ -98,6 +100,7 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
         checkHourlySchedules()
     
 def checkHourlySchedules():
+    logger.info('Checking hourly schedules')
     schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
     timestamp=datetime.datetime.now()
     weekDay=timestamp.weekday()
@@ -109,10 +112,13 @@ def checkHourlySchedules():
                 if daily.Day==weekDay:
                     Setpoint=getattr(daily,'Hour'+str(hour))
                     if Setpoint==0:
-                        schedule.Var.Value=schedule.LValue
+                        Value=schedule.LValue
                     else:
-                        schedule.Var.Value=schedule.HValue
-                    schedule.Var.save()
+                        Value=schedule.HValue
+                    variable=MainDeviceVarModel.objects.get(Label=schedule.Var.Label)
+                    if variable.Value!=Value:
+                        variable.Value=Value
+                        variable.save()
 
 class inlineDaily(models.Model):
     WEEKDAYS = (
