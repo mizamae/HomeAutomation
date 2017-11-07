@@ -243,6 +243,7 @@ def adminSetCustomLabels(request,connection,devicePK):
             CustomLabels=form.get_variablesLabels()
             device.CustomLabels=json.dumps(CustomLabels)
             device.save()
+            device.updateAutomationVars()
             state='FinishedOK'
         return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':device.DeviceName.upper(),'Form': form})
     else:
@@ -299,7 +300,6 @@ def viewReports(request,pk=None):
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))
 def reportbuilder(request,number=0):
-    info=[]
     applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
     form_data={'ReportTitle':'','Periodicity':2,'DataAggregation':0}
@@ -327,70 +327,7 @@ def reportbuilder(request,number=0):
             logger.error('Form error ' + str(form.errors))
             return HttpResponse(json.dumps({'Error': form.errors})) 
     else:
-        
-        RDVs=RemoteDevices.models.DeviceModel.objects.all()
-        LDVs=LocalDevices.models.DeviceModel.objects.all()
-        DVs=[RDVs,LDVs]
-        IOs=Master_GPIOs.models.IOmodel.objects.all()
-        MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
-        tempvars=[]
-        if len(IOs)>0:
-            for IO in IOs:
-                if IO.direction=='IN' or IO.direction=='OUT':
-                    if IO.direction=='IN':
-                        table='inputs'
-                    else:
-                        table='outputs'
-                    tempvars.append({'device':'Main','table':table,'tag':str(IO.pin),# this is to tell the template that it is a boolean value
-                                    'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})
-                                    
-            info.append({'deviceName':'Main','variables':tempvars})
-        tempvars=[]
-        if len(MainVars)>0:
-            for VAR in MainVars:
-                table='MainVariables'
-                tempvars.append({'device':'Main','table':table,'tag':str(VAR.pk),# this is to tell the template that it is a boolean value
-                                'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog'})
-                                    
-            info.append({'deviceName':'Main','variables':tempvars})
-            
-        for device in itertools.chain(*DVs):    # device[0]= DeviceName, device[1]=DeviceType  
-            DEVICE_TYPE=str(device.Type.Code)
-            #xmlroot = ET.parse(Devices.GlobalVars.XML_CONFFILE_PATH).getroot()
-            #XMLParser=Devices.XML_parser.XMLParser(xmlroot=xmlroot)
-            datagrams=Devices.models.getDatagramStructure(devicetype=DEVICE_TYPE)#XMLParser.getDatagramsStructureForDeviceType(deviceType=DEVICE_TYPE)
-            #logger.info(str(datagramIDs))
-            tempvars=[]
-            for datagram in datagrams: 
-                table=device.DeviceName+'_'+datagram['ID']
-                labels=[]
-                if device.CustomLabels!='':
-                    CustomLabels=json.loads(device.CustomLabels)
-                    labels=CustomLabels[datagram['ID']]
-                    Labeliterable=labels
-                else:
-                    Labeliterable=datagram['names']
-                for i,var in enumerate(Labeliterable):                     
-                    CustomLabel='' 
-                    #logger.debug(str(datagram))
-                    type=datagram['types'][i]
-                    if type=='digital':                                 
-                        #logger.info(str(cell))                           
-                        if str(var).find('$')>=0:
-                            try:
-                                CustomLabel=str(var).split('_')[-1].split('$')
-                            except:
-                                CustomLabel=''
-                            #logger.debug(str(bits))
-                            pos=str(var).lower().find('_bits')
-                            var=var[0:pos+5]
-                    else:
-                        CustomLabel=var
-                            #logger.info(str(var))
-                    if (str(var).lower()!='spare') and (str(var).lower()!='timestamp'):                                       
-                        tempvars.append({'device':device.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,'extrapolate':''})
-            info.append({'deviceName':device.DeviceName,'variables':tempvars})
-        
+        info=Devices.models.getAllVariables()
         #logger.debug(info)       
         return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps(info)})    
     

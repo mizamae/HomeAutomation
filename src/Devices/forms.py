@@ -95,7 +95,10 @@ class DatagramCustomLabelsForm(forms.Form):
                     initial_values=data['initial_values'][i].split('$')
                     for k in range(0,8):
                         self.fields[fieldName+'_bit%s' % k] = forms.CharField(label=field+ ' bit%s' % k,required=True)
-                        self.fields[fieldName+'_bit%s' % k].initial = initial_values[k]
+                        if len(initial_values)==8:
+                            self.fields[fieldName+'_bit%s' % k].initial = initial_values[k]
+                        else:
+                            self.fields[fieldName+'_bit%s' % k].initial = 'Bit%s' % k
                         self.helper.layout.append(fieldName+'_bit%s' % k)
                     self.helper.layout.append(HTML("<hr>"))
             self.helper.layout.append(HTML("<h2></h2>"))

@@ -9,6 +9,10 @@ from channels.binding.websockets import WebsocketBinding
 import Devices.XML_parser
 import Devices.GlobalVars
 import Devices.BBDD
+import Devices.models
+import HomeAutomation.models
+import json
+
 import RemoteDevices.signals
 import xml.etree.ElementTree as ET
 import logging
@@ -65,6 +69,54 @@ class DeviceModel(models.Model):
         self.__original_DeviceName = self.DeviceName
         super(DeviceModel, self).save(*args, **kwargs)
     
+    def getDeviceVariables(self):
+        DeviceVars=[]
+        datagrams=Devices.models.getDatagramStructure(devicetype=self.Type,ID='*')
+        if self.CustomLabels!='':
+            CustomLabels=json.loads(self.CustomLabels)
+        else:
+            CustomLabels=None
+            
+        for datagram in datagrams:
+            datagramID=datagram['ID']
+            Vars=datagram['names']
+            Types=datagram['types']
+            if CustomLabels!=None:
+                CustomVars=CustomLabels[datagramID]
+            else:
+                CustomVars=datagram['names']
+                
+            for cvar,var,type in zip(CustomVars,Vars,Types):
+                if type=='digital':
+                    BitLabels=cvar.split('$')
+                    for i,bitLabel in enumerate(BitLabels):
+                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':i})
+                else:
+                    DeviceVars.append({'Label':cvar,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':None})
+        return DeviceVars
+    
+    def updateAutomationVars(self):
+        AutomationVars=HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.DeviceName)
+        DeviceVars=self.getDeviceVariables()
+        for dvar in DeviceVars:
+            try:
+                avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
+            except:
+                avar=None
+            if avar!=None:
+                avar.Label=dvar['Label']
+            else:
+                avar=HomeAutomation.models.AutomationVariablesModel()
+                avar.Label=dvar['Label']
+                avar.Device=dvar['Device']
+                avar.Tag=dvar['Tag']
+                avar.Table=dvar['Table']
+                avar.BitPos=dvar['BitPos']
+            avar.save()
+            
+    def deleteAutomationVars(self):
+        HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.DeviceName).delete()
+        
     class Meta:
         permissions = (
             ("view_devices", "Can see available devices"),
@@ -82,18 +134,15 @@ def update_DeviceModel(sender, instance, update_fields,**kwargs):
         registerDB.create_DeviceRegistersTables(DeviceName=instance.DeviceName,DeviceType=instance.Type.Code)
         logger.info('Se ha registrado el dispositivo ' + str(instance) +' del tipo ' + str(instance.Type.Code))
     else:
-        try:
-            for field in update_fields:
-                logger.info('Se ha actualizado el campo ' + str(field)+ ' en el dispositivo ' + str(instance) +' al valor ' + str(getattr(instance,field)))
-        except:
-            logger.info('Se ha actualizado el dispositivo ' + str(instance) +' pero sin informacion de los campos afectados ')
+        instance.updateAutomationVars()
       
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_RemoteDeviceModel")
 def delete_DeviceModel(sender, instance,**kwargs):
-    print('Se ha eliminado el dispositivo ' + str(instance))
-    applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)   
-    applicationDBs.delete_DeviceRegister_tables(DeviceName=instance.DeviceName)
+    instance.deleteAutomationVars()
+    logger.info('Se ha eliminado el dispositivo ' + str(instance))
+    # applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                      # configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)   
+    # applicationDBs.delete_DeviceRegister_tables(DeviceName=instance.DeviceName)
 
 class DeviceModelBinding(WebsocketBinding):
 

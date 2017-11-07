@@ -18,8 +18,8 @@ from LocalDevices.forms import DeviceForm as LocalDeviceForm
 from Devices.models import DeviceTypeModel,DigitalItemModel,AnalogItemModel,DatagramModel,ItemOrdering,CommandModel,ReportModel,ReportItems
 from Devices.forms import DeviceTypeForm as DeviceTypeForm, ItemOrderingForm
 
-from HomeAutomation.models import MainDeviceVarModel,MainDeviceVarWeeklyScheduleModel,inlineDaily
-from HomeAutomation.forms import MainDeviceVarForm,inlineDailyForm
+from HomeAutomation.models import MainDeviceVarModel,MainDeviceVarWeeklyScheduleModel,inlineDaily,AutomationRuleModel,AutomationVariablesModel
+from HomeAutomation.forms import MainDeviceVarForm,inlineDailyForm,AutomationRuleForm
 
 class IOmodelAdmin(admin.ModelAdmin):
     list_display = ('label','pin','direction','value')
@@ -35,7 +35,7 @@ class RemoteDeviceModelAdmin(admin.ModelAdmin):
             self.message_user(request, "Only one device can be selected for this action")
         else:
             selected_pk = int(request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0])
-            return HttpResponseRedirect('/admin/RemoteDevices/devicemodel_setcustomlabels/remote/' + str(selected_pk))
+            return HttpResponseRedirect('/admin/RemoteDevices/setcustomlabels/remote/' + str(selected_pk))
         
     defineCustomLabels.short_description = _("Define custom labels for the variables")
 
@@ -78,7 +78,7 @@ class LocalDeviceModelAdmin(admin.ModelAdmin):
             self.message_user(request, "Only one device can be selected for this action")
         else:
             selected_pk = int(request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0])
-            return HttpResponseRedirect('/admin/LocalDevices/devicemodel_setcustomlabels/local/' + str(selected_pk))
+            return HttpResponseRedirect('/admin/LocalDevices/setcustomlabels/local/' + str(selected_pk))
         
     def save_model(self, request, obj, form, change):
         if 'DeviceName' in form.changed_data:
@@ -183,7 +183,36 @@ class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
     setAsActive.short_description = _("Set as active schedule")
     #extra = 1 # how many rows to show
     #form=ItemOrderingForm
-        
+
+class AutomationRuleModelAdmin(admin.ModelAdmin):
+    actions=['activate']
+    list_display = ('Identifier','Active')
+    ordering=('-Active','Identifier')
+    form = AutomationRuleForm
+    
+    def activate(self,request, queryset):
+        selected_pk = int(request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0])
+        rule=AutomationRuleModel.objects.get(pk=selected_pk)
+        rule.Active=True
+        rule.save()
+        return HttpResponseRedirect('/admin/HomeAutomation/automationrulemodel/')
+    
+    activate.short_description = _("Activate the rule")
+
+class AutomationVariablesModelAdmin(admin.ModelAdmin):
+    list_display = ('Label','Device', 'Table','Tag','BitPos')
+    ordering=('Device','Table','BitPos')
+    def get_actions(self, request):
+        #Disable delete
+        actions = super(AutomationVariablesModelAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+    
+    def has_add_permission(self, request):
+        return False
+    def has_delete_permission(self, request):
+        return False
+                
 admin.site.register(IOmodel,IOmodelAdmin)
 admin.site.register(RemoteDeviceModel,RemoteDeviceModelAdmin)
 admin.site.register(ReportModel,ReportModelAdmin)
@@ -198,3 +227,5 @@ admin.site.register(CommandModel,CommandModelAdmin)
 
 admin.site.register(MainDeviceVarModel,MainDeviceVarModelAdmin)
 admin.site.register(MainDeviceVarWeeklyScheduleModel,MainDeviceVarWeeklyScheduleModelAdmin)
+admin.site.register(AutomationRuleModel,AutomationRuleModelAdmin)
+admin.site.register(AutomationVariablesModel,AutomationVariablesModelAdmin)

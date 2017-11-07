@@ -45,6 +45,30 @@ class MainDeviceVarModel(models.Model):
         self.__original_Value = self.Value
         super(MainDeviceVarModel, self).save(*args, **kwargs)
         
+    def updateAutomationVars(self):
+        AutomationVars=AutomationVariablesModel.objects.filter(Device='Main')
+        
+        dvar={'Label':self.Label,'Tag':self.Label,'Device':'Main','Table':'MainVariables','BitPos':None}
+        try:
+            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
+        except:
+            avar=None
+            
+        if avar!=None:
+            avar.Label=dvar['Label']
+        else:
+            avar=AutomationVariablesModel()
+            avar.Label=dvar['Label']
+            avar.Device=dvar['Device']
+            avar.Tag=dvar['Tag']
+            avar.Table=dvar['Table']
+            avar.BitPos=dvar['BitPos']
+        avar.save()
+        
+    def deleteAutomationVars(self):
+        avar=AutomationVariablesModel.objects.get(Device='Main',Tag=self.Label,Table='MainVariables')
+        avar.delete()
+        
     class Meta:
         verbose_name = _('Main device var')
         verbose_name_plural = _('Main device vars')   
@@ -62,6 +86,12 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
         registerDB.check_IOsTables()
     
     registerDB.insert_VARs_register(TimeStamp=timestamp)
+    instance.updateAutomationVars()
+
+@receiver(post_delete, sender=MainDeviceVarModel, dispatch_uid="delete_MainDeviceVarModel")
+def delete_IOmodel(sender, instance,**kwargs):
+    instance.deleteAutomationVars()
+    logger.info('Se ha eliminado la variable ' + str(instance))
     
 class MainDeviceVarWeeklyScheduleModel(models.Model):
     Label = models.CharField(max_length=50)
@@ -169,15 +199,44 @@ class inlineDaily(models.Model):
         unique_together = ('Day', 'Weekly')
         verbose_name = _('Main device var hourly schedule')
         verbose_name_plural = _('Main device var hourly schedules')
+
+class AutomationVariablesModel(models.Model):
+    Label = models.CharField(max_length=50)
+    Tag = models.CharField(max_length=50)
+    Device = models.CharField(max_length=50)
+    Table = models.CharField(max_length=50)
+    BitPos = models.CharField(max_length=50,null=True)
     
+    def __str__(self):
+        return self.Label
+    
+    class Meta:
+        unique_together = ('Device', 'Table','Tag','BitPos')
+        verbose_name = _('Automation variable')
+        verbose_name_plural = _('Automation variables')
+        
 class AutomationRuleModel(models.Model):
+    OPERATOR_CHOICES=(
+        ('==','=='),
+        ('>','>'),
+        ('>=','>='),
+        ('<','<'),
+        ('<=','<='),
+        ('!=','!='),
+    )
+    
     Identifier = models.CharField(max_length=50,primary_key=True)
-    Expression = models.CharField(max_length=100)
+    Active = models.BooleanField(default=False)
+    PreviousRule = models.ForeignKey('HomeAutomation.AutomationRuleModel',blank=True,null=True)
+    Operator1 = models.CharField(choices=OPERATOR_CHOICES,max_length=2,blank=True,null=True)
+    Var1= models.ForeignKey(AutomationVariablesModel,related_name='var1',null=True)
+    Operator12 = models.CharField(choices=OPERATOR_CHOICES,max_length=2,blank=True)
+    Var2= models.ForeignKey(AutomationVariablesModel,related_name='var2',null=True)
     FrequencyCheck=models.DurationField(default=datetime.timedelta(minutes=10))   
     
     def __str__(self):
         return self.Identifier
-    
+        
     class Meta:
         verbose_name = _('Automation rule')
         verbose_name_plural = _('Automation rules')

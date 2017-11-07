@@ -1,8 +1,10 @@
 from django.db import models
 from channels.binding.websockets import WebsocketBinding
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,post_delete
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Q
+import HomeAutomation.models
 import RPi.GPIO as GPIO
 import Master_GPIOs.signals
 import Devices.BBDD
@@ -70,6 +72,42 @@ class IOmodel(models.Model):
         val=GPIO.input(self.pin)
         Master_GPIOs.signals.IN_change_notification.send(sender=None, number=self.pin, value=val)
     
+    def updateAutomationVars(self):
+        if self.direction=='IN':
+            table='inputs'
+        elif self.direction=='OUT':
+            table='outputs'
+        else:
+            return
+        AutomationVars=HomeAutomation.models.AutomationVariablesModel.objects.filter(Device='Main')
+        
+        dvar={'Label':self.label,'Tag':str(self.pk),'Device':'Main','Table':table,'BitPos':None}
+        try:
+            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
+        except:
+            avar=None
+            
+        if avar!=None:
+            avar.Label=dvar['Label']
+        else:
+            avar=HomeAutomation.models.AutomationVariablesModel()
+            avar.Label=dvar['Label']
+            avar.Device=dvar['Device']
+            avar.Tag=dvar['Tag']
+            avar.Table=dvar['Table']
+            avar.BitPos=dvar['BitPos']
+        avar.save()
+    
+    def deleteAutomationVars(self):
+        if self.direction=='IN':
+            table='inputs'
+        elif self.direction=='OUT':
+            table='outputs'
+        else:
+            return
+        avar=HomeAutomation.models.AutomationVariablesModel.objects.get(Device='Main',Tag=str(self.pk),Table=table)
+        avar.delete()
+        
     def __str__(self):
         return self.label + ' on pin ' + str(self.pin)
         
@@ -86,7 +124,6 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
         logger.info('The IO ' + str(instance) + ' has been registered on the process ' + str(os.getpid()))
         if instance.direction=='OUT':
             GPIO.setup(int(instance.pin), GPIO.OUT)
-            logger.info("Output on pin "+str(instance.pin)+ " has the value of "+str(instance.value))
             if instance.value==1:
                 GPIO.output(int(instance.pin),GPIO.HIGH)
             logger.info("Initialized Output on pin " + str(instance.pin))
@@ -95,8 +132,32 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             GPIO.setup(int(instance.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
             GPIO.add_event_detect(int(instance.pin), GPIO.BOTH, callback=instance.InputChangeEvent, bouncetime=200)  
             logger.info("Initialized Input on pin " + str(instance.pin))
+    else:
+        if instance.direction=='OUT':
+            GPIO.setup(int(instance.pin), GPIO.OUT)
+            if instance.value==1:
+                GPIO.output(int(instance.pin),GPIO.HIGH)
+            else:
+                GPIO.output(int(instance.pin),GPIO.LOW)
+    if instance.direction!='SENS':
+        instance.updateAutomationVars()
+
+@receiver(post_delete, sender=IOmodel, dispatch_uid="delete_IOmodel")
+def delete_IOmodel(sender, instance,**kwargs):
+    instance.deleteAutomationVars()
+    logger.info('Se ha eliminado la IO ' + str(instance))
         
+def getIOVariables(self):
+    DeviceVars=[]
+    IOs=IOmodel.objects.filter(Q(direction='IN') | Q(direction='OUT'))
         
+    for io in IOs:
+        if io.direction=='IN':
+            table='inputs'
+        else:
+            table='outputs'
+        DeviceVars.append({'Label':io.label,'Tag':str(io.pk),'Device':'Main','Table':table,'BitPos':None})
+    return DeviceVars        
 
 # def InputChangeEvent(gpio_id):
     # val=GPIO.input(gpio_id)

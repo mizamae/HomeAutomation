@@ -255,6 +255,72 @@ def getDatagramStructure(devicetype,ID='*'):
         return datagramList
     else:
         return datagramList[0]
+
+def getAllVariables():
+    import Master_GPIOs.models 
+    import LocalDevices.models 
+    import RemoteDevices.models 
+    import HomeAutomation.models
+    import json
+    import itertools
+    
+    info=[]
+    RDVs=RemoteDevices.models.DeviceModel.objects.all()
+    LDVs=LocalDevices.models.DeviceModel.objects.all()
+    DVs=[RDVs,LDVs]
+    IOs=Master_GPIOs.models.IOmodel.objects.all()
+    MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
+    tempvars=[]
+    if len(IOs)>0:
+        for IO in IOs:
+            if IO.direction=='IN' or IO.direction=='OUT':
+                if IO.direction=='IN':
+                    table='inputs'
+                else:
+                    table='outputs'
+                tempvars.append({'device':'Main','table':table,'tag':str(IO.pin),# this is to tell the template that it is a boolean value
+                                'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})
+                                
+        info.append({'deviceName':'Main','variables':tempvars})
+    tempvars=[]
+    if len(MainVars)>0:
+        for VAR in MainVars:
+            table='MainVariables'
+            tempvars.append({'device':'Main','table':table,'tag':str(VAR.pk),# this is to tell the template that it is a boolean value
+                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog'})
+                                
+        info.append({'deviceName':'Main','variables':tempvars})
+        
+    for device in itertools.chain(*DVs):    # device[0]= DeviceName, device[1]=DeviceType  
+        DEVICE_TYPE=str(device.Type.Code)
+        datagrams=getDatagramStructure(devicetype=DEVICE_TYPE)#XMLParser.getDatagramsStructureForDeviceType(deviceType=DEVICE_TYPE)
+        tempvars=[]
+        for datagram in datagrams: 
+            table=device.DeviceName+'_'+datagram['ID']
+            labels=[]
+            if device.CustomLabels!='':
+                CustomLabels=json.loads(device.CustomLabels)
+                labels=CustomLabels[datagram['ID']]
+                Labeliterable=labels
+            else:
+                Labeliterable=datagram['names']
+            for i,var in enumerate(Labeliterable):                     
+                CustomLabel='' 
+                type=datagram['types'][i]
+                if type=='digital':                                                          
+                    if str(var).find('$')>=0:
+                        try:
+                            CustomLabel=str(var).split('_')[-1].split('$')
+                        except:
+                            CustomLabel=''
+                        pos=str(var).lower().find('_bits')
+                        var=var[0:pos+5]
+                else:
+                    CustomLabel=var.replace('_',' [')+']'
+                if (str(var).lower()!='spare') and (str(var).lower()!='timestamp'):                                       
+                    tempvars.append({'device':device.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,'extrapolate':''})
+        info.append({'deviceName':device.DeviceName,'variables':tempvars})
+    return info
     
 class ItemOrdering(models.Model):
     datagram = models.ForeignKey(DatagramModel, on_delete=models.CASCADE)
