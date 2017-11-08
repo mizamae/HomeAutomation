@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.db import models
 from channels.binding.websockets import WebsocketBinding
 from django.dispatch import receiver
@@ -141,6 +142,10 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
                 GPIO.output(int(instance.pin),GPIO.LOW)
     if instance.direction!='SENS':
         instance.updateAutomationVars()
+        rules=HomeAutomation.models.AutomationRuleModel.objects.filter((Q(Var1__Tag=instance.pk) & Q(Var1__Device='Main')) | (Q(Var2__Tag=instance.pk) & Q(Var2__Device='Main')))
+        if len(rules)>0:
+            for rule in rules:
+                rule.execute()
 
 @receiver(post_delete, sender=IOmodel, dispatch_uid="delete_IOmodel")
 def delete_IOmodel(sender, instance,**kwargs):

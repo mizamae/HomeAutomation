@@ -49,7 +49,7 @@ class DHT11(object):
             'temperature':temperature,
             'humidity':humidity,
         }
-        Devices_datagram_reception.send(sender=None, DeviceName=self.sensor.DeviceName,values=reading)
+        Devices_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
         
     def query_sensor(self):
         """
@@ -123,7 +123,7 @@ class DHT22(object):
             'humidity':humidity,
             'heat index':hi,
         }
-        Devices_datagram_reception.send(sender=None, DeviceName=self.sensor.DeviceName,values=reading)
+        Devices_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
         
     def query_sensor(self):
         """

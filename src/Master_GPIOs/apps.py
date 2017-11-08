@@ -36,6 +36,6 @@ class GPIOsConfig(AppConfig):
                 initializeIOs(declareInputEvent=True)
         else:
             #masterGPIO.initializeIOs(declareInputEvent=False)
-            #initializeIOs(declareInputEvent=False)
+            initializeIOs(declareInputEvent=False)
             logger.info('Finished initializing IOs on the process ' + str(os.getpid()))
         

@@ -90,9 +90,9 @@ class DeviceModel(models.Model):
                 if type=='digital':
                     BitLabels=cvar.split('$')
                     for i,bitLabel in enumerate(BitLabels):
-                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':i})
+                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':i,'Sample':datagram['sample']*self.Sampletime})
                 else:
-                    DeviceVars.append({'Label':cvar,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':None})
+                    DeviceVars.append({'Label':cvar,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
         return DeviceVars
     
     def updateAutomationVars(self):
@@ -103,8 +103,10 @@ class DeviceModel(models.Model):
                 avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
             except:
                 avar=None
+                
             if avar!=None:
                 avar.Label=dvar['Label']
+                avar.Sample=dvar['Sample']
             else:
                 avar=HomeAutomation.models.AutomationVariablesModel()
                 avar.Label=dvar['Label']
@@ -112,11 +114,12 @@ class DeviceModel(models.Model):
                 avar.Tag=dvar['Tag']
                 avar.Table=dvar['Table']
                 avar.BitPos=dvar['BitPos']
+                avar.Sample=dvar['Sample']
             avar.save()
-            
+    
     def deleteAutomationVars(self):
         HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.DeviceName).delete()
-        
+                
     class Meta:
         permissions = (
             ("view_devices", "Can see available devices"),
@@ -132,9 +135,8 @@ def update_DeviceModel(sender, instance, update_fields,**kwargs):
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
         registerDB.create_DeviceRegistersTables(DeviceName=instance.DeviceName,DeviceType=instance.Type.Code)
-        logger.info('Se ha registrado el dispositivo ' + str(instance) +' del tipo ' + str(instance.Type.Code))
-    else:
-        instance.updateAutomationVars()
+        print('Se ha registrado el dispositivo ' + str(instance) +' del tipo ' + str(instance.Type.Code))
+    instance.updateAutomationVars()
       
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_RemoteDeviceModel")
 def delete_DeviceModel(sender, instance,**kwargs):

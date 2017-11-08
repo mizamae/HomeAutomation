@@ -42,7 +42,7 @@ class DeviceModel(models.Model):
     RTsampletime=models.PositiveIntegerField(default=600)
     LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
-    CustomLabels= models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
+    CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     
     objects = DeviceModelManager()
     
@@ -65,7 +65,7 @@ class DeviceModel(models.Model):
             #LocalDevices.signals.DeviceName_changed.send(sender=None, OldDeviceName=self.__original_DeviceName,NewDeviceName=self.DeviceName)
         self.__original_DeviceName = self.DeviceName
         super(DeviceModel, self).save(*args, **kwargs)
-    
+        
     def getDeviceVariables(self):
         DeviceVars=[]
         datagrams=Devices.models.getDatagramStructure(devicetype=self.Type,ID='*')
@@ -87,9 +87,9 @@ class DeviceModel(models.Model):
                 if type=='digital':
                     BitLabels=cvar.split('$')
                     for i,bitLabel in enumerate(BitLabels):
-                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':i})
+                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':i,'Sample':datagram['sample']*self.Sampletime})
                 else:
-                    DeviceVars.append({'Label':cvar,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':None})
+                    DeviceVars.append({'Label':cvar,'Tag':var,'Device':self.DeviceName,'Table':self.DeviceName+'_'+datagramID,'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
         return DeviceVars
     
     def updateAutomationVars(self):
@@ -102,6 +102,7 @@ class DeviceModel(models.Model):
                 avar=None
             if avar!=None:
                 avar.Label=dvar['Label']
+                avar.Sample=dvar['Sample']
             else:
                 avar=HomeAutomation.models.AutomationVariablesModel()
                 avar.Label=dvar['Label']
@@ -109,11 +110,12 @@ class DeviceModel(models.Model):
                 avar.Tag=dvar['Tag']
                 avar.Table=dvar['Table']
                 avar.BitPos=dvar['BitPos']
+                avar.Sample=dvar['Sample']
             avar.save()
-    
+            
     def deleteAutomationVars(self):
         HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.DeviceName).delete()
-        
+            
     class Meta:
         permissions = (
             ("view_devices", "Can see available devices"),
@@ -125,6 +127,7 @@ class DeviceModel(models.Model):
         
 @receiver(post_save, sender=DeviceModel, dispatch_uid="update_LocalDeviceModel")
 def update_DeviceModel(sender, instance, update_fields,**kwargs):
+        
     if kwargs['created']:   # new instance is created
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')

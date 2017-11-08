@@ -1,15 +1,25 @@
+from django.db.models import Q
+
 import logging
 import Devices.BBDD
 import Devices.GlobalVars
 import Devices.Requests
-from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
+import Devices.models
+import HomeAutomation.models
+
 logger = logging.getLogger("project")
 
 def Device_datagram_reception_handler(sender, **kwargs):
     timestamp=kwargs['timestamp']
-    deviceName=kwargs['DeviceName']
+    DV=kwargs['Device']
     datagramID=kwargs['DatagramId']
+    datagramInfo=Devices.models.getDatagramStructure(devicetype=DV.Type,ID=datagramID)
+    #{'ID':datagramID,'names':names,'types':types,'datatypes':datatypes,'sample':sample}
+    for var in datagramInfo['names']:
+        rules=HomeAutomation.models.AutomationRuleModel.objects.filter((Q(Var1__Tag=var) & Q(Var1__Device=DV.DeviceName)) | (Q(Var2__Tag=var) & Q(Var2__Device=DV.DeviceName)))
+        if len(rules)>0:
+            for rule in rules:
+                rule.execute()
     values=kwargs['values']
     logger.info("SIGNALS: The device "+ deviceName+" responded OK to the datagram " + str(datagramID)+" with values= "+str(values))
     

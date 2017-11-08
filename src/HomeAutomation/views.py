@@ -298,6 +298,21 @@ def viewReports(request,pk=None):
         return Http404
 
 @login_required
+@user_passes_test(lambda u: u.has_perm('HomeAutomation.add_automationrule'))
+def ajax_get_orders_for_device(request,devicePK):
+    if request.is_ajax():
+        device=RemoteDevices.models.DeviceModel.objects.get(pk=devicePK)
+        orders=Devices.models.CommandModel.objects.filter(DeviceType=device.Type)
+        info=[]
+        if len(orders)>0:
+            for order in orders:
+                info.append({'Identifier':order.Identifier,'HumanTag':order.HumanTag})
+                
+        return HttpResponse(json.dumps(info))
+    else:
+        return HttpResponse(json.dumps([]))
+        
+@login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))
 def reportbuilder(request,number=0):
     applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,

@@ -1,20 +1,29 @@
+from django.db.models import Q
+
 from LocalDevices.models import DeviceModel
 import Devices.BBDD
 import Devices.GlobalVars
 import Devices.Requests
-
+import Devices.models
+import HomeAutomation.models
 
 import logging
 logger = logging.getLogger("project")
 
 def datagram_reception_handler(sender, **kwargs):
-    deviceName=kwargs['DeviceName']
+    DV=kwargs['Device']
     values=kwargs['values']
-    sensor=DeviceModel.objects.get(DeviceName=deviceName)
-    sensor.Connected=True
-    sensor.LastUpdated=values['timestamp']
-    sensor.save(update_fields=["Connected","LastUpdated"])
-    #logger.info("SIGNALS: The device "+ deviceName+" responded with values= "+str(values))
+    DV.Connected=True
+    DV.LastUpdated=values['timestamp']
+    DV.save(update_fields=["Connected","LastUpdated"])
+    
+    datagramInfo=Devices.models.getDatagramStructure(devicetype=DV.Type,ID='data')
+    #{'ID':datagramID,'names':names,'types':types,'datatypes':datatypes,'sample':sample}
+    for var in datagramInfo['names']:
+        rules=HomeAutomation.models.AutomationRuleModel.objects.filter((Q(Var1__Tag=var) & Q(Var1__Device=DV.DeviceName)) | (Q(Var2__Tag=var) & Q(Var2__Device=DV.DeviceName)))
+        if len(rules)>0:
+            for rule in rules:
+                rule.execute()
     
 def datagram_exception_handler(sender, **kwargs):
     deviceName=kwargs['DeviceName']

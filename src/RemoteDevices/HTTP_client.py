@@ -161,7 +161,7 @@ class HTTP_requests():
                             DV.LastUpdated=timestamp
                             DV.DeviceHTTPCode=r.status_code
                             DV.save(update_fields=["LastUpdated","DeviceHTTPCode","Error"])
-                            RemoteDevices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
+                            RemoteDevices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,Device=DV,DatagramId=DatagramId,values=datagram)
                             return
                         else:
                             if DV.DeviceHTTPCode!=200:

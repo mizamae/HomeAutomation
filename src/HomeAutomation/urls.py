@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^togglestate/(?P<devicename>.+)/$', views.ToggleDevice, name='togglestate'),
     url(r'^deletedev/(?P<devicename>.+)/$', views.DeleteDevice, name='delDevice'),
     url(r'^repbuilder/(?P<number>.+)/$', views.reportbuilder, name='repbuilder'),
+    url(r'^ajax_get_orders_for_device/(?P<devicePK>.+)/$', views.ajax_get_orders_for_device, name='ajax_get_orders_for_device'),
     url(r'^async_post/$', views.asynchronous_datagram, name='asynchronous_datagram'),
     url(r'^devicepage/(?P<devicename>.+)/$', views.AdvancedDevicepage, name='devicepage'),
     url(r'^charts/$', views.device_report,name='devicecharts'),
@@ -55,6 +56,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin/RemoteDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
     url(r'^admin/LocalDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
+    
     url(r'^', include(accounts.urls, namespace='accounts')),
     
 ]

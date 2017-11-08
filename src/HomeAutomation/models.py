@@ -1,14 +1,20 @@
+from django.db.models import Q
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.utils.functional import lazy
 import datetime
 import sys
+
+import json
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
 
 import Devices.GlobalVars
 import Devices.BBDD
+
+import Master_GPIOs.models
 
 import logging
 
@@ -65,10 +71,6 @@ class MainDeviceVarModel(models.Model):
             avar.BitPos=dvar['BitPos']
         avar.save()
         
-    def deleteAutomationVars(self):
-        avar=AutomationVariablesModel.objects.get(Device='Main',Tag=self.Label,Table='MainVariables')
-        avar.delete()
-        
     class Meta:
         verbose_name = _('Main device var')
         verbose_name_plural = _('Main device vars')   
@@ -87,11 +89,10 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
     
     registerDB.insert_VARs_register(TimeStamp=timestamp)
     instance.updateAutomationVars()
-
-@receiver(post_delete, sender=MainDeviceVarModel, dispatch_uid="delete_MainDeviceVarModel")
-def delete_IOmodel(sender, instance,**kwargs):
-    instance.deleteAutomationVars()
-    logger.info('Se ha eliminado la variable ' + str(instance))
+    rules=AutomationRuleModel.objects.filter((Q(Var1__Tag=instance.Label) & Q(Var1__Device='Main')) | (Q(Var2__Tag=instance.Label) & Q(Var2__Device='Main')))
+    if len(rules)>0:
+        for rule in rules:
+            rule.execute()
     
 class MainDeviceVarWeeklyScheduleModel(models.Model):
     Label = models.CharField(max_length=50)
@@ -133,22 +134,32 @@ def checkHourlySchedules():
     logger.info('Checking hourly schedules')
     schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
     timestamp=datetime.datetime.now()
+    logger.info('Timestamp: ' + str(timestamp))
     weekDay=timestamp.weekday()
+    logger.info('Weekday: ' + str(weekDay))
     hour=timestamp.hour
+    logger.info('Hour: ' + str(hour))
     for schedule in schedules:
+        logger.info('Schedule: ' + str(schedule.Label))
         if schedule.Active:
+            logger.info('Is active!!!')
             dailySchedules=schedule.inlinedaily_set.all()
             for daily in dailySchedules:
+                logger.info('Daily: ' + str(daily))
                 if daily.Day==weekDay:
                     Setpoint=getattr(daily,'Hour'+str(hour))
+                    logger.info('Setpoint Hour'+str(hour)+' = ' + str(Setpoint))
                     if Setpoint==0:
                         Value=schedule.LValue
                     else:
                         Value=schedule.HValue
                     variable=MainDeviceVarModel.objects.get(Label=schedule.Var.Label)
+                    logger.info('Variable.value = ' + str(variable.Value))
+                    logger.info('Value = ' + str(Value))
                     if variable.Value!=Value:
                         variable.Value=Value
                         variable.save()
+                    break
 
 class inlineDaily(models.Model):
     WEEKDAYS = (
@@ -200,12 +211,14 @@ class inlineDaily(models.Model):
         verbose_name = _('Main device var hourly schedule')
         verbose_name_plural = _('Main device var hourly schedules')
 
+
 class AutomationVariablesModel(models.Model):
     Label = models.CharField(max_length=50)
     Tag = models.CharField(max_length=50)
     Device = models.CharField(max_length=50)
     Table = models.CharField(max_length=50)
-    BitPos = models.CharField(max_length=50,null=True)
+    BitPos = models.PositiveSmallIntegerField(null=True,blank=True)
+    Sample = models.PositiveSmallIntegerField(default=0)
     
     def __str__(self):
         return self.Label
@@ -215,6 +228,7 @@ class AutomationVariablesModel(models.Model):
         verbose_name = _('Automation variable')
         verbose_name_plural = _('Automation variables')
         
+                
 class AutomationRuleModel(models.Model):
     OPERATOR_CHOICES=(
         ('==','=='),
@@ -224,18 +238,92 @@ class AutomationRuleModel(models.Model):
         ('<=','<='),
         ('!=','!='),
     )
+    BOOL_OPERATOR_CHOICES=(
+        ('&',_('AND')),
+        ('|',_('OR')),
+    )
     
     Identifier = models.CharField(max_length=50,primary_key=True)
     Active = models.BooleanField(default=False)
     PreviousRule = models.ForeignKey('HomeAutomation.AutomationRuleModel',blank=True,null=True)
-    Operator1 = models.CharField(choices=OPERATOR_CHOICES,max_length=2,blank=True,null=True)
-    Var1= models.ForeignKey(AutomationVariablesModel,related_name='var1',null=True)
-    Operator12 = models.CharField(choices=OPERATOR_CHOICES,max_length=2,blank=True)
-    Var2= models.ForeignKey(AutomationVariablesModel,related_name='var2',null=True)
-    FrequencyCheck=models.DurationField(default=datetime.timedelta(minutes=10))   
+    Operator1 = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
+    Var1= models.ForeignKey(AutomationVariablesModel,related_name='var1')
+    Operator12 = models.CharField(choices=OPERATOR_CHOICES+BOOL_OPERATOR_CHOICES,max_length=2)
+    Var2= models.ForeignKey(AutomationVariablesModel,related_name='var2')
+    Var2Hyst= models.DecimalField(max_digits=6, decimal_places=2,default=0.5)
+    Action = models.CharField(max_length=100,blank=True) # receives a json object describind the action desired
+    
+    _timestamp1=None
+    _timestamp2=None
     
     def __str__(self):
         return self.Identifier
+    
+    def evaluate(self):
+        if self.Active:
+            import Devices.BBDD
+            import datetime
+            from tzlocal import get_localzone
+            
+            applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                          configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+            local_tz=get_localzone()
+            now = timezone.now()
+            
+            evaluable=''
+            if self.PreviousRule!=None and self.PreviousRule.Active:
+                previous=str(self.PreviousRule.evaluate())+' '+self.Operator1
+            else:
+                previous=''
+            evaluable+=previous+ ' '
+            sql='SELECT timestamp,"'+self.Var1.Tag+'" FROM "'+ self.Var1.Table +'" WHERE "'+self.Var1.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
+            timestamp1,value1=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+            logger.info('SQL1: ' + sql)
+            timestamp1 = local_tz.localize(timestamp1)
+            timestamp1=timestamp1+timestamp1.utcoffset() 
+            
+            if self.Var1.Sample>0:
+                if (now-timestamp1>datetime.timedelta(seconds=1.5*self.Var1.Sample)):
+                    logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
+                    logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' was ' + str(timestamp1))
+            
+            if self.Var1.BitPos!=None:
+                value1=value1 & (1<<self.Var1.BitPos) 
+            sql='SELECT timestamp,"'+self.Var2.Tag+'" FROM "'+ self.Var2.Table +'" WHERE "'+self.Var2.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
+            logger.info('SQL1: ' + sql)
+            timestamp2,value2=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+            
+            timestamp2 = local_tz.localize(timestamp2)
+            timestamp2=timestamp2+timestamp2.utcoffset() 
+            
+            if self.Var2.Sample>0:
+                if (now-timestamp2>datetime.timedelta(seconds=1.5*self.Var2.Sample)):
+                    logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
+                    logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' was ' + str(timestamp2))
+                    
+            if self.Operator12.find('>')>=0:
+                histeresis='+' + str(self.Var2Hyst)
+            elif self.Operator12.find('<')>=0:
+                histeresis='-' + str(self.Var2Hyst)
+            else:
+                histeresis=''
+            
+            evaluable+='('+str(value1) + ' ' + self.Operator12 + ' ' + str(value2) + histeresis + ')'
+            
+            return eval(evaluable)
+        else:
+            return None
+    
+    def execute(self):
+        logger.info('The rule ' + self.Identifier + ' is to be evaluated.')
+        result=self.evaluate()
+        if result:
+            Action=json.loads(self.Action)
+            if Action['IO']!=None:
+                IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
+                IO.value=Action['IOValue']
+                IO.save(update_fields=['value'])
+            logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
         
     class Meta:
         verbose_name = _('Automation rule')

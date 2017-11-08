@@ -138,6 +138,7 @@ class inlineDailyAdmin(admin.TabularInline):
     #readonly_fields=('Day',)
     
 class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
+    #filter_horizontal = ('AnItems','DgItems')
     actions=['setAsActive']
     list_display = ('Label','Active','Var','printValue','printSetpoint')
     ordering=('-Active','Label')
@@ -185,13 +186,14 @@ class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
     #form=ItemOrderingForm
 
 class AutomationRuleModelAdmin(admin.ModelAdmin):
+    #filter_horizontal = ('AnItems','DgItems')
     actions=['activate']
-    list_display = ('Identifier','Active')
+    list_display = ('Identifier','Active','Action')
     ordering=('-Active','Identifier')
     form = AutomationRuleForm
     
     def activate(self,request, queryset):
-        selected_pk = int(request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0])
+        selected_pk = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0]
         rule=AutomationRuleModel.objects.get(pk=selected_pk)
         rule.Active=True
         rule.save()
@@ -200,7 +202,8 @@ class AutomationRuleModelAdmin(admin.ModelAdmin):
     activate.short_description = _("Activate the rule")
 
 class AutomationVariablesModelAdmin(admin.ModelAdmin):
-    list_display = ('Label','Device', 'Table','Tag','BitPos')
+    #filter_horizontal = ('AnItems','DgItems')
+    list_display = ('Label','Device', 'Table','Tag','BitPos','Sample')
     ordering=('Device','Table','BitPos')
     def get_actions(self, request):
         #Disable delete

@@ -2,7 +2,7 @@ import django.dispatch
 
 import LocalDevices.signal_handlers
 
-Devices_datagram_reception= django.dispatch.Signal(providing_args=["DeviceName","values"])
+Devices_datagram_reception= django.dispatch.Signal(providing_args=["Device","values"])
 Devices_datagram_reception.connect(LocalDevices.signal_handlers.datagram_reception_handler)
 
 Devices_datagram_exception= django.dispatch.Signal(providing_args=["DeviceName","Error"])
