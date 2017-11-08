@@ -278,7 +278,7 @@ class AutomationRuleModel(models.Model):
             evaluable+=previous+ ' '
             sql='SELECT timestamp,"'+self.Var1.Tag+'" FROM "'+ self.Var1.Table +'" WHERE "'+self.Var1.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
             timestamp1,value1=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-            logger.info('SQL1: ' + sql)
+            #logger.info('SQL1: ' + sql)
             timestamp1 = local_tz.localize(timestamp1)
             timestamp1=timestamp1+timestamp1.utcoffset() 
             
@@ -290,7 +290,7 @@ class AutomationRuleModel(models.Model):
             if self.Var1.BitPos!=None:
                 value1=value1 & (1<<self.Var1.BitPos) 
             sql='SELECT timestamp,"'+self.Var2.Tag+'" FROM "'+ self.Var2.Table +'" WHERE "'+self.Var2.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
-            logger.info('SQL1: ' + sql)
+            #logger.info('SQL2: ' + sql)
             timestamp2,value2=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
             
             timestamp2 = local_tz.localize(timestamp2)
@@ -315,7 +315,7 @@ class AutomationRuleModel(models.Model):
             return None
     
     def execute(self):
-        logger.info('The rule ' + self.Identifier + ' is to be evaluated.')
+        #logger.info('The rule ' + self.Identifier + ' is to be evaluated.')
         result=self.evaluate()
         if result:
             Action=json.loads(self.Action)

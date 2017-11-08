@@ -354,7 +354,7 @@ def device_report(request):
     if request.method == 'POST': # the form has been submited
         form = Devices.forms.DeviceGraphs(request.POST)
         
-        logger.debug(str(request.POST))
+        #logger.debug(str(request.POST))
         if form.is_valid():
             devicename=form.cleaned_data['DeviceName']
             fromDate=form.cleaned_data['fromDate']
@@ -450,7 +450,7 @@ def device_report(request):
                      
                     chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
                      
-                    logger.debug(json.dumps(chart))    
+                    #logger.debug(json.dumps(chart))    
                      
                     charts.append(chart) 
             return render(request, 'DeviceGraph.html', {'devicename':devicename.replace('_',' '),'chart': json.dumps(charts),'Form':form_clean})
@@ -486,7 +486,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
     
     limit=10000
     sql='SELECT '+vars+' FROM "'+ table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC LIMIT ' + str(limit)
-    logger.info('SQL:' + sql)
+    #logger.info('SQL:' + sql)
     
     data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
     

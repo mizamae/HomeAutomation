@@ -4,6 +4,7 @@ from channels.binding.websockets import WebsocketBinding
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 from django.db.models import Q
 import HomeAutomation.models
 import RPi.GPIO as GPIO
@@ -120,6 +121,7 @@ class IOmodel(models.Model):
 def update_IOmodel(sender, instance, update_fields,**kwargs):
     registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+    timestamp=timezone.now() #para hora con info UTC
     if kwargs['created']:   # new instance is created  
         registerDB.check_IOsTables()
         logger.info('The IO ' + str(instance) + ' has been registered on the process ' + str(os.getpid()))
@@ -128,6 +130,7 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             if instance.value==1:
                 GPIO.output(int(instance.pin),GPIO.HIGH)
             logger.info("Initialized Output on pin " + str(instance.pin))
+            registerDB.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
         elif instance.direction=='IN':
             GPIO.remove_event_detect(int(instance.pin))
             GPIO.setup(int(instance.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
@@ -140,6 +143,8 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
                 GPIO.output(int(instance.pin),GPIO.HIGH)
             else:
                 GPIO.output(int(instance.pin),GPIO.LOW)
+            registerDB.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
+            
     if instance.direction!='SENS':
         instance.updateAutomationVars()
         rules=HomeAutomation.models.AutomationRuleModel.objects.filter((Q(Var1__Tag=instance.pk) & Q(Var1__Device='Main')) | (Q(Var2__Tag=instance.pk) & Q(Var2__Device='Main')))

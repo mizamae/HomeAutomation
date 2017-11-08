@@ -64,6 +64,9 @@ class DHT22(object):
     """
     Tools for working with DHT temperature/humidity sensor.
     """
+    _maxT=50
+    _minT=-20
+    
     def __init__(self,DHTsensor):
         self.type = Adafruit_DHT.DHT22
         self.sensor=DHTsensor
@@ -104,14 +107,17 @@ class DHT22(object):
         temperature=0
         for x in range(0, 3):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
-            temperature=temperature+t
-            humidity=humidity+h
+            if (t < self._maxT and t > self._minT):
+                temperature=temperature+t
+                humidity=humidity+h
+            else:
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t) + ' Humidity: '+ str(h))
             time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
             
-        temperature=temperature/3
-        humidity=humidity/3
-        dewpoint=(humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112
-        hi=self.computeHeatIndex(temperature=temperature, percentHumidity=humidity)
+        temperature=round(temperature/3,3)
+        humidity=round(humidity/3,3)
+        dewpoint=round((humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112,3)
+        hi=round(self.computeHeatIndex(temperature=temperature, percentHumidity=humidity),3)
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                    configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
 
@@ -131,6 +137,11 @@ class DHT22(object):
         """
         timestamp=timezone.now() #para hora con info UTC 
         humidity, temperature = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
-        dewpoint=(humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112
-        hi=self.computeHeatIndex(temperature=temperature, percentHumidity=humidity)
-        return (humidity, temperature,dewpoint)
+        if (temperature < self._maxT and temperature > self._minT):
+            dewpoint=(humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112
+            hi=self.computeHeatIndex(temperature=temperature, percentHumidity=humidity)
+        else:
+            humidity=0
+            temperature=0
+            dewpoint=0
+        return (round(humidity,3), round(temperature,3), round(dewpoint,3))
