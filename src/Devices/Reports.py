@@ -43,7 +43,10 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             table=variables['table']
             name=variables['name']
             label=variables['label']
-            bitPos=variables['bitPos']
+            try:
+                bitPos=variables['bitPos']
+            except:
+                bitPos=None
             try:
                 type=variables['type']
             except:
