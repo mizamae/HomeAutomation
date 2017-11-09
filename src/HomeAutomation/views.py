@@ -405,7 +405,7 @@ def device_report(request):
                          
                         chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=sampletime)
                          
-                        logger.debug(json.dumps(chart))    
+                        #logger.debug(json.dumps(chart))    
                          
                         charts.append(chart)                                           
             else:

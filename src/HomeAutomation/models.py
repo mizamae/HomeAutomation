@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.functional import lazy
 import datetime
 import sys
-
+import os
 import json
 
 from django.dispatch import receiver
@@ -125,37 +125,37 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
         logger.info('Se ha activado la planificacion semanal ' + str(instance.Label) + ' para la variable ' + str(instance.Var))
         schedules=MainDeviceVarWeeklyScheduleModel.objects.filter(Var=instance.Var)
         for schedule in schedules:
-            if schedule.Var!=instance.Var or schedule.Label!=instance.Label:
+            if schedule.Label!=instance.Label:
                 schedule.Active=False
                 schedule.save()
         checkHourlySchedules()
     
 def checkHourlySchedules():
-    logger.info('Checking hourly schedules')
+    logger.info('Checking hourly schedules on process ' + str(os.getpid()))
     schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
     timestamp=datetime.datetime.now()
-    logger.info('Timestamp: ' + str(timestamp))
+    #logger.info('Timestamp: ' + str(timestamp))
     weekDay=timestamp.weekday()
-    logger.info('Weekday: ' + str(weekDay))
+    #logger.info('Weekday: ' + str(weekDay))
     hour=timestamp.hour
-    logger.info('Hour: ' + str(hour))
+    #logger.info('Hour: ' + str(hour))
     for schedule in schedules:
-        logger.info('Schedule: ' + str(schedule.Label))
         if schedule.Active:
-            logger.info('Is active!!!')
+            logger.info('Schedule: ' + str(schedule.Label) + ' is active')
+            #logger.info('Is active!!!')
             dailySchedules=schedule.inlinedaily_set.all()
             for daily in dailySchedules:
-                logger.info('Daily: ' + str(daily))
+                #logger.info('Daily: ' + str(daily))
                 if daily.Day==weekDay:
                     Setpoint=getattr(daily,'Hour'+str(hour))
-                    logger.info('Setpoint Hour'+str(hour)+' = ' + str(Setpoint))
+                    #logger.info('Setpoint Hour'+str(hour)+' = ' + str(Setpoint))
                     if Setpoint==0:
                         Value=schedule.LValue
                     else:
                         Value=schedule.HValue
                     variable=MainDeviceVarModel.objects.get(Label=schedule.Var.Label)
-                    logger.info('Variable.value = ' + str(variable.Value))
-                    logger.info('Value = ' + str(Value))
+                    #logger.info('Variable.value = ' + str(variable.Value))
+                    #logger.info('Value = ' + str(Value))
                     if variable.Value!=Value:
                         variable.Value=Value
                         variable.save()

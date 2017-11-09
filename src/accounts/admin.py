@@ -147,7 +147,7 @@ class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
     
     def printValue(self,instance):
         return str(instance.Var.Value)+' '+instance.Var.Units
-    printValue.short_description = _("Current value")
+    printValue.short_description = _("Var current value")
     
     def printSetpoint(self,instance):
         import datetime

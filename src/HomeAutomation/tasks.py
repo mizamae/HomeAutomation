@@ -68,7 +68,6 @@ def start_reportsGenerationTask():
 def HourlyTask():
     logger.info('Checking hourly tasks...')
     HomeAutomation.models.checkHourlySchedules()
-    pass
 
 def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.

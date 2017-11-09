@@ -17,9 +17,14 @@ class DHT11(object):
     """
     Tools for working with DHT temperature/humidity sensor.
     """
+    _maxT=60
+    _minT=-20
+    _lastTemp=None
+    
     def __init__(self,DHTsensor):
         self.type = Adafruit_DHT.DHT11
         self.sensor=DHTsensor
+        self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2ºC per minute
 
     def read_sensor(self):
         """
@@ -31,8 +36,15 @@ class DHT11(object):
         temperature=0
         for x in range(0, 3):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
-            temperature=temperature+t
-            humidity=humidity+h
+            if self._lastTemp!=None and abs(self._lastTemp-t)>self._maxDT:
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
+                t=self._lastTemp
+                
+            if (t < self._maxT and t > self._minT):
+                temperature=temperature+t
+                humidity=humidity+h
+            else:
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t) + ' Humidity: '+ str(h))
             time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
             
         temperature=temperature/3
@@ -64,12 +76,14 @@ class DHT22(object):
     """
     Tools for working with DHT temperature/humidity sensor.
     """
-    _maxT=50
+    _maxT=60
     _minT=-20
+    _lastTemp=None
     
     def __init__(self,DHTsensor):
         self.type = Adafruit_DHT.DHT22
         self.sensor=DHTsensor
+        self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2ºC per minute
     
     def convertCtoF(self,c):
       return c*1.8+32
@@ -102,11 +116,15 @@ class DHT22(object):
         Read temperature and humidity from DHT sensor.
         """
         timestamp=timezone.now() #para hora con info UTC 
-        #logger.info('Read sensor '+self.sensor.DeviceName+' is started on process ' + str(os.getpid()))  
         humidity=0
         temperature=0
         for x in range(0, 3):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
+            
+            if self._lastTemp!=None and abs(self._lastTemp-t)>self._maxDT:
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
+                t=self._lastTemp
+                
             if (t < self._maxT and t > self._minT):
                 temperature=temperature+t
                 humidity=humidity+h
@@ -130,6 +148,7 @@ class DHT22(object):
             'heat index':hi,
         }
         Devices_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
+        self._lastTemp=temperature
         
     def query_sensor(self):
         """
