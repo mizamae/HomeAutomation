@@ -1,0 +1,12 @@
+[Unit]
+Description=daphne daemon
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=/home/pi/HomeAutomation/src
+ExecStart=/usr/local/bin/daphne -u /home/pi/run/HomeAutomation_RT.sock HomeAutomation.asgi:channel_layer
+
+[Install]
+WantedBy=multi-user.target

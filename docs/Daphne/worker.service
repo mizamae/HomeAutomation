@@ -1,0 +1,12 @@
+[Unit]
+Description=worker daemon
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=/home/pi/HomeAutomation/src
+ExecStart=/usr/bin/python3 manage.py runworker --only-channels=http.* --only-channels=websocket.*
+
+[Install]
+WantedBy=multi-user.target

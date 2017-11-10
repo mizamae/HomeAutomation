@@ -273,7 +273,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                             tempX2.append(fecha)
                             tempY.append(value)
         
-        logger.info('chart: ' + chart['chart_title'])
+        #logger.info('chart: ' + chart['chart_title'])
         for columnNumber,col in enumerate(cols):
             try:
                 extrapolate=col['extrapolate']
@@ -282,7 +282,10 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             if extrapolate=='keepPrevious':
                 Previous=tempY[0][columnNumber]
                 if Previous==None:
-                    Previous=0
+                    for row in tempY:
+                        if row[columnNumber]!=None:
+                            Previous=row[columnNumber]
+                            break
                 for row in tempY:
                     if row[columnNumber]==None:
                         row[columnNumber]=Previous

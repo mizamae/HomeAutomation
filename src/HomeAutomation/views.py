@@ -298,6 +298,17 @@ def viewReports(request,pk=None):
         return Http404
 
 @login_required
+@user_passes_test(lambda u: u.has_perm('Devices.view_report'))
+def previewReport(request,title):
+    Report=Devices.models.ReportModel.objects.get(ReportTitle=title)
+    ReportData,fromDate,toDate=Report.getReport()
+    ReportItem=Devices.models.ReportItems(Report=Report,fromDate=fromDate,toDate=toDate,data=json.dumps(ReportData))
+    return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
+                                                        'fromDate':ReportItem.fromDate,
+                                                        'toDate':ReportItem.toDate,
+                                                        'reportData':ReportItem.data})
+                                                        
+@login_required
 @user_passes_test(lambda u: u.has_perm('HomeAutomation.add_automationrule'))
 def ajax_get_orders_for_device(request,devicePK):
     if request.is_ajax():

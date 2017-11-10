@@ -52,6 +52,7 @@ urlpatterns = [
     url(r'^master_gpios/$', Master_GPIOs.views.master_gpios,name='master_gpios'),
     url(r'^reports/$', views.viewReports,name='viewReports'),
     url(r'^reports/(?P<pk>.+)/$', views.viewReports,name='viewReports'),
+    url(r'^reportpreview/(?P<title>.+)/$', views.previewReport,name='previewReport'),
     url(r'^users/', include(profiles.urls, namespace='profiles')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin/RemoteDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),

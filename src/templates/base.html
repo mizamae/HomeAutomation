@@ -58,8 +58,8 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% block navbar-right %}
-            <div class="btn-group nav navbar-nav navbar-right language menu">
-				  <button class="btn btn-secondary btn-sm dropdown-toggle language-btn" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            	<div class="btn-group nav navbar-nav language menu">
+				  <button class="btn btn-outline-secondary dropdown-toggle btn-link" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				    {% get_language_info for LANGUAGE_CODE as lang %}
 				    {{ lang.name_local }} ({{ lang.code }})
 				  </button>
@@ -75,7 +75,7 @@
 				                      <button type="submit"
 				                              name="language"
 				                              value="{{ language.code }}"
-				                              class="{% if language.code == LANGUAGE_CODE %} active {% endif %} dropdown-item fake-btn">
+				                              class="btn-link {% if language.code == LANGUAGE_CODE %} active {% endif %} dropdown-item ">
 				                          {{ language.name_local|title }} ({{ language.code }})
 				                      </button>
 				                  </ul>
