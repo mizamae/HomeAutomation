@@ -19,6 +19,8 @@ class DHT11(object):
     """
     _maxT=60
     _minT=-20
+    _maxH=100
+    _minH=0
     _lastTemp=None
     
     def __init__(self,DHTsensor):
@@ -42,10 +44,14 @@ class DHT11(object):
                 
             if (t < self._maxT and t > self._minT):
                 temperature=temperature+t
+            else:
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t))
+            if (h < self._maxH and h > self._minH):
                 humidity=humidity+h
             else:
-                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t) + ' Humidity: '+ str(h))
-            time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Humidity: '+ str(h))
+                
+            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
             
         temperature=temperature/3
         humidity=humidity/3
@@ -62,6 +68,7 @@ class DHT11(object):
             'humidity':humidity,
         }
         Devices_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
+        self._lastTemp=temperature
         
     def query_sensor(self):
         """
@@ -78,7 +85,10 @@ class DHT22(object):
     """
     _maxT=60
     _minT=-20
+    _maxH=100
+    _minH=0
     _lastTemp=None
+    _numberMeasures=3
     
     def __init__(self,DHTsensor):
         self.type = Adafruit_DHT.DHT22
@@ -118,22 +128,32 @@ class DHT22(object):
         timestamp=timezone.now() #para hora con info UTC 
         humidity=0
         temperature=0
-        for x in range(0, 3):
+        for x in range(0, self._numberMeasures):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
+            if t==None:
+                t=self._maxT
+            if h==None:
+                h=self._maxH
             
-            if self._lastTemp!=None and abs(self._lastTemp-t)>self._maxDT:
-                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
-                t=self._lastTemp
+            if self._lastTemp!=None: 
+                if abs(self._lastTemp-t)>self._maxDT:
+                    logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
+                    t=self._lastTemp
                 
             if (t < self._maxT and t > self._minT):
                 temperature=temperature+t
+            else:
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t))
+                
+            if (h < self._maxH and h > self._minH):
                 humidity=humidity+h
             else:
-                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t) + ' Humidity: '+ str(h))
-            time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
+                logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Humidity: '+ str(h))
+                
+            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
             
-        temperature=round(temperature/3,3)
-        humidity=round(humidity/3,3)
+        temperature=round(temperature/self._numberMeasures,3)
+        humidity=round(humidity/self._numberMeasures,3)
         dewpoint=round((humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112,3)
         hi=round(self.computeHeatIndex(temperature=temperature, percentHumidity=humidity),3)
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
@@ -156,7 +176,11 @@ class DHT22(object):
         """
         timestamp=timezone.now() #para hora con info UTC 
         humidity, temperature = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
-        if (temperature < self._maxT and temperature > self._minT):
+        if temperature==None:
+            temperature=0
+        if humidity==None:
+            humidity=0
+        if (temperature < self._maxT and temperature > self._minT) and (humidity < self._maxH and humidity > self._minH):
             dewpoint=(humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112
             hi=self.computeHeatIndex(temperature=temperature, percentHumidity=humidity)
         else:
