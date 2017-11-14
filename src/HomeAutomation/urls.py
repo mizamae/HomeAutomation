@@ -53,6 +53,7 @@ urlpatterns = [
     url(r'^reports/$', views.viewReports,name='viewReports'),
     url(r'^reports/(?P<pk>.+)/$', views.viewReports,name='viewReports'),
     url(r'^reportpreview/(?P<title>.+)/$', views.previewReport,name='previewReport'),
+    url(r'^owntracks/(?P<user>.+)/$', views.handleLocation,name='handleLocation'),
     url(r'^users/', include(profiles.urls, namespace='profiles')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin/RemoteDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),

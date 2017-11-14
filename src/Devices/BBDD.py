@@ -319,6 +319,18 @@ class RegistersDatabase(Database):
                                 '''  # the * will be replaced by the column names and $ by inputs or outputs
     SQLinsertMainVARs_statement = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
                                  
+    SQL_createTracks_table = ''' 
+                                CREATE TABLE IF NOT EXISTS tracks (
+                                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    User text NOT NULL,
+                                    Latitude float NOT NULL,
+                                    Longitude float NOT NULL,
+                                    Accuracy float NOT NULL,
+                                    UNIQUE (timestamp,User)                    
+                                ); 
+                                '''
+    SQLinsertTrack_statement = ''' INSERT INTO tracks (timestamp,User,Latitude,Longitude,Accuracy) VALUES(?,?,?,?,?) ''' # the ? will be replaced by the values
+    
     def __init__(self,location):
         super().__init__(location=location) # to execute the parent's constructor
        
@@ -345,6 +357,17 @@ class RegistersDatabase(Database):
         except:
             print ("Unexpected error in create_datagram_table:", sys.exc_info()[1])
             logger.error ("Unexpected error in create_datagram_table:"+ str(sys.exc_info()[1]))
+    
+    def create_tracks_table(self):
+        """
+        Creates the table corresponding to the position tracking
+        """
+        try:
+            sql=self.SQL_createTracks_table
+            super().create_table(SQLstatement=sql)                              
+        except:
+            print ("Unexpected error in create_tracks_table:", sys.exc_info()[1])
+            logger.error ("Unexpected error in create_tracks_table:"+ str(sys.exc_info()[1]))
             
     def create_events_table(self):
         """
@@ -459,13 +482,23 @@ class DIY4dot0_Databases(object):
         table_to_find='events'
         found=False
         for row in rows:
-            if (row[1]==table_to_find):   # there is a table named devices
+            if (row[1]==table_to_find):   # there is a table named events
                 found=True
                 break
         if found is not True:
             self.registersDB.create_events_table()
             logger.info('The table '+table_to_find+' was not created.') 
         
+        table_to_find='tracks'
+        found=False
+        for row in rows:
+            if (row[1]==table_to_find):   # there is a table named tracks
+                found=True
+                break
+        if found is not True:
+            self.registersDB.create_tracks_table()
+            logger.info('The table '+table_to_find+' was not created.') 
+            
         IOs=Master_GPIOs.models.IOmodel.objects.all()
         inputs={}
         inputs['names']=[]
@@ -745,6 +778,18 @@ class DIY4dot0_Databases(object):
             print ("Unexpected error in insert_event:", sys.exc_info()[1])
             logger.error("Unexpected error in insert_event:" + str(sys.exc_info()[1]))
 
+    def insert_track(self,TimeStamp,User,Latitude,Longitude,Accuracy):
+        """
+        INSERTS AN EVENT IN THE registersDB INTO THE events TABLE.
+        """
+        try:                              
+            self.check_IOsTables()
+            #SQLinsertTrack_statement = ''' INSERT INTO tracks (timestamp,User,Latitude,Longitud) VALUES(?) ''' # the ? will be replaced by the values
+            self.registersDB.insert_row(SQL_statement=self.registersDB.SQLinsertTrack_statement, row_values=(TimeStamp,User,Latitude,Longitude,Accuracy))
+        except:
+            print ("Unexpected error in insert_track:", sys.exc_info()[1])
+            logger.error("Unexpected error in insert_track:" + str(sys.exc_info()[1]))
+            
     def rename_DeviceRegister_tables(self,OldDeviceName,NewDeviceName):
         tables=self.registersDB.retrieve_DB_structure(fields='*')   #('table', 'devices', 'devices', 4, "CREATE TABLE devices...)
         OldDeviceName=OldDeviceName

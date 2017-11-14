@@ -31,8 +31,8 @@ elif len(sys.argv) == 2 and sys.argv[1]=='make':
 elif len(sys.argv) == 2 and sys.argv[1]=='migrate':
     command = command_args[sys.argv[1]]
 else:
-    print('usage: python3 HomeAutomation/src/migrations_handler.py [make|migrate] [app|*] #')
-    print('example: python3 HomeAutomation/src/migrations_handler.py make * - Makes the migrations to all the apps')
+    print('usage: python HomeAutomation/src/migrations_handler.py [make|migrate] [app] #')
+    print('example: python HomeAutomation/src/migrations_handler.py make - Makes the migrations to all the apps')
     sys.exit(1)
     
 

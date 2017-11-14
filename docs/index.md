@@ -20,3 +20,10 @@ sudo /etc/init.d/ntp stop
 sudo ntpd -q -g
 sudo /etc/init.d/ntp start
 
+Create superuser
+python manage.py createsuperuser
+a veces no existe la tabla profile_profiles
+    python manage.py migrate --run-syncdb
+
+Collect static files
+    python manage.py collectstatic

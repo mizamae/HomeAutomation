@@ -33,7 +33,11 @@ A more detailed but general manual about configuring Nginx can be found [here][1
 
 ### Detailed instructions
 
+## Generation of user and passw pairs to accept or deny the publication of location data
+Details are dhown [here][2]
+
 Take a look at the docs for more information.
 
 [0]: https://nginx.org/en/
 [1]: https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-16-04
+[2]: https://www.nginx.com/resources/admin-guide/restricting-access-auth-basic/

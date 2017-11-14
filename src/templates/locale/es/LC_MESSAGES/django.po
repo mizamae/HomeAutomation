@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-09 15:57+0100\n"
+"POT-Creation-Date: 2017-11-14 12:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -158,7 +158,7 @@ msgstr "Definici&oacute;n de las etiquetas para el dispositivo "
 msgid " finished OK"
 msgstr " termin&oacute; OK"
 
-#: admin/customLabels.html:11 reportItemsList.html:67 reqconfdevice.html:16
+#: admin/customLabels.html:11 reportItemsList.html:74 reqconfdevice.html:16
 #: showdevices.html:188
 msgid "Return to Main"
 msgstr "Volver "
@@ -508,23 +508,29 @@ msgstr "Resetea mi contrase&ntilde;a"
 msgid "List of saved reports"
 msgstr "Lista de los informes guardados"
 
-#: reportItemsList.html:35 reportTemplate.html:106
+#: reportItemsList.html:37 reportTemplate.html:106
 msgid "Report "
 msgstr "Informes"
 
-#: reportItemsList.html:45 reportItemsList.html:54
+#: reportItemsList.html:40
+#, fuzzy
+#| msgid "View report"
+msgid "Preview next report"
+msgstr "Ver informe"
+
+#: reportItemsList.html:52 reportItemsList.html:61
 msgid "From"
 msgstr "Desde"
 
-#: reportItemsList.html:46 reportItemsList.html:55
+#: reportItemsList.html:53 reportItemsList.html:62
 msgid "To"
 msgstr "Hasta"
 
-#: reportItemsList.html:47
+#: reportItemsList.html:54
 msgid "Link"
 msgstr "Link"
 
-#: reportItemsList.html:57
+#: reportItemsList.html:64
 msgid "View report"
 msgstr "Ver informe"
 

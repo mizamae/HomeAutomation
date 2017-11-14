@@ -122,6 +122,7 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
     registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     timestamp=timezone.now() #para hora con info UTC
+
     if kwargs['created']:   # new instance is created  
         registerDB.check_IOsTables()
         logger.info('The IO ' + str(instance) + ' has been registered on the process ' + str(os.getpid()))
@@ -132,8 +133,8 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             logger.info("Initialized Output on pin " + str(instance.pin))
             registerDB.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
         elif instance.direction=='IN':
-            GPIO.remove_event_detect(int(instance.pin))
             GPIO.setup(int(instance.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+            GPIO.remove_event_detect(int(instance.pin))
             GPIO.add_event_detect(int(instance.pin), GPIO.BOTH, callback=instance.InputChangeEvent, bouncetime=200)  
             logger.info("Initialized Input on pin " + str(instance.pin))
     else:
@@ -144,7 +145,7 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             else:
                 GPIO.output(int(instance.pin),GPIO.LOW)
             registerDB.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
-            
+
     if instance.direction!='SENS':
         instance.updateAutomationVars()
         rules=HomeAutomation.models.AutomationRuleModel.objects.filter((Q(Var1__Tag=instance.pk) & Q(Var1__Device='Main')) | (Q(Var2__Tag=instance.pk) & Q(Var2__Device='Main')))

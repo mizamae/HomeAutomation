@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-09 15:58+0100\n"
+"POT-Creation-Date: 2017-11-14 12:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: admin.py:22 admin.py:69
+msgid "Current value"
+msgstr "Valor actual"
+
+#: admin.py:84
+msgid "Current setpoint"
+msgstr "Consigna actual"
+
+#: admin.py:103
+msgid "Set as active schedule"
+msgstr "Establecer programación activa"
+
+#: admin.py:121 forms.py:88
+msgid "Activate the rule"
+msgstr "Activa la regla"
 
 #: apps.py:16
 msgid "HomeAutomation base app"
@@ -44,11 +60,7 @@ msgstr "Enviar"
 
 #: forms.py:87
 msgid "Set the name for the automation rule"
-msgstr "Introduce el nombre de la regla de automatizaci&oacute;n"
-
-#: forms.py:88
-msgid "Activate the rule"
-msgstr "Activa la regla"
+msgstr "Introduce el nombre de la regla de automatización"
 
 #: forms.py:89
 msgid "Enter the previous rule to be chained"
@@ -72,7 +84,7 @@ msgstr "Selecciona la segunda variable de la regla"
 
 #: forms.py:95
 msgid "Enter the hysteresis margin"
-msgstr "Introduce el margen de hist&eacute;resis"
+msgstr "Introduce el margen de histéresis"
 
 #: forms.py:108
 msgid "Save"
@@ -92,7 +104,7 @@ msgstr "Enviar un email"
 
 #: forms.py:121
 msgid "Select the action"
-msgstr "Selecciona la acci&oacute;n"
+msgstr "Selecciona la acción"
 
 #: forms.py:122
 msgid "Select the output"
@@ -128,7 +140,7 @@ msgstr "Variables de la Unidad Principal"
 
 #: models.py:111
 msgid "Main device var weekly schedule"
-msgstr "Programaci&oacute;n semanal de variables de la Unidad Principal"
+msgstr "Programación semanal de variables de la Unidad Principal"
 
 #: models.py:112
 msgid "Main device var weekly schedules"
@@ -172,7 +184,7 @@ msgstr "ALTO"
 
 #: models.py:211
 msgid "Main device var hourly schedule"
-msgstr "Programaci&oacute;n horaria de variables de la Unidad Principal"
+msgstr "Programación horaria de variables de la Unidad Principal"
 
 #: models.py:212
 msgid "Main device var hourly schedules"
@@ -180,11 +192,11 @@ msgstr "Programaciones horarias de variables de la Unidad Principal"
 
 #: models.py:228
 msgid "Automation variable"
-msgstr "Variable de automatizaci&oacute;n"
+msgstr "Variable de automatización"
 
 #: models.py:229
 msgid "Automation variables"
-msgstr "Aplicación principal de HomeAutomation"
+msgstr "Variables de automatización"
 
 #: models.py:242
 msgid "AND"
@@ -196,16 +208,16 @@ msgstr ""
 
 #: models.py:329
 msgid "Automation rule"
-msgstr "Regla de automatizaci&oacute;n"
+msgstr "Regla de automatización"
 
 #: models.py:330
 msgid "Automation rules"
-msgstr "Reglas de automatizaci&oacute;n"
+msgstr "Reglas de automatización"
 
-#: settings/base.py:140
+#: settings/base.py:141
 msgid "Spanish"
 msgstr "Español"
 
-#: settings/base.py:141
+#: settings/base.py:142
 msgid "English"
 msgstr "Inglés"

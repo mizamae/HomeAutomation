@@ -99,6 +99,7 @@ INSTALLED_APPS = (
     'LocalDevices',
     'Master_GPIOs',
     'Events',
+    'Tracks',
  #   'sortedm2m',
 )
 

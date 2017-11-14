@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-09 15:58+0100\n"
+"POT-Creation-Date: 2017-11-14 12:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,30 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#: admin.py:40 admin.py:88
-msgid "Define custom labels for the variables"
-msgstr "Define las etiquetas de las variables"
-
-#: admin.py:103
-msgid "Current value"
-msgstr "Valor actual"
-
-#: admin.py:150
-msgid "Var current value"
-msgstr "Valor actual de la variable"
-
-#: admin.py:165
-msgid "Current setpoint"
-msgstr "Consigna actual"
-
-#: admin.py:184
-msgid "Set as active schedule"
-msgstr "Establecer como programaci&oacute;n activa"
-
-#: admin.py:202
-msgid "Activate the rule"
-msgstr "Activar la regla"
 
 #: templates/accounts/emails/password-reset-email.html:2
 #, python-format
@@ -69,3 +45,21 @@ msgstr ""
 #, python-format
 msgid "The %(site_name)s team"
 msgstr ""
+
+#~ msgid "Define custom labels for the variables"
+#~ msgstr "Define las etiquetas de las variables"
+
+#~ msgid "Current value"
+#~ msgstr "Valor actual"
+
+#~ msgid "Var current value"
+#~ msgstr "Valor actual de la variable"
+
+#~ msgid "Current setpoint"
+#~ msgstr "Consigna actual"
+
+#~ msgid "Set as active schedule"
+#~ msgstr "Establecer como programaci&oacute;n activa"
+
+#~ msgid "Activate the rule"
+#~ msgstr "Activar la regla"
