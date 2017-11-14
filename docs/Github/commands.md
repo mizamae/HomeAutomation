@@ -19,7 +19,11 @@ Welcome to HomeAutomation!
 ### Commit to backup the progress
     
     git commit
-        
+
+### To create the branch in the remote server and track it. Push with the -u (short for --set-upstream) option:
+
+    git push -u origin <branch-name>
+
 ## When properly finished, checkout to the master branch
 
     git checkout master
@@ -35,3 +39,5 @@ Welcome to HomeAutomation!
 ## To delete the branch, use
 
     git branch -d <branch-name>
+
+    
