@@ -2,13 +2,14 @@
 from __future__ import unicode_literals
 from django.utils.translation import ugettext as _
 import uuid
+from channels.binding.websockets import WebsocketBinding
 
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
-
+from channels import Group
 import logging
 
 logger = logging.getLogger("project")
@@ -32,6 +33,10 @@ class BaseProfile(models.Model):
     
     class Meta:
         abstract = True
+        permissions = (
+            ("view_tracking", "Can see the real time ubication of a user"),
+            ("change_trackingstate", "Can change the state of the tracking of a user"),
+        )
 
 @receiver(post_save)
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
@@ -51,8 +56,25 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             else:
                 mainVar.Value=-1
             mainVar.save()
+        if instance.Latitude!=None and instance.Longitude!=None:
+            import json
+            #pass
+            Group('Profiles-values').send({'text':json.dumps({'user': instance.user.name,'Latitude':instance.Latitude,'Longitude':instance.Longitude,'Accuracy':instance.Accuracy})},immediately=True)
 
 @python_2_unicode_compatible
 class Profile(BaseProfile):
     def __str__(self):
         return "{}'s profile". format(self.user)
+
+class BaseProfilemodelBinding(WebsocketBinding):
+
+    model = BaseProfile
+    stream = "Profiles_values"
+    fields = ["name","profile.Latitude","profile.Longitude","profile.Accuracy"]
+
+    @classmethod
+    def group_names(cls, *args, **kwargs):
+        return ["Profiles-values",]
+
+    def has_permission(self, user, action, pk):
+        return True

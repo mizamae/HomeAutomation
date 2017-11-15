@@ -72,6 +72,11 @@
 		      <p>{% trans "Here you can edit the timezone for this application."  %}</p>
 		      <p><a class="btn btn-primary" href="{% url 'settimezone' %}" role="button">{% trans "Select timezone" %} &raquo;</a></p>
 		  </div>
+		  <div class="col-lg-4">
+		      <h2>{% trans "Where is a user" %}</h2>
+		      <p>{% trans "Here you can see the GPS position of a user (if provided)."  %}</p>
+		      <p><a class="btn btn-primary" href="{% url 'viewUserUbication' %}" role="button">{% trans "View ubication" %} &raquo;</a></p>
+		  </div>
 	    </div>
 	</div>
 {% else %}

@@ -5,7 +5,6 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
-from django.db.models import Q
 import HomeAutomation.models
 import RPi.GPIO as GPIO
 import Master_GPIOs.signals

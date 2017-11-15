@@ -697,7 +697,20 @@ def AdvancedDevicepage(request,devicename):
     
     return render(request, DEVICE_TYPE+'.html',
         {'Device':deviceData})
- 
+
+@login_required
+@user_passes_test(lambda u: u.has_perm('profiles.view_tracking'))
+def viewUserUbication(request):
+    if request.method == 'POST':
+        pass
+    else:
+        from authtools.models import User
+        users = User.objects.all()
+        for usr in users:
+            if usr.profile.tracking:
+                pass
+        return render(request, 'trackUsers.html',{'Users':users})
+        
 @csrf_exempt
 def handleLocation(request,user):
     if request.method == 'POST':

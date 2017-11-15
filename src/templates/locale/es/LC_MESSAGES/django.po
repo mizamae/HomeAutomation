@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-14 12:40+0100\n"
+"POT-Creation-Date: 2017-11-15 17:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgid "Type"
 msgstr "Tipo"
 
 #: DHT11.html:124 DHT22.html:124 GAPQv1.html:123 GPIOs.html:90
-#: timezones.html:49
+#: timezones.html:49 trackUsers.html:71
 msgid "Return"
 msgstr "Volver "
 
@@ -45,7 +45,7 @@ msgstr "Direcci&oacute;n IP"
 
 #: GAPQv1.html:46
 msgid "Active errors"
-msgstr ""
+msgstr "Errores activos"
 
 #: GPIOs.html:36
 msgid "List of GPIOs"
@@ -227,7 +227,21 @@ msgstr "Aqu&iacute; puedes seleccionar tu zona horaria"
 msgid "Select timezone"
 msgstr "Seleccionar zona horaria"
 
-#: advanced_device.html:79 home_device.html:187
+#: advanced_device.html:76
+msgid "Where is a user"
+msgstr ""
+
+#: advanced_device.html:77
+#, fuzzy
+#| msgid "Here you can see the reports that have been generated."
+msgid "Here you can see the GPS position of a user (if provided)."
+msgstr "Aqu&iacute; puedes ver los informes que se han ido generando."
+
+#: advanced_device.html:78
+msgid "View ubication"
+msgstr ""
+
+#: advanced_device.html:84 home_device.html:187
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
 
@@ -700,6 +714,26 @@ msgstr " Marcha "
 msgid " Stop "
 msgstr " Paro "
 
+#: trackUsers.html:36
+msgid "Users tracking"
+msgstr "Seguimiento de usuarios"
+
+#: trackUsers.html:46
+msgid "Name"
+msgstr "Nombre"
+
+#: trackUsers.html:47
+msgid "Latitude"
+msgstr "Latitud"
+
+#: trackUsers.html:48
+msgid "Longitude"
+msgstr "Longitud"
+
+#: trackUsers.html:49
+msgid "Accuracy [m]"
+msgstr "Precisi&oacute;n [m]"
+
 #~ msgid "Load the configuration of the GPIOs from XML"
 #~ msgstr "Cargar la configuraci&oacute;n de las E/S desde el XML"
 
@@ -736,6 +770,3 @@ msgstr " Paro "
 
 #~ msgid "View saved reports"
 #~ msgstr "Ver informes"
-
-#~ msgid "Here you can see the reports that have been generated."
-#~ msgstr "Aqu&iacute; puedes ver los informes que se han ido generando."

@@ -47,7 +47,7 @@ class MainDeviceVarModel(models.Model):
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             timestamp=timezone.now()-datetime.timedelta(seconds=1) #para hora con info UTC
             registerDB.insert_VARs_register(TimeStamp=timestamp)
-            logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
+            #logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
         self.__original_Value = self.Value
         super(MainDeviceVarModel, self).save(*args, **kwargs)
         
@@ -82,7 +82,8 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     
     if not kwargs['created']:   # an instance has been modified
-        logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
+        #logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
+        pass
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()

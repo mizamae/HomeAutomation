@@ -1,4 +1,4 @@
-from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketConsumer
+from channels.generic.websockets import JsonWebsocketConsumer
 import LocalDevices.signals
 import LocalDevices.callbacks
 from .models import DeviceModel

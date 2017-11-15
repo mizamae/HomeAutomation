@@ -18,37 +18,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps.py:18
-msgid "I/Os manager"
-msgstr "Gestor de E/S"
+#: apps.py:17
+msgid "Tracking manager"
+msgstr ""
 
-#: models.py:53
-msgid "Output"
-msgstr "Salida"
+#: forms.py:37
+msgid "Set the unique name for the beacon"
+msgstr ""
 
-#: models.py:54
-msgid "Input"
-msgstr "Entrada"
+#: forms.py:38
+msgid "Enter the latitude of the beacon"
+msgstr ""
 
-#: models.py:55
-msgid "Sensor"
-msgstr "Sensor"
+#: forms.py:39
+msgid "Enter the longitude of the beacon"
+msgstr ""
 
-#: models.py:58
-msgid "LOW"
-msgstr "BAJO"
-
-#: models.py:59
-msgid "HIGH"
-msgstr "ALTO"
-
-#: models.py:116
-msgid "Input/Output"
-msgstr "Entrada/Salida"
-
-#: models.py:117
-msgid "Inputs/Outputs"
-msgstr "Entradas/Salidas"
-
-#~ msgid " on pin "
-#~ msgstr " en el pin "
+#: models.py:14
+msgid "Invalid Beacon name - This name already exists in the DB."
+msgstr ""

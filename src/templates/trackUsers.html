@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+
+
+{% block title %}{{ block.super }}Home{% endblock %}
+
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="downloads" %}
+{% endblock %}
+
+
+{% block splash %}
+
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
+
+
+{% endblock splash %}
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+<!-- Benefits of the Django application -->
+
+<div class="container">
+		<h1>{% trans "Users tracking" %}</h1>
+		<p></p>
+        <div class="row">
+            <!-- #DF5353  red -->
+             <!-- #55BF3B // green -->
+            <div class="col-md-4">
+            	{% if Users %}
+            	<table id="Users_table" class="table table-striped table-bordered table-responsive ">
+					<thead class="thead-inverse">
+					    <tr>
+					        <th>{% trans "Name" %}</th>
+					        <th>{% trans "Latitude" %}</th>
+					        <th>{% trans "Longitude" %}</th>
+					        <th>{% trans "Accuracy [m]" %}</th>
+					    </tr>
+					 </thead>
+					 <tbody>
+					 	{% for user in Users %}
+					 	<tr> 
+					        <td>{{ user.name }}</td>
+					        <td>{{ user.profile.Latitude }}</td>
+					        <td>{{ user.profile.Longitude }}</td>
+					        <td>{{ user.profile.Accuracy }}</td>
+				        </tr>
+				        {% endfor %}
+			        </tbody>
+		        </table>
+		        {% endif %}
+            </div>
+             
+            <div class="col-md-8" id="map-container">
+                
+            </div>
+        </div>
+		<p></p>
+	    <a class="btn btn-primary" href="{% url 'advancedDevice' %}"  role="button">{% trans "Return" %} &raquo;</a></p>
+</div><!-- /.container -->
+
+
+
+
+{% endblock container %}
+
+{% block scripts %}
+<script src="{% static 'site/js/site.js' %}"></script>	
+<script src="http://maps.google.com/maps/api/js?key=AIzaSyARa_5fk7pCUNLM9Ce_czcokqdVbn5PLyQ&sensor=false"></script> 
+<!-- <script src="{% static 'GoogleMapsLatLong.js' %}"></script> -->
+<script>
+       
+        // When we're using HTTPS, use WSS too.
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/stream/UserTracking/");
+        var markers=[];
+        var map;
+ 
+        function init_map() {
+             // Enter the latitude and longitude of your office here
+             var myLocation = new google.maps.LatLng(42.793759,-1.615882);
+
+             var mapOptions = {
+                        center: myLocation,
+                        zoom: 14
+                        };
+
+             map = new google.maps.Map(document.getElementById("map-container"),mapOptions);
+             var newLocation;
+             {% for user in Users %}
+             
+                newLocation = new google.maps.LatLng(parseFloat("{{ user.profile.Latitude }}".replace(',','.')),parseFloat("{{ user.profile.Longitude }}".replace(',','.')));
+                markers[{{ forloop.counter }}]= new google.maps.Marker({
+                                        map:map,
+                                        animation: google.maps.Animation.DROP,
+										position: newLocation,
+                                        label:{color:'red',
+                                                fontWeight:'bold',
+                                                text:"{{ user.name }}",},
+										title:"{{ user.name }}"});
+                //markers[{{ forloop.counter }}].setMap(map);
+                //markers[{{ forloop.counter }}].setPosition( newLocation );
+             {% endfor %}
+             map.panTo( newLocation );
+           }
+                              
+        $(function() {
+           
+            init_map();
+            
+            chatsock.onmessage = function(message) {
+                var data = JSON.parse(message.data);
+                
+                update_profile(name=data.user,latitude=data.Latitude,longitude=data.Longitude,accuracy=data.Accuracy);
+            };
+
+            $("#chatform").on("submit", function(event) {
+                var message = {
+                    handle: $('#handle').val(),
+                    message: $('#message').val(),
+                }
+                chatsock.send(JSON.stringify(message));
+                $("#message").val('').focus();
+                return false;
+            });
+        });
+        // Helpful debugging
+        chatsock.addEventListener('open', 
+            function() { 
+                console.log("Connected to notification socket"); 
+                label=document.getElementById('RT_status');
+                label.style.color="LimeGreen";
+                label.innerHTML="Connected to RT engine"
+        });
+        chatsock.addEventListener('close', 
+            function() { 
+                console.log("Disconnected to notification socket"); 
+                label=document.getElementById('RT_status');
+                label.style.color="Red";
+                label.innerHTML="Disconnected from RT engine"
+        });
+        
+        function update_profile(name,latitude,longitude,accuracy){
+			var table=document.getElementById('Users_table');
+			var rownum=-1;
+			for (var i = 0, row; row = table.rows[i]; i++) {
+				if (row.cells[0].innerHTML==name)
+				{
+					rownum=i;
+					break;
+				}
+			}
+			if (rownum>0)
+			{
+				var row=table.rows[rownum];
+				if (typeof latitude != "undefined") {row.cells[1].innerHTML=latitude;}
+				if (typeof longitude != "undefined") {row.cells[2].innerHTML=longitude;}
+				if (typeof accuracy != "undefined") {row.cells[3].innerHTML=accuracy;}
+                var newLocation = new google.maps.LatLng(latitude,longitude);
+                markers[rownum].setPosition( newLocation );
+                map.panTo( newLocation );
+              
+			}
+		}
+
+        
+    </script>
+	
+{% endblock scripts %}
+
