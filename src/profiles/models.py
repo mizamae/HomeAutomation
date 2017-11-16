@@ -30,6 +30,7 @@ class BaseProfile(models.Model):
     Latitude = models.FloatField(_("Last known latitude"),null=True,blank=True)
     Longitude = models.FloatField(_("Last known longitude"),null=True,blank=True)
     Accuracy = models.FloatField(_("Last known position accuracy"),null=True,blank=True)
+    LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     
     class Meta:
         abstract = True
@@ -58,8 +59,13 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             mainVar.save()
         if instance.Latitude!=None and instance.Longitude!=None:
             import json
-            #pass
-            Group('Profiles-values').send({'text':json.dumps({'user': instance.user.name,'Latitude':instance.Latitude,'Longitude':instance.Longitude,'Accuracy':instance.Accuracy})},immediately=True)
+            #from django.core.serializers.json import DjangoJSONEncoder
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            localdate = local_tz.localize(instance.LastUpdated.replace(tzinfo=None))
+            localdate=localdate+localdate.utcoffset() 
+            Group('Profiles-values').send({'text':json.dumps({'user': instance.user.name,'Latitude':instance.Latitude,'Longitude':instance.Longitude,'Accuracy':instance.Accuracy,
+                                            'LastUpdated':localdate.strftime("%d %B %Y %H:%M:%S")})},immediately=True)
 
 @python_2_unicode_compatible
 class Profile(BaseProfile):

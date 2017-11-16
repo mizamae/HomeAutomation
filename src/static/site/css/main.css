@@ -140,14 +140,28 @@ body>.navbar-transparent {
 
 .home-jumbo .jumbotron-h1-left, .home-jumbo h2{
 	font-family: 'Gloria Hallelujah', cursive;
-	margin-left: 15%;
+	margin-left: 5%;
 	margin-top: 5%;
+}
+.jumbotron-h2-left{
+	font-family: 'Gloria Hallelujah', cursive;
+	margin-left: 5%;
+	margin-top: 5%;
+    font-size: 15px;
 }
 
 .jumbotron-h1-right{
 	font-family: 'Gloria Hallelujah', cursive;
 	margin-left: 0%;
 	margin-top: 5%;
+    margin-right: 5px;
+}
+.jumbotron-h2-right{
+	font-family: 'Gloria Hallelujah', cursive;
+	margin-left: 0%;
+	margin-top: 5%;
+    margin-right: 5px;
+    font-size: 15px;
 }
 
 .home-jumbo p{

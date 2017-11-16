@@ -20,7 +20,7 @@ msgstr ""
 
 #: admin.py:33
 msgid "Define custom labels for the variables"
-msgstr ""
+msgstr "Establecer los nombres de las variables"
 
 #: apps.py:14
 msgid "Locally connected devices"

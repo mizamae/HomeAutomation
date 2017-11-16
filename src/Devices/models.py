@@ -231,17 +231,35 @@ def getDatagramStructure(devicetype,ID='*'):
         datatypes=[]
         datagramID=datagram.Identifier
         analogItems=datagram.AnItems.all()
-        for item in analogItems:
-            Itemorder=ItemOrdering.objects.get(AnItem=item,datagram=datagram)
-            names.insert(Itemorder.order,Itemorder.AnItem.HumanTag+'_'+Itemorder.AnItem.Units)
-            datatypes.insert(Itemorder.order,Itemorder.AnItem.DataType)
-            types.insert(Itemorder.order,'analog')
         digitalItems=datagram.DgItems.all()
+        import itertools
+        for item in itertools.chain(*[digitalItems,analogItems]):
+            names.append('')
+            types.append('')
+            datatypes.append('')
+        checkedItems=[]
+        for item in analogItems:
+            if not item in checkedItems:
+                try:
+                    Itemorder=ItemOrdering.objects.get(AnItem=item,datagram=datagram)
+                    names[Itemorder.order-1]=Itemorder.AnItem.HumanTag+'_'+Itemorder.AnItem.Units
+                    datatypes[Itemorder.order-1]=Itemorder.AnItem.DataType
+                    types[Itemorder.order-1]='analog'
+                except ItemOrdering.MultipleObjectsReturned:
+                    Itemorders=ItemOrdering.objects.filter(AnItem=item).filter(datagram=datagram)
+                    i=1
+                    for Itemorder in Itemorders:
+                        names[Itemorder.order-1]=Itemorder.AnItem.HumanTag+str(i)+'_'+Itemorder.AnItem.Units
+                        datatypes[Itemorder.order-1]=Itemorder.AnItem.DataType
+                        types[Itemorder.order-1]='analog'
+                        i+=1
+                checkedItems.append(item)
+        
         for item in digitalItems:
             Itemorder=ItemOrdering.objects.get(DgItem=item,datagram=datagram)
-            names.insert(Itemorder.order,Itemorder.DgItem.getText())
-            datatypes.insert(Itemorder.order,'INTEGER')
-            types.insert(Itemorder.order,'digital')
+            names[Itemorder.order-1]=Itemorder.DgItem.getText()
+            datatypes[Itemorder.order-1]='INTEGER'
+            types[Itemorder.order-1]='digital'
         if datagram.isSynchronous():
             sample=1
         else:
@@ -255,6 +273,7 @@ def getDatagramStructure(devicetype,ID='*'):
         return datagramList
     else:
         return datagramList[0]
+
 
 def getAllVariables():
     import Master_GPIOs.models 

@@ -43,7 +43,7 @@ class DeviceModel(models.Model):
     )
     __original_DeviceName = None
     
-    DeviceName = models.CharField(max_length=20,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
+    DeviceName = models.CharField(max_length=50,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
     DeviceCode = models.IntegerField(unique=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
     DeviceIP = models.GenericIPAddressField(protocol='IPv4', unique=True,error_messages={'unique':_("Invalid IP - This IP already exists in the DB.")})
     Type = models.ForeignKey('Devices.DeviceTypeModel',related_name="Remote",on_delete=models.CASCADE,limit_choices_to={'Connection': 'REMOTE'})

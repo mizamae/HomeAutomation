@@ -113,6 +113,7 @@ class HTTP_requests():
                         xmlroot=myHttp.xml_request(server, xmlfile)
         """
         try:
+            #logger.info('Asked conf.xml to server ' + self.server+'/'+xmlfile)
             r = requests.get(self.server+'/'+xmlfile+'?t='+str(random.random()),timeout=timeout)     
             if r.status_code==200:
                 #print(r.text)

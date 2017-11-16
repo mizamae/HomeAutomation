@@ -32,10 +32,10 @@ class DeviceForm(ModelForm):
         self.fields['DeviceName'].label = _("Enter the name of the sensor")
         self.fields['IO'].label = _("Select the GPIO linked to the sensor")
         self.fields['IO'].queryset=IOmodel.objects.filter(direction='SENS')
-        self.fields['Type'].label = _("Enter the type of the sensor")
+        self.fields['Type'].label = _("Select the type of the sensor")
         self.fields['DeviceState'].label = _("Activate the polling of the sensor")
-        self.fields['Sampletime'].label = _("Select the sample time for the measurement [s]")
-        self.fields['RTsampletime'].label = _("Select the sample time for real-time polling [s]")
+        self.fields['Sampletime'].label = _("Set the sample time for the measurement [s]")
+        #self.fields['RTsampletime'].label = _("Set the sample time for real-time polling [s]")
         
         self.helper.layout = Layout(
             Field('DeviceName', css_class='input-sm'),
@@ -43,11 +43,11 @@ class DeviceForm(ModelForm):
             Field('Type', css_class='input-sm'),
             Field('DeviceState', css_class='input-sm'),
             Field('Sampletime', css_class='input-sm'),
-            Field('RTsampletime', css_class='input-sm'),
+            #Field('RTsampletime', css_class='input-sm'),
             Submit('submit', _('Submit'),css_class='btn-primary'),
             )
  
     class Meta:
         model = LocalDevices.models.DeviceModel
-        fields=['DeviceName','IO','Type','DeviceState','Sampletime','RTsampletime']
+        fields=['DeviceName','IO','Type','DeviceState','Sampletime']#,'RTsampletime']
         

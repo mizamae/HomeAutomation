@@ -34,12 +34,12 @@ class DeviceModel(models.Model):
     
     __original_DeviceName = None
     
-    DeviceName = models.CharField(help_text='Name for the device', max_length=20,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
+    DeviceName = models.CharField(help_text='Name for the device', max_length=50,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
     IO = models.OneToOneField(IOmodel,on_delete=models.CASCADE,primary_key=True)
     Type = models.ForeignKey('Devices.DeviceTypeModel',related_name="Local",on_delete=models.CASCADE,limit_choices_to={'Connection': 'LOCAL'})
     DeviceState= models.CharField(help_text='State of the device',choices=STATE_CHOICES, max_length=15)
     Sampletime=models.PositiveIntegerField(default=600)
-    RTsampletime=models.PositiveIntegerField(default=600)
+    #RTsampletime=models.PositiveIntegerField(default=600)
     LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
     CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
@@ -49,7 +49,7 @@ class DeviceModel(models.Model):
     def clean(self):
         if self.IO.direction!='SENS':
             raise ValidationError(_('The GPIO selected is not configured as sensor'))
-        if self.Sampletime<self.Type.MinSampletime or self.RTsampletime<self.Type.MinSampletime:
+        if self.Sampletime<self.Type.MinSampletime: #or self.RTsampletime<self.Type.MinSampletime:
             raise ValidationError(_('The sample time selected is too low for the '+self.Type.Code+' sensors. It should be greater than '+str(self.Type.MinSampletime)+' sec.'))
         
     def __str__(self):

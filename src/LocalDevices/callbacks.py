@@ -28,6 +28,40 @@ class DHT11(object):
         self.sensor=DHTsensor
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2ºC per minute
 
+    def initial_calibration(self):
+        ''' THIS CODE TRIES TO INITIALIZE THE VARIABLE self._lastTemp WITH A GOOD VALUE OF TEMPERATURE
+        '''
+        logger.info('Calibrating sensor ' + str(self.sensor.DeviceName))
+        humidity=0
+        temperature=0
+        samplesT=0
+        x=0
+        retries=0
+        while (x < 1):
+            
+            h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
+            if t==None:
+                t=self._maxT
+            if h==None:
+                h=self._maxH
+                
+            logger.info('Sample ' + str(x+1) + ' yielded ' + str(t) + 'ºC and ' + str(h) + '%')
+            if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
+                temperature=temperature+t
+                samplesT+=1
+            else:
+                x=x-1
+            
+            x=x+1
+            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
+            
+        if samplesT>0:
+            self._lastTemp=round(temperature/samplesT,3)
+            logger.info('Finished calibrating sensor ' + str(self.sensor.DeviceName) + ' with temperature= ' + str(self._lastTemp) + ' obtained with '+ str(samplesT) + ' valid samples')
+        else:
+            self._lastTemp=None
+            logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
+            
     def read_sensor(self):
         """
         Read temperature and humidity from DHT sensor.
@@ -88,7 +122,9 @@ class DHT22(object):
     _maxH=100
     _minH=0
     _lastTemp=None
-    _numberMeasures=3
+    _numberMeasures=1
+    _MAX_RETRIES=3
+    _CalnumberMeasures=10
     
     def __init__(self,DHTsensor):
         self.type = Adafruit_DHT.DHT22
@@ -120,7 +156,42 @@ class DHT22(object):
             hi += ((percentHumidity - 85.0) * 0.1) * ((87.0 - temperature) * 0.2);
             
         return self.convertFtoC(hi)
-  
+    
+    def initial_calibration(self):
+        ''' THIS CODE TRIES TO INITIALIZE THE VARIABLE self._lastTemp WITH A GOOD VALUE OF TEMPERATURE
+        '''
+        logger.info('Calibrating sensor ' + str(self.sensor.DeviceName))
+        humidity=0
+        temperature=0
+        samplesT=0
+        x=0
+        retries=0
+        while (x < 1):
+            
+            h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
+            if t==None:
+                t=self._maxT
+            if h==None:
+                h=self._maxH
+                
+            logger.info('Sample ' + str(x+1) + ' yielded ' + str(t) + 'ºC and ' + str(h) + '%')
+            if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
+                temperature=temperature+t
+                samplesT+=1
+            else:
+                x=x-1
+            
+            x=x+1
+            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
+            
+        if samplesT>0:
+            self._lastTemp=round(temperature/samplesT,3)
+            logger.info('Finished calibrating sensor ' + str(self.sensor.DeviceName) + ' with temperature= ' + str(self._lastTemp) + ' obtained with '+ str(samplesT) + ' valid samples')
+        else:
+            self._lastTemp=None
+            logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
+        
+                                
     def read_sensor(self):
         """
         Read temperature and humidity from DHT sensor.
@@ -128,7 +199,9 @@ class DHT22(object):
         timestamp=timezone.now() #para hora con info UTC 
         humidity=0
         temperature=0
-        for x in range(0, self._numberMeasures):
+        retries=0
+        x=0
+        while (x < self._numberMeasures):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
             if t==None:
                 t=self._maxT
@@ -138,7 +211,7 @@ class DHT22(object):
             if self._lastTemp!=None: 
                 if abs(self._lastTemp-t)>self._maxDT:
                     logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
-                    t=self._lastTemp
+                    t = self._maxT
                 
             if (t < self._maxT and t > self._minT):
                 temperature=temperature+t
@@ -149,13 +222,36 @@ class DHT22(object):
                 humidity=humidity+h
             else:
                 logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Humidity: '+ str(h))
-                
-            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
             
-        temperature=round(temperature/self._numberMeasures,3)
-        humidity=round(humidity/self._numberMeasures,3)
-        dewpoint=round((humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112,3)
-        hi=round(self.computeHeatIndex(temperature=temperature, percentHumidity=humidity),3)
+            if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
+                break
+            else:
+                retries+=1
+                x=-1
+                
+            if retries>=self._MAX_RETRIES:
+                logger.error('Maximum number of retries reached!!!')
+                break
+            x=x+1
+            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
+        
+        if retries>=self._MAX_RETRIES:
+            if temperature>0:
+                temperature=round(temperature/self._numberMeasures,3)
+            else:
+                temperature=None
+            if humidity>0:
+                humidity=round(humidity/self._numberMeasures,3)
+            else:
+                humidity=None
+            dewpoint=None
+            hi=None
+        else:
+            temperature=round(temperature/self._numberMeasures,3)
+            humidity=round(humidity/self._numberMeasures,3)
+            dewpoint=round((humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112,3)
+            hi=round(self.computeHeatIndex(temperature=temperature, percentHumidity=humidity),3)
+            
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                    configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
 
@@ -177,14 +273,12 @@ class DHT22(object):
         timestamp=timezone.now() #para hora con info UTC 
         humidity, temperature = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
         if temperature==None:
-            temperature=0
+            temperature=self._maxT
         if humidity==None:
-            humidity=0
+            humidity=self._maxH
         if (temperature < self._maxT and temperature > self._minT) and (humidity < self._maxH and humidity > self._minH):
             dewpoint=(humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112
             hi=self.computeHeatIndex(temperature=temperature, percentHumidity=humidity)
         else:
-            humidity=0
-            temperature=0
             dewpoint=0
         return (round(humidity,3), round(temperature,3), round(dewpoint,3))

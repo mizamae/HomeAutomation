@@ -729,6 +729,7 @@ def handleLocation(request,user):
                     usr.profile.Latitude=data['lat']
                     usr.profile.Longitude=data['lon']
                     usr.profile.Accuracy=data['acc']
+                    usr.profile.LastUpdated=timestamp
                     usr.profile.save()
                     
         #JSON: {"_type":"location","tid":"MZ","acc":54,"batt":79,"conn":"m","lat":42.8175305,"lon":-1.6015541,"t":"u","tst":1510664016}

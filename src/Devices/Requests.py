@@ -68,6 +68,7 @@ def toggle_requests(DeviceName,forceDB=False):
             if datagram.isSynchronous():#int(datagram['sample'])>0:
                 logger.info('Requests '+deviceName+'-'+datagramID+ ' is added to scheduler') 
                 if DV.Type.Connection=='LOCAL':
+                    getattr(LocalDevices.callbacks, deviceType)(DV).initial_calibration() # executes initial_calibration of the sensor
                     callback=getattr(LocalDevices.callbacks, deviceType)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
                     scheduler.add_job(func=callback,trigger='interval',args=(),
                                       id=deviceName+'-'+datagramID, 

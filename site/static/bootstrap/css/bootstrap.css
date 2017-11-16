@@ -5425,8 +5425,9 @@ a.badge:hover, a.badge:focus {
 
 .jumbotron h1, .jumbotron .h1 {
 	color: inherit;
-	margin-left: 50px;
-	margin-right: 50px;
+	margin-left: 5px;
+	margin-right: 5px;
+    font-size: 20px;
 }
 
 .jumbotron p {
@@ -5462,6 +5463,9 @@ a.badge:hover, a.badge:focus {
 	}
 	.jumbotron h1, .jumbotron .h1 {
 		font-size: 45px;
+	}
+    .jumbotron h2, .jumbotron .h2 {
+		font-size: 30px;
 	}
 }
 

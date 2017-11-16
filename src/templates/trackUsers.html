@@ -38,7 +38,7 @@
         <div class="row">
             <!-- #DF5353  red -->
              <!-- #55BF3B // green -->
-            <div class="col-md-4">
+            <div class="col-md-10">
             	{% if Users %}
             	<table id="Users_table" class="table table-striped table-bordered table-responsive ">
 					<thead class="thead-inverse">
@@ -47,6 +47,7 @@
 					        <th>{% trans "Latitude" %}</th>
 					        <th>{% trans "Longitude" %}</th>
 					        <th>{% trans "Accuracy [m]" %}</th>
+                            <th>{% trans "Last update" %}</th>
 					    </tr>
 					 </thead>
 					 <tbody>
@@ -56,15 +57,16 @@
 					        <td>{{ user.profile.Latitude }}</td>
 					        <td>{{ user.profile.Longitude }}</td>
 					        <td>{{ user.profile.Accuracy }}</td>
+                            <td>{{ user.profile.LastUpdated }}</td>
 				        </tr>
 				        {% endfor %}
 			        </tbody>
 		        </table>
 		        {% endif %}
             </div>
-             
-            <div class="col-md-8" id="map-container">
-                
+        </div>
+        <div class="row">
+            <div class="col-md-10" id="map-container">
             </div>
         </div>
 		<p></p>
@@ -122,19 +124,8 @@
             
             chatsock.onmessage = function(message) {
                 var data = JSON.parse(message.data);
-                
-                update_profile(name=data.user,latitude=data.Latitude,longitude=data.Longitude,accuracy=data.Accuracy);
+                update_profile(name=data.user,latitude=data.Latitude,longitude=data.Longitude,accuracy=data.Accuracy,timestamp=data.LastUpdated);
             };
-
-            $("#chatform").on("submit", function(event) {
-                var message = {
-                    handle: $('#handle').val(),
-                    message: $('#message').val(),
-                }
-                chatsock.send(JSON.stringify(message));
-                $("#message").val('').focus();
-                return false;
-            });
         });
         // Helpful debugging
         chatsock.addEventListener('open', 
@@ -152,7 +143,7 @@
                 label.innerHTML="Disconnected from RT engine"
         });
         
-        function update_profile(name,latitude,longitude,accuracy){
+        function update_profile(name,latitude,longitude,accuracy,timestamp){
 			var table=document.getElementById('Users_table');
 			var rownum=-1;
 			for (var i = 0, row; row = table.rows[i]; i++) {
@@ -168,6 +159,7 @@
 				if (typeof latitude != "undefined") {row.cells[1].innerHTML=latitude;}
 				if (typeof longitude != "undefined") {row.cells[2].innerHTML=longitude;}
 				if (typeof accuracy != "undefined") {row.cells[3].innerHTML=accuracy;}
+                if (typeof timestamp != "undefined") {row.cells[4].innerHTML=timestamp;}
                 var newLocation = new google.maps.LatLng(latitude,longitude);
                 markers[rownum].setPosition( newLocation );
                 map.panTo( newLocation );
