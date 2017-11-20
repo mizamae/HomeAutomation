@@ -10,7 +10,8 @@ logger = logging.getLogger("project")
 class DeviceModel_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
-        Devices.signals.Toggle_DeviceStatus.send(sender="Stream", Device=DV)
+        DV.DeviceState=not DV.DeviceState
+        DV.save()
 
 class DeviceModel_delete(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):

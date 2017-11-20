@@ -13,209 +13,71 @@ logger = logging.getLogger("project")
 
 scheduler = BackgroundScheduler()
 
-def initialize_polling_remote():
+   
+def initialize_polling_devices():
     DVs=Devices.models.DeviceModel.objects.all()
     if DVs is not None:
-        for device in DVs:
-            if device.DeviceState=='RUNNING':
-                toggle_requests(DeviceName=device.DeviceName,forceDB=True)
+        for DV in DVs:
+            if DV.DeviceState==1:
+                update_requests(DV=DV)
 
-def initialize_polling_local():
-    DVs=Devices.models.DeviceModel.objects.all()
-    if DVs is not None:
-        for device in DVs:
-            if device.DeviceState=='RUNNING':
-                toggle_requests(DeviceName=device.DeviceName,forceDB=True)
                     
-def toggle_requests(DeviceName,forceDB=False):
+def update_requests(DV):
  # creates the jobs to request data from the devices
-    #forceDB=True forces the value set in the devicesDB, otherwise toggles it.
-    try:
-        DV=Devices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-    except Devices.models.DeviceModel.DoesNotExist: 
-        logger.error('TOGGLE-REQUESTS: The device '+DeviceName + ' does not exist in the DB.') 
-        return
-    deviceName=DV.DeviceName 
-    deviceType=DV.Type 
-    if DV.Type.Connection=='LOCAL':
-        devicePin =DV.IO.pin 
-    else:
-        deviceIP=DV.DeviceIP 
-        deviceCode=DV.DeviceCode 
-    sample=DV.Sampletime
-    if forceDB==False:
-        deviceState=DV.DeviceState #device[4]
-    else:
-        if DV.DeviceState=='RUNNING':
-            deviceState='STOPPED'
-        else:
-            deviceState='RUNNING'
-    xmlroot = ET.parse(Devices.GlobalVars.XML_CONFFILE_PATH).getroot()
-    parser=Devices.XML_parser.XMLParser(xmlroot=xmlroot)
     #datagrams=parser.getDatagramsStructureForDeviceType(deviceType=deviceType)
-    datagrams=Devices.models.DatagramModel.objects.filter(DeviceType=deviceType)
+    DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
     
-    if deviceState=='STOPPED':
-        logger.info('Device '+deviceName+ ' was stopped')    
-        for datagram in datagrams:
-            datagramID=datagram.Identifier
-            if datagram.isSynchronous():#int(datagram['sample'])>0:
-                logger.info('Requests '+deviceName+'-'+datagramID+ ' is added to scheduler') 
+    if DV.DeviceState==1:
+        for DG in DGs:
+            datagramID=DG.Identifier
+            if DG.isSynchronous():#int(datagram['sample'])>0:
+                id=DV.DeviceName+'-'+DG.Identifier
+                try:
+                    scheduler.remove_job(id)
+                    logger.info('Killed previous job ID '+id)
+                except:
+                    pass 
+                    
+                logger.info('Requests '+id+ ' is added to scheduler') 
                 if DV.Type.Connection=='LOCAL':
-                    callback=getattr(Devices.callbacks, deviceType.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
+                    callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
                     scheduler.add_job(func=callback,trigger='interval',args=(),
-                                      id=deviceName+'-'+datagramID, 
-                                      seconds=sample,replace_existing=True)
-                else:
-                    scheduler.add_job(func=request_to_device,trigger='interval',args=(deviceIP,deviceCode, datagramID),
-                                      id=deviceName+'-'+datagramID, 
-                                      seconds=sample,replace_existing=True)
-        logger.info('Polling for the device '+deviceName+' is started on process ' + str(os.getpid()))  
-        try:
-            scheduler.start()
-        except:
-            logger.info('Main thread was already started')
+                                      id=id, 
+                                      seconds=DV.Sampletime,replace_existing=True)
+                elif DV.Type.Connection=='REMOTE':
+                    scheduler.add_job(func=request_to_device,trigger='interval',args=(DV.DeviceIP,DV.DeviceCode, DG.Identifier),
+                                      id=id, 
+                                      seconds=DV.Sampletime,replace_existing=True)
+                elif DV.Type.Connection=='MEMORY':
+                    callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
+                    arguments={'datagram':'observation'}
+                    scheduler.add_job(func=callback,trigger='interval',kwargs=arguments,
+                                      id=id, 
+                                      seconds=DV.Sampletime,replace_existing=True)
+        if len(DGs)>0:
+            logger.info('Polling for the device '+DV.DeviceName+' is started on process ' + str(os.getpid()) + ' with sampletime= ' + str(DV.Sampletime))  
+            try:
+                scheduler.start()
+            except:
+                logger.info('Main thread was already started')
+        else:
+            logger.warning('The device types ' +str(DV.Type) + ' have no datagrams defined')
         #updates the state of the device in the DB
-        DV.DeviceState='RUNNING'
     else:
-        logger.info('Device '+deviceName+ ' was running')   
         logger.info('There are still these polls active '+ str(scheduler.get_jobs()))  
-        for datagram in datagrams:
-            datagramID=datagram.Identifier
-            if datagram.isSynchronous():#int(datagram['sample'])>0:
-                id=deviceName+'-'+datagramID
-                logger.info('Removing job '+id) 
+        for DG in DGs:
+            if DG.isSynchronous():#int(datagram['sample'])>0:
+                id=DV.DeviceName+'-'+DG.Identifier
+                logger.info('Removing job '+id)
                 try:
                     scheduler.remove_job(id)
                 except:
                     logger.error('Job ID '+id+' does not exist. DB mismatch!!') 
-        DV.DeviceState='STOPPED'
-        logger.info('Polling for the device '+deviceName+' is stopped')  
+        logger.info('Polling for the device '+DV.DeviceName+' is stopped')  
         logger.info('There are still these polls active '+str(scheduler.get_jobs()))  
-    
-    DV.save(update_fields=["DeviceState"])
-
-def dummy():
-    pass
 
 def request_to_device(deviceIP,deviceCode,DatagramId):
     logger.info('Lanzada consulta ' +DatagramId+ ' a ' + deviceIP + ' desde el proceso ' + str(os.getpid()))
-    deviceIP='127.0.0.1'
     HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP)    
     HTTPrequest.request_datagram(DeviceCode=deviceCode,DatagramId=DatagramId) 
-    
-# def toggle_HTTP_requests(DeviceName,forceDB=False):
- # # creates the jobs to request data from the devices
-    # #forceDB=True forces the value set in the devicesDB, otherwise toggles it.
-    # DV=RemoteDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-    # deviceName=DV.DeviceName #device[0]
-    # deviceType=DV.Type.Code #device[1]
-    # deviceIP=DV.DeviceIP #device[2]
-    # deviceCode=DV.DeviceCode #device[3]
-    # sample=DV.Sampletime
-    # if forceDB==False:
-        # deviceState=DV.DeviceState #device[4]
-    # else:
-        # if DV.DeviceState=='RUNNING':
-            # deviceState='STOPPED'
-        # else:
-            # deviceState='RUNNING'
-    # xmlroot = ET.parse(Devices.GlobalVars.XML_CONFFILE_PATH).getroot()
-    # parser=Devices.XML_parser.XMLParser(xmlroot=xmlroot)
-    # #datagrams=parser.getDatagramsStructureForDeviceType(deviceType=deviceType)
-    # datagrams=Devices.models.DatagramModel.objects.filter(DeviceType=deviceType)
-    # logger.info('deviceState= '+deviceState) 
-    
-    # if deviceState=='STOPPED':
-        # logger.info('Device '+deviceName+ ' was stopped')    
-        # for datagram in datagrams:
-            # #sample=int(datagram['sample'])
-            # datagramID=datagram.Identifier
-            # if datagram.isSynchronous():#int(datagram['sample'])>0:
-                # logger.info('Requests '+deviceName+'-'+datagramID+ ' is added to scheduler') 
-                # scheduler.add_job(func=request_to_device,trigger='interval',args=(deviceIP,deviceCode, datagramID),
-                                  # id=deviceName+'-'+datagramID, 
-                                  # seconds=sample,replace_existing=True)
-        # logger.info('Polling for the device '+deviceName+' is started on process ' + str(os.getpid()))  
-        # try:
-            # scheduler.start()
-        # except:
-            # logger.info('Main thread was already started')
-        # #updates the state of the device in the DB
-        # DV.DeviceState='RUNNING'
-    # else:
-        # logger.info('Device '+deviceName+ ' was running')   
-        # logger.info('There are still these polls active '+ str(scheduler.get_jobs()))  
-        # for datagram in datagrams:
-            # datagramID=datagram.Identifier
-            # if datagram.isSynchronous():#int(datagram['sample'])>0:
-                # id=deviceName+'-'+datagramID
-                # logger.info('Removing job '+id) 
-                # try:
-                    # scheduler.remove_job(id)
-                # except:
-                    # logger.error('Job ID '+id+' does not exist. DB mismatch!!') 
-        # DV.DeviceState='STOPPED'
-        # logger.info('Polling for the device '+deviceName+' is stopped')  
-        # logger.info('There are still these polls active '+str(scheduler.get_jobs()))  
-    
-    # DV.save(update_fields=["DeviceState"])
-
-
-
-# def toggle_LOCAL_requests(DeviceName,forceDB=False):
-    # DV=LocalDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-    # deviceName =DV.DeviceName #device[0]
-    # deviceType =DV.Type.Code #device[1]
-    # devicePin =DV.IO.pin #device[2]
-    # sample=DV.Sampletime
-    # if forceDB==False:
-        # deviceState=DV.DeviceState #device[4]
-    # else:
-        # if DV.DeviceState=='RUNNING':
-            # deviceState='STOPPED'
-        # else:
-            # deviceState='RUNNING'
-    # xmlroot = ET.parse(Devices.GlobalVars.XML_CONFFILE_PATH).getroot()
-    # parser=Devices.XML_parser.XMLParser(xmlroot=xmlroot)
-    # #datagrams=parser.getDatagramsStructureForDeviceType(deviceType=deviceType)
-    # datagrams=Devices.models.DatagramModel.objects.filter(DeviceType=deviceType)
-    # logger.info('deviceState= '+deviceState) 
-    
-    # if deviceState=='STOPPED':
-        # logger.info('Device '+deviceName+ ' was stopped')    
-        # for datagram in datagrams:
-            # datagramID=datagram.Identifier
-            # if datagram.isSynchronous():#int(datagram['sample'])>0:
-                # logger.info('Requests '+deviceName+'-'+datagramID+ ' is added to scheduler') 
-                # callback=getattr(LocalDevices.callbacks, deviceType)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
-
-                # scheduler.add_job(func=callback,trigger='interval',args=(),
-                                  # id=deviceName+'-'+datagramID, 
-                                  # seconds=sample,replace_existing=True)
-        # logger.info('Polling for the device '+deviceName+' is started on process ' + str(os.getpid()))  
-        # try:
-            # scheduler.start()
-        # except:
-            # logger.info('Main thread was already started')
-        # #updates the state of the device in the DB
-        # DV.DeviceState='RUNNING'
-    # else:
-        # logger.info('Device '+deviceName+ ' was running')   
-        # logger.info('There are still these polls active '+ str(scheduler.get_jobs()))  
-        # for datagram in datagrams:
-            # datagramID=datagram.Identifier
-            # if datagram.isSynchronous():#int(datagram['sample'])>0:
-                # id=deviceName+'-'+datagramID
-                # logger.info('Removing job '+id) 
-                # try:
-                    # scheduler.remove_job(id)
-                # except:
-                    # logger.error('Job ID '+id+' does not exist. DB mismatch!!') 
-        # DV.DeviceState='STOPPED'
-        # logger.info('Polling for the device '+deviceName+' is stopped')  
-        # logger.info('There are still these polls active '+str(scheduler.get_jobs()))  
-    
-    # DV.save(update_fields=["DeviceState"])
-        
-        
+  

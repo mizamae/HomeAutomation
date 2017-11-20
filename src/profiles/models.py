@@ -72,15 +72,15 @@ class Profile(BaseProfile):
     def __str__(self):
         return "{}'s profile". format(self.user)
 
-class BaseProfilemodelBinding(WebsocketBinding):
+# class BaseProfilemodelBinding(WebsocketBinding):
 
-    model = BaseProfile
-    stream = "Profiles_values"
-    fields = ["name","profile.Latitude","profile.Longitude","profile.Accuracy"]
+    # model = BaseProfile
+    # stream = "Profiles_values"
+    # fields = ["name","profile.Latitude","profile.Longitude","profile.Accuracy"]
 
-    @classmethod
-    def group_names(cls, *args, **kwargs):
-        return ["Profiles-values",]
+    # @classmethod
+    # def group_names(cls, *args, **kwargs):
+        # return ["Profiles-values",]
 
-    def has_permission(self, user, action, pk):
-        return True
+    # def has_permission(self, user, action, pk):
+        # return True

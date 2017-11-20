@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
@@ -58,8 +59,8 @@ def delete_DeviceTypeModel(sender, instance,**kwargs):
 class DeviceModel(models.Model):
     
     STATE_CHOICES=(
-        ('STOPPED','STOPPED'),
-        ('RUNNING','RUNNING')
+        (0,'STOPPED'),
+        (1,'RUNNING')
     )
     
     __original_DeviceName = None
@@ -69,7 +70,7 @@ class DeviceModel(models.Model):
     DeviceCode = models.IntegerField(unique=True,blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
     DeviceIP = models.GenericIPAddressField(protocol='IPv4', unique=True,blank=True,null=True,error_messages={'unique':_("Invalid IP - This IP already exists in the DB.")})
     Type = models.ForeignKey(DeviceTypeModel,related_name="deviceType",on_delete=models.CASCADE)#limit_choices_to={'Connection': 'LOCAL'}
-    DeviceState= models.CharField(choices=STATE_CHOICES, max_length=15,default='STOPPED')
+    DeviceState= models.PositiveSmallIntegerField(choices=STATE_CHOICES, default=0)
     Sampletime=models.PositiveIntegerField(default=600)
     RTsampletime=models.PositiveIntegerField(default=60)
     LastUpdated= models.DateTimeField(blank = True,null=True)
@@ -177,13 +178,15 @@ class DeviceModel(models.Model):
         
 @receiver(post_save, sender=DeviceModel, dispatch_uid="update_DeviceModel")
 def update_DeviceModel(sender, instance, update_fields,**kwargs):
-        
+    from Devices.Requests import initialize_polling_devices
     if kwargs['created']:   # new instance is created
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
         registerDB.create_DeviceRegistersTables(DV=instance)
+        initialize_polling_devices()
     else:
         instance.updateAutomationVars()
+        
         
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_DeviceModel")
 def delete_DeviceModel(sender, instance,**kwargs):
@@ -193,7 +196,7 @@ def delete_DeviceModel(sender, instance,**kwargs):
 class DeviceModelBinding(WebsocketBinding):
 
     model = DeviceModel
-    stream = "RDevice_params"
+    stream = "Device_params"
     fields = ["DeviceName","IO","DeviceCode","DeviceIP","Type","Sampletime","DeviceState","LastUpdated","Error"]
 
     @classmethod

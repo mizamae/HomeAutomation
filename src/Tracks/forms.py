@@ -35,18 +35,21 @@ class BeaconForm(ModelForm):
         self.helper.form_method = 'post'
          
         self.fields['Identifier'].label = _("Set the unique name for the beacon")
+        self.fields['WeatherObserver'].label = _("Select the weather source for the beacon")
         self.fields['Latitude'].label = _("Enter the latitude of the beacon")
         self.fields['Longitude'].label = _("Enter the longitude of the beacon")
 
         self.helper.layout = Layout(
                 Field('Identifier', css_class='input-sm'),
+                Field('WeatherObserver', css_class='input-sm'),
                 Field('Latitude', css_class='input-sm'),
-                Field('Longitude', css_class='input-sm'),)
+                Field('Longitude', css_class='input-sm'),
+                )
         
     class Meta:
         model = Tracks.models.BeaconModel
         
-        fields=['Identifier','Latitude','Longitude']
+        fields=['Identifier','WeatherObserver','Latitude','Longitude']
     class Media:
         js = ('GoogleMapsLatLong.js',)
 

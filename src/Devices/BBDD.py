@@ -224,6 +224,7 @@ class Database(object):
         except:
             print ("Unexpected error in insert_row:", sys.exc_info()[1]) 
             logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
+            logger.error("SQL: "+ SQL_statement)
             return -1
        
     def delete_row(self,table,field,value):
@@ -725,14 +726,14 @@ class DIY4dot0_Databases(object):
             print ("Unexpected error in insert_event:", sys.exc_info()[1])
             logger.error("Unexpected error in insert_event:" + str(sys.exc_info()[1]))
     
-    def insert_track(self,TimeStamp,User,Latitude,Longitude):
+    def insert_track(self,TimeStamp,User,Latitude,Longitude,Accuracy):
         """
         INSERTS AN EVENT IN THE registersDB INTO THE events TABLE.
         """
         try:                              
             self.check_IOsTables()
             #SQLinsertTrack_statement = ''' INSERT INTO tracks (timestamp,User,Latitude,Longitud) VALUES(?) ''' # the ? will be replaced by the values
-            self.registersDB.insert_row(SQL_statement=self.registersDB.SQLinsertTrack_statement, row_values=(TimeStamp,User,Latitude,Longitude))
+            self.registersDB.insert_row(SQL_statement=self.registersDB.SQLinsertTrack_statement, row_values=(TimeStamp,User,Latitude,Longitude,Accuracy))
         except:
             print ("Unexpected error in insert_track:", sys.exc_info()[1])
             logger.error("Unexpected error in insert_track:" + str(sys.exc_info()[1]))

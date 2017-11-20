@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 from django.utils import timezone
 import Devices.BBDD
+import Devices.GlobalVars
 #from Devices.signals import Device_datagram_reception,Device_datagram_exception
 import time
 import os
@@ -13,6 +14,55 @@ import Adafruit_DHT
 A class with the name of each of the DeviceTypes defined for local connection need to be created.
 The method to be called when polling the device must be called "read_sensor"
 '''
+class OpenWeatherMap(object):
+    def __init__(self,DV):
+        self.sensor=DV
+        try:
+            self.place=DV.device2beacon
+        except:
+            self.place=None
+        
+    def read_sensor(self,**kwargs):
+        #logger.error('Callback for the device ' + self.sensor.DeviceName)
+        if self.place!=None:
+            import pyowm
+            owm = pyowm.OWM('a85b0fd83aa7cf883f15ed7fc0bab4d9')  # You MUST provide a valid API key
+            datagram=kwargs['datagram']
+            #logger.error('Datagram: ' + datagram)
+            if datagram=='observation':
+                observation = owm.weather_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
+                w = observation.get_weather()
+                timestamp=w.get_reference_time(timeformat='date')
+                dewpoint=w.get_dewpoint()                   # Returns the dew point as a float
+                clouds=w.get_clouds()                       # Returns the cloud coverage percentage as an int
+                windspeed=w.get_wind()['speed']                           # {'speed': 4.6, 'deg': 330}
+                windorigin=w.get_wind()['deg']                           # {'speed': 4.6, 'deg': 330}
+                humidity=w.get_humidity()                   # 87
+                temperature=w.get_temperature('celsius')['temp']    # {'temp_max': 10.5, 'temp': 9.7, 'temp_min': 9.0}
+                rain=w.get_rain()                           # {'3h': 0}
+                if '3h' in rain:
+                    rain=rain['3h']
+                else:
+                    rain=0
+                values=(temperature,humidity,windspeed,rain)
+            elif datagram=='forecast':
+                forecast = owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
+                fcs = forecast.get_forecast()
+                print('Forecasts for the next 12 H')
+                for i,fc in enumerate(fcs):
+                    print(fc.get_reference_time('date'),fc.get_status())
+                values=(None,)
+            
+            #logger.error('Values: ' + str(values))
+            registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+            timestamp=timezone.now() #para hora con info UTC 
+            registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values)
+            self.sensor.LastUpdated=timestamp
+            self.sensor.save()
+        else:
+            logger.error('The device ' + self.sensor.DeviceName + ' does not have any Beacon associated.')
+        
 class DHT11(object):
     """
     Tools for working with DHT temperature/humidity sensor.

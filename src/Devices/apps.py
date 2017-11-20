@@ -39,8 +39,7 @@ class DevicesConfig(AppConfig):
                 singletaskingProcess=int(singletaskingProcess)
             if singletaskingProcess==int(process):
                 cache.set(self.name, process, 40)
-                from Devices.Requests import initialize_polling_remote,initialize_polling_local
-                logger.info('Initializing polling on Remote devices for the first time on process ' + str(process))
-                initialize_polling_remote()
-                logger.info('Initializing polling on Local devices for the first time on process ' + str(process))
+                from Devices.Requests import initialize_polling_devices
+                logger.info('Initializing polling on Devices for the first time on process ' + str(process))
+                initialize_polling_devices()
                

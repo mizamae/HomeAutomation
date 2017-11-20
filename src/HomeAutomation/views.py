@@ -77,8 +77,12 @@ def ShowDeviceList(request):
     local_DVs=DVs.filter(Type__Connection='LOCAL')
     numrows_local=len(local_DVs)
     
+    memory_DVs=DVs.filter(Type__Connection='MEMORY')
+    numrows_memory=len(memory_DVs)
+    
     return render(request, 'showdevices.html',{'numrows_remote':numrows_remote,'RemotedeviceList':remote_DVs,
-                                               'numrows_local':numrows_local,'LocaldeviceList':local_DVs})
+                                               'numrows_local':numrows_local,'LocaldeviceList':local_DVs,
+                                               'numrows_memory':numrows_memory,'MemorydeviceList':memory_DVs,})
 
 @user_passes_test(lambda u: u.has_perm('HomeAutomation.change_state'))
 def ToggleDevice(request,devicename):
@@ -477,7 +481,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
     vars=''
     for name,type,label in zip(names,types,labels):
         #logger.info(str(name))
-        vars+='"'+name+'"'+','
+        vars+='"'+str(name)+'"'+','
         if type=='analog':
             tempname.append({'label':label,'type':type})
         elif type=='digital':
@@ -707,6 +711,7 @@ def viewUserUbication(request):
 def handleLocation(request,user):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
+        #logger.info('JSON: ' + str(request.body.decode('utf-8')))
         from authtools.models import User
         users = User.objects.all()
         for usr in users:
@@ -716,13 +721,18 @@ def handleLocation(request,user):
                     timestamp=timezone.now()
                     applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
-                    applicationDBs.insert_track(TimeStamp=timestamp,User=str(usr.email),Latitude=data['lat'],Longitude=data['lon'])
+                    applicationDBs.insert_track(TimeStamp=timestamp,User=str(usr.email),Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
                     usr.profile.Latitude=data['lat']
                     usr.profile.Longitude=data['lon']
+                    usr.profile.Accuracy=data['acc']
+                    usr.profile.LastUpdated=timestamp
                     usr.profile.save()
                     
-        #request.body=b'{"_type":"location","tid":"ad","acc":67,"batt":81,"conn":"m","lat":42.8171802,"lon":-1.6013,"tst":1510572418}'
-        logger.info ("User = {0} is currently at {1}, {2}".format(user, data['lat'], data['lon']))
+        #JSON: {"_type":"location","tid":"MZ","acc":54,"batt":79,"conn":"m","lat":42.8175305,"lon":-1.6015541,"t":"u","tst":1510664016}
+        
+        # tid: identification of the user
+        # acc: Accuracy of the reported location in meters
+        # conn: connection type, m for mobile, w for wifi, o for offline
         return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
                 
 @csrf_exempt

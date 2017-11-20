@@ -6,6 +6,7 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 
+from Devices.models import DeviceModel
 import logging
 
 logger = logging.getLogger("project")
@@ -14,6 +15,8 @@ class BeaconModel(models.Model):
     Identifier = models.CharField(max_length=20,unique=True,error_messages={'unique':_("Invalid Beacon name - This name already exists in the DB.")})
     Latitude = models.FloatField()
     Longitude = models.FloatField()
+    WeatherObserver=models.OneToOneField(DeviceModel,on_delete=models.CASCADE,related_name='device2beacon',
+                                         null=True,blank=True,limit_choices_to={'Type__Code': 'OpenWeatherMap'})
 
     def distance_to(self,other):
         from math import sin, cos, sqrt, atan2, radians
