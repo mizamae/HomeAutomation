@@ -149,7 +149,7 @@
         
         $(function () {
             
-            webSocketBridge.demultiplex('RDevice_query', function(payload, streamName) {
+            webSocketBridge.demultiplex('Device_query', function(payload, streamName) {
                 // Handle different actions
                 if (payload.action == "query") {
                     var Power=payload.data[1];
@@ -183,11 +183,11 @@
         });
         
         function query(){
-            webSocketBridge.stream('RDevice_query').send({
+            webSocketBridge.stream('Device_query').send({
                         "pk": 0,
                         "action": "query",
                         "data": {
-                            "DeviceName": "{{ Device.DeviceName }}",
+                            "DevicePK": "{{ Device.pk }}",
                         }
                     });
             }

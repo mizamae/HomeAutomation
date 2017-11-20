@@ -11,7 +11,7 @@ from django.forms import ModelForm
 
 import json
 import Master_GPIOs.models
-import RemoteDevices.models
+#import RemoteDevices.models
 import Devices.models
 
 from crispy_forms.helper import FormHelper
@@ -121,7 +121,7 @@ class AutomationRuleForm(BaseAutomationRuleForm):
     ActionType = forms.ChoiceField(choices=ACTION_CHOICES,label=_('Select the action'))
     IO=forms.ModelChoiceField(queryset=Master_GPIOs.models.IOmodel.objects.filter(direction='OUT'),label=_('Select the output'),required = False)
     IOValue=forms.ChoiceField(choices=Master_GPIOs.models.IOmodel.VALUE_CHOICES,label=_('Select the output value when the rule is True'),required = False)
-    Device=forms.ModelChoiceField(queryset=RemoteDevices.models.DeviceModel.objects.all(),label=_('Select the device to send the order to'),required = False)
+    Device=forms.ModelChoiceField(queryset=Devices.models.DeviceModel.objects.filter(Type__Connection='REMOTE'),label=_('Select the device to send the order to'),required = False)
     Order=forms.ModelChoiceField(queryset=Devices.models.CommandModel.objects.all(),label=_('Select the order to send'),required = False)
     
     def __init__(self, *args, **kwargs):

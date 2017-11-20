@@ -38,7 +38,7 @@
         <div class="row">
             <!-- #DF5353  red -->
              <!-- #55BF3B // green -->
-            <div class="col-md-10">
+            <div class="col-md-4">
             	{% if Users %}
             	<table id="Users_table" class="table table-striped table-bordered table-responsive ">
 					<thead class="thead-inverse">
@@ -46,8 +46,7 @@
 					        <th>{% trans "Name" %}</th>
 					        <th>{% trans "Latitude" %}</th>
 					        <th>{% trans "Longitude" %}</th>
-					        <th>{% trans "Accuracy [m]" %}</th>
-                            <th>{% trans "Last update" %}</th>
+					        <th>{% trans "Accuracy" %}</th>
 					    </tr>
 					 </thead>
 					 <tbody>
@@ -57,16 +56,15 @@
 					        <td>{{ user.profile.Latitude }}</td>
 					        <td>{{ user.profile.Longitude }}</td>
 					        <td>{{ user.profile.Accuracy }}</td>
-                            <td>{{ user.profile.LastUpdated }}</td>
 				        </tr>
 				        {% endfor %}
 			        </tbody>
 		        </table>
 		        {% endif %}
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-10" id="map-container">
+             
+            <div class="col-md-8" id="content-main">
+                
             </div>
         </div>
 		<p></p>
@@ -80,74 +78,59 @@
 
 {% block scripts %}
 <script src="{% static 'site/js/site.js' %}"></script>	
-<script src="http://maps.google.com/maps/api/js?key=AIzaSyARa_5fk7pCUNLM9Ce_czcokqdVbn5PLyQ&sensor=false"></script> 
-<!-- <script src="{% static 'GoogleMapsLatLong.js' %}"></script> -->
+<script src="{% static 'GoogleMapsLatLong.js' %}"></script>	
 <script>
-       
-        // When we're using HTTPS, use WSS too.
+  
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/stream/UserTracking/");
-        var markers=[];
-        var map;
- 
-        function init_map() {
-             // Enter the latitude and longitude of your office here
-             var myLocation = new google.maps.LatLng(42.793759,-1.615882);
+		var ws_path =  "/stream/UserTracking/";
+		console.log("Connecting to " + ws_path);
+        
+		var webSocketBridge = new channels.WebSocketBridge();
+		webSocketBridge.connect(ws_path);
+		webSocketBridge.listen();
 
-             var mapOptions = {
-                        center: myLocation,
-                        zoom: 14
-                        };
-
-             map = new google.maps.Map(document.getElementById("map-container"),mapOptions);
-             var newLocation;
-             {% for user in Users %}
-             
-                newLocation = new google.maps.LatLng(parseFloat("{{ user.profile.Latitude }}".replace(',','.')),parseFloat("{{ user.profile.Longitude }}".replace(',','.')));
-                markers[{{ forloop.counter }}]= new google.maps.Marker({
-                                        map:map,
-                                        animation: google.maps.Animation.DROP,
-										position: newLocation,
-                                        label:{color:'red',
-                                                fontWeight:'bold',
-                                                text:"{{ user.name }}",},
-										title:"{{ user.name }}"});
-                //markers[{{ forloop.counter }}].setMap(map);
-                //markers[{{ forloop.counter }}].setPosition( newLocation );
-             {% endfor %}
-             map.panTo( newLocation );
-           }
-                              
-        $(function() {
-           
-            init_map();
+        
+        $(function () {
             
-            chatsock.onmessage = function(message) {
-                var data = JSON.parse(message.data);
-                update_profile(name=data.user,latitude=data.Latitude,longitude=data.Longitude,accuracy=data.Accuracy,timestamp=data.LastUpdated);
-            };
-        });
-        // Helpful debugging
-        chatsock.addEventListener('open', 
-            function() { 
-                console.log("Connected to notification socket"); 
-                label=document.getElementById('RT_status');
-                label.style.color="LimeGreen";
-                label.innerHTML="Connected to RT engine"
-        });
-        chatsock.addEventListener('close', 
-            function() { 
-                console.log("Disconnected to notification socket"); 
-                label=document.getElementById('RT_status');
-                label.style.color="Red";
-                label.innerHTML="Disconnected from RT engine"
+        	webSocketBridge.demultiplex('Profiles_values', function(payload, streamName) {
+                // Handle different actions
+                if (payload.action == "create") {
+                    // Create the new GPIO model
+                    console.log("New profile created");
+                } else if (payload.action == "update") {
+					//update_GPIO(payload.pk,payload.data.value,payload.data.label)
+					update_profile(payload.name,payload.data.latitude,payload.data.longitude,payload.data.accuracy)
+                    console.log("Profile "+ String(payload.name) + " has changed");
+                } else if (payload.action == "delete") {
+					//delete_GPIO(parseInt(payload.pk))
+                	console.log("Profile model deleted");
+                } else {
+                    console.log("Unknown action " + payload.action);
+                }
+            });
+            // Helpful debugging
+            webSocketBridge.socket.addEventListener('open', 
+                function() { 
+                    console.log("Connected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="LimeGreen";
+                    label.innerHTML="Connected to RT engine"
+                    query();
+            });
+            webSocketBridge.socket.addEventListener('close', 
+                function() { 
+                    console.log("Disconnected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="Red";
+                    label.innerHTML="Disconnected from RT engine"
+            });
         });
         
-        function update_profile(name,latitude,longitude,accuracy,timestamp){
+        function update_profile(name,latitude,longitude,accuracy){
 			var table=document.getElementById('Users_table');
 			var rownum=-1;
 			for (var i = 0, row; row = table.rows[i]; i++) {
-				if (row.cells[0].innerHTML==name)
+				if (parseInt(row.cells[0].innerHTML)==name)
 				{
 					rownum=i;
 					break;
@@ -159,14 +142,9 @@
 				if (typeof latitude != "undefined") {row.cells[1].innerHTML=latitude;}
 				if (typeof longitude != "undefined") {row.cells[2].innerHTML=longitude;}
 				if (typeof accuracy != "undefined") {row.cells[3].innerHTML=accuracy;}
-                if (typeof timestamp != "undefined") {row.cells[4].innerHTML=timestamp;}
-                var newLocation = new google.maps.LatLng(latitude,longitude);
-                markers[rownum].setPosition( newLocation );
-                map.panTo( newLocation );
-              
 			}
 		}
-
+        
         
     </script>
 	

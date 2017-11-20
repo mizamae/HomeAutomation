@@ -43,8 +43,9 @@ urlpatterns = [
     url(r'^deletedev/(?P<devicename>.+)/$', views.DeleteDevice, name='delDevice'),
     url(r'^repbuilder/(?P<number>.+)/$', views.reportbuilder, name='repbuilder'),
     url(r'^ajax_get_orders_for_device/(?P<devicePK>.+)/$', views.ajax_get_orders_for_device, name='ajax_get_orders_for_device'),
+    url(r'^ajax_get_data_for_devicetype/(?P<devicetypePK>.+)/$', views.ajax_get_data_for_devicetype, name='ajax_get_data_for_devicetype'),
     url(r'^async_post/$', views.asynchronous_datagram, name='asynchronous_datagram'),
-    url(r'^devicepage/(?P<devicename>.+)/$', views.AdvancedDevicepage, name='devicepage'),
+    url(r'^devicepage/(?P<pk>.+)/$', views.AdvancedDevicepage, name='devicepage'),
     url(r'^charts/$', views.device_report,name='devicecharts'),
     url(r'^settimezone/$', views.settimezone,name='settimezone'),
     url(r'^advancedDevice/$', views.AdvancedDevice.as_view(),name='advancedDevice'),
@@ -57,6 +58,7 @@ urlpatterns = [
     url(r'^userubication/$', views.viewUserUbication,name='viewUserUbication'),
     url(r'^users/', include(profiles.urls, namespace='profiles')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/Devices/setcustomlabels/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
     url(r'^admin/RemoteDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
     url(r'^admin/LocalDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
     

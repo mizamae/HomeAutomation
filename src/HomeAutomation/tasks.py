@@ -64,10 +64,11 @@ def start_reportsGenerationTask():
         scheduler.start()
     except:
         pass
-
+    
 def HourlyTask():
     logger.info('Checking hourly tasks...')
     HomeAutomation.models.checkHourlySchedules()
+    pass
 
 def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.

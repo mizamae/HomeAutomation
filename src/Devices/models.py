@@ -6,6 +6,16 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 from django.db.models.signals import m2m_changed
 
+from channels.binding.websockets import WebsocketBinding
+
+from Master_GPIOs.models import IOmodel
+#import LocalDevices.models 
+#import RemoteDevices.models 
+import HomeAutomation.models
+import json
+import itertools
+import Devices.GlobalVars
+import Devices.BBDD
 
 import logging
 
@@ -20,12 +30,13 @@ def path_file_name(instance, filename):
 class DeviceTypeModel(models.Model):
     CONNECTION_CHOICES=(
         ('LOCAL','LOCAL'),
-        ('REMOTE','REMOTE')
+        ('REMOTE','REMOTE'),
+        ('MEMORY','MEMORY')
     )
-    Code = models.CharField(help_text='Type of the device', max_length=10,primary_key=True)
-    Description = models.CharField(help_text='Description of the device', max_length=50)
+    Code = models.CharField(unique=True, max_length=20)
+    Description = models.CharField(max_length=50)
     MinSampletime=models.PositiveIntegerField(default=10)
-    Connection= models.CharField(help_text='Connection of the device',choices=CONNECTION_CHOICES, max_length=15)
+    Connection= models.CharField(choices=CONNECTION_CHOICES, max_length=15)
     Picture = models.ImageField('DeviceType picture',
                                 upload_to=path_file_name,
                                 null=True,
@@ -41,6 +52,157 @@ class DeviceTypeModel(models.Model):
 @receiver(pre_delete, sender=DeviceTypeModel, dispatch_uid="delete_DeviceTypeModel")
 def delete_DeviceTypeModel(sender, instance,**kwargs):
     instance.Picture.delete(False)
+
+
+
+class DeviceModel(models.Model):
+    
+    STATE_CHOICES=(
+        ('STOPPED','STOPPED'),
+        ('RUNNING','RUNNING')
+    )
+    
+    __original_DeviceName = None
+    
+    DeviceName = models.CharField(max_length=50,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
+    IO = models.OneToOneField(IOmodel,on_delete=models.CASCADE,related_name='pin2device',unique=True,null=True,blank=True)
+    DeviceCode = models.IntegerField(unique=True,blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
+    DeviceIP = models.GenericIPAddressField(protocol='IPv4', unique=True,blank=True,null=True,error_messages={'unique':_("Invalid IP - This IP already exists in the DB.")})
+    Type = models.ForeignKey(DeviceTypeModel,related_name="deviceType",on_delete=models.CASCADE)#limit_choices_to={'Connection': 'LOCAL'}
+    DeviceState= models.CharField(choices=STATE_CHOICES, max_length=15,default='STOPPED')
+    Sampletime=models.PositiveIntegerField(default=600)
+    RTsampletime=models.PositiveIntegerField(default=60)
+    LastUpdated= models.DateTimeField(blank = True,null=True)
+    Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
+    CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
+    Error= models.CharField(max_length=100,default='',blank=True)
+    
+    def clean(self):
+        if self.IO!=None:
+            if self.IO.direction!='SENS':
+                raise ValidationError(_('The GPIO selected is not configured as sensor'))
+        if self.Sampletime<self.Type.MinSampletime or self.RTsampletime<self.Type.MinSampletime:
+            raise ValidationError(_('The sample time selected is too low for the '+self.Type.Code+' sensors. It should be greater than '+str(self.Type.MinSampletime)+' sec.'))
+        
+    def __str__(self):
+        return self.DeviceName
+    
+    def __init__(self, *args, **kwargs):
+        super(DeviceModel, self).__init__(*args, **kwargs)
+        self.__original_DeviceName = self.DeviceName
+        
+    def save(self, *args, **kwargs):
+        if self.DeviceName != self.__original_DeviceName and self.__original_DeviceName != '':
+            logger.info('Ha cambiado el nombre del dispositivo ' +self.__original_DeviceName+'. Ahora se llama ' + self.DeviceName)
+            #LocalDevices.signals.DeviceName_changed.send(sender=None, OldDeviceName=self.__original_DeviceName,NewDeviceName=self.DeviceName)
+        self.__original_DeviceName = self.DeviceName
+        super(DeviceModel, self).save(*args, **kwargs)
+        
+    def updateCustomLabels(self):
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
+        if self.CustomLabels!='':
+            CustomLabels=json.loads(self.CustomLabels)
+            for DG in DGs:
+                datagram=DG.getStructure()
+                names=datagram['names']
+                for name in names:
+                    if not name in CustomLabels[DG.Identifier]:
+                        CustomLabels[DG.Identifier][name]=''
+            self.CustomLabels=json.dumps(CustomLabels)
+            self.save()
+        else:
+            return
+            
+    def getDeviceVariables(self):
+        DeviceVars=[]
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
+        if self.CustomLabels!='':
+            CustomLabels=json.loads(self.CustomLabels)
+        else:
+            CustomLabels=None
+            
+        for DG in DGs:
+            datagram=DG.getStructure()
+            Vars=datagram['names']
+            Types=datagram['types']
+            if CustomLabels!=None:
+                CustomVars=CustomLabels[DG.Identifier]
+            else:
+                CustomVars={}
+                for name in datagram['names']:
+                    CustomVars[name]=name
+                
+            for cvar,var,type in zip(CustomVars,Vars,Types):
+                if type=='digital':
+                    BitLabels=CustomVars[cvar].split('$')
+                    for i,bitLabel in enumerate(BitLabels):
+                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':i,'Sample':datagram['sample']*self.Sampletime})
+                else:
+                    DeviceVars.append({'Label':CustomVars[cvar],'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
+        return DeviceVars
+    
+    def updateAutomationVars(self):
+        AutomationVars=HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.pk)
+        DeviceVars=self.getDeviceVariables()
+        for dvar in DeviceVars:
+            try:
+                avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],Device=dvar['Device'],BitPos=dvar['BitPos'])
+            except:
+                avar=None
+                
+            if avar!=None:
+                avar.Label=dvar['Label']
+                avar.Sample=dvar['Sample']
+            else:
+                avar=HomeAutomation.models.AutomationVariablesModel()
+                avar.Label=dvar['Label']
+                avar.Device=dvar['Device']
+                avar.Tag=dvar['Tag']
+                avar.Table=dvar['Table']
+                avar.BitPos=dvar['BitPos']
+                avar.Sample=dvar['Sample']
+            avar.save()
+            
+    def deleteAutomationVars(self):
+        HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.DeviceName).delete()
+            
+    class Meta:
+        permissions = (
+            ("view_devices", "Can see available devices"),
+            ("change_state", "Can change the state of the devices"),
+            ("add_device", "Can add new devices to the installation")
+        )
+        verbose_name = _('Slave device')
+        verbose_name_plural = _('Slave devices')
+        
+@receiver(post_save, sender=DeviceModel, dispatch_uid="update_DeviceModel")
+def update_DeviceModel(sender, instance, update_fields,**kwargs):
+        
+    if kwargs['created']:   # new instance is created
+        registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+        registerDB.create_DeviceRegistersTables(DV=instance)
+    else:
+        instance.updateAutomationVars()
+        
+@receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_DeviceModel")
+def delete_DeviceModel(sender, instance,**kwargs):
+    instance.deleteAutomationVars()
+    logger.info('Se ha eliminado el dispositivo ' + str(instance))
+
+class DeviceModelBinding(WebsocketBinding):
+
+    model = DeviceModel
+    stream = "RDevice_params"
+    fields = ["DeviceName","IO","DeviceCode","DeviceIP","Type","Sampletime","DeviceState","LastUpdated","Error"]
+
+    @classmethod
+    def group_names(cls, *args, **kwargs):
+        return ["Device-models",]
+
+    def has_permission(self, user, action, pk):
+        return True
+        
     
 class ReportModelManager(models.Manager):
     def create_Report(self, ReportTitle,Periodicity,DataAggregation,ReportContentJSON):
@@ -129,43 +291,30 @@ class ReportItems(models.Model):
         verbose_name_plural = _('Generated reports')
         ordering = ('fromDate',)
         
-class DigitalItemModel(models.Model):
-    DBTag = models.CharField(max_length=25,blank = True,editable=False,null=True)
-    HumanTag = models.CharField(max_length=20,unique=True)
-    
-    def clean(self):
-        ' some non-utf-8 characters might be inserted so they need to be taken care of'
-        self.DBTag=self.HumanTag.replace(' ','_')+'_[bits]'
-    
-    def getText(self):
-        return self.HumanTag+'_'+'bits'
         
-    def __str__(self):
-        return self.HumanTag
-        
-    class Meta:
-        verbose_name = _('Digital field')
-        verbose_name_plural = _('Digital fields')
-        
-class AnalogItemModel(models.Model):
+class DatagramItemModel(models.Model):
     DATATYPE_CHOICES=(
-        ('INTEGER','Integer'),
-        ('FLOAT','Float')
+        ('INTEGER',_('Analog Integer')),
+        ('FLOAT',_('Analog Float')),
+        ('DIGITAL',_('Digital')),
     )
-    DBTag = models.CharField(max_length=33,blank = True,editable=False,null=True)
     HumanTag = models.CharField(max_length=20,unique=True)
     DataType= models.CharField(max_length=10,choices=DATATYPE_CHOICES)
-    Units = models.CharField(max_length=10)
+    Units = models.CharField(max_length=10,null=True,blank=True)
     
     def clean(self):
-        self.DBTag=self.HumanTag.replace(' ','_')+'_['+self.Units+']'
+        if self.DataType=='DIGITAL':
+            self.Units='bits'
                         
     def __str__(self):
         return self.HumanTag
-        
+    
+    def getHumanName(self):
+        return self.HumanTag+'_'+self.Units
+    
     class Meta:
-        verbose_name = _('Analog field')
-        verbose_name_plural = _('Analog fields')
+        verbose_name = _('Datagram item')
+        verbose_name_plural = _('Datagram items')
         
 class DatagramModel(models.Model):
     DATAGRAMTYPE_CHOICES=(
@@ -176,8 +325,7 @@ class DatagramModel(models.Model):
     Code= models.PositiveSmallIntegerField(help_text='Identifier byte-type code')
     Type= models.CharField(max_length=12,choices=DATAGRAMTYPE_CHOICES)
     DeviceType = models.ForeignKey(DeviceTypeModel,on_delete=models.CASCADE)
-    AnItems = models.ManyToManyField(AnalogItemModel, through='ItemOrdering',blank=True)#
-    DgItems = models.ManyToManyField(DigitalItemModel,through='ItemOrdering',blank=True)
+    Items = models.ManyToManyField(DatagramItemModel, through='ItemOrdering')#
     def __str__(self):
         return self.Identifier
     
@@ -185,19 +333,51 @@ class DatagramModel(models.Model):
         pass
         
     def isSynchronous(self):
-        return self.Type=='Synchronous'
+        return int(self.Type=='Synchronous')
     
-    def get_variables(self):
-        variables=[]
+    def getDBTypes(self):
+        types=[]
         for item in self.itemordering_set.all():
-            if item.AnItem!= None:
-                variables.insert(item.order,item.AnItem.HumanTag)
-                logger.info('Item ' + str(item.order) + ' - ' + str(item.AnItem))
+            if item.Item.DataType!= 'DIGITAL':
+                types.insert(item.order-1,'analog')
             else:
-                variables.insert(item.order,item.DgItem.HumanTag)
-                logger.info('Item ' + str(item.order) + ' - ' + str(item.DgItem))
-        return variables
+                types.insert(item.order-1,'digital')
+        types.insert(0,'datetime')
+        return types
     
+    def getStructure(self):
+        """RETURNS THE STRUCTURE OF A DATAGRAM ASSIGNING THE FOLLOWING NAMES TO THE VARIABLES (COLUMNS IN THE DB)
+        THE COLUMN NAME IS THE CONCATENATION OF THE VARIABLE PK + '_'+ NUMBER. THE NUMBER IS A CORRELATIVE NUMBER BETWEEN 1 AND THE NUMBER OF REPETITIONS OF 
+        THE VARIABLE IN THE DATAGRAM
+        """
+        names=[]
+        types=[]
+        datatypes=[]
+        units=[]
+        datagramID=self.Identifier
+        checkedPK={}
+        for item in self.itemordering_set.all().order_by('order'):
+            numItems=1
+            if not str(item.Item.pk) in checkedPK:
+                checkedPK[str(item.Item.pk)]=1
+            else:
+                numItems=checkedPK[str(item.Item.pk)]+1
+                checkedPK[str(item.Item.pk)]+=1
+            names.insert(item.order-1,str(item.Item.pk)+'_'+str(numItems)+'_'+str(self.pk))
+            units.insert(item.order-1,item.Item.Units)
+            if item.Item.DataType!= 'DIGITAL':
+                types.insert(item.order-1,'analog')
+                datatypes.insert(item.order-1,item.Item.DataType)
+            else:
+                types.insert(item.order-1,'digital')
+                datatypes.insert(item.order-1,'INTEGER')
+        if self.isSynchronous():
+            sample=1
+        else:
+            sample=0
+        
+        return {'pk':self.pk,'ID':datagramID,'names':names,'types':types,'datatypes':datatypes,'units':units,'sample':sample}
+
     class Meta:
         verbose_name = _('Datagram')
         verbose_name_plural = _('Datagrams')
@@ -210,84 +390,15 @@ def update_DatagramModel(sender, instance, update_fields,**kwargs):
         
     else:
         logger.info('Se ha creado el datagram ' + str(instance.DeviceType)+"_"+str(instance))
-        logger.info('Tiene ' + str(instance.AnItems.count())+' ' + (AnalogItemModel._meta.verbose_name.title() if (instance.AnItems.count()==1) else AnalogItemModel._meta.verbose_name_plural.title()))
-        for analog in instance.AnItems.all():
-            logger.info('   - ' + str(analog.HumanTag))
-        logger.info('Tiene ' + str(instance.DgItems.count())+' ' + (DigitalItemModel._meta.verbose_name.title() if (instance.DgItems.count()==1) else DigitalItemModel._meta.verbose_name_plural.title()))
-        for digital in instance.DgItems.all():
-            logger.info('   - ' + str(digital.HumanTag))
-    instance.get_variables()
-
-def getDatagramStructure(devicetype,ID='*'):
-    if ID=='*':
-        datagrams=DatagramModel.objects.filter(DeviceType=devicetype)
-    else:
-        datagrams=DatagramModel.objects.filter(DeviceType=devicetype,Identifier=ID)
-    datagramList=[]
-    
-    for datagram in datagrams:
-        names=[]
-        types=[]
-        datatypes=[]
-        datagramID=datagram.Identifier
-        analogItems=datagram.AnItems.all()
-        digitalItems=datagram.DgItems.all()
-        import itertools
-        for item in itertools.chain(*[digitalItems,analogItems]):
-            names.append('')
-            types.append('')
-            datatypes.append('')
-        checkedItems=[]
-        for item in analogItems:
-            if not item in checkedItems:
-                try:
-                    Itemorder=ItemOrdering.objects.get(AnItem=item,datagram=datagram)
-                    names[Itemorder.order-1]=Itemorder.AnItem.HumanTag+'_'+Itemorder.AnItem.Units
-                    datatypes[Itemorder.order-1]=Itemorder.AnItem.DataType
-                    types[Itemorder.order-1]='analog'
-                except ItemOrdering.MultipleObjectsReturned:
-                    Itemorders=ItemOrdering.objects.filter(AnItem=item).filter(datagram=datagram)
-                    i=1
-                    for Itemorder in Itemorders:
-                        names[Itemorder.order-1]=Itemorder.AnItem.HumanTag+str(i)+'_'+Itemorder.AnItem.Units
-                        datatypes[Itemorder.order-1]=Itemorder.AnItem.DataType
-                        types[Itemorder.order-1]='analog'
-                        i+=1
-                checkedItems.append(item)
-        
-        for item in digitalItems:
-            Itemorder=ItemOrdering.objects.get(DgItem=item,datagram=datagram)
-            names[Itemorder.order-1]=Itemorder.DgItem.getText()
-            datatypes[Itemorder.order-1]='INTEGER'
-            types[Itemorder.order-1]='digital'
-        if datagram.isSynchronous():
-            sample=1
-        else:
-            sample=0
-        
-        datagramList.append({'ID':datagramID,'names':names,'types':types,'datatypes':datatypes,'sample':sample})
-        #logger.info('getDatagramStructure: '+ str(datagramList)) 
-        
-    if ID =='*':
-        #logger.info('getDatagramStructure: '+ str(datagramList))
-        return datagramList
-    else:
-        return datagramList[0]
-
+        logger.info('Tiene ' + str(instance.Items.count())+' ' + (DatagramItemModel._meta.verbose_name.title() if (instance.Items.count()==1) else DatagramItemModel._meta.verbose_name_plural.title()))
+        for item in instance.Items.all():
+            logger.info('   - ' + str(item.HumanTag))
 
 def getAllVariables():
-    import Master_GPIOs.models 
-    import LocalDevices.models 
-    import RemoteDevices.models 
-    import HomeAutomation.models
-    import json
-    import itertools
-    
+
     info=[]
-    RDVs=RemoteDevices.models.DeviceModel.objects.all()
-    LDVs=LocalDevices.models.DeviceModel.objects.all()
-    DVs=[RDVs,LDVs]
-    IOs=Master_GPIOs.models.IOmodel.objects.all()
+    DVs=Devices.models.DeviceModel.objects.all()
+    IOs=IOmodel.objects.all()
     MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
     tempvars=[]
     if len(IOs)>0:
@@ -297,77 +408,77 @@ def getAllVariables():
                     table='inputs'
                 else:
                     table='outputs'
-                tempvars.append({'device':'Main','table':table,'tag':str(IO.pin),# this is to tell the template that it is a boolean value
-                                'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})
+                tempvars.append({'device':'Main','table':table,'tag':str(IO.pin),
+                                'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})# this is to tell the template that it is a boolean value
                                 
         info.append({'deviceName':'Main','variables':tempvars})
     tempvars=[]
     if len(MainVars)>0:
         for VAR in MainVars:
             table='MainVariables'
-            tempvars.append({'device':'Main','table':table,'tag':str(VAR.pk),# this is to tell the template that it is a boolean value
+            tempvars.append({'device':'Main','table':table,'tag':str(VAR.pk),
                             'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog'})
                                 
         info.append({'deviceName':'Main','variables':tempvars})
         
-    for device in itertools.chain(*DVs):    # device[0]= DeviceName, device[1]=DeviceType  
-        DEVICE_TYPE=str(device.Type.Code)
-        datagrams=getDatagramStructure(devicetype=DEVICE_TYPE)#XMLParser.getDatagramsStructureForDeviceType(deviceType=DEVICE_TYPE)
+    for DV in DVs:    # device[0]= DeviceName, device[1]=DeviceType  
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)#XMLParser.getDatagramsStructureForDeviceType(deviceType=DEVICE_TYPE)
         tempvars=[]
-        for datagram in datagrams: 
-            table=device.DeviceName+'_'+datagram['ID']
-            labels=[]
-            if device.CustomLabels!='':
-                CustomLabels=json.loads(device.CustomLabels)
-                labels=CustomLabels[datagram['ID']]
-                Labeliterable=labels
+        for DG in DGs: 
+            table=str(DV.pk)+'_'+str(DG.pk)
+            Labeliterable=[]
+            datagram=DG.getStructure()
+            if DV.CustomLabels!='':
+                CustomLabels=json.loads(DV.CustomLabels)
+                labels=CustomLabels[DG.Identifier]
+                for name in datagram['names']:
+                    Labeliterable.append(labels[name])
             else:
-                Labeliterable=datagram['names']
+                for name in datagram['names']:
+                    IT=Devices.models.DatagramItemModel.objects.get(pk=int(name.split('_')[0]))
+                    Labeliterable.append(IT.getHumanName())
             for i,var in enumerate(Labeliterable):                     
                 CustomLabel='' 
                 type=datagram['types'][i]
                 if type=='digital':                                                          
                     if str(var).find('$')>=0:
                         try:
-                            CustomLabel=str(var).split('_')[-1].split('$')
+                            CustomLabel=str(var).split('$')
                         except:
                             CustomLabel=''
-                        pos=str(var).lower().find('_bits')
-                        var=var[0:pos+5]
                 else:
                     CustomLabel=var.replace('_',' [')+']'
                 if (str(var).lower()!='spare') and (str(var).lower()!='timestamp'):                                       
-                    tempvars.append({'device':device.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,'extrapolate':''})
-        info.append({'deviceName':device.DeviceName,'variables':tempvars})
+                    tempvars.append({'device':DV.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,'extrapolate':''})
+        info.append({'deviceName':DV.DeviceName,'variables':tempvars})
     return info
     
 class ItemOrdering(models.Model):
     datagram = models.ForeignKey(DatagramModel, on_delete=models.CASCADE)
-    AnItem = models.ForeignKey(AnalogItemModel, on_delete=models.CASCADE,blank=True,null=True)
-    DgItem = models.ForeignKey(DigitalItemModel, on_delete=models.CASCADE,blank=True,null=True)
+    Item = models.ForeignKey(DatagramItemModel, on_delete=models.CASCADE,blank=True,null=True)
     order = models.PositiveSmallIntegerField(help_text='Position in the dataframe 1-based')
     
     def __str__(self):
         return str(self.datagram) + ':' +str(self.order)
         
     class Meta:
-        unique_together = ('order', 'datagram')
         verbose_name = _('Item')
         verbose_name_plural = _('Items')
         ordering = ('order',)
+        
 
 # these Signal functions are not triggered due to a Django bug https://code.djangoproject.com/ticket/16073
-def AnItems_changed(sender,instance, action, **kwargs):
-    logger.info('Ahora tiene ' + str(instance.AnItems.count())+' ' + (AnalogItemModel._meta.verbose_name.title() if (instance.AnItems.count()==1) else AnalogItemModel._meta.verbose_name_plural.title()))
-    for analog in instance.AnItems.all():
-        logger.info('   - ' + str(analog.HumanTag))
-    
-def DgItems_changed(sebder,instance, action,**kwargs):
-    logger.info('Ahora tiene ' + str(instance.DgItems.count())+' ' + (DigitalItemModel._meta.verbose_name.title() if (instance.DgItems.count()==1) else DigitalItemModel._meta.verbose_name_plural.title()))
-    for digital in instance.DgItems.all():
-        logger.info('   - ' + str(digital.HumanTag))
-m2m_changed.connect(AnItems_changed, sender=DatagramModel.AnItems.through,weak=False)
-m2m_changed.connect(DgItems_changed, sender=DatagramModel.DgItems.through,weak=False)
+# def AnItems_changed(sender,instance, action, **kwargs):
+#     logger.info('Ahora tiene ' + str(instance.AnItems.count())+' ' + (AnalogItemModel._meta.verbose_name.title() if (instance.AnItems.count()==1) else AnalogItemModel._meta.verbose_name_plural.title()))
+#     for analog in instance.AnItems.all():
+#         logger.info('   - ' + str(analog.HumanTag))
+#     
+# def DgItems_changed(sebder,instance, action,**kwargs):
+#     logger.info('Ahora tiene ' + str(instance.DgItems.count())+' ' + (DigitalItemModel._meta.verbose_name.title() if (instance.DgItems.count()==1) else DigitalItemModel._meta.verbose_name_plural.title()))
+#     for digital in instance.DgItems.all():
+#         logger.info('   - ' + str(digital.HumanTag))
+# m2m_changed.connect(AnItems_changed, sender=DatagramModel.AnItems.through,weak=False)
+# m2m_changed.connect(DgItems_changed, sender=DatagramModel.DgItems.through,weak=False)
 
 class CommandModel(models.Model):
     DeviceType = models.ForeignKey(DeviceTypeModel,on_delete=models.CASCADE)

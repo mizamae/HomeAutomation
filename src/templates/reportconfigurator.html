@@ -238,6 +238,7 @@
 					value.label=djangoData[i].variables[j].label;
 					value.extrapolate=djangoData[i].variables[j].extrapolate;
 					value.type=djangoData[i].variables[j].type;
+					value.bitPos=null;
 					value=JSON.stringify(value);
 					opt.value=value;					
 	    			opt.innerHTML = djangoData[i].variables[j].label;

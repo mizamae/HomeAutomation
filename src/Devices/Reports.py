@@ -273,7 +273,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                             tempX2.append(fecha)
                             tempY.append(value)
         
-        #logger.info('chart: ' + chart['chart_title'])
+        logger.info('chart: ' + chart['chart_title'])
         for columnNumber,col in enumerate(cols):
             try:
                 extrapolate=col['extrapolate']

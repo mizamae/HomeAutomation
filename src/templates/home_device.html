@@ -32,19 +32,19 @@
         <div class="item active">
         	<div class="jumbotron home-jumbo">
 	          <div class="row" style="height:20%;">
-	          	<div class="col-xs-8 col-md-6">
+	          	<div class="col-lg-6">
 			      <h1 class="jumbotron-h1-left">{% trans "Knowledge is power..." %}</h1>
 			    </div>
 	          </div>
 	          <div class="row" style="height:20%;">
-	          	<div class="col-xs-4 col-md-6" style="height:100%;">			      
+	          	<div class="col-lg-6" style="height:100%;">			      
 			    </div>
 	          </div>
 	          <div class="row" style="height:33%;">
-	          	<div class="col-xs-4 col-md-6">
+	          	<div class="col-lg-6">
 			      <h1></h1>
 			    </div>
-	          	<div class="col-xs-8 col-md-6" style="max-height:100%;">
+	          	<div class="col-lg-6" style="max-height:100%;">
 			      <h1 class="jumbotron-h1-right"><span id="rotate0">default</span></h1>
 			      <ul class="home-jumbo-ul0" style="display:none">
 					<li>{% trans "and we want to empower you" %}</li>
@@ -60,10 +60,10 @@
         <div class="item">
         	<div class="jumbotron home-jumbo">
 	        	<div class="row">
-		          	<div class="col-xs-12 col-md-6">
+		          	<div class="col-lg-6">
 				      <h1 class="jumbotron-h1-left">{% trans "OK great! you want to see more right?" %}</h1>
-				      <h2 class="jumbotron-h2-left">{% trans "What if I would tell you that you will know..." %}</h2>
-				      <h2 class="jumbotron-h2-left"><span id="rotate1">default</span></h2>
+				      <h2>{% trans "What if I would tell you that you will know..." %}</h2>
+				      <h2><span id="rotate1">default</span></h2>
 				      <ul class="home-jumbo-ul1" style="display:none">
 						<li>{% trans "your electricity consumption pattern." %}</li>
 						<li>{% trans "your heating operation across the day." %}</li>
@@ -73,7 +73,7 @@
 						<li></li>
 					  </ul>
 				    </div>
-				    <div class="col-xs-12 col-md-6" style="height:250px;">
+				    <div class="col-lg-6" style="height:250px;">
 				      	<img id="rotate_img" class="rotate_img" src="{% static 'site/img/rotating_image0.png' %}" alt="My image" style="min-width:80%;height:100%;">
 				    </div>
 		        </div>   
@@ -114,7 +114,7 @@
 {% if user.is_authenticated %}
 	<div class="container home-container">
 	  <div class="row">
-	    <div class="col-xs-6 col-md-3">
+	    <div class="col-lg-4">
 	      <h2>{% trans "Register new device" %}</h2>
 	      <p>{% trans "Here you can setup a new " %} {% include "_brandname.html" %} {% trans " compatible device"  %}</p>
 	      <p>
@@ -125,12 +125,12 @@
 	      {% endif %}
 	      </p>
 	    </div>
-	    <div class="col-xs-6 col-md-3">
+	    <div class="col-lg-4">
 	      <h2>{% trans "Browse the installation" %}</h2>
 	      <p>{% trans "Here you can see all the devices that are currently configured in your installation. You can start or stop the polling on a certain device."  %}</p>
 	      <p><a class="btn btn-primary" href="{% url 'devlist' %}" role="button">{% trans "View devices" %} &raquo;</a></p>
 	    </div>
-	    <div class="col-xs-6 col-md-3">
+	    <div class="col-lg-4">
 	      <h2>{% trans "Reports" %}</h2>
 	      <p>{% trans "Here you can configure and view tailor-made reports showing the information from any of your devices." %}</p>
 	      <p>
@@ -146,7 +146,9 @@
 	      {% endif %}
 	      </p>
 	    </div>
-        <div class="col-xs-6 col-md-3">
+	   </div>
+	   <div class="row">
+	    <div class="col-lg-4">
 	      <h2>{% trans "Device historic plots" %}</h2>
 	      <p>{% trans "Here you can see the charts with the information recorded from your devices from the very beginning." %}</p>
 	      <p>
@@ -157,16 +159,15 @@
 	      {% endif %}
 	      </p>
 	    </div>
-	   </div>
-	   <div class="row">
-        <div class="col-xs-6 col-md-3">
+        <div class="col-lg-4">
 	      <h2>{% trans "Spare" %}</h2>
 	      <p>{% trans "Nothing established yet..." %}</p>
 	      <p>
+	      
 	      </p>
 	    </div>
 	    {% if user.is_superuser %}
-	    <div class="col-xs-6 col-md-3">
+	    <div class="col-lg-4">
 	      <h2>{% trans "Advanced features" %}</h2>
 	      <p>{% trans "Here you can do some advanced stuff." %}</p>
 	      <p>

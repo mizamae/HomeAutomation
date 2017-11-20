@@ -6,7 +6,7 @@
 	
 	{% if Status != 'NoDevice' and Status != '' %}
 		{% if Status == "ConfigOK" %}
-	    	<p class="lead"><font color="green"><b>{% trans "Found" %} {{ Form.Type.value }}</b></font></p>
+	    	<p class="lead"><font color="green"><b>{% trans "Found" %} {{ Form.Type.Code.value }}</b></font></p>
 	    {% elif Status == "RegisteredOK" %}
 	    	<p class="lead"><font color="green"><b>{% trans "Device registered OK with the name" %} {{ DeviceName }}</b></font></p>
 	    	<h2 class="lead"><b>{% trans "Setting up the custom labels for the variables" %}</b></h2>

@@ -96,7 +96,7 @@
 		        	<td data-title="{% trans "Last updated" %}">{{ device.LastUpdated }}</td>
 		        	<td>
 					{% if perms.Devices.view_plots %}
-		        		<a class="btn btn-default btn-xs" href="{% url 'devicepage' device.DeviceName %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
+		        		<a class="btn btn-default btn-xs" href="{% url 'devicepage' device.pk %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
 		        	{% endif %}
 		        	</td>
 	    	</tr>
@@ -173,7 +173,7 @@
 		        	<td data-title="{% trans "Last updated" %}">{{ device.LastUpdated }}</td>
 		        	<td>
 					{% if perms.Devices.view_plots %}
-		        		<a class="btn btn-default btn-xs" href="{% url 'devicepage' device.DeviceName %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
+		        		<a class="btn btn-default btn-xs" href="{% url 'devicepage' device.pk %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
 		        	{% endif %}
 		        	</td>
 	    	</tr>

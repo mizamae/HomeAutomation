@@ -95,7 +95,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': join(LOGFILE_ROOT, 'processes.log'),
-            'maxBytes': 50000,
+            'maxBytes': 10000,
             'backupCount': 0,
             'formatter': 'verbose'
         },
@@ -109,7 +109,7 @@ LOGGING = {
         'django': {
             'handlers': ['django_log_file'],
             'propagate': False,
-            'level': 'WARNING',
+            'level': 'DEBUG',
         },
         'project': {
             'handlers': ['proj_log_file'],

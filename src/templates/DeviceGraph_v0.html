@@ -1,0 +1,593 @@
+<!-- TODO: try with charts from https://www.rgraph.net/ -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% load staticfiles %}
+  {% block extrahead %}
+    <style>
+    .charts {
+    	width: 100%;
+    	height: 50%;
+    }
+    .row-graph{
+    	position:relative;
+    	top:2em;
+    	margin-left: 5px;
+    	max-height:100%;
+    }
+    .col-lg-3{
+    	border:1px solid black;
+    }
+    .btn {
+    	font-size: 10px;
+    }
+    .treeview, .treeview ul {
+    margin:0;
+    padding:0;
+    list-style:none;
+    
+	color: #369;
+	}
+	.treeview ul {
+	    margin-left:1em;
+	    position:relative
+	}
+	.treeview ul ul {
+	    margin-left:.5em
+	}
+	.treeview ul:before {
+	    content:"";
+	    display:block;
+	    width:0;
+	    position:absolute;
+	    top:0;
+	    left:0;
+	    border-left:1px solid;
+	    
+	    /* creates a more theme-ready standard for the bootstrap themes */
+	    bottom:15px;
+	}
+	.treeview li {
+	    margin:0;
+	    padding:0 1em;
+	    line-height:2em;
+	    font-weight:700;
+	    position:relative
+	}
+	.treeview ul li:before {
+	    content:"";
+	    display:block;
+	    width:10px;
+	    height:0;
+	    border-top:1px solid;
+	    margin-top:-1px;
+	    position:absolute;
+	    top:1em;
+	    left:0
+	}
+	.tree-indicator {
+	    margin-right:5px;
+	    
+	    cursor:pointer;
+	}
+	.treeview li a {
+	    text-decoration: none;
+	    color:inherit;
+	    
+	    cursor:pointer;
+	}
+	.treeview li button, .treeview li button:active, .treeview li button:focus {
+	    text-decoration: none;
+	    color:inherit;
+	    border:none;
+	    background:transparent;
+	    margin:0px 0px 0px 0px;
+	    padding:0px 0px 0px 0px;
+	    outline: 0;
+	}
+    </style>
+    <script type="text/javascript" src="{% static 'site/js/moment-with-locales.min.js'%}" ></script>
+    <script type="text/javascript" src="{% static 'site/js/bootstrap-datetimepicker.min.js'%}" charset="UTF-8"></script>
+    <link href="{% static 'site/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
+  {% endblock extrahead %}
+  {% block container %}
+  <div class="container">
+	  <div id="row1" class="row row-graph">
+	  {% if devicename %}
+	  <h1>{% trans "Graphs for the device " %} {{ devicename }}</h1>
+	  {% else %}
+	  <h1>{% trans "Graphs from a device" %}</h1>
+	  {% endif %}
+	  </div>
+	  <div id="row2" class="row row-graph">
+		 {% crispy Form %}
+	  </div>  
+	  <div id="base" class="row row-graph" >  	
+	  </div>
+  </div>
+  {% endblock container %}
+  
+  {% block scripts %}
+  	<script src="https://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript">
+    var language,datesFormat;
+	var djangoData;
+	var graphic_class="col-sm-8 col-lg-9";
+	var statistics_class="col-sm-4 col-lg-3";
+	var ChartsHeight=500,ChartsHeightStep=50;
+	window.onload=function(){
+		Highcharts.setOptions({
+		    global: {
+		        useUTC: false
+		    }
+		});
+		loadData();
+		};
+	
+	function checkLanguage()
+	{
+		{% get_current_language as LANGUAGE_CODE %}
+	    {% if LANGUAGE_CODE == 'es' %}
+	    	language='es';
+	    	datesFormat='dd/mm/yyyy hh:ii:ss';
+	    {% else %}
+	    	language='en';
+	    	datesFormat='yyyy-mm-dd hh:ii:ss';
+	    {% endif %}
+	}
+	
+    function loadData()
+    {
+    	try
+    	{
+	    	djangoData = JSON.parse('{{ chart|safe }}');
+	    	var i;
+	    	var base=document.getElementById('base');
+	    	var buttonINCHeight=document.createElement('a');
+	    	buttonINCHeight.className="btn btn-default btn-xl";
+	    	buttonINCHeight.role="button";
+	    	buttonINCHeight.innerHTML="+";
+	    	buttonINCHeight.id="incHeight"
+	    	buttonINCHeight.addEventListener("click", function(){ ChartsHeight+=ChartsHeightStep;resizePlots(ChartsHeight); });
+			base.appendChild(buttonINCHeight);
+			var buttonDECHeight=document.createElement('a');
+			buttonDECHeight.className="btn btn-default btn-xl";
+			buttonDECHeight.role="button";
+			buttonDECHeight.innerHTML="-";
+			buttonDECHeight.id="decHeight"
+			buttonDECHeight.addEventListener("click", function(){ ChartsHeight-=ChartsHeightStep;resizePlots(ChartsHeight); });
+			base.appendChild(buttonDECHeight);
+			var buttonHIDEDig=document.createElement('a');
+			buttonHIDEDig.className="btn btn-default btn-xl";
+			buttonHIDEDig.role="button";
+			buttonHIDEDig.innerHTML="Hide/Show Digital plots";
+			buttonHIDEDig.id="toggleVisibilityDigitalCharts"
+			buttonHIDEDig.addEventListener("click", function(){ toggleVisibilityDigitalCharts(); });
+			base.appendChild(buttonHIDEDig);
+            
+	    	for (i = 0; i < djangoData.length; i++) 
+	    	{  
+				var arrayData=djangoData[i].rows;
+				var DataLabels=djangoData[i].cols[0];
+				var analog_Cols=[];
+				var digital_Cols=[];	    	
+				for(var j=1; j<DataLabels.length;j++)
+				{	
+					var label=DataLabels[j].label;
+					
+					if (!label.includes('_bits'))
+					{
+						analog_Cols.push(j);
+					}else
+					{
+						digital_Cols.push(j);
+					}
+				}
+				
+		    	if (analog_Cols.length>0)
+		    	{
+		    		var subindex='analog';	
+		    		// analog chart drawing
+					var iDiv = document.createElement('div');
+			    	iDiv.id = 'row_chart'.concat(i.toString(),subindex);
+			    	iDiv.className = "row row-graph";
+					base.appendChild(iDiv);
+					
+					var iDiv2 = document.createElement('div');
+			    	iDiv2.id = 'chart_col'.concat(i.toString(),subindex);
+			    	iDiv2.className = graphic_class;
+			    	iDiv.appendChild(iDiv2);
+			    	
+			    	var iDiv3 = document.createElement('div');
+			    	iDiv3.id = 'stats_col'.concat(i.toString(),subindex);
+			    	iDiv3.className = statistics_class;
+			    	iDiv.appendChild(iDiv3);
+		    		drawChart(arrayData,DataLabels,analog_Cols,djangoData[i].title.concat(' analog values'),'chart_col'.concat(i.toString(),subindex));
+			    	var stats= document.getElementById('stats_col'.concat(i.toString(),subindex));
+			    	var list = document.createElement('ul');
+			    	list.className="treeview";
+			    	stats.appendChild(list);
+			    	var stats_data=djangoData[i].statistics;
+			    	var stats_labels=[];
+			    	for(var name in stats_data) {
+			    		if ((name!='number') && (name!='num_rows'))
+			    		{
+			    			stats_labels.push(name);
+			    		}
+			    	}
+			    	var j,k;
+			    	var text=''
+			    	for (j = 1; j < djangoData[i].cols[0].length; j++) // iterates over the number of columns of the chart
+			    	{			
+			    		var label=	djangoData[i].cols[0][j].label; // j+1 to avoid the timestamp col	
+			    		var variable = document.createElement('li');
+			    		var stats_list = document.createElement('ul');
+			    		if (!label.includes('_bits'))
+			    		{
+			    			label=parseLabel(label);
+			    		}
+			    		variable.appendChild(document.createTextNode(label));
+			    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
+				    	{ 
+			    			var item = document.createElement('li');
+			    			if (!label.includes('[bits]'))
+			    			{
+			    				if (!stats_labels[k].includes('on_') && !stats_labels[k].includes('off_'))
+			    				{
+                                    if (stats_data[stats_labels[k]][j-1]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2));}
+                                    else {text=text.concat(stats_labels[k],' value: ',null)}
+			    					item.appendChild(document.createTextNode(text));
+			    					stats_list.appendChild(item);
+			    					text='';
+			    				}
+			    			}
+				    	}
+			    		variable.appendChild(stats_list);
+			    		if (!label.includes('_bits')){
+			    			list.appendChild(variable);
+			    		}
+			    	}
+		    	}	
+				
+				if (digital_Cols.length>0)
+				{
+					subindex='digital';	
+					
+					var iDiv = document.createElement('div');
+			    	iDiv.id = 'row_chart'.concat(i.toString(),subindex);
+			    	iDiv.className = "row row-graph";
+					base.appendChild(iDiv);
+					
+					var iDiv2 = document.createElement('div');
+			    	iDiv2.id = 'chart_col'.concat(i.toString(),subindex);
+			    	iDiv2.className = graphic_class;
+			    	iDiv.appendChild(iDiv2);
+			    	
+			    	var iDiv3 = document.createElement('div');
+			    	iDiv3.id = 'stats_col'.concat(i.toString(),subindex);
+			    	iDiv3.className = statistics_class;
+			    	iDiv.appendChild(iDiv3);
+			    	
+			    	drawChart(arrayData,DataLabels,digital_Cols,djangoData[i].title.concat(' digital values'),'chart_col'.concat(i.toString(),subindex));
+			    	var stats= document.getElementById('stats_col'.concat(i.toString(),subindex));
+			    	var list = document.createElement('ul');
+			    	list.className="treeview";
+			    	stats.appendChild(list);
+			    	var stats_data=djangoData[i].statistics;
+			    	var stats_labels=[];
+			    	for(var name in stats_data) {
+			    		if ((name!='number') && (name!='num_rows'))
+			    		{
+			    			stats_labels.push(name);
+			    		}
+			    	}
+			    	var j,k;
+			    	var text=''
+			    	for (j = 1; j < djangoData[i].cols[0].length; j++) // iterates over the number of columns of the chart
+			    	{			
+			    		var label=	djangoData[i].cols[0][j].label; // j+1 to avoid the timestamp col	
+			    		var variable = document.createElement('li');
+			    		var stats_list = document.createElement('ul');
+			    		if (label.includes('_bits'))
+			    		{
+			    			label=parseLabel(label);
+			    		}
+			    		variable.appendChild(document.createTextNode(label));
+			    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
+				    	{ 
+			    			var item = document.createElement('li');
+			    			if (label.includes('[bits]'))
+			    			{
+			    				if (stats_labels[k].includes('on_') || stats_labels[k].includes('off_'))
+			    				{
+			    					text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1]);
+			    					item.appendChild(document.createTextNode(text));
+			    					stats_list.appendChild(item);
+			    					text='';
+			    				}
+			    			}	
+				    	}
+			    		variable.appendChild(stats_list);
+			    		if (label.includes('[bits]')){
+			    			list.appendChild(variable);
+			    		}
+			    	}			    	
+				}	    	 
+	    	}
+	    	convert_treeviews();
+    	}
+    	catch(err)
+    	{console.log('Error: ' + err.toString())}
+    }
+    
+    function toggleVisibilityDigitalCharts()
+    {
+        var divs = document.getElementsByTagName("div");
+        for(var i = 0; i < divs.length; i++){
+           //do something to each div like
+           if (divs[i].id.indexOf("row_chart")>=0 && divs[i].id.indexOf("digital")>=0)
+           {
+                if (divs[i].style.visibility=='hidden'){divs[i].style.visibility='visible';}
+                else{divs[i].style.visibility='hidden';}
+           }
+        }
+    }
+    
+    function parseLabel(label)
+    {
+        if (label.includes('_bits'))
+        {
+            label=label.split('_')[0]+"_"+label.split('_')[1]
+        }
+        if (label.includes('_')){label=label.replace("_"," [").concat("]");}
+		label=label.replace("percent","%");
+		label=label.replace("centdeg","\xB0C");
+    	return label;
+    }
+    function resizePlots(height=0)
+    {
+    	Highcharts.each(Highcharts.charts, function (chart) {
+            var container='#'.concat(chart.renderTo.id);
+    		var chartwidth = $(container).width();
+    		if (height==0)
+    		{
+    			chart.setSize(chartwidth,chartwidth);//setSize (Number width, Number height, [Mixed animation])
+    		}else
+    		{
+    			ChartsHeightAfterToggle=chartwidth;
+    			if (container.includes("digital")){chart.setSize(chartwidth,height/2);}
+                else {chart.setSize(chartwidth,height);}
+    		}
+            
+        });
+    } 
+    function	checkBit(number,n)
+		{	
+            if (number != null)
+            {
+                var	mask	=	1	<<	n;
+                if	((number	&	mask)	!=	0)	{return	1;}else	{return	0;}
+            }else{return null;}
+		}	
+        
+	function drawChart(data,labels,columns,title,chartId) 
+	{
+		var seriesOptions = [],seriesCounter = 0;
+	    
+		var x_axis=getCol(data,0);
+		var chartwidth = $('#'.concat(chartId)).width();
+		max=null;
+        min=null;
+        var height=ChartsHeight;
+	   	for (var j=0;j<columns.length;j++)
+	   	{
+	   		variable_data = [];
+			column=columns[j];
+            if (chartId.includes('analog'))
+            {
+                for (var i=0;i<x_axis.length;i++)
+                {
+                    fecha=eval("new " + x_axis[i].v);
+                    variable_data.push([Date.parse(fecha),data[i][column]]);
+                }
+                
+                seriesOptions[seriesCounter] = {
+                        name: parseLabel(labels[column].label),
+                        data: variable_data,
+                        lineWidth: 2,
+                        //type: 'spline',
+                        marker: {
+                            enabled: null,
+                            radius: 3
+                        },
+                    };
+                seriesCounter++;
+            }else
+            {
+                height=ChartsHeight/2;
+                min=0;
+                max=1.1;
+                for (var i=0;i<x_axis.length;i++)
+                {
+                    fecha=eval("new " + x_axis[i].v);
+                    variable_data.push([Date.parse(fecha),checkBit(data[i][column],0),checkBit(data[i][column],1),checkBit(data[i][column],2),checkBit(data[i][column],3),checkBit(data[i][column],4)
+                                        ,checkBit(data[i][column],5),checkBit(data[i][column],6),checkBit(data[i][column],7)]);
+                }
+                bits=labels[column].label.split('_')[2].split('$')
+                for (var i=0;i<8;i++)
+                {
+                    seriesOptions[seriesCounter] = {
+                            name: parseLabel(bits[seriesCounter]),
+                            data: variable_data,
+                            lineWidth: 2,
+                            step: true,
+                            marker: {
+                                enabled: null,
+                                radius: 3
+                            },
+                        };
+                    seriesCounter++;
+                }
+            }
+	   	}
+	   	
+	   	Highcharts.chart(chartId, {
+	   		title:{
+	   		    text: title
+	   			},
+	   		chart: {
+	   			zoomType: 'x',
+	   	        height: height,
+	   	     	width:chartwidth,
+	   	        //type: 'line'
+	   	    },
+	        xAxis: {
+	            type: 'datetime',
+	            crosshair: true,
+                events: {
+                    setExtremes: syncExtremes
+                },
+	        },
+	        yAxis: {
+                min:min,
+                max:max,
+	        },
+            
+	        legend: {
+	            enabled: true
+	        },
+	        tooltip: {
+	            formatter: function() {
+	                return Highcharts.dateFormat('%e/%b/%Y %H:%M',new Date(this.x))+'<br/>' + this.series.name + "= " + this.y;
+	            }
+	        },
+	        series: seriesOptions
+	    });
+	}
+	
+
+	/**
+	 * Highlight a point by showing tooltip, setting hover state and draw crosshair
+	 */
+	Highcharts.Point.prototype.highlight = function (event) {
+	    this.onMouseOver(); // Show the hover marker
+	    this.series.chart.tooltip.refresh(this); // Show the tooltip
+	    this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
+	};
+	
+	/**
+	 * Synchronize zooming through the setExtremes event handler.
+	 */
+	function syncExtremes(e) {
+	    var thisChart = this.chart;
+
+	    if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+	        Highcharts.each(Highcharts.charts, function (chart) {
+	            if (chart !== thisChart) {
+	                if (chart.xAxis[0].setExtremes) { // It is null while updating
+	                    chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: 'syncExtremes' });
+	                }
+	            }
+	        });
+	    }
+	}
+
+	
+	function getCol(matrix, col){
+	       var column = [];
+	       for(var i=0; i<matrix.length; i++){
+	          column.push(matrix[i][col]);
+	       }
+	       return column;
+	    }
+	
+	$(function () {
+		checkLanguage();
+        $('#datetimepicker11').datetimepicker({
+            inline: true,
+            sideBySide: true,
+            language:language,
+            format: datesFormat, /*remove this line if you want to use time as well */
+            todayBtn:'linked',
+            todayHighlight:1,
+            fontAwesome:true,
+            weekStart:1,
+            startView: 1,
+            minView:0,
+            maxView:3,
+            autoclose:true
+        });
+        $('#datetimepicker12').datetimepicker({
+            inline: true,
+            sideBySide: true,
+            language:language,
+            format: datesFormat, /*remove this line if you want to use time as well */
+            todayBtn:'linked',
+            todayHighlight:1,
+            fontAwesome:true,
+            weekStart:1,
+            startView: 1,
+            minView:0,
+            maxView:3,
+            autoclose:true
+        });
+    });
+	$(window).resize(function(){
+		resizePlots();
+		});
+
+    $.fn.extend({
+		treeview:	function() {
+			return this.each(function() {
+				// Initialize the top levels;
+				var tree = $(this);
+				
+				tree.addClass('treeview-tree');
+				tree.find('li').each(function() {
+					var stick = $(this);
+				});
+				tree.find('li').has("ul").each(function () {
+					var branch = $(this); //li with children ul
+					
+					branch.prepend("<i class='tree-indicator glyphicon glyphicon-chevron-right'></i>");
+					branch.addClass('tree-branch');
+					branch.on('click', function (e) {
+						if (this == e.target) {
+							var icon = $(this).children('i:first');
+							
+							icon.toggleClass("glyphicon-chevron-down glyphicon-chevron-right");
+							$(this).children().children().toggle();
+						}
+					})
+					branch.children().children().toggle();
+					
+					/**
+					 *	The following snippet of code enables the treeview to
+					 *	function when a button, indicator or anchor is clicked.
+					 *
+					 *	It also prevents the default function of an anchor and
+					 *	a button from firing.
+					 */
+					branch.children('.tree-indicator, button, a').click(function(e) {
+						branch.click();
+						
+						e.preventDefault();
+					});
+				});
+			});
+		}
+	});
+
+	/**
+	 *	The following snippet of code automatically converst
+	 *	any '.treeview' DOM elements into a treeview component.
+	 */
+	function convert_treeviews() {
+		$('.treeview').each(function () {
+			var tree = $(this);
+			tree.treeview();
+		})
+	}
+    </script>
+  {% endblock scripts %}

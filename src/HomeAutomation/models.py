@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.functional import lazy
 import datetime
 import sys
-import os
+
 import json
 
 from django.dispatch import receiver
@@ -27,7 +27,7 @@ class MainDeviceVarModel(models.Model):
         (1,_('Integer'))
     )
     
-    Label = models.CharField(max_length=50,primary_key=True)
+    Label = models.CharField(max_length=50,unique=True)
     Value = models.DecimalField(max_digits=6, decimal_places=2)
     Datatype=models.PositiveSmallIntegerField(choices=DATATYPE_CHOICES,default=0)
     Units = models.CharField(max_length=10)
@@ -47,7 +47,7 @@ class MainDeviceVarModel(models.Model):
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             timestamp=timezone.now()-datetime.timedelta(seconds=1) #para hora con info UTC
             registerDB.insert_VARs_register(TimeStamp=timestamp)
-            #logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
+            logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
         self.__original_Value = self.Value
         super(MainDeviceVarModel, self).save(*args, **kwargs)
         
@@ -82,8 +82,7 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     
     if not kwargs['created']:   # an instance has been modified
-        #logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
-        pass
+        logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
@@ -96,7 +95,7 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
             rule.execute()
     
 class MainDeviceVarWeeklyScheduleModel(models.Model):
-    Label = models.CharField(max_length=50)
+    Label = models.CharField(max_length=50,unique=True)
     Active = models.BooleanField(default=False)
     Var = models.ForeignKey(MainDeviceVarModel,on_delete=models.CASCADE)
     LValue = models.DecimalField(max_digits=6, decimal_places=2)
@@ -132,31 +131,31 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
         checkHourlySchedules()
     
 def checkHourlySchedules():
-    logger.info('Checking hourly schedules on process ' + str(os.getpid()))
+    logger.info('Checking hourly schedules')
     schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
     timestamp=datetime.datetime.now()
-    #logger.info('Timestamp: ' + str(timestamp))
+    logger.info('Timestamp: ' + str(timestamp))
     weekDay=timestamp.weekday()
-    #logger.info('Weekday: ' + str(weekDay))
+    logger.info('Weekday: ' + str(weekDay))
     hour=timestamp.hour
-    #logger.info('Hour: ' + str(hour))
+    logger.info('Hour: ' + str(hour))
     for schedule in schedules:
+        logger.info('Schedule: ' + str(schedule.Label))
         if schedule.Active:
-            logger.info('Schedule: ' + str(schedule.Label) + ' is active')
-            #logger.info('Is active!!!')
+            logger.info('Is active!!!')
             dailySchedules=schedule.inlinedaily_set.all()
             for daily in dailySchedules:
-                #logger.info('Daily: ' + str(daily))
+                logger.info('Daily: ' + str(daily))
                 if daily.Day==weekDay:
                     Setpoint=getattr(daily,'Hour'+str(hour))
-                    #logger.info('Setpoint Hour'+str(hour)+' = ' + str(Setpoint))
+                    logger.info('Setpoint Hour'+str(hour)+' = ' + str(Setpoint))
                     if Setpoint==0:
                         Value=schedule.LValue
                     else:
                         Value=schedule.HValue
                     variable=MainDeviceVarModel.objects.get(Label=schedule.Var.Label)
-                    #logger.info('Variable.value = ' + str(variable.Value))
-                    #logger.info('Value = ' + str(Value))
+                    logger.info('Variable.value = ' + str(variable.Value))
+                    logger.info('Value = ' + str(Value))
                     if variable.Value!=Value:
                         variable.Value=Value
                         variable.save()
@@ -225,7 +224,7 @@ class AutomationVariablesModel(models.Model):
         return self.Label
     
     class Meta:
-        unique_together = ('Device', 'Table','Tag','BitPos')
+        unique_together = ('Tag','BitPos','Table')
         verbose_name = _('Automation variable')
         verbose_name_plural = _('Automation variables')
         
@@ -244,7 +243,7 @@ class AutomationRuleModel(models.Model):
         ('|',_('OR')),
     )
     
-    Identifier = models.CharField(max_length=50,primary_key=True)
+    Identifier = models.CharField(max_length=50,unique=True)
     Active = models.BooleanField(default=False)
     PreviousRule = models.ForeignKey('HomeAutomation.AutomationRuleModel',blank=True,null=True)
     Operator1 = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
@@ -279,7 +278,7 @@ class AutomationRuleModel(models.Model):
             evaluable+=previous+ ' '
             sql='SELECT timestamp,"'+self.Var1.Tag+'" FROM "'+ self.Var1.Table +'" WHERE "'+self.Var1.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
             timestamp1,value1=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-            #logger.info('SQL1: ' + sql)
+            
             timestamp1 = local_tz.localize(timestamp1)
             timestamp1=timestamp1+timestamp1.utcoffset() 
             
@@ -291,7 +290,6 @@ class AutomationRuleModel(models.Model):
             if self.Var1.BitPos!=None:
                 value1=value1 & (1<<self.Var1.BitPos) 
             sql='SELECT timestamp,"'+self.Var2.Tag+'" FROM "'+ self.Var2.Table +'" WHERE "'+self.Var2.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
-            #logger.info('SQL2: ' + sql)
             timestamp2,value2=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
             
             timestamp2 = local_tz.localize(timestamp2)
@@ -316,7 +314,6 @@ class AutomationRuleModel(models.Model):
             return None
     
     def execute(self):
-        #logger.info('The rule ' + self.Identifier + ' is to be evaluated.')
         result=self.evaluate()
         if result:
             Action=json.loads(self.Action)

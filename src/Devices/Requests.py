@@ -3,10 +3,7 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import Devices.GlobalVars
-import RemoteDevices.HTTP_client
-import RemoteDevices.models
-import LocalDevices.models
-import LocalDevices.callbacks
+import Devices.callbacks
 import Devices.XML_parser
 import Devices.models
 
@@ -17,14 +14,14 @@ logger = logging.getLogger("project")
 scheduler = BackgroundScheduler()
 
 def initialize_polling_remote():
-    DVs=RemoteDevices.models.DeviceModel.objects.all()
+    DVs=Devices.models.DeviceModel.objects.all()
     if DVs is not None:
         for device in DVs:
             if device.DeviceState=='RUNNING':
                 toggle_requests(DeviceName=device.DeviceName,forceDB=True)
 
 def initialize_polling_local():
-    DVs=LocalDevices.models.DeviceModel.objects.all()
+    DVs=Devices.models.DeviceModel.objects.all()
     if DVs is not None:
         for device in DVs:
             if device.DeviceState=='RUNNING':
@@ -34,15 +31,12 @@ def toggle_requests(DeviceName,forceDB=False):
  # creates the jobs to request data from the devices
     #forceDB=True forces the value set in the devicesDB, otherwise toggles it.
     try:
-        DV=RemoteDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-    except RemoteDevices.models.DeviceModel.DoesNotExist: 
-        try:
-            DV=LocalDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-        except LocalDevices.models.DeviceModel.DoesNotExist:
-            logger.error('TOGGLE-REQUESTS: The device '+DeviceName + ' does not exist in the DB.') 
-            return
+        DV=Devices.models.DeviceModel.objects.get(DeviceName=DeviceName)
+    except Devices.models.DeviceModel.DoesNotExist: 
+        logger.error('TOGGLE-REQUESTS: The device '+DeviceName + ' does not exist in the DB.') 
+        return
     deviceName=DV.DeviceName 
-    deviceType=DV.Type.Code 
+    deviceType=DV.Type 
     if DV.Type.Connection=='LOCAL':
         devicePin =DV.IO.pin 
     else:
@@ -68,8 +62,7 @@ def toggle_requests(DeviceName,forceDB=False):
             if datagram.isSynchronous():#int(datagram['sample'])>0:
                 logger.info('Requests '+deviceName+'-'+datagramID+ ' is added to scheduler') 
                 if DV.Type.Connection=='LOCAL':
-                    getattr(LocalDevices.callbacks, deviceType)(DV).initial_calibration() # executes initial_calibration of the sensor
-                    callback=getattr(LocalDevices.callbacks, deviceType)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
+                    callback=getattr(Devices.callbacks, deviceType.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
                     scheduler.add_job(func=callback,trigger='interval',args=(),
                                       id=deviceName+'-'+datagramID, 
                                       seconds=sample,replace_existing=True)
@@ -102,9 +95,13 @@ def toggle_requests(DeviceName,forceDB=False):
     
     DV.save(update_fields=["DeviceState"])
 
+def dummy():
+    pass
+
 def request_to_device(deviceIP,deviceCode,DatagramId):
     logger.info('Lanzada consulta ' +DatagramId+ ' a ' + deviceIP + ' desde el proceso ' + str(os.getpid()))
-    HTTPrequest=RemoteDevices.HTTP_client.HTTP_requests(server='http://'+deviceIP)    
+    deviceIP='127.0.0.1'
+    HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP)    
     HTTPrequest.request_datagram(DeviceCode=deviceCode,DatagramId=DatagramId) 
     
 # def toggle_HTTP_requests(DeviceName,forceDB=False):

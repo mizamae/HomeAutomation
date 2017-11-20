@@ -1,0 +1,21 @@
+{% extends "adddevice.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+{% block confDev %}
+	
+    {% if Status == "RegisteredOK" %}
+    	<p class="lead"><font color="green"><b>{% trans "Device registered OK with the name" %} {{ DeviceName }}</b></font></p>
+    	<h2 class="lead"><b>{% trans "Setup the custom labels for the variables" %}</b></h2>
+           {% crispy Form %}
+    {% else %}	    	
+    	<p class="lead"><font color="red"><b>{% trans "Something failed" %}</b></font></p>
+    {% endif %}
+
+
+{% endblock confDev %}
+{% block scripts %}
+<script>
+
+</script>	
+
+{% endblock scripts %}		
