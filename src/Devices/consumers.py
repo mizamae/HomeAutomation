@@ -9,15 +9,16 @@ logger = logging.getLogger("project")
 
 class DeviceModel_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
+        logger.info("DeviceModel_delete original_message" + ":"+ str(content['data']))
         DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
-        DV.DeviceState=not DV.DeviceState
+        DV.DeviceState= 0 if (DV.DeviceState==1) else 1
         DV.save()
 
 class DeviceModel_delete(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         #logger.info("DeviceModel_delete original_message" + ":"+ str(content['data']))
-        device=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
-        device.delete()
+        DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
+        DV.delete()
 
 class DeviceModel_query(JsonWebsocketConsumer):
     def connect(self, message, **kwargs):
@@ -40,7 +41,7 @@ class DeviceModel_query(JsonWebsocketConsumer):
             import Devices.callbacks
             data = getattr(Devices.callbacks, DV.Type.Code)(DV).query_sensor()
             DeviceName=DV.DeviceName
-        logger.info("Sending back : " + str(data))
+        #logger.info("Sending back : " + str(data))
         multiplexer.send({"action":"query","DeviceName":DeviceName,"data":data})
         
 class DeviceModel_consumers(WebsocketDemultiplexer):

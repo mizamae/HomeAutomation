@@ -28,7 +28,6 @@ def compactRegistersDB():
 def start_registersDBcompactingTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
     '''  
-    logger.info(Devices.GlobalVars.BOOTING_MSG)
     logger.info('Registers DB compacting task is added to scheduler on the process '+ str(os.getpid())) 
     scheduler.add_job(func=compactRegistersDB,trigger='cron',id='registerDBcompact',day='last',hour=0,minute=0)
     try:

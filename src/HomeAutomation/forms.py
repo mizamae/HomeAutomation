@@ -39,18 +39,20 @@ class MainDeviceVarForm(ModelForm):
         self.fields['Datatype'].label = _("Set the datatype of the variable")
         self.fields['Datatype'].label = _("Enter the value of the variable")
         self.fields['Units'].label = _("Set the units of the variable")
+        self.fields['PlotType'].label = _("Set the type of plot for the variable")
         
         self.helper.layout = Layout(
             Field('Label', css_class='input-sm'),
             Field('Label', css_class='input-sm'),
             Field('Value', css_class='input-sm'),
             Field('Units', css_class='input-sm'),
+            Field('PlotType', css_class='input-sm'),
             Submit('submit', _('Submit'),css_class='btn-primary'),
             )
         
     class Meta:
         model = HomeAutomation.models.MainDeviceVarModel
-        fields=['Label','Datatype','Value','Units']
+        fields=['Label','Datatype','Value','Units','PlotType']
 
 class inlineDailyForm(ModelForm):  
     def __init__(self, *args, **kwargs):
@@ -117,6 +119,7 @@ class AutomationRuleForm(BaseAutomationRuleForm):
         ('a',_('Activate output on Main')),
         ('b',_('Send command to a device')),
         ('c',_('Send an email')),
+        ('n',_('Nothing')),
     )
     ActionType = forms.ChoiceField(choices=ACTION_CHOICES,label=_('Select the action'))
     IO=forms.ModelChoiceField(queryset=Master_GPIOs.models.IOmodel.objects.filter(direction='OUT'),label=_('Select the output'),required = False)

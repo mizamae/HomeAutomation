@@ -612,11 +612,14 @@
                     else {error_data.push([fecha_chart,max_data*error_multiplier,min_data*error_multiplier]);}
                 }
                 if (DailyData){xaxisInterval=24*3600 * 1000;}
+                var plottype = (labels[column].plottype != null) ? labels[column].plottype : 'spline';
                 seriesOptions[seriesCounter] = {
                         name: parseLabel(labels[column].label),
                         data: variable_data,
                         lineWidth: 2,
-                        //type: 'spline',
+                        type: plottype,
+                        pointPadding:0,
+                        groupPadding: 0,
                         marker: {
                             enabled: null,
                             radius: 3
@@ -673,7 +676,7 @@
 	   	
 	   	Highcharts.chart(chartId, {
 	   		title:{
-	   		    text: title
+	   		    text: ""//title
 	   			},
 	   		chart: {
 	   			zoomType: 'x',

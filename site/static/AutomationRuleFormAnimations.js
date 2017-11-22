@@ -49,12 +49,12 @@ function ActionTypeChange()
 	//selectedAction="a" - > Activate output on Main
 	//selectedAction="b" - > Send command to a device
 	//selectedAction="c" - > Send email
+    //selectedAction="z" - > Nothing
 	
 	var selectedAction=fieldActionType.options[fieldActionType.selectedIndex].value;
 	if (selectedAction=="a"){rowfieldIO.style.display = 'block';rowfieldIOValue.style.display = 'block';}
 	else{rowfieldIO.style.display = 'none';rowfieldIOValue.style.display = 'none';}
-	if (selectedAction=="b")
-	{rowfieldDevice.style.display = 'block';}
+	if (selectedAction=="b"){rowfieldDevice.style.display = 'block';}
 	else{rowfieldDevice.style.display = 'none';
 		rowfieldOrder.style.display = 'none';}
 }

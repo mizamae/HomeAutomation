@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-
+import sys
 import os
 from django.core.cache import cache
 from django.utils.translation import ugettext_lazy as _
@@ -29,17 +29,20 @@ class DevicesConfig(AppConfig):
             registerDB.check_registersDB()
             logger.info('Finished checking Registers DB on process ' + str(os.getpid()))
             
-            singletaskingProcess=cache.get('single_tasking')
+        singletaskingProcess=cache.get('single_tasking')
+        
+        if 'gunicorn' in sys.argv[0]:
             if singletaskingProcess==None:
                 cache.set('single_tasking', process, 40)
                 logger.info(BOOTING_MSG)
-                logger.info('SingletaskingProcess= ' + str(process) + '!!!!!!!!!!')
+                logger.info('SingletaskingProcess= ' + str(process) + '!!!!!!!!!!') 
                 singletaskingProcess=int(process)
             else:
                 singletaskingProcess=int(singletaskingProcess)
             if singletaskingProcess==int(process):
-                cache.set(self.name, process, 40)
                 from Devices.Requests import initialize_polling_devices
-                logger.info('Initializing polling on Devices for the first time on process ' + str(process))
+                logger.info('Initializing polling Devices for the first time on process ' + str(process))
                 initialize_polling_devices()
+                
+        
                

@@ -6,6 +6,8 @@ from django.utils import timezone
 import datetime
 import Devices.GlobalVars
 import Devices.BBDD
+from django.utils.translation import ugettext_lazy as _
+from Events.consumers import PublishEvent
 
 logger = logging.getLogger("project")
 
@@ -45,5 +47,7 @@ def IN_change_notification_handler(sender, **kwargs):
     IO.value=value
     IO.save()
     applicationDBs.insert_IOs_register(TimeStamp=timestamp,direction='IN')
+    PublishEvent(Severity=0,Text=str(_("Received notification that the input ")) + str(number) + str(_(" has changed to ")) +str(value),Persistent=False)
+    
 
     

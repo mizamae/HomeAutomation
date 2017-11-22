@@ -79,6 +79,42 @@
 		  </div>
 	    </div>
 	</div>
+    <div class="container hidden" id="eventsContainer">
+        <h2>{% trans "Events and alarms" %}</h2>
+        <table id="eventsTable" class="table table-bordered table-responsive ">
+            <colgroup>
+              <col class="col-xs-1 col-md-3"></col>
+              <col class="col-md-1"></col>
+              <col class="col-xs-11 col-md-6"></col>
+              <col class="col-md-2"></col>
+            </colgroup>
+	    	<thead class="thead-inverse">
+			    <tr>
+			        <th>{% trans "Timestamp" %}</th>
+			        <th>{% trans "Severity" %}</th>
+			        <th>{% trans "Description" %}</th>
+			        <th>{% trans "Acknowledge" %}</th>
+			    </tr>
+			 </thead>
+             <tbody>
+            {% for event in events %}
+                {% if event.Severity < 2 %}
+                <tr class="alert-narrow alert-info"> 
+                {% elif event.Severity < 4 %}
+                <tr class="alert-narrow alert-warning"> 
+                {% else %}
+                <tr class="alert-narrow alert-danger">
+                {% endif %}
+                    <td>{{ event.Timestamp }}</td>
+                    <td>{{ event.Severity }}</td>
+                    <td>{{ event.Text }}</td>
+                    <td> <a id="ackn{{ event.pk }}" onclick="acknowledge('{{ event.pk }}')" class="btn btn-default btn-xs" id="" role="button">{% trans "OK" %}</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 {% else %}
 	<div class="container home-container">
 		<h2>{% trans "Please log in if you want to do something else..." %}</h2>
@@ -88,5 +124,6 @@
 
 {% block scripts %}
 <script src="{% static 'site/js/site.js' %}"></script>	
+<script src="{% static 'EventsRT.js' %}"></script>	
 {% endblock scripts %}
 

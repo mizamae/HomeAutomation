@@ -11,11 +11,16 @@ from django.utils.translation import ugettext_lazy as _
 from Devices.models import DeviceTypeModel,DatagramItemModel,DatagramModel,ItemOrdering,CommandModel,ReportModel,ReportItems,DeviceModel
 from Devices.forms import DeviceTypeForm as DeviceTypeForm, ItemOrderingForm,DeviceForm
 
+class DeviceTypeModelAdmin(admin.ModelAdmin):
+    list_display = ('Code','Description','Connection')
+    form=DeviceTypeForm
+    pass
+    
 class DeviceModelAdmin(admin.ModelAdmin):
     def Connection(self,instance):
         return str(instance.Type.Connection)
     
-    list_display = ('DeviceName','Type','Connection','DeviceState','Sampletime')
+    list_display = ('pk','DeviceName','Type','Connection','DeviceState','Sampletime')
     form=DeviceForm
     actions=['defineCustomLabels']
     
@@ -40,16 +45,8 @@ class DeviceModelAdmin(admin.ModelAdmin):
     defineCustomLabels.short_description = _("Define custom labels for the variables")
     
 
-admin.site.register(DeviceModel,DeviceModelAdmin)
-
-class DeviceTypeModelAdmin(admin.ModelAdmin):
-    list_display = ('Code','Description','Connection')
-    form=DeviceTypeForm
-    pass
-
-
 class DatagramItemModelAdmin(admin.ModelAdmin):
-    list_display = ('HumanTag','DataType')
+    list_display = ('pk','HumanTag','DataType')
     pass
 
 class ItemOrderingInline(admin.TabularInline):
@@ -59,7 +56,7 @@ class ItemOrderingInline(admin.TabularInline):
     
 class DatagramModelAdmin(admin.ModelAdmin):
     #filter_horizontal = ('AnItems','DgItems')
-    list_display = ('DeviceType','Code','Identifier')
+    list_display = ('pk','DeviceType','Code','Identifier')
     ordering=('DeviceType','Code')
     inlines = (ItemOrderingInline,)
     
@@ -79,17 +76,14 @@ class ReportItemsModelAdmin(admin.ModelAdmin):
     ordering=('Report','fromDate')
     pass
     
-class DeviceTypeModelAdmin(admin.ModelAdmin):
-    list_display = ('Code','Description','Connection')
-    form=DeviceTypeForm
-    pass
-
 class CommandModelAdmin(admin.ModelAdmin):
     list_display = ('DeviceType','Identifier','HumanTag')
     pass  
 
 admin.site.register(DeviceTypeModel,DeviceTypeModelAdmin)
+admin.site.register(DeviceModel,DeviceModelAdmin)
 admin.site.register(DatagramItemModel,DatagramItemModelAdmin)
 admin.site.register(DatagramModel,DatagramModelAdmin)
+admin.site.register(ReportModel,ReportModelAdmin)
+admin.site.register(ReportItems,ReportItemsModelAdmin)
 admin.site.register(CommandModel,CommandModelAdmin)
-

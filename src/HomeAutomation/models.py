@@ -5,8 +5,9 @@ from django.utils import timezone
 from django.utils.functional import lazy
 import datetime
 import sys
-
+import os
 import json
+from Events.consumers import PublishEvent
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
@@ -26,10 +27,15 @@ class MainDeviceVarModel(models.Model):
         (0,_('Float')),
         (1,_('Integer'))
     )
-    
+    PLOTTYPE_CHOICES=(
+        ('line',_('Hard Line')),
+        ('spline',_('Smoothed Line')),
+        ('column',_('Bars')),
+    )
     Label = models.CharField(max_length=50,unique=True)
     Value = models.DecimalField(max_digits=6, decimal_places=2)
     Datatype=models.PositiveSmallIntegerField(choices=DATATYPE_CHOICES,default=0)
+    PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default='line')
     Units = models.CharField(max_length=10)
     
     __original_Value = None
@@ -47,14 +53,14 @@ class MainDeviceVarModel(models.Model):
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             timestamp=timezone.now()-datetime.timedelta(seconds=1) #para hora con info UTC
             registerDB.insert_VARs_register(TimeStamp=timestamp)
-            logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
+            #logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
         self.__original_Value = self.Value
         super(MainDeviceVarModel, self).save(*args, **kwargs)
         
     def updateAutomationVars(self):
         AutomationVars=AutomationVariablesModel.objects.filter(Device='Main')
         
-        dvar={'Label':self.Label,'Tag':self.Label,'Device':'Main','Table':'MainVariables','BitPos':None}
+        dvar={'Label':self.Label,'Tag':self.pk,'Device':'Main','Table':'MainVariables','BitPos':None}
         try:
             avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
         except:
@@ -82,7 +88,8 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     
     if not kwargs['created']:   # an instance has been modified
-        logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
+        #logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
+        PublishEvent(Severity=0,Text=str(_('Variable '))+instance.Label+str(_(' has changed. Current value is '))+str(instance.Value) + str(instance.Units))
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
@@ -118,6 +125,8 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
     
     if not kwargs['created']:   # an instance has been modified
         logger.info('Se ha modificado la planificacion semanal ' + str(instance.Label))
+        text=str(_('The weekly schedule ')) + str(instance.Label) + str(_(' has been modified.'))
+        PublishEvent(Severity=0,Text=text)
     else:
         logger.info('Se ha creado la planificacion semanal ' + str(instance.Label))
     
@@ -141,7 +150,7 @@ def checkHourlySchedules():
     #logger.info('Hour: ' + str(hour))
     for schedule in schedules:
         if schedule.Active:
-            logger.info('Schedule: ' + str(schedule.Label) + ' is active')
+            #logger.info('Schedule: ' + str(schedule.Label) + ' is active')
             #logger.info('Is active!!!')
             dailySchedules=schedule.inlinedaily_set.all()
             for daily in dailySchedules:
@@ -251,7 +260,7 @@ class AutomationRuleModel(models.Model):
     Operator12 = models.CharField(choices=OPERATOR_CHOICES+BOOL_OPERATOR_CHOICES,max_length=2)
     Var2= models.ForeignKey(AutomationVariablesModel,related_name='var2')
     Var2Hyst= models.DecimalField(max_digits=6, decimal_places=2,default=0.5)
-    Action = models.CharField(max_length=100,blank=True) # receives a json object describind the action desired
+    Action = models.CharField(max_length=100,blank=True) # receives a json object describing the action desired
     
     _timestamp1=None
     _timestamp2=None
@@ -311,10 +320,11 @@ class AutomationRuleModel(models.Model):
             
             return eval(evaluable)
         else:
-            return None
+            return ''
     
-    def execute(self):
+    def execute(self):        
         result=self.evaluate()
+        text=str(_('Automation rule ')) + self.Identifier + str(_(' executed with result ')) + str(result)
         if result:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
@@ -322,7 +332,21 @@ class AutomationRuleModel(models.Model):
                 IO.value=Action['IOValue']
                 IO.save(update_fields=['value'])
             logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
+            
+        PublishEvent(Severity=0,Text=text,Persistent=True)
         
     class Meta:
         verbose_name = _('Automation rule')
         verbose_name_plural = _('Automation rules')
+        
+@receiver(post_save, sender=AutomationRuleModel, dispatch_uid="update_AutomationRuleModel")
+def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):    
+    if not kwargs['created']:   # an instance has been modified
+        logger.info('Se ha modificado la regla de automatizacion ' + str(instance.Identifier))
+        text=str(_('The automation rule ')) + str(instance.Identifier) + str(_(' has been modified.'))
+        PublishEvent(Severity=0,Text=text)
+    else:
+        logger.info('Se ha creado la regla de automatizacion ' + str(instance.Identifier))
+    
+    if instance.Active:
+        instance.execute()

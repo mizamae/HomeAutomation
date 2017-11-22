@@ -1,10 +1,12 @@
 import RPi.GPIO as GPIO
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 import Devices.BBDD
 import Devices.GlobalVars
 #from Devices.signals import Device_datagram_reception,Device_datagram_exception
 import time
 import os
+from Events.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -15,6 +17,9 @@ A class with the name of each of the DeviceTypes defined for local connection ne
 The method to be called when polling the device must be called "read_sensor"
 '''
 class OpenWeatherMap(object):
+
+    _MAX_RETRIES=3
+    
     def __init__(self,DV):
         self.sensor=DV
         try:
@@ -29,39 +34,65 @@ class OpenWeatherMap(object):
             owm = pyowm.OWM('a85b0fd83aa7cf883f15ed7fc0bab4d9')  # You MUST provide a valid API key
             datagram=kwargs['datagram']
             #logger.error('Datagram: ' + datagram)
+            error=''
             if datagram=='observation':
-                observation = owm.weather_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
-                w = observation.get_weather()
-                timestamp=w.get_reference_time(timeformat='date')
-                dewpoint=w.get_dewpoint()                   # Returns the dew point as a float
-                clouds=w.get_clouds()                       # Returns the cloud coverage percentage as an int
-                windspeed=w.get_wind()['speed']                           # {'speed': 4.6, 'deg': 330}
-                windorigin=w.get_wind()['deg']                           # {'speed': 4.6, 'deg': 330}
-                humidity=w.get_humidity()                   # 87
-                temperature=w.get_temperature('celsius')['temp']    # {'temp_max': 10.5, 'temp': 9.7, 'temp_min': 9.0}
-                rain=w.get_rain()                           # {'3h': 0}
-                if '3h' in rain:
-                    rain=rain['3h']
-                else:
-                    rain=0
-                values=(temperature,humidity,windspeed,rain)
+                retries=self._MAX_RETRIES
+                while retries>0:
+                    try:
+                        observation = owm.weather_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
+                        w = observation.get_weather()
+                        timestamp=w.get_reference_time(timeformat='date')
+                        dewpoint=w.get_dewpoint()                   # Returns the dew point as a float
+                        clouds=w.get_clouds()                       # Returns the cloud coverage percentage as an int
+                        wind=w.get_wind()
+                        if 'speed' in wind:
+                            windspeed=wind['speed']                           # {'speed': 4.6, 'deg': 330}
+                        else:
+                            windspeed=None
+                        if 'deg' in wind:
+                            windorigin=wind['deg']                           # {'speed': 4.6, 'deg': 330}
+                        else:
+                            windorigin=None
+                        humidity=w.get_humidity()                   # 87
+                        temperature=w.get_temperature('celsius')['temp']    # {'temp_max': 10.5, 'temp': 9.7, 'temp_min': 9.0}
+                        rain=w.get_rain()                           # {'3h': 0} 
+                        if '3h' in rain:
+                            rain=rain['3h']
+                        else:
+                            rain=0
+                        clouds=w.get_clouds()
+                        values=(temperature,humidity,windspeed,rain,clouds)
+                        retries=0
+                        null=False
+                        if error!='':
+                            error=error+' - retried OK'
+                    except:
+                        retries=retries-1
+                        error='APIError'
+                        values=(None,None,None,None,None)
+                        null=True
+                
             elif datagram=='forecast':
                 forecast = owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
                 fcs = forecast.get_forecast()
                 print('Forecasts for the next 12 H')
                 for i,fc in enumerate(fcs):
                     print(fc.get_reference_time('date'),fc.get_status())
+                timestamp=timezone.now() #para hora con info UTC 
                 values=(None,)
             
             #logger.error('Values: ' + str(values))
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
-            timestamp=timezone.now() #para hora con info UTC 
-            registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values)
-            self.sensor.LastUpdated=timestamp
+            
+            registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values,NULL=null)
+            self.sensor.LastUpdated=timezone.now()
+            self.sensor.Error=error
+            if error!='':
+                PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
             self.sensor.save()
         else:
-            logger.error('The device ' + self.sensor.DeviceName + ' does not have any Beacon associated.')
+            PublishEvent(Severity=5,Text=str(_('The device ')) + self.sensor.DeviceName + str(_(' does not have any Beacon associated.')),Persistent=True)
         
 class DHT11(object):
     """
@@ -251,6 +282,7 @@ class DHT22(object):
         temperature=0
         retries=0
         x=0
+        error=''
         while (x < self._numberMeasures):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
             if t==None:
@@ -261,17 +293,20 @@ class DHT22(object):
             if self._lastTemp!=None: 
                 if abs(self._lastTemp-t)>self._maxDT:
                     logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
+                    error+=' - maxDT'
                     t = self._maxT
                 
             if (t < self._maxT and t > self._minT):
                 temperature=temperature+t
             else:
                 logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t))
+                error+=' - maxminT'
                 
             if (h < self._maxH and h > self._minH):
                 humidity=humidity+h
             else:
                 logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Humidity: '+ str(h))
+                error+=' - maxminH'
             
             if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
                 break
@@ -281,6 +316,7 @@ class DHT22(object):
                 
             if retries>=self._MAX_RETRIES:
                 logger.error('Maximum number of retries reached!!!')
+                error+=' - maxRetries'
                 break
             x=x+1
             time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
@@ -296,16 +332,18 @@ class DHT22(object):
                 humidity=None
             dewpoint=None
             hi=None
+            null=True
         else:
             temperature=round(temperature/self._numberMeasures,3)
             humidity=round(humidity/self._numberMeasures,3)
             dewpoint=round((humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112,3)
             hi=round(self.computeHeatIndex(temperature=temperature, percentHumidity=humidity),3)
+            null=False
             
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                    configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
 
-        registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId='data',year='',values=(temperature,humidity,dewpoint,hi))
+        registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId='data',year='',values=(temperature,humidity,dewpoint,hi),NULL=null)
         
         reading={
             'timestamp':timestamp,
@@ -313,7 +351,11 @@ class DHT22(object):
             'humidity':humidity,
             'heat index':hi,
         }
-        #Device_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
+        self.sensor.LastUpdated=timestamp
+        if error!='':
+            PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
+        self.sensor.Error=error
+        self.sensor.save()
         self._lastTemp=temperature
         
     def query_sensor(self):

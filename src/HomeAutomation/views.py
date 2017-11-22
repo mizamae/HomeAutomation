@@ -62,6 +62,10 @@ class AddDevice(generic.TemplateView):
 @method_decorator(login_required, name='dispatch')    
 class AdvancedDevice(generic.TemplateView):
     template_name = "advanced_device.html"
+    def get(self, request):
+        from Events.models import EventModel
+        EVTs=EventModel.objects.all()
+        return render(request, self.template_name,{'events':EVTs})
 
 @login_required
 def ShowDeviceList(request):
@@ -264,21 +268,19 @@ def adminSetCustomLabels(request,devicePK):
 def viewReports(request,pk=None):
     if pk==None:
         ReportItems=Devices.models.ReportItems.objects.all()
+        RPs=Devices.models.ReportModel.objects.all()
         elements=[]
         reportTitles=[]
-        for Item in ReportItems:
-            if not Item.Report.ReportTitle in reportTitles:
-                reportTitles.append(Item.Report.ReportTitle)
+        for RP in RPs:
+            reportTitles.append(RP.ReportTitle)
             #logger.info('Report: ' + Item.Report.ReportTitle)
-        for Item in ReportItems:
-            elements.append(Item)
+        # for Item in ReportItems:
+            # elements.append(Item)
         #logger.info('Found : ' + str(elements))
-        return render(request, 'reportItemsList.html',{'reportTitles':reportTitles,'items':elements})
+        return render(request, 'reportItemsList.html',{'reportTitles':reportTitles,'items':ReportItems})
     else:
-        from HomeAutomation.tasks import checkReportAvailability            
-        checkReportAvailability()
-        
-        
+        #from HomeAutomation.tasks import checkReportAvailability            
+        #checkReportAvailability()        
         ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
         return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
                                                             'fromDate':ReportItem.fromDate,
@@ -298,11 +300,21 @@ def previewReport(request,title):
                                                         'reportData':ReportItem.data})
     
 @login_required
+@user_passes_test(lambda u: u.has_perm('Devices.add_device'))
+def ajax_get_data_for_devicetype(request,devicetypePK):
+    if request.is_ajax():
+        DV=Devices.models.DeviceTypeModel.objects.get(pk=devicetypePK)
+        info={'Connection':DV.Connection}
+        return HttpResponse(json.dumps(info))
+    else:
+        return HttpResponse(json.dumps([]))
+
+@login_required
 @user_passes_test(lambda u: u.has_perm('HomeAutomation.add_automationrule'))
 def ajax_get_orders_for_device(request,devicePK):
     if request.is_ajax():
-        device=Devices.models.DeviceModel.objects.get(pk=devicePK)
-        orders=Devices.models.CommandModel.objects.filter(DeviceType=device.Type)
+        DV=RemoteDevices.models.DeviceModel.objects.get(pk=devicePK)
+        orders=Devices.models.CommandModel.objects.filter(DeviceType=DV.Type)
         info=[]
         if len(orders)>0:
             for order in orders:
@@ -311,17 +323,7 @@ def ajax_get_orders_for_device(request,devicePK):
         return HttpResponse(json.dumps(info))
     else:
         return HttpResponse(json.dumps([]))
-
-@login_required
-@user_passes_test(lambda u: u.has_perm('Devices.add_device'))
-def ajax_get_data_for_devicetype(request,devicetypePK):
-    if request.is_ajax():
-        device=Devices.models.DeviceTypeModel.objects.get(pk=devicetypePK)
-        info={'Connection':device.Connection}
-        return HttpResponse(json.dumps(info))
-    else:
-        return HttpResponse(json.dumps([]))
-    
+        
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))
 def reportbuilder(request,number=0):
@@ -365,7 +367,7 @@ def device_report(request):
     if request.method == 'POST': # the form has been submited
         form = Devices.forms.DeviceGraphs(request.POST)
         
-        logger.debug(str(request.POST))
+        #logger.debug(str(request.POST))
         if form.is_valid():
             devicename=form.cleaned_data['DeviceName']
             fromDate=form.cleaned_data['fromDate']
@@ -383,7 +385,7 @@ def device_report(request):
             
             charts=[]
             if DV!='MainUnit':  # a device is selected
-                logger.info('The device is a '+str(DV.Type))
+                #logger.info('The device is a '+str(DV.Type))
                 #sampletime=DV.Sampletime
                 DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
                 
@@ -410,14 +412,17 @@ def device_report(request):
                         types.insert(0,'datetime')
                         labels=Labeliterable
                         labels.insert(0,'timestamp')
+                        plottypes=datagram_info['plottypes']
+                        plottypes.insert(0,'timestamp')
+                        
+                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+                                            labels=labels,plottypes=plottypes,sampletime=sampletime)
                          
-                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=sampletime)
-                         
-                        logger.debug(json.dumps(chart))    
+                        #logger.debug(json.dumps(chart))    
                          
                         charts.append(chart)                                           
             else:
-                logger.info('The device is the Main Unit')
+                #logger.info('The device is the Main Unit')
                 IOs=Master_GPIOs.models.IOmodel.objects.all()
                 MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
                 if len(IOs)>0:
@@ -429,17 +434,21 @@ def device_report(request):
                         names=[]
                         types=[]
                         labels=[]
+                        plottypes=[]
                         for IO in IOs:
                             if IO.direction==direction:
                                 names.append(str(IO.pin))
                                 types.append('digital')
                                 labels.append(IO.label)
+                                plottypes.append('line')
                         
                         names.insert(0,'timestamp')
                         types.insert(0,'datetime')
                         labels.insert(0,'timestamp')
-                         
-                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
+                        plottypes.insert(0,'timestamp')
+                        
+                        chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+                                            labels=labels,plottypes=plottypes,sampletime=0)
                          
                         #logger.debug(json.dumps(chart))    
                         charts.append(chart)
@@ -448,18 +457,22 @@ def device_report(request):
                     names=[]
                     types=[]
                     labels=[]
+                    plottypes=[]
                     for Var in MainVars:
                         names.append(Var.pk)
                         types.append('analog')
                         labels.append(Var.Label)
+                        plottypes.append(Var.PlotType)
                     
                     names.insert(0,'timestamp')
                     types.insert(0,'datetime')
                     labels.insert(0,'timestamp')
+                    plottypes.insert(0,'timestamp')
+                    
+                    chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+                                        labels=labels,plottypes=plottypes,sampletime=0)
                      
-                    chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,labels=labels,sampletime=0)
-                     
-                    logger.debug(json.dumps(chart))    
+                    #logger.debug(json.dumps(chart))    
                      
                     charts.append(chart) 
             return render(request, 'DeviceGraph.html', {'devicename':devicename.replace('_',' '),'chart': json.dumps(charts),'Form':form_clean})
@@ -469,7 +482,7 @@ def device_report(request):
         form=Devices.forms.DeviceGraphs()
         return render(request, 'DeviceGraph.html',{'Form': form})
 
-def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
+def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime):
     applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
     
@@ -479,23 +492,23 @@ def generateChart(table,fromDate,toDate,names,types,labels,sampletime):
     i=0
     tempname=[]
     vars=''
-    for name,type,label in zip(names,types,labels):
+    for name,type,label,plottype in zip(names,types,labels,plottypes):
         #logger.info(str(name))
         vars+='"'+str(name)+'"'+','
         if type=='analog':
-            tempname.append({'label':label,'type':type})
+            tempname.append({'label':label,'type':type,'plottype':plottype})
         elif type=='digital':
             labels=label.split('$')
-            tempname.append({'label':labels,'type':type})
+            tempname.append({'label':labels,'type':type,'plottype':plottype})
         else:
-            tempname.append({'label':label,'type':type})
+            tempname.append({'label':label,'type':type,'plottype':plottype})
         
     vars=vars[:-1]
     chart['cols'].append(tempname)    
     
     limit=10000
     sql='SELECT '+vars+' FROM "'+ table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC LIMIT ' + str(limit)
-    logger.info('SQL:' + sql)
+    #logger.info('SQL:' + sql)
     
     data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
     

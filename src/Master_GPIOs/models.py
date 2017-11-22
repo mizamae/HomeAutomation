@@ -35,7 +35,6 @@ def initializeIOs(declareInputEvent=True):
                     #GPIO.remove_event_detect(int(IO.pin))
                     GPIO.add_event_detect(int(IO.pin), GPIO.BOTH, callback=IO.InputChangeEvent, bouncetime=200)
                     IO.value=GPIO.input(int(IO.pin))
-                    IO.save()
                 else:
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
                     #GPIO.remove_event_detect(int(IO.pin))

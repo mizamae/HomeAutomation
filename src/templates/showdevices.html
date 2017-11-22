@@ -69,7 +69,7 @@
                         <td data-title="Device state" bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
                         <td>
                         {% if perms.Devices.change_state %}
-                            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','RDevice_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+                            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
                         {% else %}
                         
                         {% endif %}
@@ -80,14 +80,14 @@
                         {% endif %}
                         </td>
                     {% elif device.DeviceState == 1 %} 
-                        {% if device.DeviceHTTPCode == 200 %}
+                        {% if device.Error == '' %}
                         <td data-title="Device state" bgcolor="#00FF00">{% trans "RUNNING" %}</td>
                         {% else %}
-                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ device.DeviceHTTPCode }}</font></b></td>
+                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ device.Error }}</font></b></td>
                         {% endif %}
                         <td>
                         {% if perms.Devices.change_state %}
-                            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','RDevice_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+                            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
                         {% endif %}
                         </td>
                         <td>
@@ -147,7 +147,7 @@
                         <td data-title="Device state" bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
                         <td>
                         {% if perms.Devices.change_state %}
-                            <a id="Ltoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','LDevice_update','LocalDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+                            <a id="Ltoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','Device_update','LocalDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
                         {% else %}
                         
                         {% endif %}
@@ -158,14 +158,14 @@
                         {% endif %}
                         </td>
                     {% elif device.DeviceState == 1 %} 
-                        {% if device.Connected %}
+                        {% if device.Error == '' %}
                         <td data-title="Device state" bgcolor="#00FF00">{% trans "RUNNING" %}</td>
                         {% else %}
-                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} {% trans " Error " %}</td>
+                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} {% trans " Error " %} {{ device.Error }}</td>
                         {% endif %}
                         <td>
                         {% if perms.Devices.change_state %}
-                            <a id="Ltoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','LDevice_update','LocalDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+                            <a id="Ltoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','Device_update','LocalDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
                         {% endif %}
                         </td>
                         <td>
@@ -225,7 +225,7 @@
                         <td data-title="Device state" bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
                         <td>
                         {% if perms.Devices.change_state %}
-                            <a id="Mtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','MDevice_update','MemoryDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+                            <a id="Mtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','Device_update','MemoryDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
                         {% else %}
                         
                         {% endif %}
@@ -236,14 +236,14 @@
                         {% endif %}
                         </td>
                     {% elif device.DeviceState == 1 %} 
-                        {% if device.Connected %}
+                        {% if device.Error == '' %}
                         <td data-title="Device state" bgcolor="#00FF00">{% trans "RUNNING" %}</td>
                         {% else %}
-                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} {% trans " Error " %}</td>
+                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} {% trans " Error " %} {{ device.Error }}</td>
                         {% endif %}
                         <td>
                         {% if perms.Devices.change_state %}
-                            <a id="Mtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','MDevice_update','MemoryDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+                            <a id="Mtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.DeviceName }}','Device_update','MemoryDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
                         {% endif %}
                         </td>
                         <td>
@@ -284,28 +284,37 @@
                     // Create the new GPIO model
                     if (payload.data.DeviceIP!=null && payload.data.DeviceIP!="")
                     {
-                        add_Device('RemoteDevicesTable','R',payload.data.DeviceName,payload.data.DeviceIP,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated)
+                        add_Device('RemoteDevicesTable','R',payload.data.DeviceName,payload.data.DeviceIP,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
+                    }else if (payload.data.IO!=null && payload.data.IO!="")
+                    {
+                        add_Device('LocalDevicesTable','L',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
                     }else
                     {
-                        add_Device('LocalDevicesTable','L',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated)
+                        add_Device('MemoryDevicesTable','M',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
                     }
                     console.log("New Device model created : " + payload.data.toString());
                 } else if (payload.action == "update") {
                     if (payload.data.DeviceIP!=null && payload.data.DeviceIP!="")
                     {
-                        update_Device('RemoteDevicesTable','R',payload.data.DeviceName,payload.data.DeviceIP,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated)
+                        update_Device('RemoteDevicesTable','R',payload.data.DeviceName,payload.data.DeviceIP,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
+                    }else if (payload.data.IO!=null && payload.data.IO!="")
+                    {
+                        update_Device('LocalDevicesTable','L',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
                     }else
                     {
-                        update_Device('LocalDevicesTable','L',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated)
+                        update_Device('MemoryDevicesTable','M',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
                     }
                     console.log("Device updated : " + payload.data.toString());
                 } else if (payload.action == "delete") {
                     if (payload.data.DeviceIP!=null && payload.data.DeviceIP!="")
                     {
-                        delete_Row('RemoteDevicesTable',payload.data.DeviceName)
+                        delete_Row('RemoteDevicesTable',payload.data.DeviceName);
+                    }else  if (payload.data.IO!=null && payload.data.IO!="")
+                    {
+                        delete_Row('LocalDevicesTable',payload.data.DeviceName);
                     }else
                     {
-                        delete_Row('LocalDevicesTable',payload.data.DeviceName)
+                        delete_Row('MemoryDevicesTable',payload.data.DeviceName);
                     }
                 	console.log("Device deleted : " + payload.data.toString());
                 } else {
@@ -401,13 +410,13 @@
 			var table=document.getElementById(tableID);
 			var rownum=-1;
 			for (var i = 0, row; row = table.rows[i]; i++) {
-				if ((row.cells[0].innerHTML==DeviceName) || (row.cells[1].innerHTML==IPAddr))
+				if ((row.cells[0].innerHTML==DeviceName))
 				{
 					rownum=i;
 					break;
 				}
 			}
-			if (rownum>0)
+			if (rownum>1)
 			{
 				var row=table.rows[rownum];
 				if (typeof DeviceName != "undefined") {row.cells[0].innerHTML=DeviceName;}
@@ -415,8 +424,8 @@
                 if (typeof DeviceType != "undefined") {row.cells[2].innerHTML=DeviceType;}
                 if (typeof DeviceState != "undefined") {
                     row.cells[3].innerHTML=((DeviceState>0) ? '{% trans " RUNNING " %}' : '{% trans " STOPPED " %}' );
-                    buttonToggle=document.getElementById(prefix+'toggle'+rownum.toString());
-                    buttonDel=document.getElementById(prefix+'delete'+rownum.toString());
+                    buttonToggle=document.getElementById(prefix+'toggle'+(rownum-1).toString());
+                    buttonDel=document.getElementById(prefix+'delete'+(rownum-1).toString());
                     if (DeviceState==0)
                     {
                         row.cells[3].style.backgroundColor= "#FF0000";

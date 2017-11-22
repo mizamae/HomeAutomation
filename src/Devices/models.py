@@ -9,9 +9,8 @@ from django.db.models.signals import m2m_changed
 
 from channels.binding.websockets import WebsocketBinding
 
+from Events.consumers import PublishEvent
 from Master_GPIOs.models import IOmodel
-#import LocalDevices.models 
-#import RemoteDevices.models 
 import HomeAutomation.models
 import json
 import itertools
@@ -95,6 +94,8 @@ class DeviceModel(models.Model):
     def save(self, *args, **kwargs):
         if self.DeviceName != self.__original_DeviceName and self.__original_DeviceName != '':
             logger.info('Ha cambiado el nombre del dispositivo ' +self.__original_DeviceName+'. Ahora se llama ' + self.DeviceName)
+            text=str(_('The name for the device ')) +self.__original_DeviceName+str(_(' has changed. Now it is named ')) + self.DeviceName
+            PublishEvent(Severity=0,Text=text)
             #LocalDevices.signals.DeviceName_changed.send(sender=None, OldDeviceName=self.__original_DeviceName,NewDeviceName=self.DeviceName)
         self.__original_DeviceName = self.DeviceName
         super(DeviceModel, self).save(*args, **kwargs)
@@ -133,13 +134,13 @@ class DeviceModel(models.Model):
                 for name in datagram['names']:
                     CustomVars[name]=name
                 
-            for cvar,var,type in zip(CustomVars,Vars,Types):
+            for var,type in zip(Vars,Types):
                 if type=='digital':
-                    BitLabels=CustomVars[cvar].split('$')
+                    BitLabels=CustomVars[var].split('$')
                     for i,bitLabel in enumerate(BitLabels):
                         DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':i,'Sample':datagram['sample']*self.Sampletime})
                 else:
-                    DeviceVars.append({'Label':CustomVars[cvar],'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
+                    DeviceVars.append({'Label':CustomVars[var],'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
         return DeviceVars
     
     def updateAutomationVars(self):
@@ -301,13 +302,20 @@ class DatagramItemModel(models.Model):
         ('FLOAT',_('Analog Float')),
         ('DIGITAL',_('Digital')),
     )
+    PLOTTYPE_CHOICES=(
+        ('line',_('Hard Line')),
+        ('spline',_('Smoothed Line')),
+        ('column',_('Bars')),
+    )
     HumanTag = models.CharField(max_length=20,unique=True)
     DataType= models.CharField(max_length=10,choices=DATATYPE_CHOICES)
+    PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default='spline')
     Units = models.CharField(max_length=10,null=True,blank=True)
     
     def clean(self):
         if self.DataType=='DIGITAL':
             self.Units='bits'
+            self.PlotType='line'
                         
     def __str__(self):
         return self.HumanTag
@@ -357,6 +365,7 @@ class DatagramModel(models.Model):
         types=[]
         datatypes=[]
         units=[]
+        plottypes=[]
         datagramID=self.Identifier
         checkedPK={}
         for item in self.itemordering_set.all().order_by('order'):
@@ -368,6 +377,7 @@ class DatagramModel(models.Model):
                 checkedPK[str(item.Item.pk)]+=1
             names.insert(item.order-1,str(item.Item.pk)+'_'+str(numItems)+'_'+str(self.pk))
             units.insert(item.order-1,item.Item.Units)
+            plottypes.insert(item.order-1,item.Item.PlotType)
             if item.Item.DataType!= 'DIGITAL':
                 types.insert(item.order-1,'analog')
                 datatypes.insert(item.order-1,item.Item.DataType)
@@ -379,7 +389,7 @@ class DatagramModel(models.Model):
         else:
             sample=0
         
-        return {'pk':self.pk,'ID':datagramID,'names':names,'types':types,'datatypes':datatypes,'units':units,'sample':sample}
+        return {'pk':self.pk,'ID':datagramID,'names':names,'types':types,'datatypes':datatypes,'units':units,'plottypes':plottypes,'sample':sample}
 
     class Meta:
         verbose_name = _('Datagram')
@@ -390,7 +400,10 @@ class DatagramModel(models.Model):
 def update_DatagramModel(sender, instance, update_fields,**kwargs):
     if not kwargs['created']:   # an instance has been modified
         logger.info('Se ha modificado el datagram ' + str(instance.DeviceType)+"_"+str(instance))
-        
+        DVs=DeviceModel.objects.filter(Type=instance.DeviceType)
+        if len(DVs)>0:
+            for DV in DVs:
+                DV.updateAutomationVars()
     else:
         logger.info('Se ha creado el datagram ' + str(instance.DeviceType)+"_"+str(instance))
         logger.info('Tiene ' + str(instance.Items.count())+' ' + (DatagramItemModel._meta.verbose_name.title() if (instance.Items.count()==1) else DatagramItemModel._meta.verbose_name_plural.title()))
@@ -412,7 +425,7 @@ def getAllVariables():
                 else:
                     table='outputs'
                 tempvars.append({'device':'Main','table':table,'tag':str(IO.pin),
-                                'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital'})# this is to tell the template that it is a boolean value
+                                'label':[IO.label,],'extrapolate':'keepPrevious','type':'digital','plottype':'line'})# this is to tell the template that it is a boolean value
                                 
         info.append({'deviceName':'Main','variables':tempvars})
     tempvars=[]
@@ -420,7 +433,7 @@ def getAllVariables():
         for VAR in MainVars:
             table='MainVariables'
             tempvars.append({'device':'Main','table':table,'tag':str(VAR.pk),
-                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog'})
+                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog','plottype':VAR.PlotType})
                                 
         info.append({'deviceName':'Main','variables':tempvars})
         
@@ -452,7 +465,8 @@ def getAllVariables():
                 else:
                     CustomLabel=var.replace('_',' [')+']'
                 if (str(var).lower()!='spare') and (str(var).lower()!='timestamp'):                                       
-                    tempvars.append({'device':DV.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,'extrapolate':''})
+                    tempvars.append({'device':DV.DeviceName,'table':table,'tag':datagram['names'][i],'type':type,'label':CustomLabel,
+                                    'plottype':datagram['plottypes'][i],'extrapolate':''})
         info.append({'deviceName':DV.DeviceName,'variables':tempvars})
     return info
     

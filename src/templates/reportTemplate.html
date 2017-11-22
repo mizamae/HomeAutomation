@@ -398,11 +398,14 @@
                 }
                 
                 if (DailyData){xaxisInterval=24*3600 * 1000;}
+                var plottype = (labels[column].plottype != null) ? labels[column].plottype : 'spline';
                 seriesOptions[seriesCounter] = {
                         name: parseLabel(labels[column].label),
                         data: variable_data,
                         lineWidth: 2,
-                        //type: 'spline',
+                        type: plottype,
+                        pointPadding:0,
+                        groupPadding: 0,
                         marker: {
                             enabled: null,
                             radius: 3

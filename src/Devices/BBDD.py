@@ -235,6 +235,11 @@ class Database(object):
         :return:
         """
         try:
+            if table.find('"')<0:
+                table='"'+table+'"'
+            if field.find('"')<0:
+                field='"'+field+'"'
+                
             sql = 'DELETE FROM %s WHERE %s=?' % (table,field)
             cur = self.__conn.cursor()
             cur.execute(sql, (value,))
@@ -262,7 +267,10 @@ class Database(object):
             return -1
             
     def compact_table(self,table):
-        sql="VACUUM " + table
+        if table.find('"')<0:
+            table='"'+table+'"'
+            
+        sql='VACUUM ' + table
         try:
             cur = self.__conn.cursor()
             cur.execute(sql)
