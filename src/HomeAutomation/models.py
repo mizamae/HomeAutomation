@@ -20,7 +20,6 @@ import Master_GPIOs.models
 import logging
 
 logger = logging.getLogger("project")
-
                                            
 class MainDeviceVarModel(models.Model):
     DATATYPE_CHOICES=(
@@ -96,10 +95,6 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
     
     registerDB.insert_VARs_register(TimeStamp=timestamp)
     instance.updateAutomationVars()
-    rules=AutomationRuleModel.objects.filter((Q(Var1__Tag=instance.Label) & Q(Var1__Device='Main')) | (Q(Var2__Tag=instance.Label) & Q(Var2__Device='Main')))
-    if len(rules)>0:
-        for rule in rules:
-            rule.execute()
     
 class MainDeviceVarWeeklyScheduleModel(models.Model):
     Label = models.CharField(max_length=50,unique=True)
@@ -144,7 +139,7 @@ def checkHourlySchedules():
     schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
     timestamp=datetime.datetime.now()
     #logger.info('Timestamp: ' + str(timestamp))
-    weekDay=timestamp.weekday()
+    weekDay=timestamp.weekday()        
     #logger.info('Weekday: ' + str(weekDay))
     hour=timestamp.hour
     #logger.info('Hour: ' + str(hour))
@@ -236,7 +231,13 @@ class AutomationVariablesModel(models.Model):
         unique_together = ('Tag','BitPos','Table')
         verbose_name = _('Automation variable')
         verbose_name_plural = _('Automation variables')
-        
+
+@receiver(post_save, sender=AutomationVariablesModel, dispatch_uid="update_AutomationVariablesModel")
+def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs):    
+    rules=AutomationRuleModel.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
+    if len(rules)>0:
+        for rule in rules:
+            rule.execute()        
                 
 class AutomationRuleModel(models.Model):
     OPERATOR_CHOICES=(

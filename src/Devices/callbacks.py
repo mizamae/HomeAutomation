@@ -26,6 +26,9 @@ class OpenWeatherMap(object):
             self.place=DV.device2beacon
         except:
             self.place=None
+    
+    def query_sensor(self,**kwargs):
+        pass
         
     def read_sensor(self,**kwargs):
         #logger.error('Callback for the device ' + self.sensor.DeviceName)
@@ -143,7 +146,7 @@ class DHT11(object):
             self._lastTemp=None
             logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
             
-    def read_sensor(self):
+    def read_sensor(self,**kwargs):
         """
         Read temperature and humidity from DHT sensor.
         """
@@ -185,7 +188,7 @@ class DHT11(object):
         #Device_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
         self._lastTemp=temperature
         
-    def query_sensor(self):
+    def query_sensor(self,**kwargs):
         """
         Read temperature and humidity from DHT sensor.
         """
@@ -273,7 +276,7 @@ class DHT22(object):
             logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
         
                                 
-    def read_sensor(self):
+    def read_sensor(self,**kwargs):
         """
         Read temperature and humidity from DHT sensor.
         """
@@ -358,7 +361,7 @@ class DHT22(object):
         self.sensor.save()
         self._lastTemp=temperature
         
-    def query_sensor(self):
+    def query_sensor(self,**kwargs):
         """
         Read temperature and humidity from DHT sensor.
         """

@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 from django.db.models.signals import m2m_changed
 
-from channels.binding.websockets import WebsocketBinding
+from channels.binding.websockets import WebsocketBinding,WebsocketBindingWithMembers 
 
 from Events.consumers import PublishEvent
 from Master_GPIOs.models import IOmodel
@@ -63,7 +63,7 @@ class DeviceModel(models.Model):
     )
     
     __original_DeviceName = None
-    
+    __DeviceTypeCode = None
     DeviceName = models.CharField(max_length=50,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
     IO = models.OneToOneField(IOmodel,on_delete=models.CASCADE,related_name='pin2device',unique=True,null=True,blank=True)
     DeviceCode = models.IntegerField(unique=True,blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
@@ -76,6 +76,11 @@ class DeviceModel(models.Model):
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
     CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     Error= models.CharField(max_length=100,default='',blank=True)
+    
+    def _deviceType2Binding(self):
+        '''THIS IS TO SEND ON THE DTATABINDING SOCKET THE CODE OF THE DEVICE TYPE. ON DEFAULT, IT SENDS THE pk '''
+        return self.__DeviceTypeCode
+    devicetype2str=property(_deviceType2Binding)
     
     def clean(self):
         if self.IO!=None:
@@ -98,6 +103,7 @@ class DeviceModel(models.Model):
             PublishEvent(Severity=0,Text=text)
             #LocalDevices.signals.DeviceName_changed.send(sender=None, OldDeviceName=self.__original_DeviceName,NewDeviceName=self.DeviceName)
         self.__original_DeviceName = self.DeviceName
+        self.__DeviceTypeCode=self.Type.Code
         super(DeviceModel, self).save(*args, **kwargs)
         
     def updateCustomLabels(self):
@@ -114,7 +120,18 @@ class DeviceModel(models.Model):
             self.save()
         else:
             return
-            
+    
+    def getRegistersTables(self,DG=None):
+        if DG==None:
+            DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
+            tables=[]
+            if len(DGs)>0:
+                for DG in DGs:
+                    tables.append(str(self.pk)+'_'+str(DG.pk))
+        else:
+            tables=str(self.pk)+'_'+str(DG.pk)
+        return tables
+    
     def getDeviceVariables(self):
         DeviceVars=[]
         DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
@@ -127,6 +144,7 @@ class DeviceModel(models.Model):
             datagram=DG.getStructure()
             Vars=datagram['names']
             Types=datagram['types']
+            table=self.getRegistersTables(DG=DG)
             if CustomLabels!=None:
                 CustomVars=CustomLabels[DG.Identifier]
             else:
@@ -138,9 +156,9 @@ class DeviceModel(models.Model):
                 if type=='digital':
                     BitLabels=CustomVars[var].split('$')
                     for i,bitLabel in enumerate(BitLabels):
-                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':i,'Sample':datagram['sample']*self.Sampletime})
+                        DeviceVars.append({'Label':bitLabel,'Tag':var,'Device':self.pk,'Table':table,'BitPos':i,'Sample':datagram['sample']*self.Sampletime})
                 else:
-                    DeviceVars.append({'Label':CustomVars[var],'Tag':var,'Device':self.pk,'Table':str(self.pk)+'_'+str(datagram['pk']),'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
+                    DeviceVars.append({'Label':CustomVars[var],'Tag':var,'Device':self.pk,'Table':table,'BitPos':None,'Sample':datagram['sample']*self.Sampletime})
         return DeviceVars
     
     def updateAutomationVars(self):
@@ -166,7 +184,7 @@ class DeviceModel(models.Model):
             avar.save()
             
     def deleteAutomationVars(self):
-        HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.DeviceName).delete()
+        HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.pk).delete()
             
     class Meta:
         permissions = (
@@ -179,26 +197,25 @@ class DeviceModel(models.Model):
         
 @receiver(post_save, sender=DeviceModel, dispatch_uid="update_DeviceModel")
 def update_DeviceModel(sender, instance, update_fields,**kwargs):
-    from Devices.Requests import initialize_polling_devices
+    from Devices.Requests import update_requests
     if kwargs['created']:   # new instance is created
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
         registerDB.create_DeviceRegistersTables(DV=instance)
-        initialize_polling_devices()
-    else:
-        instance.updateAutomationVars()
-        
-        
+        update_requests(DV=instance)
+
+    instance.updateAutomationVars()
+               
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_DeviceModel")
 def delete_DeviceModel(sender, instance,**kwargs):
     instance.deleteAutomationVars()
     logger.info('Se ha eliminado el dispositivo ' + str(instance))
 
-class DeviceModelBinding(WebsocketBinding):
+class DeviceModelBinding(WebsocketBindingWithMembers):
 
     model = DeviceModel
     stream = "Device_params"
-    fields = ["DeviceName","IO","DeviceCode","DeviceIP","Type","Sampletime","DeviceState","LastUpdated","Error"]
+    fields = ["DeviceName","IO","DeviceCode","DeviceIP","Type","Sampletime","DeviceState","LastUpdated","Error","devicetype2str"]
 
     @classmethod
     def group_names(cls, *args, **kwargs):
@@ -402,8 +419,13 @@ def update_DatagramModel(sender, instance, update_fields,**kwargs):
         logger.info('Se ha modificado el datagram ' + str(instance.DeviceType)+"_"+str(instance))
         DVs=DeviceModel.objects.filter(Type=instance.DeviceType)
         if len(DVs)>0:
+            registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             for DV in DVs:
                 DV.updateAutomationVars()
+                table=DV.getRegistersTables(DG=instance)
+                registerDB.check_columns_registersDB(table=table,datagramStructure=instance.getStructure())
+                
     else:
         logger.info('Se ha creado el datagram ' + str(instance.DeviceType)+"_"+str(instance))
         logger.info('Tiene ' + str(instance.Items.count())+' ' + (DatagramItemModel._meta.verbose_name.title() if (instance.Items.count()==1) else DatagramItemModel._meta.verbose_name_plural.title()))
@@ -441,7 +463,7 @@ def getAllVariables():
         DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)#XMLParser.getDatagramsStructureForDeviceType(deviceType=DEVICE_TYPE)
         tempvars=[]
         for DG in DGs: 
-            table=str(DV.pk)+'_'+str(DG.pk)
+            table=DV.getRegistersTables(DG=DG)  #str(DV.pk)+'_'+str(DG.pk)
             Labeliterable=[]
             datagram=DG.getStructure()
             if DV.CustomLabels!='':

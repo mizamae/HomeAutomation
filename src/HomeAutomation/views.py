@@ -132,28 +132,16 @@ def ConfDevice(request,code):
                 IP=form.cleaned_data['DeviceIP']
                 DeviceType =form.cleaned_data['Type']  
                 Sampletime =form.cleaned_data['Sampletime']  
+                DeviceState=form.cleaned_data['DeviceState']
                 logger.warning('Found a device type '+str(DeviceType))
                 code=int(code)
                 DV=Devices.models.DeviceModel(DeviceName=name,DeviceCode=code,DeviceIP=IP,Type=DeviceType,
-                                                                 DeviceState='STOPPED',Sampletime=Sampletime)
+                                                                 DeviceState=DeviceState,Sampletime=Sampletime)
                 DV.save()
                 state='RegisteredOK'
-                
-                #datagrams=Devices.models.DatagramModel.objects.filter(DeviceType=DeviceType)
-                datagrams=Devices.models.getDatagramStructure(devicetype=DeviceType)
-                
-                
-                datagram_info=[]
-                for datagram in datagrams:
-                    data={}
-                    data['fields']=datagram['names']
-                    data['initial_values']=datagram['names']
-                    data['types']=datagram['types']
-                    data['DeviceName']=name
-                    data['ID']=datagram['ID']
-                    datagram_info.append(data)
-                    
-                form=Devices.forms.DatagramCustomLabelsForm(None,datagram_info=datagram_info)
+            
+                DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+                form=Devices.forms.DatagramCustomLabelsForm(None,DV=DV,DGs=DGs)
     
                 return render(request,'reqconfdevice.html',
                           {'Status':state,'DeviceName':name.upper(),'Form': form})                
@@ -165,24 +153,15 @@ def ConfDevice(request,code):
                           {'Status':state,'Form': form})
         else: # the datagram custom labels form has been submitted
             DeviceName=request.POST['DeviceName']
-            device=Devices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-            datagrams=Devices.models.getDatagramStructure(devicetype=device.Type)
-            datagram_info=[]
-            for datagram in datagrams:
-                data={}
-                data['fields']=datagram['names']
-                data['initial_values']=datagram['names']
-                data['types']=datagram['types']
-                data['DeviceName']=DeviceName
-                data['ID']=datagram['ID']
-                datagram_info.append(data)
-            form = Devices.forms.DatagramCustomLabelsForm(request.POST,datagram_info=datagram_info)
+            DV=Devices.models.DeviceModel.objects.get(DeviceName=DeviceName)
+            DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+            form=Devices.forms.DatagramCustomLabelsForm(request.POST,DV=DV,DGs=DGs)
             if form.is_valid():
                 DeviceName=form.cleaned_data['DeviceName']
                 CustomLabels=form.get_variablesLabels()
-                device.CustomLabels=json.dumps(CustomLabels)
-                device.save()
-                device.updateAutomationVars()
+                DV.CustomLabels=json.dumps(CustomLabels)
+                DV.save()
+                DV.updateAutomationVars()
                 #print('OK!!!')
                 state='FinishedOK'
             return render(request,'reqconfdevice.html',
@@ -196,7 +175,7 @@ def ConfDevice(request,code):
             return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})
            
         server='http://10.10.10.'+str(code)
-        server='http://127.0.0.1'
+        #server='http://127.0.0.1'
         HTTPrequest=Devices.HTTP_client.HTTP_requests(server=server)  
         (status,root)=HTTPrequest.request_confXML(xmlfile=Devices.GlobalVars.DEVICES_CONFIG_FILE)
         xmlparser=Devices.XML_parser.XMLParser(xmlroot=root)

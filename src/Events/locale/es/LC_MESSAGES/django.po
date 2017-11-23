@@ -18,36 +18,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: models.py:25
-msgid "Profile picture"
-msgstr "Foto de perfil"
-
-#: models.py:29
-msgid "Short Bio"
-msgstr "Biografia"
-
-#: models.py:30
-msgid "Email verified"
-msgstr "Email verificado"
-
-#: models.py:31
-msgid "Location tracking"
-msgstr "Seguimiento de ubicación"
-
-#: models.py:32
-msgid "Last known latitude"
-msgstr "Última latitud conocida"
-
-#: models.py:33
-msgid "Last known longitude"
-msgstr "Última longitud conocida"
-
-#: models.py:34
-msgid "Last known position accuracy"
-msgstr "Última precisión de ubicación conocida"
-
-#~ msgid "Distance from "
-#~ msgstr "Distancia desde "
-
-#~ msgid " to "
-#~ msgstr " a "
+#: admin.py:20
+msgid "Mark as read"
+msgstr "Marcar como leido"

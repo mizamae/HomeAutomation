@@ -296,13 +296,13 @@
                 } else if (payload.action == "update") {
                     if (payload.data.DeviceIP!=null && payload.data.DeviceIP!="")
                     {
-                        update_Device('RemoteDevicesTable','R',payload.data.DeviceName,payload.data.DeviceIP,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
+                        update_Device('RemoteDevicesTable','R',payload.data.DeviceName,payload.data.DeviceIP,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated,payload.data.Error);
                     }else if (payload.data.IO!=null && payload.data.IO!="")
                     {
-                        update_Device('LocalDevicesTable','L',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
+                        update_Device('LocalDevicesTable','L',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated,payload.data.Error);
                     }else
                     {
-                        update_Device('MemoryDevicesTable','M',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated);
+                        update_Device('MemoryDevicesTable','M',payload.data.DeviceName,payload.data.IO,payload.data.Type,payload.data.DeviceState,payload.data.LastUpdated,payload.data.Error);
                     }
                     console.log("Device updated : " + payload.data.toString());
                 } else if (payload.action == "delete") {
@@ -406,7 +406,7 @@
                 });
 		}
 		
-		function update_Device(tableID,prefix,DeviceName,IPAddr,DeviceType,DeviceState,LastUpdated){
+		function update_Device(tableID,prefix,DeviceName,IPAddr,DeviceType,DeviceState,LastUpdated,Error){
 			var table=document.getElementById(tableID);
 			var rownum=-1;
 			for (var i = 0, row; row = table.rows[i]; i++) {
@@ -424,6 +424,7 @@
                 if (typeof DeviceType != "undefined") {row.cells[2].innerHTML=DeviceType;}
                 if (typeof DeviceState != "undefined") {
                     row.cells[3].innerHTML=((DeviceState>0) ? '{% trans " RUNNING " %}' : '{% trans " STOPPED " %}' );
+                    row.cells[3].innerHTML+=" " + Error;
                     buttonToggle=document.getElementById(prefix+'toggle'+(rownum-1).toString());
                     buttonDel=document.getElementById(prefix+'delete'+(rownum-1).toString());
                     if (DeviceState==0)

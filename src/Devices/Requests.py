@@ -1,11 +1,13 @@
 import logging
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.utils.translation import ugettext_lazy as _
 
 import Devices.GlobalVars
 import Devices.callbacks
 import Devices.XML_parser
 import Devices.models
+from Events.consumers import PublishEvent
 
 import xml.etree.ElementTree as ET
 
@@ -55,7 +57,8 @@ def update_requests(DV):
                                       id=id, 
                                       seconds=DV.Sampletime,replace_existing=True)
         if len(DGs)>0:
-            logger.info('Polling for the device '+DV.DeviceName+' is started on process ' + str(os.getpid()) + ' with sampletime= ' + str(DV.Sampletime))  
+            text=str(_('Polling for the device '))+DV.DeviceName+str(_(' is started with sampletime= ')) + str(DV.Sampletime)  
+            PublishEvent(Severity=0,Text=text,Persistent=True)
             try:
                 scheduler.start()
             except:
@@ -72,12 +75,13 @@ def update_requests(DV):
                 try:
                     scheduler.remove_job(id)
                 except:
-                    logger.error('Job ID '+id+' does not exist. DB mismatch!!') 
-        logger.info('Polling for the device '+DV.DeviceName+' is stopped')  
-        logger.info('There are still these polls active '+str(scheduler.get_jobs()))  
+                    logger.error('Job ID '+id+' does not exist!!')   
+        text=str(_('Polling for the device '))+DV.DeviceName+str(_(' is stopped ')) 
+        PublishEvent(Severity=0,Text=text,Persistent=True)
 
 def request_to_device(deviceIP,deviceCode,DatagramId):
-    logger.info('Lanzada consulta ' +DatagramId+ ' a ' + deviceIP + ' desde el proceso ' + str(os.getpid()))
+    text=str(_('Sent request ')) +DatagramId+ str(_(' to ')) + deviceIP
+    PublishEvent(Severity=0,Text=text,Persistent=True)
     HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP)    
     HTTPrequest.request_datagram(DeviceCode=deviceCode,DatagramId=DatagramId) 
   

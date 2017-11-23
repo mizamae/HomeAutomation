@@ -10,12 +10,13 @@ import random
 import sys
 
 import requests
-
+from django.utils.translation import ugettext_lazy as _
 import Devices.BBDD
 import Devices.GlobalVars
 import Devices.XML_parser
 import Devices.models
 import Devices.signals
+from Events.consumers import PublishEvent
 
 #import RemoteDevices.signals
 
@@ -163,44 +164,35 @@ class HTTP_requests():
                             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=deviceName, DatagramId=DatagramId, 
                                                               year=timestamp.year, values=datagram,NULL=False)
                             DV.LastUpdated=timestamp
-                            DV.Error=r.status_code
-                            DV.save(update_fields=["LastUpdated","Error","Error"])
+                            DV.Error=''
+                            DV.save(update_fields=["LastUpdated","Error"])
                             Devices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,Device=DV,DatagramId=DatagramId,values=datagram)
                             return
                         else:
-                            if DV.Error!=200:
-                                DV.Error=r.status_code
-                                DV.save(update_fields=["Error","Error"])
                             return datagram
                     else:
-                        if DV.Error!=800:
-                            DV.Error=800
-                            DV.Error='The device responded with a different DeviceCode than the one expected'
-                            DV.save(update_fields=["Error","Error"])
-                        logger.warning('The device responded with a different code. Expecting DeviceCode=' + str(DeviceCode)+' and the code ' 
-                              + str(deviceCode) +' was received')
+                        DV.Error='The device responded with a different DeviceCode than the one expected'
+                        DV.save(update_fields=["Error",])
+                        PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with a different DeviceCode than the one expected, expected "))+ str(DeviceCode)+str(_(' but received '))+str(deviceCode),Persistent=True)
                 else:
-                    if DV.Error!=801:
-                        DV.Error=801
-                        DV.Error='Error in the format of the datagram received'
-                        DV.save(update_fields=["Error","Error"])
+                    DV.Error='Error in the format of the datagram received'
+                    DV.save(update_fields=["Error",])
+                    PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" sent a badly formatted datagram: "))+str(datagram),Persistent=True)
                     Devices.signals.Device_datagram_format_error.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
             else:
-                if DV.Error!=r.status_code:
-                    DV.Error=r.status_code
-                    DV.Error=_('Error ' + str(r.status_code))
-                    DV.save(update_fields=["Error","Error"])
+                DV.Error='Error HTTP ' + str(r.status_code)
+                DV.save(update_fields=["Error",])
+                PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with HTTP code "))+str(r.status_code),Persistent=True)
                 Devices.signals.Device_datagram_exception.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,HTMLCode=r.status_code)
         except:
             
             if str(sys.exc_info()[0]).find('ConnectTimeout')>=0:
-                if DV.Error!=802:
-                    DV.Error=802
-                    DV.Error="The device did not respond within the timeout margin (default 1 sec)"
-                    DV.save(update_fields=["Error","Error"])
-                Devices.signals.Device_datagram_timeout.send(sender=None, DeviceIP=self.server,DeviceName=deviceName,DatagramId=DatagramId)
+                DV.Error="The device did not respond within the timeout margin (default 1 sec)"
+                DV.save(update_fields=["Error",])
+                PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" did not respond within the timeout margin (default 1 sec)")),Persistent=True)
+                Devices.signals.Device_datagram_timeout.send(sender=None, Device=DV,Datagram=DatagramId)
             else:
-                logger.error ("Unexpected error in request_datagram:" + str(sys.exc_info()[1]))
+                PublishEvent(Severity=6,Text=str(_("Unexpected error in request_datagram:")) + str(sys.exc_info()[1]),Persistent=True)
         if retries>0:
             retries-=1
             logger.info ('Retrying the Request: '+self.server+'/'+DatagramId)

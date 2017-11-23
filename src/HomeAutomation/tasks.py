@@ -36,38 +36,60 @@ def start_registersDBcompactingTask():
         pass
 
 def checkReportAvailability():
+    '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
+    IN CASE SO, IT GENERATES THE REPORT.
+    '''
     from Devices.models import ReportModel,ReportItems
     import json
     logger.info('Checking reports availability...')
     reports=ReportModel.objects.all()
-    logger.info('There are ' + str(len(reports)) + ' reports configured.')
+    #logger.info('There are ' + str(len(reports)) + ' reports configured.')
     for report in reports:
-        logger.info('Report ' + report.ReportTitle)
-        logger.info('Triggered ' + str(report.checkTrigger()))
+        #logger.info('Report ' + report.ReportTitle)
+        #logger.info('Triggered ' + str(report.checkTrigger()))
         if report.checkTrigger():
             ReportData,fromDate,toDate=report.getReport()
             reportTitle=report.ReportTitle           
-            logger.info('Report: '+str(ReportData))            
+            #logger.info('Report: '+str(ReportData))            
             report=ReportModel.objects.get(ReportTitle=reportTitle)
             rp=ReportItems(Report=report,fromDate=fromDate,toDate=toDate,data=json.dumps(ReportData))
             rp.save()
-            logger.info('Report '+ reportTitle +' generated successfully.')
+            #logger.info('Report '+ reportTitle +' generated successfully.')
 
-def start_reportsGenerationTask():
-    '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
-    IN CASE SO, IT GENERATES THE REPORT.
-    '''
+def updateWeekDay():
+    import datetime
+    from HomeAutomation.models import MainDeviceVarModel
+    timestamp=datetime.datetime.now()
+    weekDay=timestamp.weekday()
+    try:
+        WeekDay=MainDeviceVarModel.objects.get(Label='Day of the week')
+        WeekDay.Value=weekDay
+    except:
+        WeekDay=MainDeviceVarModel(Label='Day of the week',Value=weekDay,Datatype=1,Units='')
+    WeekDay.save()
+      
+def start_DailyTask():
     logger.info('Report generation task is added to scheduler on the process '+ str(os.getpid())) 
     scheduler.add_job(func=checkReportAvailability,trigger='cron',id='checkReportAvailability',hour=0)
+    scheduler.add_job(func=updateWeekDay,trigger='cron',id='updateWeekDay',hour=0)
     try:
         scheduler.start()
     except:
         pass
     
 def HourlyTask():
+    import datetime
+    from HomeAutomation.models import MainDeviceVarModel
     logger.info('Checking hourly tasks...')
-    HomeAutomation.models.checkHourlySchedules()
-    pass
+    HomeAutomation.models.checkHourlySchedules()    
+    timestamp=datetime.datetime.now()
+    hourDay=timestamp.hour
+    try:
+        HourDay=MainDeviceVarModel.objects.get(Label='Hour of the day')
+        HourDay.Value=hourDay
+    except:
+        HourDay=MainDeviceVarModel(Label='Day of the week',Value=hourDay,Datatype=1,Units='H')
+    HourDay.save()
 
 def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.
