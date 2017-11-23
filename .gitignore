@@ -13,9 +13,9 @@ pip-delete-this-directory.txt
 build
 
 # SQLite3 database files:
-#*.db
-#*.sqlite3
-#*.sqlite
+*.db
+*.sqlite3
+*.sqlite
 
 # Logs:
 *.log
