@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-15 17:06+0100\n"
+"POT-Creation-Date: 2017-11-23 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,38 +18,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: models.py:23
+#: models.py:25
 msgid "Profile picture"
 msgstr "Foto de perfil"
 
-#: models.py:27
+#: models.py:29
 msgid "Short Bio"
 msgstr "Biografia"
 
-#: models.py:28
+#: models.py:30
 msgid "Email verified"
 msgstr "Email verificado"
 
-#: models.py:29
+#: models.py:31
 msgid "Location tracking"
 msgstr "Seguimiento de ubicación"
 
-#: models.py:30
+#: models.py:32
 msgid "Last known latitude"
 msgstr "Última latitud conocida"
 
-#: models.py:31
+#: models.py:33
 msgid "Last known longitude"
 msgstr "Última longitud conocida"
 
-#: models.py:32
+#: models.py:34
 msgid "Last known position accuracy"
 msgstr "Última precisión de ubicación conocida"
 
-#: models.py:48
-msgid "Distance from "
-msgstr "Distancia desde "
+#~ msgid "Distance from "
+#~ msgstr "Distancia desde "
 
-#: models.py:48
-msgid " to "
-msgstr " a "
+#~ msgid " to "
+#~ msgstr " a "

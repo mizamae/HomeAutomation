@@ -10,8 +10,8 @@ import json
 import Devices.GlobalVars
 import Devices.XML_parser
 import Devices.models
-import RemoteDevices.models
-import LocalDevices.models
+#import RemoteDevices.models
+#import LocalDevices.models
 import Master_GPIOs.models
 import HomeAutomation.models
 import sqlite3 as dbapi
@@ -224,6 +224,7 @@ class Database(object):
         except:
             print ("Unexpected error in insert_row:", sys.exc_info()[1]) 
             logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
+            logger.error("SQL: "+ SQL_statement)
             return -1
        
     def delete_row(self,table,field,value):
@@ -234,6 +235,11 @@ class Database(object):
         :return:
         """
         try:
+            if table.find('"')<0:
+                table='"'+table+'"'
+            if field.find('"')<0:
+                field='"'+field+'"'
+                
             sql = 'DELETE FROM %s WHERE %s=?' % (table,field)
             cur = self.__conn.cursor()
             cur.execute(sql, (value,))
@@ -261,7 +267,10 @@ class Database(object):
             return -1
             
     def compact_table(self,table):
-        sql="VACUUM " + table
+        if table.find('"')<0:
+            table='"'+table+'"'
+            
+        sql='VACUUM ' + table
         try:
             cur = self.__conn.cursor()
             cur.execute(sql)
@@ -334,15 +343,20 @@ class RegistersDatabase(Database):
     def __init__(self,location):
         super().__init__(location=location) # to execute the parent's constructor
        
-    def create_datagram_table(self,DeviceName,DatagramId,fieldNames,fieldTypes):
+    def create_datagram_table(self,DV,DG):
         """
-        Creates the table corresponding to the DeviceName+'_'+DatagramId with the fields shown in fieldNames
-        :param DeviceName: Name of the device
-        :param DatagramId: datagram identifier
-        :param fieldNames: list of the names of ech of the fields
-        :param fieldTypes: list of the datatype for ech of the fields
-        :return: names,types
+        Creates the table corresponding to the Device DV and Datagram DG
         """
+        TableName=str(DV.pk)+'_'+str(DG.pk)
+        datagram=DG.getStructure()
+        names=datagram['names']
+        datatypes=datagram['datatypes']        
+        logger.info('Creating "'+TableName+'" table with:')
+        logger.info('   - DeviceType='+str(DV.Type))
+        logger.info('   - fieldNames'+str(names)) 
+        logger.info('   - fieldTypes'+str(datatypes))  
+        fieldNames=names
+        fieldTypes=datatypes
         try:
             if len(fieldNames)!=len(fieldTypes):
                 logger.error('The length of the lists of names and types does not match in create_datagram_table')
@@ -351,13 +365,14 @@ class RegistersDatabase(Database):
                 temp_string=''
                 for i in range(0,len(fieldNames)):
                     temp_string+='"'+fieldNames[i] + '" ' + fieldTypes[i] + ','
-                sql=self.SQL_createRegister_table.replace('*',temp_string).replace('?','"'+DeviceName+'_'+DatagramId+'"')
+                sql=self.SQL_createRegister_table.replace('*',temp_string).replace('?','"'+TableName+'"')
                 logger.info('SQL: ' + sql)
                 super().create_table(SQLstatement=sql)                              
+            logger.info('Succeded in creating the table "'+TableName+'"') 
         except:
             print ("Unexpected error in create_datagram_table:", sys.exc_info()[1])
             logger.error ("Unexpected error in create_datagram_table:"+ str(sys.exc_info()[1]))
-    
+            
     def create_tracks_table(self):
         """
         Creates the table corresponding to the position tracking
@@ -449,12 +464,12 @@ class DIY4dot0_Databases(object):
             print('The registers DB cannot be created at location: ' + registerDBPath)  
             raise RuntimeError('The registers DB cannot be created at location: ' + registerDBPath)                
                            
-    def check_columns_registersDB(self,table,datagram):
+    def check_columns_registersDB(self,table,datagramStructure):
         if table.find('"')<0:
             table='"'+table+'"'
         dbNames,dbTypes =self.registersDB.retrieve_cols_nametype(table)  
         #logger.info('The columns on the table "'+table+'" have been checked.')      
-        for datagramName,datagramType in zip(datagram['names'],datagram['datatypes']):
+        for datagramName,datagramType in zip(datagramStructure['names'],datagramStructure['datatypes']):
             vector=datagramName.split('_')
             datagramName=vector[0]
             #logger.info('   - '+datagramName) 
@@ -475,14 +490,14 @@ class DIY4dot0_Databases(object):
                         pass# here the type of the column should be changed but SQLITE does not support
             if found==False:
                 inserted=self.registersDB.insert_column(table=table,column=datagramName,type=datagramType)  
-                logger.info('The column '+datagramName+' have been added.')
+                logger.info('The column '+datagramName+' have been added on table ' + table)
         
     def check_IOsTables(self):
         rows=self.registersDB.retrieve_DB_structure(fields='*')   #('table', 'devices', 'devices', 4, "CREATE TABLE devices...)       
         table_to_find='events'
         found=False
         for row in rows:
-            if (row[1]==table_to_find):   # there is a table named events
+            if (row[1]==table_to_find):   # there is a table named devices
                 found=True
                 break
         if found is not True:
@@ -492,13 +507,13 @@ class DIY4dot0_Databases(object):
         table_to_find='tracks'
         found=False
         for row in rows:
-            if (row[1]==table_to_find):   # there is a table named tracks
+            if (row[1]==table_to_find):   # there is a table named devices
                 found=True
                 break
         if found is not True:
             self.registersDB.create_tracks_table()
             logger.info('The table '+table_to_find+' was not created.') 
-            
+        
         IOs=Master_GPIOs.models.IOmodel.objects.all()
         inputs={}
         inputs['names']=[]
@@ -527,7 +542,7 @@ class DIY4dot0_Databases(object):
                 self.registersDB.create_ios_table(IOs=inputs['names'],table_name='inputs')
                 logger.info('The table '+table_to_find+' was not created.') 
             else:
-                self.check_columns_registersDB(table='inputs',datagram=inputs)
+                self.check_columns_registersDB(table='inputs',datagramStructure=inputs)
         
         if len(outputs['names'])>0:
             table_to_find='outputs'
@@ -540,7 +555,7 @@ class DIY4dot0_Databases(object):
                 self.registersDB.create_ios_table(IOs=outputs['names'],table_name='outputs')
                 logger.info('The table '+table_to_find+' was not created.') 
             else:
-                self.check_columns_registersDB(table='outputs',datagram=outputs)
+                self.check_columns_registersDB(table='outputs',datagramStructure=outputs)
                 
         VARs=HomeAutomation.models.MainDeviceVarModel.objects.all()
         vars={}
@@ -563,7 +578,7 @@ class DIY4dot0_Databases(object):
                 self.registersDB.create_mainVars_table(VARs=vars['names'])
                 logger.info('The table '+table_to_find+' was not created.') 
             else:
-                self.check_columns_registersDB(table=table_to_find,datagram=vars)
+                self.check_columns_registersDB(table=table_to_find,datagramStructure=vars)
                 
     def check_registersDB(self):
         
@@ -571,91 +586,36 @@ class DIY4dot0_Databases(object):
         
         required_registers_tables=[]
             
-        DVs=RemoteDevices.models.DeviceModel.objects.all()
+        DVs=Devices.models.DeviceModel.objects.all()
         if len(DVs)>0:
-            xmlroot = ET.parse(self.configXMLPath).getroot()
-            XMLParser=Devices.XML_parser.XMLParser(xmlroot=xmlroot)
-            for device in DVs:
-                datagrams=Devices.models.getDatagramStructure(devicetype=device.Type.Code)
-                for datagram in datagrams:
+            for DV in DVs:
+                DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+                for DG in DGs:
                     found=False
-                    table_to_find=device.DeviceName+'_'+datagram['ID']
+                    table_to_find=str(DV.pk)+'_'+str(DG.pk)
                     for row in rows:
                         if (row[1]==table_to_find):   # found the table in the DB
                             found=True
-                            self.check_columns_registersDB(table=table_to_find,datagram=datagram)
+                            self.check_columns_registersDB(table=table_to_find,datagramStructure=DG.getStructure())
                             break
                     if found is not True:
-                        required_registers_tables.append((device.DeviceName,device.Type.Code,datagram['ID'],table_to_find)) 
+                        required_registers_tables.append((DV,DG)) 
                         logger.info('The table '+table_to_find+' was not created.') 
         else:
-            logger.info('There are no registered remote devices')
-            
-        DVs=LocalDevices.models.DeviceModel.objects.all()
-        if len(DVs)>0:
-            xmlroot = ET.parse(self.configXMLPath).getroot()
-            XMLParser=Devices.XML_parser.XMLParser(xmlroot=xmlroot)
-            for device in DVs:
-                datagrams=Devices.models.getDatagramStructure(devicetype=device.Type.Code)
-                for datagram in datagrams:
-                    found=False
-                    table_to_find=device.DeviceName+'_'+datagram['ID']
-                    for row in rows:
-                        if (row[1]==table_to_find):   # there is a table named devices
-                            found=True
-                            self.check_columns_registersDB(table=table_to_find,datagram=datagram)
-                            break
-                    if found is not True:
-                        required_registers_tables.append((device.DeviceName,device.Type.Code,datagram['ID'],table_to_find)) 
-                        logger.info('The table '+table_to_find+' was not created.') 
-        else:
-            logger.info('There are no registered local devices') 
+            logger.info('There are no registered devices')
             
         for table in required_registers_tables:
-            self.create_single_registers_table(DeviceType=table[1], DatagramID=table[2], DeviceName=table[0])
+            self.registersDB.create_datagram_table(DV=table[0],DG=table[1])
             
-    
-    def create_single_registers_table(self,DeviceType,DatagramID,DeviceName):
-        """
-        CREATES ONE SINGLE REGISTERS TABLE:
-        DeviceName_DatagramId
-        """
-        datagram=Devices.models.getDatagramStructure(devicetype=DeviceType,ID=DatagramID)
-        fieldNames=[]
-        names=datagram['names']
-        types=datagram['datatypes']
-        for i in range(0,len(names)):
-            if (names[i].find('$')>=0): # names[i]=STATUS_bits_Alarm0;Alarm1;Alarm2;Alarm3;Alarm4;Alarm5;Alarm6;Alarm7 
-                # this removes the bits information from the column name
-                                #to remove the char ; from the name of the columns
-                vector=names[i].split('_')
-                tempname=vector[0]
-                for component in vector[1:]:
-                    if '$' in component: # found the $ item meaning bit labels
-                        break
-                    tempname=tempname+'_'+component
-                tempname=tempname
-                fieldNames.append(tempname)
-            else:
-                fieldNames.append(names[i])
-        
-        logger.info('Creating "'+DeviceName+'_'+DatagramID+'" table with:')
-        logger.info('   - DeviceName='+DeviceName)
-        logger.info('   - fieldNames'+str(fieldNames)) 
-        logger.info('   - fieldTypes'+str(types)) 
-        self.registersDB.create_datagram_table(DeviceName=DeviceName, DatagramId=DatagramID, fieldNames=fieldNames, fieldTypes=types)
-        logger.info('Succeded in creating the table "'+DeviceName+'_'+DatagramID+'"') 
-            
-    def create_DeviceRegistersTables(self,DeviceName,DeviceType):
+    def create_DeviceRegistersTables(self,DV):
         """
         CREATES ALL REGISTERS TABLE:
         DeviceName_DatagramId
         """
-        datagramList=Devices.models.getDatagramStructure(devicetype=DeviceType)
-        for datagram in datagramList:
-            #fieldNames=[]
-            datagramID=datagram['ID']
-            self.create_single_registers_table(DeviceType=DeviceType,DatagramID=datagramID,DeviceName=DeviceName)
+        #datagramList=Devices.models.getDatagramStructure(devicetype=DeviceType)
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+        for DG in DGs:
+            self.registersDB.create_datagram_table(DV=DV,DG=DG)
    
     def insert_VARs_register(self,TimeStamp):
 
@@ -714,16 +674,13 @@ class DIY4dot0_Databases(object):
         try:                              
      
             try:
-                DV=RemoteDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-            except RemoteDevices.models.DeviceModel.DoesNotExist:
-                try:
-                    DV=LocalDevices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-                except LocalDevices.models.DeviceModel.DoesNotExist: 
-                    logger.error('Error! The device with name '+DeviceName+' does not exist in the database')
-                    return
+                DV=Devices.models.DeviceModel.objects.get(DeviceName=DeviceName)
+            except Devices.models.DeviceModel.DoesNotExist:
+                logger.error('Error! The device with name '+DeviceName+' does not exist in the database')
+                return
                     
-            DeviceType=DV.Type.Code
-            datagram=Devices.models.getDatagramStructure(devicetype=DeviceType,ID=DatagramId)
+            DG = Devices.models.DatagramModel.objects.get(DeviceType=DV.Type,Identifier=DatagramId)
+            datagram=DG.getStructure()
             
             names=datagram['names']
             types=datagram['datatypes']
@@ -760,8 +717,7 @@ class DIY4dot0_Databases(object):
                     roundvalues.append(None)
                 
             sql=sql.replace('*',temp_string2)        
-            DeviceName=DeviceName
-            sql=sql.replace('$',temp_string1).replace('%s','"'+DeviceName+'_'+DatagramId+'"')
+            sql=sql.replace('$',temp_string1).replace('%s','"'+str(DV.pk)+'_'+str(datagram['pk'])+'"')
             #logger.info('SQL insert= '+sql)                
             self.registersDB.insert_row(SQL_statement=sql, row_values=roundvalues)
         except:
@@ -777,7 +733,7 @@ class DIY4dot0_Databases(object):
         except:
             print ("Unexpected error in insert_event:", sys.exc_info()[1])
             logger.error("Unexpected error in insert_event:" + str(sys.exc_info()[1]))
-
+    
     def insert_track(self,TimeStamp,User,Latitude,Longitude,Accuracy):
         """
         INSERTS AN EVENT IN THE registersDB INTO THE events TABLE.

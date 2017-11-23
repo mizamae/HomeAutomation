@@ -1,7 +1,7 @@
 from channels import Group
 from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketConsumer
 
-from profiles.models import BaseProfilemodelBinding
+
 
 import logging
 logger = logging.getLogger("project")

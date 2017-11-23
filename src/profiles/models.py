@@ -10,6 +10,8 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 from channels import Group
+from Events.consumers import PublishEvent
+
 import logging
 
 logger = logging.getLogger("project")
@@ -46,20 +48,22 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
         beacons=BeaconModel.objects.all()
         from HomeAutomation.models import MainDeviceVarModel
         for beacon in beacons:
-            label=_('Distance from ') + instance.user.name + _(' to ') + str(beacon) 
+            label='Distance from ' + instance.user.name + ' to ' + str(beacon) 
+            
             try:
                 mainVar=MainDeviceVarModel.objects.get(Label=label)
             except:
                 mainVar=MainDeviceVarModel(Label=label,Value='',Datatype=0,Units='km')
+                logger.info('Creating main Var ' + label)
 
             if instance.Latitude!=None and instance.Longitude!=None:
                 mainVar.Value=beacon.distance_to(other=instance)
             else:
                 mainVar.Value=-1
+            PublishEvent(Severity=0,Text=label+' is ' + str(mainVar.Value),Persistent=False)
             mainVar.save()
         if instance.Latitude!=None and instance.Longitude!=None:
             import json
-            #from django.core.serializers.json import DjangoJSONEncoder
             from tzlocal import get_localzone
             local_tz=get_localzone()
             localdate = local_tz.localize(instance.LastUpdated.replace(tzinfo=None))
@@ -71,16 +75,3 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
 class Profile(BaseProfile):
     def __str__(self):
         return "{}'s profile". format(self.user)
-
-class BaseProfilemodelBinding(WebsocketBinding):
-
-    model = BaseProfile
-    stream = "Profiles_values"
-    fields = ["name","profile.Latitude","profile.Longitude","profile.Accuracy"]
-
-    @classmethod
-    def group_names(cls, *args, **kwargs):
-        return ["Profiles-values",]
-
-    def has_permission(self, user, action, pk):
-        return True

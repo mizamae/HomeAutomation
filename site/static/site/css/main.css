@@ -22,6 +22,11 @@ html, body{
     margin-top: 55px;
     margin-bottom: 0;
 }
+.alert-narrow {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 10px;
+}
 
 body>.navbar-transparent {
     background-color: transparent;

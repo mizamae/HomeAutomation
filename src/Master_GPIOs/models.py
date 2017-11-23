@@ -31,14 +31,14 @@ def initializeIOs(declareInputEvent=True):
                 logger.info("   - Initialized Output on pin " + str(IO.pin))
             elif IO.direction=='IN':
                 if declareInputEvent:
-                    GPIO.remove_event_detect(int(IO.pin))
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+                    #GPIO.remove_event_detect(int(IO.pin))
                     GPIO.add_event_detect(int(IO.pin), GPIO.BOTH, callback=IO.InputChangeEvent, bouncetime=200)
                     IO.value=GPIO.input(int(IO.pin))
-                    IO.save()
                 else:
-                    GPIO.remove_event_detect(int(IO.pin))
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+                    #GPIO.remove_event_detect(int(IO.pin))
+                    
                     
                 logger.info("   - Initialized Input on pin " + str(IO.pin))
             IO.save()

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-15 17:06+0100\n"
+"POT-Creation-Date: 2017-11-23 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,20 +20,24 @@ msgstr ""
 
 #: apps.py:17
 msgid "Tracking manager"
-msgstr ""
+msgstr "Seguimiento GPS"
 
 #: forms.py:37
 msgid "Set the unique name for the beacon"
-msgstr ""
+msgstr "Introduce el nombre para la ubicación"
 
 #: forms.py:38
-msgid "Enter the latitude of the beacon"
-msgstr ""
+msgid "Select the weather source for the beacon"
+msgstr "Selecciona la fuente de datos climáticos de la ubicación"
 
 #: forms.py:39
-msgid "Enter the longitude of the beacon"
-msgstr ""
+msgid "Enter the latitude of the beacon"
+msgstr "Introduce la latitud de la ubicación"
 
-#: models.py:14
+#: forms.py:40
+msgid "Enter the longitude of the beacon"
+msgstr "Introduce la longitud de la ubicación"
+
+#: models.py:15
 msgid "Invalid Beacon name - This name already exists in the DB."
-msgstr ""
+msgstr "Nombre de la ubicación erróneo - Este nombre existe ya en la BBDD."

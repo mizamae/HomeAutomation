@@ -95,13 +95,14 @@ INSTALLED_APPS = (
     'accounts',
     'HomeAutomation',
     'Devices',
-    'RemoteDevices',
-    'LocalDevices',
+    #'RemoteDevices',
+    #'LocalDevices',
     'Master_GPIOs',
     'Events',
     'Tracks',
  #   'sortedm2m',
 )
+
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -170,6 +171,8 @@ MESSAGE_TAGS = {
 
 # Authentication Settings
 AUTH_USER_MODEL = 'authtools.User'
+AUTH_PROFILE_MODULE = "profiles.BaseProfile"
+
 LOGIN_REDIRECT_URL = reverse_lazy("profiles:show_self")
 LOGIN_URL = reverse_lazy("accounts:login")
 

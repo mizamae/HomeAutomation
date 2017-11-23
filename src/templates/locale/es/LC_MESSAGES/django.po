@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-15 17:06+0100\n"
+"POT-Creation-Date: 2017-11-23 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: DHT11.html:44 DHT22.html:44 GPIOs.html:49 showdevices.html:128
+#: DHT11.html:44 DHT22.html:44 GPIOs.html:49 showdevices.html:127
+#: showdevices.html:205
 msgid "Pin"
 msgstr "Pin"
 
@@ -27,7 +28,7 @@ msgid "Type"
 msgstr "Tipo"
 
 #: DHT11.html:124 DHT22.html:124 GAPQv1.html:123 GPIOs.html:90
-#: timezones.html:49 trackUsers.html:71
+#: timezones.html:49 trackUsers.html:74
 msgid "Return"
 msgstr "Volver "
 
@@ -59,7 +60,7 @@ msgstr ""
 "En la siguiente tabla, puedes encontrar todas las E/S configuradas en la "
 "unidad Master."
 
-#: GPIOs.html:50
+#: GPIOs.html:50 advanced_device.html:95
 msgid "Description"
 msgstr "Descripci&oacute;n"
 
@@ -148,18 +149,18 @@ msgstr ""
 
 #: admin/customLabels.html:7
 msgid "Setting up the custom labels for "
-msgstr "Estableciendo las etiquetas para "
+msgstr ""
 
 #: admin/customLabels.html:10
 msgid "Definition of the custom labels for device "
-msgstr "Definici&oacute;n de las etiquetas para el dispositivo "
+msgstr ""
 
 #: admin/customLabels.html:10 reqconfdevice.html:15
 msgid " finished OK"
-msgstr " termin&oacute; OK"
+msgstr ""
 
-#: admin/customLabels.html:11 reportItemsList.html:74 reqconfdevice.html:16
-#: showdevices.html:188
+#: admin/customLabels.html:11 reportItemsList.html:75 reqconfdevice.html:16
+#: showdevices.html:266
 msgid "Return to Main"
 msgstr "Volver "
 
@@ -241,9 +242,41 @@ msgstr "Aqu&iacute; puedes ver los informes que se han ido generando."
 msgid "View ubication"
 msgstr ""
 
-#: advanced_device.html:84 home_device.html:187
+#: advanced_device.html:83
+msgid "Events and alarms"
+msgstr ""
+
+#: advanced_device.html:93
+msgid "Timestamp"
+msgstr ""
+
+#: advanced_device.html:94
+msgid "Severity"
+msgstr ""
+
+#: advanced_device.html:96
+msgid "Acknowledge"
+msgstr ""
+
+#: advanced_device.html:111
+msgid "OK"
+msgstr ""
+
+#: advanced_device.html:120 home_device.html:186
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
+
+#: confDatagramdevice.html:7 reqconfdevice.html:11
+msgid "Device registered OK with the name"
+msgstr "Dispositivo registrado correctamente con nombre"
+
+#: confDatagramdevice.html:8
+msgid "Setup the custom labels for the variables"
+msgstr ""
+
+#: confDatagramdevice.html:11 reqconfdevice.html:18
+msgid "Something failed"
+msgstr "Algo ha fallado"
 
 #: home_device.html:36
 msgid "Knowledge is power..."
@@ -343,11 +376,11 @@ msgstr "Configurar"
 msgid "View"
 msgstr "Ver"
 
-#: home_device.html:152
+#: home_device.html:150
 msgid "Device historic plots"
 msgstr "Gr&aacute;ficas de un dispositivo"
 
-#: home_device.html:153
+#: home_device.html:151
 msgid ""
 "Here you can see the charts with the information recorded from your devices "
 "from the very beginning."
@@ -355,7 +388,7 @@ msgstr ""
 "Aqu&iacute; puedes ver la informaci&oacute;n registrada por tus dispositivos "
 "desde el instante inicial."
 
-#: home_device.html:156 home_device.html:158
+#: home_device.html:154 home_device.html:156
 msgid "View plots"
 msgstr "Ver gr&aacute;ficos"
 
@@ -367,15 +400,15 @@ msgstr "Reserva"
 msgid "Nothing established yet..."
 msgstr "No hay nada definido todavia..."
 
-#: home_device.html:171
+#: home_device.html:170
 msgid "Advanced features"
 msgstr "Acciones avanzadas"
 
-#: home_device.html:172
+#: home_device.html:171
 msgid "Here you can do some advanced stuff."
 msgstr "Aqu&iacute; puedes hacer algunas cosillas mas avanzadas. "
 
-#: home_device.html:174
+#: home_device.html:173
 msgid "Let me in"
 msgstr "Dejame entrar"
 
@@ -518,33 +551,33 @@ msgstr "Direcci&oacute;n Email"
 msgid "Reset my password"
 msgstr "Resetea mi contrase&ntilde;a"
 
-#: reportItemsList.html:32
+#: reportItemsList.html:33
 msgid "List of saved reports"
 msgstr "Lista de los informes guardados"
 
-#: reportItemsList.html:37 reportTemplate.html:106
+#: reportItemsList.html:38 reportTemplate.html:106
 msgid "Report "
 msgstr "Informes"
 
-#: reportItemsList.html:40
+#: reportItemsList.html:41
 #, fuzzy
 #| msgid "View report"
 msgid "Preview next report"
 msgstr "Ver informe"
 
-#: reportItemsList.html:52 reportItemsList.html:61
+#: reportItemsList.html:53 reportItemsList.html:62
 msgid "From"
 msgstr "Desde"
 
-#: reportItemsList.html:53 reportItemsList.html:62
+#: reportItemsList.html:54 reportItemsList.html:63
 msgid "To"
 msgstr "Hasta"
 
-#: reportItemsList.html:54
+#: reportItemsList.html:55
 msgid "Link"
 msgstr "Link"
 
-#: reportItemsList.html:64
+#: reportItemsList.html:65
 msgid "View report"
 msgstr "Ver informe"
 
@@ -604,21 +637,13 @@ msgstr "Items seleccionados"
 msgid "Found"
 msgstr "Encontrado"
 
-#: reqconfdevice.html:11
-msgid "Device registered OK with the name"
-msgstr "Dispositivo registrado correctamente con nombre"
-
 #: reqconfdevice.html:12
 msgid "Setting up the custom labels for the variables"
 msgstr "Estableciendo las etiquetas para las variables"
 
 #: reqconfdevice.html:15
 msgid "Configuration for device "
-msgstr "Editar el archivo de configuraci&oacute;n"
-
-#: reqconfdevice.html:18
-msgid "Something failed"
-msgstr "Algo ha fallado"
+msgstr "Configuraci&oacute;n del dispositivo "
 
 #: reqconfdevice.html:25
 msgid "No device found."
@@ -632,107 +657,133 @@ msgstr "Volver"
 msgid "Device List"
 msgstr "Lista de dispositivos"
 
-#: showdevices.html:35
+#: showdevices.html:33
 msgid "REMOTE DEVICES"
 msgstr "DISPOSITIVOS REMOTOS"
 
-#: showdevices.html:50 showdevices.html:127
+#: showdevices.html:48 showdevices.html:126 showdevices.html:204
 msgid "Device name"
 msgstr "Nombre del dispositivo"
 
-#: showdevices.html:51 showdevices.html:63
+#: showdevices.html:49 showdevices.html:66
 msgid "Device IP"
 msgstr "Direcci&oacute;n IP"
 
-#: showdevices.html:52 showdevices.html:64 showdevices.html:129
-#: showdevices.html:141
+#: showdevices.html:50 showdevices.html:67 showdevices.html:128
+#: showdevices.html:145 showdevices.html:206 showdevices.html:223
 msgid "Device type"
 msgstr "Tipo de dispositivo"
 
-#: showdevices.html:53 showdevices.html:130
+#: showdevices.html:51 showdevices.html:129 showdevices.html:207
 msgid "Device state"
 msgstr "Estado del dispositivo"
 
-#: showdevices.html:54 showdevices.html:131
+#: showdevices.html:52 showdevices.html:130 showdevices.html:208
 msgid "Delete device"
 msgstr "Eliminar dispositivo"
 
-#: showdevices.html:55 showdevices.html:96 showdevices.html:132
-#: showdevices.html:173
+#: showdevices.html:53 showdevices.html:99 showdevices.html:131
+#: showdevices.html:177 showdevices.html:209 showdevices.html:255
 msgid "Last updated"
 msgstr "Ultima actualizaci&oacute;n"
 
-#: showdevices.html:56 showdevices.html:133
+#: showdevices.html:54 showdevices.html:132 showdevices.html:210
 msgid "Device webpage"
 msgstr "Web del dispositivo"
 
-#: showdevices.html:62 showdevices.html:139
-msgid "Device Name"
-msgstr "Nombre del dispositivo"
-
-#: showdevices.html:69 showdevices.html:146
-msgid "RUN"
-msgstr "MARCHA"
-
-#: showdevices.html:83
-msgid " Error: "
-msgstr ""
-
-#: showdevices.html:87 showdevices.html:164
-msgid "STOP"
-msgstr "PARO"
-
-#: showdevices.html:99 showdevices.html:176
-msgid "Advanced"
-msgstr "Avanzado"
-
-#: showdevices.html:108
-msgid "There are no registered remote devices in the installation."
-msgstr "No hay dispositivos remotos registrados en la instalaci&oacute;n"
-
-#: showdevices.html:112
-msgid "LOCAL DEVICES"
-msgstr "DISPOSITIVOS LOCALES"
-
-#: showdevices.html:140
-msgid "Device Pin"
-msgstr "Pin del dispositivo"
-
-#: showdevices.html:160
-msgid " Error "
-msgstr ""
-
-#: showdevices.html:185
+#: showdevices.html:59 showdevices.html:61 showdevices.html:137
+#: showdevices.html:139
 msgid "There are no registered local devices in the installation."
 msgstr "No hay dispositivos locales registrados en la instalaci&oacute;n"
 
-#: showdevices.html:287 showdevices.html:341
+#: showdevices.html:65 showdevices.html:143 showdevices.html:221
+msgid "Device Name"
+msgstr "Nombre del dispositivo"
+
+#: showdevices.html:69 showdevices.html:147 showdevices.html:225
+msgid "STOPPED"
+msgstr "PARADO"
+
+#: showdevices.html:72 showdevices.html:150 showdevices.html:228
+msgid "RUN"
+msgstr "MARCHA"
+
+#: showdevices.html:84 showdevices.html:86 showdevices.html:162
+#: showdevices.html:164 showdevices.html:240 showdevices.html:242
+msgid "RUNNING"
+msgstr ""
+
+#: showdevices.html:86
+msgid " Error: "
+msgstr ""
+
+#: showdevices.html:90 showdevices.html:168 showdevices.html:246
+msgid "STOP"
+msgstr "PARO"
+
+#: showdevices.html:102 showdevices.html:180 showdevices.html:258
+msgid "Advanced"
+msgstr "Avanzado"
+
+#: showdevices.html:111
+msgid "LOCAL DEVICES"
+msgstr "DISPOSITIVOS LOCALES"
+
+#: showdevices.html:144 showdevices.html:222
+msgid "Device Pin"
+msgstr "Pin del dispositivo"
+
+#: showdevices.html:164 showdevices.html:242
+msgid " Error "
+msgstr ""
+
+#: showdevices.html:189
+msgid "ON MEMORY DEVICES"
+msgstr "DISPOSITIVOS EN MEMORIA"
+
+#: showdevices.html:215 showdevices.html:217
+msgid "There are no registered on memory devices in the installation."
+msgstr "No hay dispositivos en memoria registrados en la instalaci&oacute;n"
+
+#: showdevices.html:363 showdevices.html:426
+msgid " RUNNING "
+msgstr ""
+
+#: showdevices.html:363 showdevices.html:426
+msgid " STOPPED "
+msgstr "PARADO"
+
+#: showdevices.html:378 showdevices.html:433
 msgid " Start "
 msgstr " Marcha "
 
-#: showdevices.html:292 showdevices.html:346
+#: showdevices.html:383 showdevices.html:438
 msgid " Stop "
 msgstr " Paro "
 
-#: trackUsers.html:36
+#: trackUsers.html:37
 msgid "Users tracking"
 msgstr "Seguimiento de usuarios"
 
-#: trackUsers.html:46
+#: trackUsers.html:47
 msgid "Name"
 msgstr "Nombre"
 
-#: trackUsers.html:47
+#: trackUsers.html:48
 msgid "Latitude"
 msgstr "Latitud"
 
-#: trackUsers.html:48
+#: trackUsers.html:49
 msgid "Longitude"
 msgstr "Longitud"
 
-#: trackUsers.html:49
+#: trackUsers.html:50
 msgid "Accuracy [m]"
 msgstr "Precisi&oacute;n [m]"
+
+#: trackUsers.html:51
+msgid "Last update"
+msgstr "Ultima actualizaci&oacute;n"
 
 #~ msgid "Load the configuration of the GPIOs from XML"
 #~ msgstr "Cargar la configuraci&oacute;n de las E/S desde el XML"

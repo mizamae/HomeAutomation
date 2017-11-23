@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-15 17:06+0100\n"
+"POT-Creation-Date: 2017-11-23 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,6 +49,14 @@ msgstr "Entrada/Salida"
 #: models.py:117
 msgid "Inputs/Outputs"
 msgstr "Entradas/Salidas"
+
+#: signal_handlers.py:50
+msgid "Received notification that the input "
+msgstr "Notificación de que la entrada "
+
+#: signal_handlers.py:50
+msgid " has changed to "
+msgstr " ha cambiado a "
 
 #~ msgid " on pin "
 #~ msgstr " en el pin "

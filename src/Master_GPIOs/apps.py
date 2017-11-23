@@ -36,7 +36,7 @@ class GPIOsConfig(AppConfig):
                 initializeIOs(declareInputEvent=True)
         elif 'gunicorn' in sys.argv:
             initializeIOs(declareInputEvent=False)
-            logger.info('Finished initializing IOs on the process ' + str(os.getpid()))
+            logger.info('Initializing IOs on the process ' + str(os.getpid()))
 
 # class GPIOsConfig(AppConfig):
     # name = 'Master_GPIOs'

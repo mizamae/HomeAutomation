@@ -28,7 +28,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
     dateIni= fromDate-fromDate.utcoffset()
     dateEnd= toDate-toDate.utcoffset()
     reportData={'reportTitle':ReportTitle}#,'fromDate':dateIni,'toDate':dateEnd}
-    logger.info('reportDate: ' + str(reportData))
+    #logger.info('reportDate: ' + str(reportData))
     #fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-Reports.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(localdate.second)+')'}
     queries={}
     
@@ -208,7 +208,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                                 else:
                                     tempY[i][columnNumber]=data
                                 
-                            elif i>0 and x>localdate:
+                            elif i>=0 and x>localdate:
                                 num_items+=1
                                 tempY.insert(i,newRow[:])
                                 tempY[i][columnNumber]=data

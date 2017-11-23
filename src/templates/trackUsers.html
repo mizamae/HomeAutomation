@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 {% load i18n %}
 {% load staticfiles %}
@@ -93,12 +94,10 @@
         function init_map() {
              // Enter the latitude and longitude of your office here
              var myLocation = new google.maps.LatLng(42.793759,-1.615882);
-
              var mapOptions = {
                         center: myLocation,
                         zoom: 14
                         };
-
              map = new google.maps.Map(document.getElementById("map-container"),mapOptions);
              var newLocation;
              {% for user in Users %}
@@ -166,9 +165,7 @@
               
 			}
 		}
-
         
     </script>
 	
 {% endblock scripts %}
-
