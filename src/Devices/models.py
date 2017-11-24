@@ -34,7 +34,7 @@ class DeviceTypeModel(models.Model):
         ('MEMORY','MEMORY')
     )
     Code = models.CharField(unique=True, max_length=20)
-    Description = models.CharField(max_length=50)
+    Description = models.CharField(max_length=100)
     MinSampletime=models.PositiveIntegerField(default=10)
     Connection= models.CharField(choices=CONNECTION_CHOICES, max_length=15)
     Picture = models.ImageField('DeviceType picture',

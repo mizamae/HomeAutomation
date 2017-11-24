@@ -70,7 +70,9 @@ def updateWeekDay():
       
 def start_DailyTask():
     logger.info('Report generation task is added to scheduler on the process '+ str(os.getpid())) 
+    checkReportAvailability()
     scheduler.add_job(func=checkReportAvailability,trigger='cron',id='checkReportAvailability',hour=0)
+    updateWeekDay()
     scheduler.add_job(func=updateWeekDay,trigger='cron',id='updateWeekDay',hour=0)
     try:
         scheduler.start()
@@ -88,12 +90,13 @@ def HourlyTask():
         HourDay=MainDeviceVarModel.objects.get(Label='Hour of the day')
         HourDay.Value=hourDay
     except:
-        HourDay=MainDeviceVarModel(Label='Day of the week',Value=hourDay,Datatype=1,Units='H')
+        HourDay=MainDeviceVarModel(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H')
     HourDay.save()
 
 def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
+    HourlyTask()
     logger.info('Hourly task is added to scheduler on the process '+ str(os.getpid())) 
     scheduler.add_job(func=HourlyTask,trigger='cron',id='HourlyTask',minute=0)
     try:

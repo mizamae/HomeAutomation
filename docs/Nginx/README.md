@@ -34,7 +34,13 @@ A more detailed but general manual about configuring Nginx can be found [here][1
 ### Detailed instructions
 
 ## Generation of user and passw pairs to accept or deny the publication of location data
-Details are dhown [here][2]
+Details are shown [here][2]
+    1. Verify that apache2-utils are installed. 
+    2. Create a password file and a first user
+    
+        sudo htpasswd -c /etc/apache2/.htpasswd user1
+        
+    3. In the same way create other user-password pairs
 
 Take a look at the docs for more information.
 

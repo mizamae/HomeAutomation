@@ -1,7 +1,7 @@
 var rows = document.getElementsByClassName("row");
 var i;
-var fieldIO,fieldIOValue,fieldActionType,fieldDevice,fieldOrder;
-var rowfieldIO,rowfieldIOValue,rowfieldDevice,rowfieldOrder;
+var fieldIO,fieldIOValue,fieldActionType,fieldDevice,fieldOrder,fieldIsConstant,fieldConstant;
+var rowfieldIO,rowfieldIOValue,rowfieldDevice,rowfieldOrder,rowfieldConstant,rowfieldVar2;
 // this function is executed on load
 $(function()
 {
@@ -40,21 +40,51 @@ $(function()
 	    	fieldActionType=document.getElementById("id_ActionType");
 	    	rows[i].addEventListener("change", ActionTypeChange);
     	}
+	    if (rows[i].getElementsByClassName("control-group  field-IsConstant").length>0)
+    	{
+	    	fieldIsConstant=document.getElementById("id_IsConstant");
+	    	rows[i].addEventListener("change", IsConstantChange);
+    	}
+	    if (rows[i].getElementsByClassName("control-group  field-Constant").length>0)
+    	{
+	    	fieldConstant=document.getElementById("id_Constant");
+	    	rowfieldConstant=rows[i];
+	    	rowfieldConstant.style.display = 'none';
+    	}
+	    if (rows[i].getElementsByClassName("control-group  field-Var2").length>0)
+    	{
+	    	rowfieldVar2=rows[i];
+    	}
 	}
-	
+	IsConstantChange();
+	ActionTypeChange();
+	DeviceChange();
 });
+
+function IsConstantChange()
+{
+	if (fieldIsConstant.checked)
+	{
+		rowfieldConstant.style.display = 'block';
+		rowfieldVar2.style.display = 'none';
+	}else
+	{
+		rowfieldConstant.style.display = 'none';
+		rowfieldVar2.style.display = 'block';
+	}
+}
 
 function ActionTypeChange()
 { 
 	//selectedAction="a" - > Activate output on Main
 	//selectedAction="b" - > Send command to a device
 	//selectedAction="c" - > Send email
-    //selectedAction="z" - > Nothing
 	
 	var selectedAction=fieldActionType.options[fieldActionType.selectedIndex].value;
 	if (selectedAction=="a"){rowfieldIO.style.display = 'block';rowfieldIOValue.style.display = 'block';}
 	else{rowfieldIO.style.display = 'none';rowfieldIOValue.style.display = 'none';}
-	if (selectedAction=="b"){rowfieldDevice.style.display = 'block';}
+	if (selectedAction=="b")
+	{rowfieldDevice.style.display = 'block';}
 	else{rowfieldDevice.style.display = 'none';
 		rowfieldOrder.style.display = 'none';}
 }

@@ -259,9 +259,9 @@ class AutomationRuleModel(models.Model):
     Operator1 = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
     Var1= models.ForeignKey(AutomationVariablesModel,related_name='var1')
     Operator12 = models.CharField(choices=OPERATOR_CHOICES+BOOL_OPERATOR_CHOICES,max_length=2)
-    Var2= models.ForeignKey(AutomationVariablesModel,related_name='var2')
+    Var2= models.ForeignKey(AutomationVariablesModel,related_name='var2',blank=True,null=True)
     Var2Hyst= models.DecimalField(max_digits=6, decimal_places=2,default=0.5)
-    Action = models.CharField(max_length=100,blank=True) # receives a json object describing the action desired
+    Action = models.CharField(max_length=200,blank=True) # receives a json object describing the action desired
     
     _timestamp1=None
     _timestamp2=None
@@ -299,16 +299,19 @@ class AutomationRuleModel(models.Model):
             
             if self.Var1.BitPos!=None:
                 value1=value1 & (1<<self.Var1.BitPos) 
-            sql='SELECT timestamp,"'+self.Var2.Tag+'" FROM "'+ self.Var2.Table +'" WHERE "'+self.Var2.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
-            timestamp2,value2=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
             
-            timestamp2 = local_tz.localize(timestamp2)
-            timestamp2=timestamp2+timestamp2.utcoffset() 
-            
-            if self.Var2.Sample>0:
-                if (now-timestamp2>datetime.timedelta(seconds=1.5*self.Var2.Sample)):
-                    logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
-                    logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' was ' + str(timestamp2))
+            if self.Var2!= None:
+                sql='SELECT timestamp,"'+self.Var2.Tag+'" FROM "'+ self.Var2.Table +'" WHERE "'+self.Var2.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
+                timestamp2,value2=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+                timestamp2 = local_tz.localize(timestamp2)
+                timestamp2=timestamp2+timestamp2.utcoffset()
+                if self.Var2.Sample>0:
+                    if (now-timestamp2>datetime.timedelta(seconds=1.5*self.Var2.Sample)):
+                        logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
+                        logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' was ' + str(timestamp2))
+            else:
+                Action=json.loads(self.Action)
+                value2=Action['Constant']
                     
             if self.Operator12.find('>')>=0:
                 histeresis='+' + str(self.Var2Hyst)

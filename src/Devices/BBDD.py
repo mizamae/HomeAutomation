@@ -1,6 +1,7 @@
 # coding: utf-8
 from itertools import chain
 import datetime
+from django.utils.translation import ugettext_lazy as _
 
 import os
 import random  # # ojo!! esto hay que quitarlo en produccion
@@ -16,6 +17,7 @@ import Master_GPIOs.models
 import HomeAutomation.models
 import sqlite3 as dbapi
 import xml.etree.ElementTree as ET
+from Events.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -47,8 +49,9 @@ class Database(object):
             cur.execute(SQLstatement)
             self.__conn.commit()
         except:
-            print ("Unexpected error in Create_table:", sys.exc_info()[1])
-            logger.error("Unexpected error in Create_table: "+ str(sys.exc_info()[1]))
+            text=str(_("Error in Create_table: ")) + str(sys.exc_info()[1])
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + SQLstatement,Persistent=True)
+            #logger.error("Unexpected error in Create_table: "+ str(sys.exc_info()[1]))
     
     def delete_table(self,table):
         try:
@@ -57,7 +60,7 @@ class Database(object):
             cur.execute(sql_delete_table % table)
             self.__conn.commit()
         except:
-            logger.error("Unexpected error in Delete_table: "+ str(sys.exc_info()[1]))
+            logger.error("Error in Delete_table: "+ str(sys.exc_info()[1]))
     
     def insert_column(self,table,column,type):
         sql='ALTER TABLE "' + table + '" ADD COLUMN "' + column + '" ' + type
@@ -67,8 +70,9 @@ class Database(object):
             self.__conn.commit()  
             return 0
         except:
-            print ("Unexpected error in insert_column:", sys.exc_info()[1]) 
-            logger.error("Unexpected error in insert_column: "+ str(sys.exc_info()[1]))
+            text= str(_("Error in insert_column: ")) + str(sys.exc_info()[1])
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            #logger.error("Unexpected error in insert_column: "+ str(sys.exc_info()[1]))
             return -1
             
     def retrieve_from_table(self,sql,single,values):
@@ -222,9 +226,10 @@ class Database(object):
             cur.close()
             return lastRow   
         except:
-            print ("Unexpected error in insert_row:", sys.exc_info()[1]) 
-            logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
-            logger.error("SQL: "+ SQL_statement)
+            text = str(_("Error in insert_row: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + SQL_statement,Persistent=True)
+            #logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
+            #logger.error("SQL: "+ SQL_statement)
             return -1
        
     def delete_row(self,table,field,value):
@@ -246,8 +251,9 @@ class Database(object):
             self.__conn.commit()
             cur.close()
         except:
-            print ("Unexpected error in delete_row:", sys.exc_info()[1])  
-            logger.error("Unexpected error in delete_row: "+ str(sys.exc_info()[1]))
+            text = str(_("Error in delete_row: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True) 
+            #logger.error("Unexpected error in delete_row: "+ str(sys.exc_info()[1]))
     
     def insert_column(self,table,column,type):
         if table.find('"')<0:
@@ -262,8 +268,9 @@ class Database(object):
             self.__conn.commit()  
             return 0
         except:
-            print ("Unexpected error in insert_column:", sys.exc_info()[1]) 
-            logger.error("Unexpected error in insert_column: "+ str(sys.exc_info()[1]))
+            text = str(_("Error in insert_column: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            #logger.error("Unexpected error in insert_column: "+ str(sys.exc_info()[1]))
             return -1
             
     def compact_table(self,table):
@@ -277,8 +284,9 @@ class Database(object):
             self.__conn.commit()  
             return 0
         except:
-            print ("Unexpected error in compact_table:", sys.exc_info()[1]) 
-            logger.error("Unexpected error in compact_table: "+ str(sys.exc_info()[1]))
+            text = str(_("Error in compact_table: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            #logger.error("Unexpected error in compact_table: "+ str(sys.exc_info()[1]))
             return -1
          
 class RegistersDatabase(Database):  
@@ -366,12 +374,13 @@ class RegistersDatabase(Database):
                 for i in range(0,len(fieldNames)):
                     temp_string+='"'+fieldNames[i] + '" ' + fieldTypes[i] + ','
                 sql=self.SQL_createRegister_table.replace('*',temp_string).replace('?','"'+TableName+'"')
-                logger.info('SQL: ' + sql)
+                #logger.info('SQL: ' + sql)
                 super().create_table(SQLstatement=sql)                              
             logger.info('Succeded in creating the table "'+TableName+'"') 
         except:
-            print ("Unexpected error in create_datagram_table:", sys.exc_info()[1])
-            logger.error ("Unexpected error in create_datagram_table:"+ str(sys.exc_info()[1]))
+            text = str(_("Error in create_datagram_table: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            #logger.error ("Unexpected error in create_datagram_table:"+ str(sys.exc_info()[1]))
             
     def create_tracks_table(self):
         """
@@ -416,8 +425,9 @@ class RegistersDatabase(Database):
             else:
                 logger.info('Table '+table_name+' was not created because no IOs were defined.')
         except:
-            print ("Unexpected error in create_ios_table:", sys.exc_info()[1])
-            logger.error ("Unexpected error in create_ios_table:"+ str(sys.exc_info()[1]))
+            text = str(_("Error in create_ios_table: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            #logger.error ("Unexpected error in create_ios_table:"+ str(sys.exc_info()[1]))
             
     def create_mainVars_table(self,VARs,table_name='"MainVariables"'):
         """
@@ -440,8 +450,9 @@ class RegistersDatabase(Database):
             else:
                 logger.info('Table '+table_name+' was not created because no Vars were defined.')
         except:
-            print ("Unexpected error in create_mainVars_table:", sys.exc_info()[1])
-            logger.error ("Unexpected error in create_mainVars_table:"+ str(sys.exc_info()[1]))
+            text = str(_("Error in create_mainVars_table: ")) + str(sys.exc_info()[1]) 
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            #logger.error ("Unexpected error in create_mainVars_table:"+ str(sys.exc_info()[1]))
     
 class DIY4dot0_Databases(object):
     EVENT_TYPES={

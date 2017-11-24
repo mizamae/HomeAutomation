@@ -2,11 +2,16 @@ import logging
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
+import datetime
+from tzlocal import get_localzone
 
 import Devices.GlobalVars
 import Devices.callbacks
 import Devices.XML_parser
 import Devices.models
+import Devices.HTTP_client
+import Devices.BBDD
 from Events.consumers import PublishEvent
 
 import xml.etree.ElementTree as ET
@@ -28,7 +33,29 @@ def update_requests(DV):
  # creates the jobs to request data from the devices
     #datagrams=parser.getDatagramsStructureForDeviceType(deviceType=deviceType)
     DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+    AppDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+    now=timezone.now()
+    tables=DV.getRegistersTables()
+    local_tz=get_localzone()
     
+    if len(tables)>0:
+        for table in tables:                                       
+            sql='SELECT timestamp FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+            row=AppDB.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+            if row!=None:
+                localdate = local_tz.localize(row[0])
+                if now-localdate > datetime.timedelta(seconds=DV.Sampletime):
+                    executeNow=True
+                    break
+                else:
+                    executeNow=False
+            else:
+                executeNow=True
+                break
+    else:
+        executeNow=False
+    executeNow=False
     if DV.DeviceState==1:
         for DG in DGs:
             datagramID=DG.Identifier
@@ -40,22 +67,31 @@ def update_requests(DV):
                 except:
                     pass 
                     
-                logger.info('Requests '+id+ ' is added to scheduler') 
+                
                 if DV.Type.Connection=='LOCAL':
                     callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
                     scheduler.add_job(func=callback,trigger='interval',args=(),
                                       id=id, 
                                       seconds=DV.Sampletime,replace_existing=True)
+                    if executeNow:
+                        arguments={}
+                        #callback(**arguments)
+                        
                 elif DV.Type.Connection=='REMOTE':
                     scheduler.add_job(func=request_to_device,trigger='interval',args=(DV.DeviceIP,DV.DeviceCode, DG.Identifier),
                                       id=id, 
                                       seconds=DV.Sampletime,replace_existing=True)
+                    if executeNow:
+                        request_to_device(DV.DeviceIP,DV.DeviceCode, DG.Identifier)
                 elif DV.Type.Connection=='MEMORY':
                     callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
-                    arguments={'datagram':'observation'}
+                    arguments={'datagram':DG.Identifier}
                     scheduler.add_job(func=callback,trigger='interval',kwargs=arguments,
                                       id=id, 
                                       seconds=DV.Sampletime,replace_existing=True)
+                    if executeNow:
+                        callback(**arguments)
+                logger.info('Requests '+id+ ' is added to scheduler') 
         if len(DGs)>0:
             text=str(_('Polling for the device '))+DV.DeviceName+str(_(' is started with sampletime= ')) + str(DV.Sampletime)  
             PublishEvent(Severity=0,Text=text,Persistent=True)

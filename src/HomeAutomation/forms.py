@@ -119,11 +119,12 @@ class AutomationRuleForm(BaseAutomationRuleForm):
         ('a',_('Activate output on Main')),
         ('b',_('Send command to a device')),
         ('c',_('Send an email')),
-        ('n',_('Nothing')),
     )
+    IsConstant = forms.BooleanField(label=_('Constant value'),required = False)
+    Constant = forms.FloatField(label=_('Introduce the constant value'),required = False)
     ActionType = forms.ChoiceField(choices=ACTION_CHOICES,label=_('Select the action'))
     IO=forms.ModelChoiceField(queryset=Master_GPIOs.models.IOmodel.objects.filter(direction='OUT'),label=_('Select the output'),required = False)
-    IOValue=forms.ChoiceField(choices=Master_GPIOs.models.IOmodel.VALUE_CHOICES,label=_('Select the output value when the rule is True'),required = False)
+    IOValue=forms.ChoiceField(choices=Master_GPIOs.models.IOmodel.VALUE_CHOICES,label=_('Select the output value when the rule is True'),required = False,initial=0)
     Device=forms.ModelChoiceField(queryset=Devices.models.DeviceModel.objects.filter(Type__Connection='REMOTE'),label=_('Select the device to send the order to'),required = False)
     Order=forms.ModelChoiceField(queryset=Devices.models.CommandModel.objects.all(),label=_('Select the order to send'),required = False)
     
@@ -138,33 +139,60 @@ class AutomationRuleForm(BaseAutomationRuleForm):
             updated_initial['IOValue']=Action['IOValue']
             updated_initial['Device']=Action['Device']
             updated_initial['Order']=Action['Order']
+            try:
+                updated_initial['IsConstant']=Action['IsConstant']
+                updated_initial['Constant']=Action['Constant']
+            except:
+                updated_initial['IsConstant']=False
+                updated_initial['Constant']=None
             kwargs.update(initial=updated_initial)
         super(AutomationRuleForm, self).__init__(*args, **kwargs)
     
     def clean(self):
-        cleaned_data = super(AutomationRuleForm, self).clean()
-        action = cleaned_data.get('Action')
-        ActionType = cleaned_data.get('ActionType')
-        IO = cleaned_data.get('IO')
-        IOValue = cleaned_data.get('IOValue')
-        Device = cleaned_data.get('Device')
-        Order = cleaned_data.get('Order')
-        
-        if IO!=None:
-            IO=IO.pk
-        if Device!=None:
-            Device=Device.pk
-        if Order!=None:
-            Order=Order.pk
-            
-        data={'ActionType':ActionType,'IO':IO,'IOValue':IOValue,'Device':Device,'Order':Order}
-        
-        cleaned_data.update(Action=json.dumps(data))
-        return cleaned_data
+         cleaned_data = super(AutomationRuleForm, self).clean()
+         action = cleaned_data.get('Action')
+         ActionType = cleaned_data.get('ActionType')
+         IO = cleaned_data.get('IO')
+         IOValue = cleaned_data.get('IOValue')
+         Device = cleaned_data.get('Device')
+         Order = cleaned_data.get('Order')
+         IsConstant = cleaned_data.get('IsConstant')
+         Constant = cleaned_data.get('Constant')
+         if ActionType=='a':
+             Device=None
+             Order=None
+             if IO==None:
+                 raise ValidationError({'IO':_("This field cannot be left empty if 'Activate output on Main' is selected as action")})
+         elif ActionType=='b':
+             IO=None
+             IOValue=None
+             if Device==None:
+                 raise ValidationError({'Device':_("This field cannot be left empty if Send command to a device is selected as action")})
+             else:
+                 if Order==None:
+                     raise ValidationError({'Order':_("This field cannot be left empty if Send command to a device is selected as action")})
+                     
+         if IsConstant:
+             cleaned_data.update(Var2=None)
+             
+             if Constant==None:
+                 raise ValidationError({'Constant':_("This field cannot be left empty if 'Constant value' is checked")})
+             
+         if IO!=None:
+             IO=IO.pk
+         if Device!=None:
+             Device=Device.pk
+         if Order!=None:
+             Order=Order.pk
+             
+         data={'ActionType':ActionType,'IO':IO,'IOValue':IOValue,'Device':Device,'Order':Order,'IsConstant':IsConstant,'Constant':Constant}
+         
+         cleaned_data.update(Action=json.dumps(data))
+         return cleaned_data
          
     class Meta(BaseAutomationRuleForm.Meta):
-        fields=BaseAutomationRuleForm.Meta.fields + ['ActionType','IO','Device','Order']
-        
+        #fields=BaseAutomationRuleForm.Meta.fields + ['IsConstant','Constant','ActionType','IO','Device','Order']
+        fields=['Identifier','Active','PreviousRule','Operator1','Var1','Operator12','Var2','IsConstant','Constant','Var2Hyst','Action','ActionType','IO','Device','Order']
     class Media:
         js = ('AutomationRuleFormAnimations.js',)
         

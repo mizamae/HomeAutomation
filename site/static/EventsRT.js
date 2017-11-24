@@ -106,7 +106,9 @@ function updateEvent(data)
     }
     if (rownum>1)
     {
-        row.cells[0].innerHTML=data.Timestamp + ' *';
+        var offset = new Date().getTimezoneOffset();
+        var d = new Date(data.Timestamp);
+        row.cells[0].innerHTML=d.toLocaleString()+ ' *';
     }
     
 }
@@ -126,7 +128,9 @@ function showEvent(data)
         var cell2 = row.insertCell(1);
         var cell3 = row.insertCell(2);
         var cell4 = row.insertCell(3);
-        cell1.innerHTML=data.Timestamp;
+        var offset = new Date().getTimezoneOffset();
+        var d = new Date(data.Timestamp);
+        cell1.innerHTML=d.toLocaleString()
         row.appendChild(cell1);
         cell2.innerHTML=data.Severity;
         row.appendChild(cell2);

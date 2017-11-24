@@ -194,7 +194,7 @@ def ConfDevice(request,code):
             DeviceIP='10.10.10.'+str(DEVICE_CODE)
             payload={'DEVC':str(DEVICE_CODE)}
             (status,r)=HTTPrequest.request_orders(order='SetConf.htm',payload=payload)
-            if status==200 or 1:
+            if status==200:
                 logger.info('Device code assigned OK to ' +str(DEVICE_CODE)+'. Devicename missing')                      
                 form=Devices.forms.DeviceForm(initial={'DeviceName':DeviceName,'Type':Type,'DeviceCode':DEVICE_CODE,'DeviceIP':DeviceIP})
                 state='ConfigOK'

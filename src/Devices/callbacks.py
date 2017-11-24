@@ -19,8 +19,10 @@ The method to be called when polling the device must be called "read_sensor"
 class OpenWeatherMap(object):
 
     _MAX_RETRIES=3
-    
+            
     def __init__(self,DV):
+        import pyowm
+        self._owm = pyowm.OWM('a85b0fd83aa7cf883f15ed7fc0bab4d9')  # You MUST provide a valid API key
         self.sensor=DV
         try:
             self.place=DV.device2beacon
@@ -33,8 +35,7 @@ class OpenWeatherMap(object):
     def read_sensor(self,**kwargs):
         #logger.error('Callback for the device ' + self.sensor.DeviceName)
         if self.place!=None:
-            import pyowm
-            owm = pyowm.OWM('a85b0fd83aa7cf883f15ed7fc0bab4d9')  # You MUST provide a valid API key
+            
             datagram=kwargs['datagram']
             #logger.error('Datagram: ' + datagram)
             error=''
@@ -42,7 +43,7 @@ class OpenWeatherMap(object):
                 retries=self._MAX_RETRIES
                 while retries>0:
                     try:
-                        observation = owm.weather_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
+                        observation = self._owm.weather_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
                         w = observation.get_weather()
                         timestamp=w.get_reference_time(timeformat='date')
                         dewpoint=w.get_dewpoint()                   # Returns the dew point as a float
@@ -76,7 +77,7 @@ class OpenWeatherMap(object):
                         null=True
                 
             elif datagram=='forecast':
-                forecast = owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
+                forecast = self._owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
                 fcs = forecast.get_forecast()
                 print('Forecasts for the next 12 H')
                 for i,fc in enumerate(fcs):
@@ -89,7 +90,9 @@ class OpenWeatherMap(object):
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             
             registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values,NULL=null)
-            self.sensor.LastUpdated=timezone.now()
+            if null==False:
+                self.sensor.LastUpdated=timezone.now()
+                PublishEvent(Severity=0,Text=self.sensor.DeviceName+str(_(' updated OK')),Persistent=True)
             self.sensor.Error=error
             if error!='':
                 PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)

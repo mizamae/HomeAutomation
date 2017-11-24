@@ -97,7 +97,6 @@ class HTTP_requests():
             else:
                 return (r.status_code,None)
         except:
-            print ("Unexpected error in orders_request:", sys.exc_info()[1]) 
             logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
             return (100,None)
                 
@@ -129,7 +128,7 @@ class HTTP_requests():
             logger.error("Unexpected error in xml_data_request:"+ str(sys.exc_info()[1])) 
             return (100,None)
         
-    def request_datagram(self,DeviceCode,DatagramId,timeout=1,writeToDB=True,retries=0):
+    def request_datagram(self,DeviceCode,DatagramId,timeout=1,writeToDB=True,retries=1):
         """
         Requests a xml file from a server
         :param DatagramId: DatagramId='angles.xml'
@@ -164,9 +163,14 @@ class HTTP_requests():
                             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=deviceName, DatagramId=DatagramId, 
                                                               year=timestamp.year, values=datagram,NULL=False)
                             DV.LastUpdated=timestamp
-                            DV.Error=''
+                            (code,x) = self.request_orders(order='resetStatics.htm',payload={})
+                            if code==200:
+                                DV.Error=''
+                            else:
+                                DV.Error='The device did not acknowledge the resetStatics order'
                             DV.save(update_fields=["LastUpdated","Error"])
-                            Devices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,Device=DV,DatagramId=DatagramId,values=datagram)
+                            #Devices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,Device=DV,DatagramId=DatagramId,values=datagram)
+                            
                             return
                         else:
                             return datagram
@@ -178,24 +182,26 @@ class HTTP_requests():
                     DV.Error='Error in the format of the datagram received'
                     DV.save(update_fields=["Error",])
                     PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" sent a badly formatted datagram: "))+str(datagram),Persistent=True)
-                    Devices.signals.Device_datagram_format_error.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
+                    #Devices.signals.Device_datagram_format_error.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
             else:
                 DV.Error='Error HTTP ' + str(r.status_code)
                 DV.save(update_fields=["Error",])
                 PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with HTTP code "))+str(r.status_code),Persistent=True)
-                Devices.signals.Device_datagram_exception.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,HTMLCode=r.status_code)
+                #Devices.signals.Device_datagram_exception.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,HTMLCode=r.status_code)
         except:
             
             if str(sys.exc_info()[0]).find('ConnectTimeout')>=0:
                 DV.Error="The device did not respond within the timeout margin (default 1 sec)"
                 DV.save(update_fields=["Error",])
                 PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" did not respond within the timeout margin (default 1 sec)")),Persistent=True)
-                Devices.signals.Device_datagram_timeout.send(sender=None, Device=DV,Datagram=DatagramId)
+                #Devices.signals.Device_datagram_timeout.send(sender=None, Device=DV,Datagram=DatagramId)
             else:
                 PublishEvent(Severity=6,Text=str(_("Unexpected error in request_datagram:")) + str(sys.exc_info()[1]),Persistent=True)
         if retries>0:
             retries-=1
-            logger.info ('Retrying the Request: '+self.server+'/'+DatagramId)
+            PublishEvent(Severity=2,Text=str(_("Retrying the request to "))+DV.DeviceName,Persistent=True)
+            import time
+            time.sleep(5)
             self.request_datagram(DeviceCode=DeviceCode,DatagramId=DatagramId,timeout=timeout,writeToDB=writeToDB,retries=retries)
         elif writeToDB:
             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=DeviceCode, DeviceName=deviceName, DatagramId=DatagramId, 

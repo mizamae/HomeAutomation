@@ -613,6 +613,7 @@
                 }
                 if (DailyData){xaxisInterval=24*3600 * 1000;}
                 var plottype = (labels[column].plottype != null) ? labels[column].plottype : 'spline';
+                var fillOpacity= (labels[column].plottype=='column')? 0.25 : 0.75;              
                 seriesOptions[seriesCounter] = {
                         name: parseLabel(labels[column].label),
                         data: variable_data,
@@ -620,6 +621,7 @@
                         type: plottype,
                         pointPadding:0,
                         groupPadding: 0,
+                        fillOpacity:fillOpacity,
                         marker: {
                             enabled: null,
                             radius: 3

@@ -34,7 +34,7 @@ class DeviceTypeForm(ModelForm):
         self.helper.form_method = 'post'
         
         self.fields['Connection'].label = _("Set the connection of the device")
-        self.fields['Code'].label = _("Enter the type of the device")
+        self.fields['Code'].label = _("Enter the type-descriptor of the device")
         self.fields['Description'].label = _("Enter the description of the device")
         self.fields['MinSampletime'].label = _("Select the minimum sample time for the device [s]")
         self.fields['Picture'].label = _("Upload an image for the DeviceType")
