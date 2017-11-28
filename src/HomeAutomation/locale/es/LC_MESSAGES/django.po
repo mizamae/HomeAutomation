@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-23 11:15+0100\n"
+"POT-Creation-Date: 2017-11-28 14:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr "Consigna actual"
 msgid "Set as active schedule"
 msgstr "Establecer como programación activa"
 
-#: admin.py:121 forms.py:90
+#: admin.py:138 forms.py:132
 msgid "Activate the rule"
 msgstr "Activar la regla"
 
@@ -38,97 +38,129 @@ msgstr "Activar la regla"
 msgid "HomeAutomation base app"
 msgstr "Aplicación principal de HomeAutomation"
 
-#: forms.py:38
+#: forms.py:37
 msgid "Set the label for the variable"
 msgstr "Establece la etiqueta para la variable"
 
-#: forms.py:39
+#: forms.py:38
 msgid "Set the datatype of the variable"
 msgstr "Establece el tipo de dato de la variable"
 
-#: forms.py:40
+#: forms.py:39
 msgid "Enter the value of the variable"
 msgstr "Introduce el valor de la variable"
 
-#: forms.py:41
+#: forms.py:40
 msgid "Set the units of the variable"
 msgstr "Introduce las unidades de la variable"
 
-#: forms.py:42
+#: forms.py:41
 msgid "Set the type of plot for the variable"
 msgstr "Selecciona el tipo de gráfico de la variable"
 
-#: forms.py:50
+#: forms.py:49
 msgid "Submit"
 msgstr "Enviar"
 
+#: forms.py:82
+msgid "Execution order"
+msgstr "Orden de ejecución"
+
+#: forms.py:83
+msgid "Prefix for the first term"
+msgstr "Modificador del primer término"
+
+#: forms.py:84
+msgid "First term"
+msgstr "Primer término"
+
+#: forms.py:85
+msgid "Operator"
+msgstr "Operador"
+
+#: forms.py:86
+msgid "Prefix for the second term"
+msgstr "Modificador del segundo término"
+
+#: forms.py:87
+msgid "Second term"
+msgstr "Segundo término"
+
+#: forms.py:88
+msgid "Second term is a constant"
+msgstr "El segundo término es una constante"
+
 #: forms.py:89
-msgid "Set the name for the automation rule"
-msgstr "Introduce el nombre de la regla de automatización"
+msgid "Constant value"
+msgstr "Valor de la constante"
+
+#: forms.py:90
+msgid "Hysteresis value"
+msgstr "Valor de histéresis"
 
 #: forms.py:91
-msgid "Enter the previous rule to be chained"
-msgstr "Selecciona la regla anterior a encadenar"
+msgid "Operator with the next rule"
+msgstr "Operador para la siguiente regla"
 
-#: forms.py:93
-msgid "Enter the operator between the previous rule and this one"
-msgstr "Selecciona el operador entre la regla anterior y esta"
-
-#: forms.py:94
-msgid "Enter the first variable in the rule"
-msgstr "Selecciona la primera variable de la regla"
-
-#: forms.py:95
-msgid "Enter the operator between the first and second variable"
-msgstr "Selecciona el operador entre la primera y la segunda variable"
-
-#: forms.py:96
-msgid "Enter the second variable in the rule"
-msgstr "Selecciona la segunda variable de la regla"
-
-#: forms.py:97
-msgid "Enter the hysteresis margin"
-msgstr "Introduce el margen de histéresis"
-
-#: forms.py:110
-msgid "Save"
-msgstr "Guardar"
-
-#: forms.py:119
+#: forms.py:100
 msgid "Activate output on Main"
-msgstr "Activar salida en Main"
+msgstr "Activar salida en la unidad Principal"
 
-#: forms.py:120
+#: forms.py:101
 msgid "Send command to a device"
 msgstr "Enviar orden a un dispositivo"
 
-#: forms.py:121
+#: forms.py:102
 msgid "Send an email"
 msgstr "Enviar un email"
 
-#: forms.py:122
-msgid "Nothing"
-msgstr "Nada"
-
-#: forms.py:124
+#: forms.py:105
 msgid "Select the action"
 msgstr "Selecciona la acción"
 
-#: forms.py:125
+#: forms.py:106
 msgid "Select the output"
 msgstr "Selecciona la salida"
 
-#: forms.py:126
+#: forms.py:107
 msgid "Select the output value when the rule is True"
 msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
 
-#: forms.py:127
+#: forms.py:108
 msgid "Select the device to send the order to"
 msgstr "Selecciona el dispositivo al que enviar la orden"
 
-#: forms.py:128
+#: forms.py:109
 msgid "Select the order to send"
 msgstr "Selecciona la orden a enviar"
+
+#: forms.py:131
+msgid "Set the name for the automation rule"
+msgstr "Introduce el nombre de la regla de automatización"
+
+#: forms.py:142
+msgid "Save"
+msgstr "Guardar"
+
+#: forms.py:158
+msgid ""
+"This field cannot be left empty if 'Activate output on Main' is selected as "
+"action"
+msgstr ""
+"Este campo no se puede dejar vacío si 'Activar salida de la unidad Principal' está seleccionada como "
+"acción"
+
+#: forms.py:163 forms.py:166
+msgid ""
+"This field cannot be left empty if Send command to a device is selected as "
+"action"
+msgstr ""
+"Este campo no se puede dejar vacío si 'Mandar una orden a un dispositivo' está seleccionada como "
+"acción"
+
+#: forms.py:172
+msgid "This field cannot be left empty if 'Constant value' is checked"
+msgstr "Este campo no se puede dejar vacío si 'El segundo término es una constante' está seleccionado"
 
 #: models.py:26
 msgid "Float"
@@ -152,7 +184,7 @@ msgstr "Columnas"
 
 #: models.py:80
 msgid "Main device var"
-msgstr ""
+msgstr "Variable de la unidad Principal"
 
 #: models.py:81
 msgid "Main device vars"
@@ -168,17 +200,17 @@ msgstr " ha cambiado. El valor actual es "
 
 #: models.py:113
 msgid "Main device var weekly schedule"
-msgstr "Programación semanal de variables de la unidad principal"
+msgstr "Programación semanal de variables de la unidad Principal"
 
 #: models.py:114
 msgid "Main device var weekly schedules"
-msgstr "Programaciones semanales de variables de la unidad principal"
+msgstr "Programaciones semanales de variables de la unidad Principal"
 
 #: models.py:123
 msgid "The weekly schedule "
 msgstr "La programación semanal "
 
-#: models.py:123 models.py:347
+#: models.py:123
 msgid " has been modified."
 msgstr " ha sido modificada."
 
@@ -220,11 +252,11 @@ msgstr "ALTO"
 
 #: models.py:215
 msgid "Main device var hourly schedule"
-msgstr "Programación horaria de variables de la unidad principal"
+msgstr "Programación horaria de variables de la unidad Principal"
 
 #: models.py:216
 msgid "Main device var hourly schedules"
-msgstr "Programaciones horarias de variables de la unidad principal"
+msgstr "Programaciones horarias de variables de la unidad Principal"
 
 #: models.py:232
 msgid "Automation variable"
@@ -234,33 +266,49 @@ msgstr "Variable de automatización"
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:252
+#: models.py:244
+msgid "None"
+msgstr "Ninguno"
+
+#: models.py:245
+msgid "NOT"
+msgstr ""
+
+#: models.py:256
 msgid "AND"
 msgstr ""
 
-#: models.py:253
+#: models.py:257
 msgid "OR"
 msgstr ""
 
-#: models.py:328
-msgid "Automation rule "
-msgstr "La regla de automatización"
+#: models.py:260
+msgid "Order of execution"
+msgstr "Orden de ejecución"
+
+#: models.py:327
+msgid "Automation expression"
+msgstr "Expresión de automatización"
 
 #: models.py:328
-msgid " executed with result "
-msgstr " se ha ejecutado con resultado "
+msgid "Automation expressions"
+msgstr "Expresiones de automatización"
 
-#: models.py:340
+#: models.py:370
+msgid "The rule "
+msgstr "La regla "
+
+#: models.py:370
+msgid " evaluated to True. Action executed."
+msgstr " se evaluón como Verdadera. La acción se ha ejecutado."
+
+#: models.py:373
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:341
+#: models.py:374
 msgid "Automation rules"
 msgstr "Reglas de automatización"
-
-#: models.py:347
-msgid "The automation rule "
-msgstr "La regla de automatización "
 
 #: settings/base.py:142
 msgid "Spanish"
@@ -269,3 +317,30 @@ msgstr "Español"
 #: settings/base.py:143
 msgid "English"
 msgstr "Inglés"
+
+#~ msgid "Enter the previous rule to be chained"
+#~ msgstr "Selecciona la regla anterior a encadenar"
+
+#~ msgid "Enter the operator between the previous rule and this one"
+#~ msgstr "Selecciona el operador entre la regla anterior y esta"
+
+#~ msgid "Enter the first variable in the rule"
+#~ msgstr "Selecciona la primera variable de la regla"
+
+#~ msgid "Enter the operator between the first and second variable"
+#~ msgstr "Selecciona el operador entre la primera y la segunda variable"
+
+#~ msgid "Enter the second variable in the rule"
+#~ msgstr "Selecciona la segunda variable de la regla"
+
+#~ msgid "Enter the hysteresis margin"
+#~ msgstr "Introduce el margen de histéresis"
+
+#~ msgid "Nothing"
+#~ msgstr "Nada"
+
+#~ msgid "Automation rule "
+#~ msgstr "La regla de automatización"
+
+#~ msgid " executed with result "
+#~ msgstr " se ha ejecutado con resultado "

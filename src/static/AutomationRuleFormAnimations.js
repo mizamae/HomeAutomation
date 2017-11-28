@@ -1,7 +1,10 @@
-var rows = document.getElementsByClassName("row");
-var i;
 var fieldIO,fieldIOValue,fieldActionType,fieldDevice,fieldOrder,fieldIsConstant,fieldConstant;
 var rowfieldIO,rowfieldIOValue,rowfieldDevice,rowfieldOrder,rowfieldConstant,rowfieldVar2;
+
+var group;
+var fieldset;
+var table;
+
 // this function is executed on load
 $(function()
 {
@@ -56,21 +59,123 @@ $(function()
 	    	rowfieldVar2=rows[i];
     	}
 	}
-	IsConstantChange();
+	
+	group=document.getElementById("ruleitem_set-group");
+	fieldset=$(group).children("div")[0];
+	fieldset=$(fieldset).children("fieldset.module")[0];
+	table=$(fieldset).children("table")[0];
+	
+	IsConstantInit()
 	ActionTypeChange();
 	DeviceChange();
+	AddNewRuleItem();
 });
 
-function IsConstantChange()
+function bindAddNew()
 {
-	if (fieldIsConstant.checked)
+	for(var i = 0; i < table.rows.length; i++)
 	{
-		rowfieldConstant.style.display = 'block';
-		rowfieldVar2.style.display = 'none';
-	}else
+		var row=table.rows[i];
+		if (row.className.includes("add-row"))
+		{
+			var AddCell=$(row).children("td")[0];
+			var Link=$(AddCell).children("a")[0];
+			Link.addEventListener("click", AddNewRuleItem);
+		}
+	}
+}
+window.onload = bindAddNew;
+
+function AddNewRuleItem()
+{
+	for(var i = 0; i < table.rows.length; i++)
 	{
-		rowfieldConstant.style.display = 'none';
-		rowfieldVar2.style.display = 'block';
+		var row=table.rows[i];
+		if (row.className.includes("empty-form"))
+		{
+			row=table.rows[i-1];
+			if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+			{
+				var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
+				var Operator3Select=$(Operator3Cell).children("select")[0];
+				Operator3Select.disabled=true;
+				var DeleteCell=row.getElementsByClassName("delete")[0];
+				var DeleteLink=$(DeleteCell).children("div")[0];
+				DeleteLink=$(DeleteLink).children("a")[0];
+				if (DeleteLink){DeleteLink.addEventListener("click", function(){DeleteRuleItem(i-1);});}
+			}
+			row=table.rows[i-2];
+			if (row.className.includes("dynamic-ruleitem_set")|| row.className.includes("has_original"))
+			{
+				var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
+				var Operator3Select=$(Operator3Cell).children("select")[0];
+				Operator3Select.disabled=false;
+			}
+			break;
+		}
+	}
+}
+
+function DeleteRuleItem(rownum)
+{
+	if (rownum > table.rows.length-3)
+	{
+		var row=table.rows[rownum-1];
+		if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+		{
+			var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
+			var Operator3Select=$(Operator3Cell).children("select")[0];
+			Operator3Select.value='';
+			Operator3Select.disabled=true;
+		}
+	}
+}
+
+function IsConstantInit()
+{
+	var checkboxes=$("input:checkbox");
+	for(var i = 0; i < checkboxes.length; i++) 
+	{
+		if (checkboxes[i].name.includes("ruleitem_set"))
+		{
+			checkboxes[i].addEventListener("change", checkIsConstants);
+			checkIsConstants();
+		}
+			
+	}
+}
+
+function checkIsConstants()
+{
+	for(var i = 0; i < table.rows.length; i++)
+	{
+		var row=table.rows[i];
+		if (row.className.includes("form-row"))
+		{
+			if (row.className.includes("empty-form"))
+			{	break;}
+			else
+			{
+				var IsConstantCell=row.getElementsByClassName("field-IsConstant")[0];
+				var IsConstant=$(IsConstantCell).children("input")[0];
+				var Var2Cell=row.getElementsByClassName("field-Var2")[0];
+				var Var2Input=$(Var2Cell).children("div")[0];
+				Var2Input=$(Var2Input).children("select")[0];
+				var ConstantCell=row.getElementsByClassName("field-Constant")[0];
+				var ConstantInput=$(ConstantCell).children("input")[0];
+				
+				if (IsConstant.checked)
+				{
+					Var2Input.value='';
+					Var2Input.disabled=true;
+					ConstantInput.disabled=false;
+				}else
+				{
+					Var2Input.disabled=false;
+					ConstantInput.disabled=true;
+				}
+			}
+		}
 	}
 }
 

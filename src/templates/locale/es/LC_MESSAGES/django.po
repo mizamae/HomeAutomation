@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-23 11:15+0100\n"
+"POT-Creation-Date: 2017-11-28 14:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: DHT11.html:44 DHT22.html:44 GPIOs.html:49 showdevices.html:127
-#: showdevices.html:205
+#: 3xDHT22.html:43 GPIOs.html:50 advanced_device.html:95
+msgid "Description"
+msgstr "Descripci&oacute;n"
+
+#: 3xDHT22.html:44
+msgid "Value"
+msgstr "Valor"
+
+#: 3xDHT22.html:62 DHT11.html:44 DHT22.html:44 GPIOs.html:49
+#: showdevices.html:127 showdevices.html:205
 msgid "Pin"
 msgstr "Pin"
 
-#: DHT11.html:45 DHT22.html:45 GAPQv1.html:45
+#: 3xDHT22.html:63 DHT11.html:45 DHT22.html:45 GAPQv1.html:45
 msgid "Type"
 msgstr "Tipo"
 
-#: DHT11.html:124 DHT22.html:124 GAPQv1.html:123 GPIOs.html:90
-#: timezones.html:49 trackUsers.html:74
+#: 3xDHT22.html:203 DHT11.html:124 DHT22.html:124 GAPQv1.html:123
+#: GPIOs.html:90 timezones.html:49 trackUsers.html:74
 msgid "Return"
 msgstr "Volver "
 
@@ -59,10 +67,6 @@ msgid ""
 msgstr ""
 "En la siguiente tabla, puedes encontrar todas las E/S configuradas en la "
 "unidad Master."
-
-#: GPIOs.html:50 advanced_device.html:95
-msgid "Description"
-msgstr "Descripci&oacute;n"
 
 #: GPIOs.html:51
 msgid "Current value"
@@ -149,15 +153,15 @@ msgstr ""
 
 #: admin/customLabels.html:7
 msgid "Setting up the custom labels for "
-msgstr ""
+msgstr "Estableciendo las etiquetas para "
 
 #: admin/customLabels.html:10
 msgid "Definition of the custom labels for device "
-msgstr ""
+msgstr "Definici&oacute;n de las etiquetas para el dispositivo "
 
 #: admin/customLabels.html:10 reqconfdevice.html:15
 msgid " finished OK"
-msgstr ""
+msgstr " termin&oacute; OK"
 
 #: admin/customLabels.html:11 reportItemsList.html:75 reqconfdevice.html:16
 #: showdevices.html:266
@@ -233,18 +237,16 @@ msgid "Where is a user"
 msgstr ""
 
 #: advanced_device.html:77
-#, fuzzy
-#| msgid "Here you can see the reports that have been generated."
 msgid "Here you can see the GPS position of a user (if provided)."
-msgstr "Aqu&iacute; puedes ver los informes que se han ido generando."
+msgstr "Aqu&iacute puedes ver la posic&oacute;n GPS de un usuario."
 
 #: advanced_device.html:78
 msgid "View ubication"
-msgstr ""
+msgstr "Ver ubicaci&oacute;n"
 
 #: advanced_device.html:83
 msgid "Events and alarms"
-msgstr ""
+msgstr "Eventos y alarmas"
 
 #: advanced_device.html:93
 msgid "Timestamp"
@@ -252,11 +254,11 @@ msgstr ""
 
 #: advanced_device.html:94
 msgid "Severity"
-msgstr ""
+msgstr "Severidad"
 
 #: advanced_device.html:96
 msgid "Acknowledge"
-msgstr ""
+msgstr "Marcar como le&iacute;da"
 
 #: advanced_device.html:111
 msgid "OK"
@@ -560,10 +562,8 @@ msgid "Report "
 msgstr "Informes"
 
 #: reportItemsList.html:41
-#, fuzzy
-#| msgid "View report"
 msgid "Preview next report"
-msgstr "Ver informe"
+msgstr "Previsualizar el siguiente informe"
 
 #: reportItemsList.html:53 reportItemsList.html:62
 msgid "From"
@@ -757,7 +757,7 @@ msgstr "PARADO"
 msgid " Start "
 msgstr " Marcha "
 
-#: showdevices.html:383 showdevices.html:438
+#: showdevices.html:383 showdevices.html:444
 msgid " Stop "
 msgstr " Paro "
 

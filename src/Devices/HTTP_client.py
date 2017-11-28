@@ -141,7 +141,7 @@ class HTTP_requests():
         deviceName=DV.DeviceName
         timestamp=timezone.now() #para hora con info UTC   
         try:
-            logger.info('Request: '+self.server+'/'+DatagramId+'.xml?t='+str(random.random()))
+            #logger.info('Request: '+self.server+'/'+DatagramId+'.xml?t='+str(random.random()))
             r = requests.get(self.server+'/'+DatagramId+'.xml?t='+str(random.random()),timeout=timeout)
             
             temp.append(r.status_code)

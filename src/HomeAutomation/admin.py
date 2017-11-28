@@ -10,8 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 
 
 
-from HomeAutomation.models import MainDeviceVarModel,MainDeviceVarWeeklyScheduleModel,inlineDaily,AutomationRuleModel,AutomationVariablesModel
-from HomeAutomation.forms import MainDeviceVarForm,inlineDailyForm,AutomationRuleForm
+from HomeAutomation.models import MainDeviceVarModel,MainDeviceVarWeeklyScheduleModel,inlineDaily,AutomationRuleModel,AutomationVariablesModel,RuleItem
+from HomeAutomation.forms import MainDeviceVarForm,inlineDailyForm,AutomationRuleForm,RuleItemForm
 
 
 
@@ -104,13 +104,30 @@ class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
     #extra = 1 # how many rows to show
     #form=ItemOrderingForm
 
+class RuleItemInline(admin.TabularInline):
+    model = RuleItem
+    extra = 0 # how many rows to show
+    form=RuleItemForm
+
+class RuleItemAdmin(admin.ModelAdmin):
+    pass
+
+
 class AutomationRuleModelAdmin(admin.ModelAdmin):
-    #filter_horizontal = ('AnItems','DgItems')
     actions=['activate']
     list_display = ('Identifier','Active','Action')
     ordering=('-Active','Identifier')
     form = AutomationRuleForm
     
+    inlines = (RuleItemInline,)
+    
+    def save_related(self, request, form, formsets, change):
+        super(AutomationRuleModelAdmin, self).save_related(request, form, formsets, change)
+        if change:
+            AR = AutomationRuleModel.objects.get(Identifier=request.POST['Identifier'])
+            if AR.Active:
+                AR.execute()
+            
     def activate(self,request, queryset):
         selected_pk = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0]
         rule=AutomationRuleModel.objects.get(pk=selected_pk)
@@ -119,6 +136,19 @@ class AutomationRuleModelAdmin(admin.ModelAdmin):
         return HttpResponseRedirect('/admin/HomeAutomation/automationrulemodel/')
     
     activate.short_description = _("Activate the rule")
+    
+    def save(self, *args, **kwargs):                             
+        instance = super(AutomationRuleModelAdmin, self).save(*args, **kwargs)   
+        if instance.pk:
+          for item in instance.RuleItems.all():
+            if item not in self.cleaned_data['RuleItems']:            
+              # we remove books which have been unselected 
+              instance.RuleItems.remove(item)
+          for item in self.cleaned_data['RuleItems']:                  
+            if item not in instance.RuleItems.all():                   
+              # we add newly selected books
+              instance.RuleItems.add(item)      
+        return instance
 
 class AutomationVariablesModelAdmin(admin.ModelAdmin):
     #filter_horizontal = ('AnItems','DgItems')
@@ -140,3 +170,4 @@ admin.site.register(MainDeviceVarModel,MainDeviceVarModelAdmin)
 admin.site.register(MainDeviceVarWeeklyScheduleModel,MainDeviceVarWeeklyScheduleModelAdmin)
 admin.site.register(AutomationRuleModel,AutomationRuleModelAdmin)
 admin.site.register(AutomationVariablesModel,AutomationVariablesModelAdmin)
+admin.site.register(RuleItem,RuleItemAdmin)
