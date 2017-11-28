@@ -676,15 +676,10 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_plots'))
 def AdvancedDevicepage(request,pk):
-    deviceData=Devices.models.DeviceModel.objects.get(pk=pk)
-       
-        
-    DEVICE_TYPE=deviceData.Type.Code
-    
-    logger.info('The device is a '+DEVICE_TYPE)
-    
-    return render(request, DEVICE_TYPE+'.html',
-        {'Device':deviceData})
+    import json
+    DV=Devices.models.DeviceModel.objects.get(pk=pk)
+    return render(request, DV.Type.Code+'.html',
+        {'Device':DV})
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('profiles.view_tracking'))

@@ -163,7 +163,7 @@ class HTTP_requests():
                             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=deviceName, DatagramId=DatagramId, 
                                                               year=timestamp.year, values=datagram,NULL=False)
                             DV.LastUpdated=timestamp
-                            (code,x) = self.request_orders(order='resetStatics.htm',payload={})
+                            (code,x) = self.request_orders(order='resetStatics',payload={})
                             if code==200:
                                 DV.Error=''
                             else:

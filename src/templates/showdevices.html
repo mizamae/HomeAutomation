@@ -434,7 +434,13 @@
                         buttonDel.style.visibility='visible';
                     }
                     else{
-                        row.cells[3].style.backgroundColor= "#00FF00";
+                        if (Error == '')
+                        {
+                            row.cells[3].style.backgroundColor= "#00FF00";
+                        }else
+                        {
+                            row.cells[3].style.backgroundColor= "#FACC2E";
+                        }
                         buttonToggle.innerHTML='{% trans " Stop " %} >>';
                         buttonDel.style.visibility='hidden';
                     }
