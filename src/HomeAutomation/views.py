@@ -621,6 +621,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                                 tempStats['mean'].append(0)
                                 tempStats['max'].append(-10000000)
                                 tempStats['min'].append(10000000)
+                                tempStats['num_rows'].append(0)
                                 tempStats['on_time'].append(vectON)
                                 tempStats['off_time'].append(vectOFF)
                         else:
@@ -629,16 +630,29 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                                 tempStats['num_rows'][k-1]+=1
                                 #logger.debug('COL=' + str(col))
                                 if types[k]=='analog':
-                                    tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'][k-1] # moving average
-                                    if col>tempStats['max'][k-1]:
+                                    if tempStats['mean'][k-1]!=None:
+                                        tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'][k-1] # moving average
+                                    else:
+                                        tempStats['mean'][k-1]=col
+                                    if tempStats['max'][k-1]!=None:
+                                        if col>tempStats['max'][k-1]:
+                                            tempStats['max'][k-1]=col
+                                    else:
                                         tempStats['max'][k-1]=col
-                                    if col<tempStats['min'][k-1]:
+                                    if tempStats['min'][k-1]!=None:
+                                        if col<tempStats['min'][k-1]:
+                                            tempStats['min'][k-1]=col
+                                    else:
                                         tempStats['min'][k-1]=col
                                 elif types[k]=='digital':
                                     for i in range(0,8):
                                         data= 1 if (col & (1<<int(i)))>0 else 0
-                                        tempStats['on_time'][k-1][i]+=data*(sampletime.days*86400+sampletime.seconds)
-                                        tempStats['off_time'][k-1][i]+=(not data)*(sampletime.days*86400+sampletime.seconds)
+                                        if tempStats['on_time'][k-1][i]!=None:
+                                            tempStats['on_time'][k-1][i]+=data*(sampletime.days*86400+sampletime.seconds)
+                                            tempStats['off_time'][k-1][i]+=(not data)*(sampletime.days*86400+sampletime.seconds)
+                                        else:
+                                            tempStats['on_time'][k-1][i]=data*(sampletime.days*86400+sampletime.seconds)
+                                            tempStats['off_time'][k-1][i]=(not data)*(sampletime.days*86400+sampletime.seconds)
                             except IndexError: # this can happen when some variables are added to a datagram and want to show on a same plot the previous and the new datagram (with more variables)
                                 if types[k]=='analog':
                                     tempStats['mean'].append(col)
@@ -651,15 +665,41 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                                     tempStats['mean'].append(None)
                                     tempStats['max'].append(None)
                                     tempStats['min'].append(None)
+                                    tempStats['num_rows'].append(0)
                                     vectON=[]
                                     vectOFF=[]  
-                                    for i in range(0,8):
-                                        data= 1 if (col & (1<<int(i)))>0 else 0
-                                        vectON.append(data*(sampletime.days*86400+sampletime.seconds))
-                                        vectOFF.append((not data)*(sampletime.days*86400+sampletime.seconds))
+                                    if col!=None:
+                                        for i in range(0,8):
+                                            data= 1 if (col & (1<<int(i)))>0 else 0
+                                            vectON.append(data*(sampletime.days*86400+sampletime.seconds))
+                                            vectOFF.append((not data)*(sampletime.days*86400+sampletime.seconds))
+                                    else:
+                                        for i in range(0,8):
+                                            vectON.append(None)
+                                            vectOFF.append(None)
                                     tempStats['on_time'].append(vectON)
                                     tempStats['off_time'].append(vectOFF)
-
+                else:
+                    if k>=1 and isFirstRow: # to avoid including the timestamp in the statistics
+                        if types[k]=='analog':
+                            tempStats['mean'].append(None)
+                            tempStats['max'].append(None)
+                            tempStats['min'].append(None)
+                            tempStats['num_rows'].append(0)
+                            tempStats['on_time'].append(None)
+                            tempStats['off_time'].append(None)
+                        else:
+                            vectON=[]
+                            vectOFF=[]
+                            for i in range(0,8):
+                                vectON.append(None)
+                                vectOFF.append(None)
+                            tempStats['mean'].append(None)
+                            tempStats['max'].append(None)
+                            tempStats['min'].append(None)
+                            tempStats['num_rows'].append(0)
+                            tempStats['on_time'].append(vectON)
+                            tempStats['off_time'].append(vectOFF)
                 k+=1
             
             del temp[0] #removes the column with the original datetimes

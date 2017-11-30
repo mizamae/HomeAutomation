@@ -37,7 +37,9 @@ class DeviceModel_query(JsonWebsocketConsumer):
             DGs=DatagramModel.objects.filter(DeviceType=DV.Type)
             DeviceCode=DV.DeviceCode
             deviceIP=DV.DeviceIP
-            HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP)  
+            HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP) 
+            #data=[]
+            #missing handling of several DGs per device
             for DG in DGs:
                 data=HTTPrequest.request_datagram(DeviceCode=DeviceCode,DatagramId=DG.Identifier,writeToDB=False)
         elif (DV.Type.Connection=='LOCAL' or DV.Type.Connection=='MEMORY'):

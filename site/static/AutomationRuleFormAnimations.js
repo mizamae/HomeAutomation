@@ -103,6 +103,9 @@ function AddNewRuleItem()
 				var DeleteLink=$(DeleteCell).children("div")[0];
 				DeleteLink=$(DeleteLink).children("a")[0];
 				if (DeleteLink){DeleteLink.addEventListener("click", function(){DeleteRuleItem(i-1);});}
+				var OrderCell=row.getElementsByClassName("field-order")[0];
+				var OrderInput=$(OrderCell).children("input")[0];
+				if (OrderInput){OrderInput.addEventListener("change", function(){ChangedOrder(i-1);});}
 			}
 			row=table.rows[i-2];
 			if (row.className.includes("dynamic-ruleitem_set")|| row.className.includes("has_original"))
@@ -115,6 +118,74 @@ function AddNewRuleItem()
 		}
 	}
 }
+
+function ChangedOrder(rownum)
+{
+	sortTable();
+	for(var i = 0; i < table.rows.length; i++)
+	{
+		var row=table.rows[i];
+		if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+		{
+			var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
+			var Operator3Select=$(Operator3Cell).children("select")[0];
+			if (i>= table.rows.length-3)
+			{
+				Operator3Select.value='';
+				Operator3Select.disabled=true;
+			}else
+			{
+				Operator3Select.value='|';
+				Operator3Select.disabled=false;
+			}
+		}		
+	}
+}
+function sortTable() {
+	  var rows, switching, i, x, y, shouldSwitch;
+	  switching = true;
+	  /*Make a loop that will continue until
+	  no switching has been done:*/
+	  while (switching) {
+	    //start by saying: no switching is done:
+	    switching = false;
+	    //rows = table.getElementsByTagName("TR");
+	    rows=[];
+	    for(var i = 0; i < table.rows.length; i++)
+		{
+			var row=table.rows[i];
+			if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+			{
+				rows[i]=row;
+			}
+			
+		}
+	    /*Loop through all table rows (except the
+	    first, which contains table headers):*/
+	    for (i = 1; i < (rows.length - 1); i++) {
+	      //start by saying there should be no switching:
+	      shouldSwitch = false;
+	      /*Get the two elements you want to compare,
+	      one from current row and one from the next:*/
+	      x = rows[i].getElementsByClassName("field-order")[0];
+	      x = parseInt($(x).children("input")[0].value);
+	      y = rows[i + 1].getElementsByClassName("field-order")[0];
+	      y = parseInt($(y).children("input")[0].value);
+	      //check if the two rows should switch place:
+	      if (x > y) {
+	        //if so, mark as a switch and break the loop:
+	        shouldSwitch= true;
+	        break;
+	      }
+	    }
+	    if (shouldSwitch) {
+	      /*If a switch has been marked, make the switch
+	      and mark that a switch has been done:*/
+	      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+	      switching = true;
+	    }
+	  }
+	}
 
 function DeleteRuleItem(rownum)
 {

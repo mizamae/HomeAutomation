@@ -88,8 +88,10 @@ class OpenWeatherMap(object):
             #logger.error('Values: ' + str(values))
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
-            
-            registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values,NULL=null)
+            try:
+                registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values,NULL=null)
+            except:
+                error='DB Error'
             if null==False:
                 self.sensor.LastUpdated=timezone.now()
                 PublishEvent(Severity=0,Text=self.sensor.DeviceName+str(_(' updated OK')),Persistent=True)
@@ -261,7 +263,8 @@ class DHT22(object):
             if h==None:
                 h=self._maxH
                 
-            logger.info('Sample ' + str(x+1) + ' yielded ' + str(t) + 'degC and ' + str(h) + '%')
+            PublishEvent(Severity=0,Text='Sample ' + str(x+1) + ' yielded ' + str(t) + 'degC and ' + str(h) + '%',Persistent=False)
+            
             if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
                 temperature=temperature+t
                 samplesT+=1

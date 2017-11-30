@@ -30,6 +30,7 @@ class MainDeviceVarModel(models.Model):
         ('line',_('Hard Line')),
         ('spline',_('Smoothed Line')),
         ('column',_('Bars')),
+        ('area',_('Area')),
     )
     Label = models.CharField(max_length=50,unique=True)
     Value = models.DecimalField(max_digits=6, decimal_places=2)
@@ -237,7 +238,8 @@ def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs):
     rules=RuleItem.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
     if len(rules)>0:
         for rule in rules:
-            rule.Rule.execute()        
+            if not '"ActionType": "z"' in rule.Rule.Action:
+                rule.Rule.execute()         
                 
 class RuleItem(models.Model):
     PREFIX_CHOICES=(
@@ -288,9 +290,10 @@ class RuleItem(models.Model):
         timestamp1=timestamp1+timestamp1.utcoffset() 
         
         if self.Var1.Sample>0:
-            if (now-timestamp1>datetime.timedelta(seconds=1.5*self.Var1.Sample)):
+            if (now-timestamp1>datetime.timedelta(seconds=2.5*self.Var1.Sample)):
                 logger.warning('The rule ' + str(self) + ' was evaluated with data older than expected')
                 logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' was ' + str(timestamp1))
+                return None
         
         if self.Var1.BitPos!=None:
             value1=value1 & (1<<self.Var1.BitPos) 
@@ -302,10 +305,11 @@ class RuleItem(models.Model):
             timestamp2 = local_tz.localize(timestamp2)
             timestamp2=timestamp2+timestamp2.utcoffset()
             if self.Var2.Sample>0:
-                if (now-timestamp2>datetime.timedelta(seconds=1.5*self.Var2.Sample)):
+                if (now-timestamp2>datetime.timedelta(seconds=2.5*self.Var2.Sample)):
                     logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
                     logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' was ' + str(timestamp2))
-            
+                    return None
+                    
             if self.Var2.BitPos!=None:
                 value2=value2 & (1<<self.Var2.BitPos)
         else:
@@ -323,15 +327,23 @@ class RuleItem(models.Model):
         return eval(evaluable)
             
     class Meta:
-        unique_together=(('Rule','order'))
         verbose_name = _('Automation expression')
         verbose_name_plural = _('Automation expressions')
                 
 class AutomationRuleModel(models.Model):
-    
-    
+    BOOL_OPERATOR_CHOICES=(
+        ('&',_('AND')),
+        ('|',_('OR')),
+    )
+    ONERROR_CHOICES=(
+        (0,_('False')),
+        (1,_('True')),
+    )
     Identifier = models.CharField(max_length=50,unique=True)
     Active = models.BooleanField(default=False)
+    OnError = models.PositiveSmallIntegerField(choices=ONERROR_CHOICES,default=0)
+    PreviousRule= models.ForeignKey('AutomationRuleModel',related_name='previous_rule',blank=True,null=True)
+    OperatorPrev = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
     RuleItems = models.ManyToManyField(RuleItem)
     Action = models.CharField(max_length=500,blank=True) # receives a json object describind the action desired
     
@@ -344,30 +356,45 @@ class AutomationRuleModel(models.Model):
     def evaluate(self):
         if self.Active:
             evaluable=''
+            if self.PreviousRule!=None:
+                evaluable+=str(self.PreviousRule.evaluate()) + ' ' + self.OperatorPrev
             RuleItems=RuleItem.objects.filter(Rule=self.pk).order_by('order')
             if len(RuleItems):
                 for item in RuleItems:
-                    if item.Operator3!=None:
-                        evaluable+=' ' + str(item.evaluate()) + ' ' + item.Operator3
+                    result=item.evaluate()
+                    if result!=None:
+                        if item.Operator3!=None:
+                            evaluable+=' ' + str(result) + ' ' + item.Operator3
+                        else:
+                            evaluable+=' ' + str(result)
                     else:
-                        evaluable+=' ' + str(item.evaluate())
-                
-                return eval(evaluable)
+                        return None
+                if len(evaluable)>1:
+                    if evaluable[-1]=='&' or evaluable[-1]=='|':
+                        evaluable=evaluable[:-1]
+                try:
+                    return evaluable
+                except:
+                    return None
             else:
                 return None
         else:
-            return None
+            return ''
     
     def execute(self):
         result=self.evaluate()
+        if result!=None:
+            result=eval(result)
+        else:
+            result=eval(self.get_OnError_display())
+            
         if result==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 IO.value=Action['IOValue']
                 IO.save(update_fields=['value'])
-            #logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
-            PublishEvent(Severity=0,Text=str(_('The rule '))+self.Identifier+str(_(' evaluated to True. Action executed.')))
+            logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
         
     class Meta:
         verbose_name = _('Automation rule')

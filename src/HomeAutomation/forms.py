@@ -90,6 +90,20 @@ class RuleItemForm(ModelForm):
         self.fields['Var2Hyst'].label = _("Hysteresis value")
         self.fields['Operator3'].label = _("Operator with the next rule")
 
+    def clean(self):
+         cleaned_data = super(RuleItemForm, self).clean()
+         IsConstant = cleaned_data.get('IsConstant')
+         Constant = cleaned_data.get('Constant')
+         Var2 = cleaned_data.get('Var2')
+         if IsConstant==True :
+             cleaned_data.update(Var2=None)
+             if Constant==None:
+                 raise ValidationError({'Constant':_("This field cannot be left empty if 'IsConstant' has been selected")})
+         else:
+            if Var2==None:
+                 raise ValidationError({'Var2':_("This field cannot be left empty if 'IsConstant' is not selected")})
+         return cleaned_data
+         
     class Meta:
         model = HomeAutomation.models.RuleItem
         fields=['order','PreVar1','Var1','Operator12','PreVar2','Var2','IsConstant','Constant','Var2Hyst','Operator3']
@@ -100,6 +114,7 @@ class AutomationRuleForm(ModelForm):
         ('a',_('Activate output on Main')),
         ('b',_('Send command to a device')),
         ('c',_('Send an email')),
+        ('z',_('None')),
     )
     
     ActionType = forms.ChoiceField(choices=ACTION_CHOICES,label=_('Select the action'))
@@ -130,9 +145,14 @@ class AutomationRuleForm(ModelForm):
         self.helper.form_method = 'post'
         self.fields['Identifier'].label = _("Set the name for the automation rule")
         self.fields['Active'].label = _("Activate the rule")
+        self.fields['OnError'].label = _("Select the output value in case of error")
+        self.fields['PreviousRule'].label = _("Select the previous rule to be chained")
+        self.fields['PreviousRule'].queryset=HomeAutomation.models.AutomationRuleModel.objects.filter(Action__contains='"ActionType": "z"')
+        self.fields['OperatorPrev'].label = _("Select the operator between the previous rule and this one")
         self.helper.layout = Layout(
             Field('Identifier', css_class='input-sm'),
             Field('Active', css_class='input-sm'),
+            Field('OnError', css_class='input-sm'),
             )
         self.helper.layout.append(Field('ActionType', css_class='input-sm'))
         self.helper.layout.append(Field('IO', css_class='input-sm'))
@@ -149,8 +169,11 @@ class AutomationRuleForm(ModelForm):
          IOValue = cleaned_data.get('IOValue')
          Device = cleaned_data.get('Device')
          Order = cleaned_data.get('Order')
-         IsConstant = cleaned_data.get('IsConstant')
-         Constant = cleaned_data.get('Constant')
+         PreviousRule= cleaned_data.get('PreviousRule')
+         OperatorPrev= cleaned_data.get('OperatorPrev')
+         if PreviousRule!=None:
+             if OperatorPrev==None:
+                 raise ValidationError({'OperatorPrev':_("This field cannot be left empty if a previous rule has been selected")})
          if ActionType=='a':
              Device=None
              Order=None
@@ -164,13 +187,12 @@ class AutomationRuleForm(ModelForm):
              else:
                  if Order==None:
                      raise ValidationError({'Order':_("This field cannot be left empty if Send command to a device is selected as action")})
-                     
-         if IsConstant:
-             cleaned_data.update(Var2=None)
-             
-             if Constant==None:
-                 raise ValidationError({'Constant':_("This field cannot be left empty if 'Constant value' is checked")})
-             
+         elif ActionType=='z':
+            IO=None
+            IOValue=None
+            Device=None
+            Order=None
+                      
          if IO!=None:
              IO=IO.pk
          if Device!=None:
@@ -178,15 +200,17 @@ class AutomationRuleForm(ModelForm):
          if Order!=None:
              Order=Order.pk
              
-         data={'ActionType':ActionType,'IO':IO,'IOValue':IOValue,'Device':Device,'Order':Order,'IsConstant':IsConstant,'Constant':Constant}
+         data={'ActionType':ActionType,'IO':IO,'IOValue':IOValue,'Device':Device,'Order':Order}
          
          cleaned_data.update(Action=json.dumps(data))
          return cleaned_data
          
     class Meta:
-        fields=['Identifier','Active','Action']
+        fields=['Identifier','Active','OnError','PreviousRule','OperatorPrev','Action']
         widgets = {'Action': forms.HiddenInput()}
+        model = HomeAutomation.models.AutomationRuleModel
         
     class Media:
         js = ('AutomationRuleFormAnimations.js',)
+        
         

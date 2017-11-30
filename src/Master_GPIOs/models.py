@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+import datetime
 import HomeAutomation.models
 import RPi.GPIO as GPIO
 import Master_GPIOs.signals
@@ -12,6 +13,7 @@ import Devices.BBDD
 import Devices.GlobalVars
 from time import sleep
 import os
+from Events.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -58,6 +60,8 @@ class IOmodel(models.Model):
         (0,_('LOW')),
         (1,_('HIGH')),
     )
+    __previous_value = None
+    
     pin = models.IntegerField(primary_key=True,unique=True)
     label = models.CharField(max_length=50,unique=True)
     direction = models.CharField(max_length=4,choices=DIRECTION_CHOICES)
@@ -66,12 +70,29 @@ class IOmodel(models.Model):
     
     objects = IOmodelManager()
     
+    def __init__(self, *args, **kwargs):
+        super(IOmodel, self).__init__(*args, **kwargs)
+        self.__previous_value = self.value
+    
+    def save(self, *args, **kwargs):
+        if self.value != self.__previous_value and self.__previous_value != None:
+            text=str(_('The value of the GPIO ')) +self.label+str(_(' has changed. Now it is ')) + str(self.value)
+            PublishEvent(Severity=0,Text=text)
+            registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                               configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+            timestamp=timezone.now() #para hora con info UTC
+            registerDB.insert_IOs_register(TimeStamp=timestamp-datetime.timedelta(seconds=1),direction=self.direction)
+        self.__previous_value = self.value
+        super(IOmodel, self).save(*args, **kwargs)
+        
     def InputChangeEvent(self,*args):
         #sleep(0.1) # to avoid reading the input during the debounce time
         # if GPIO.gpio_function(self.pin)!=GPIO.IN:
             # GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
         val=GPIO.input(self.pin)
-        Master_GPIOs.signals.IN_change_notification.send(sender=None, number=self.pin, value=val)
+        self.value=int(val)
+        self.save()
+        #Master_GPIOs.signals.IN_change_notification.send(sender=None, number=self.pin, value=val)
     
     def updateAutomationVars(self):
         if self.direction=='IN':
@@ -123,14 +144,12 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
     timestamp=timezone.now() #para hora con info UTC
 
     if kwargs['created']:   # new instance is created  
-        registerDB.check_IOsTables()
         logger.info('The IO ' + str(instance) + ' has been registered on the process ' + str(os.getpid()))
         if instance.direction=='OUT':
             GPIO.setup(int(instance.pin), GPIO.OUT)
             if instance.value==1:
                 GPIO.output(int(instance.pin),GPIO.HIGH)
             logger.info("Initialized Output on pin " + str(instance.pin))
-            registerDB.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
         elif instance.direction=='IN':
             GPIO.setup(int(instance.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
             GPIO.remove_event_detect(int(instance.pin))
@@ -143,10 +162,11 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
                 GPIO.output(int(instance.pin),GPIO.HIGH)
             else:
                 GPIO.output(int(instance.pin),GPIO.LOW)
-            registerDB.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
 
     if instance.direction!='SENS':
         instance.updateAutomationVars()
+        registerDB.check_IOsTables()
+        registerDB.insert_IOs_register(TimeStamp=timestamp,direction=instance.direction)
 
 @receiver(post_delete, sender=IOmodel, dispatch_uid="delete_IOmodel")
 def delete_IOmodel(sender, instance,**kwargs):

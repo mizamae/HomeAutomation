@@ -323,6 +323,7 @@ class DatagramItemModel(models.Model):
         ('line',_('Hard Line')),
         ('spline',_('Smoothed Line')),
         ('column',_('Bars')),
+        ('area',_('Area')),
     )
     HumanTag = models.CharField(max_length=20,unique=True)
     DataType= models.CharField(max_length=10,choices=DATATYPE_CHOICES)

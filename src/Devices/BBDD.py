@@ -642,7 +642,16 @@ class DIY4dot0_Databases(object):
             columns=columns[:-1]
             valuesHolder=valuesHolder[:-1]
             table='MainVariables'
-                
+            
+            try:
+                sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+                lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
+                if lastTimestamp != None:
+                    lastTimestamp=lastTimestamp.replace(microsecond=0)
+                    if lastTimestamp==TimeStamp.replace(microsecond=0):
+                        return
+            except:
+                pass
             sql=self.registersDB.SQLinsertMainVARs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             #logger.info('SQL: ' + sql)
@@ -670,6 +679,16 @@ class DIY4dot0_Databases(object):
                 table='outputs'
             else:
                 raise ValueError('The value of parameter "direction" can only be "IN" for inputs or "OUT" for outputs')
+                
+            try:
+                sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+                lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
+                if lastTimestamp != None:
+                    lastTimestamp=lastTimestamp.replace(microsecond=0)
+                    if lastTimestamp==TimeStamp.replace(microsecond=0):
+                        return
+            except:
+                pass
                 
             sql=self.registersDB.SQLinsertIOs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
@@ -720,8 +739,11 @@ class DIY4dot0_Databases(object):
                     temp_string2+='"'+name+'"'
             roundvalues=[TimeStamp,]
             if NULL==False:
-                for i in range(0,len(values)):  
-                    roundvalues.append(round(values[i],3))
+                for i in range(0,len(values)): 
+                    try:
+                        roundvalues.append(round(values[i],3))
+                    except:
+                        roundvalues.append(values[i])
             else:
                 logger.info('Inserted NULL values on device ' + DeviceName)  
                 for i in range(0,len(names)):  

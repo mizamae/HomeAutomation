@@ -108,6 +108,7 @@ class RuleItemInline(admin.TabularInline):
     model = RuleItem
     extra = 0 # how many rows to show
     form=RuleItemForm
+    ordering=('order',)
 
 class RuleItemAdmin(admin.ModelAdmin):
     pass
@@ -115,18 +116,25 @@ class RuleItemAdmin(admin.ModelAdmin):
 
 class AutomationRuleModelAdmin(admin.ModelAdmin):
     actions=['activate']
-    list_display = ('Identifier','Active','Action')
+    list_display = ('Identifier','Active','Action','printEvaluation')
     ordering=('-Active','Identifier')
     form = AutomationRuleForm
     
     inlines = (RuleItemInline,)
     
+    def printEvaluation(self,instance):
+        result=instance.evaluate()
+        if result==None:
+            result='Error - ' + instance.get_OnError_display()
+        return str(result)
+    printEvaluation.short_description = _("Current value")
+    
     def save_related(self, request, form, formsets, change):
         super(AutomationRuleModelAdmin, self).save_related(request, form, formsets, change)
-        if change:
-            AR = AutomationRuleModel.objects.get(Identifier=request.POST['Identifier'])
-            if AR.Active:
-                AR.execute()
+        #if change:
+        AR = AutomationRuleModel.objects.get(Identifier=request.POST['Identifier'])
+        if AR.Active:
+            AR.execute()
             
     def activate(self,request, queryset):
         selected_pk = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0]

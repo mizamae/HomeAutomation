@@ -239,9 +239,9 @@ class XMLParser(object):
         significand=(binnumber&~(-1<<23));
         if    (exponent    ==    128):
             if significand:
-                return    sign*float('NaN')  
+                return    None #sign*float('NaN')  
             else:
-                return    sign*float('inf')     
+                return    None #sign*float('inf')     
         elif    (exponent    ==    -127):
             if    (significand==0):    
                 return    sign    *    0.0
