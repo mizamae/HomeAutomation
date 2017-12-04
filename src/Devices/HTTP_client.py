@@ -196,7 +196,9 @@ class HTTP_requests():
                 PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" did not respond within the timeout margin (default 1 sec)")),Persistent=True)
                 #Devices.signals.Device_datagram_timeout.send(sender=None, Device=DV,Datagram=DatagramId)
             else:
-                PublishEvent(Severity=6,Text=str(_("Unexpected error in request_datagram:")) + str(sys.exc_info()[1]),Persistent=True)
+                DV.Error="Unexpected error"
+                DV.save(update_fields=["Error",])
+                PublishEvent(Severity=6,Text=str(_("Unexpected error in request_datagram: ")) + str(sys.exc_info()[1]),Persistent=True)
         if retries>0:
             retries-=1
             PublishEvent(Severity=2,Text=str(_("Retrying the request to "))+DV.DeviceName,Persistent=True)

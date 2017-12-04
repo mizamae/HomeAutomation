@@ -20,9 +20,9 @@ class HomeAutomationConfig(AppConfig):
         logger.debug('Process init: ' + str(os.getpid()) + '('+str(sys.argv[0])+ ')')
         singletaskingProcess=cache.get('single_tasking')
         if singletaskingProcess==None and 'gunicorn' in sys.argv[0]:
+            cache.set('single_tasking', process, 60)
             logger.info(BOOTING_MSG)
             logger.debug('Process '+str(process) + ' is a Gunicorn process')
-            cache.set('single_tasking', process, 60)
             logger.debug('SingleTaskingProcess ' + str(process) + '!!!!')
             cache.set(self.name, process, 60)
             import HomeAutomation.tasks

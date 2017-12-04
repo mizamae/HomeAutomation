@@ -648,7 +648,7 @@ class DIY4dot0_Databases(object):
                 lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
                 if lastTimestamp != None:
                     lastTimestamp=lastTimestamp.replace(microsecond=0)
-                    if lastTimestamp==TimeStamp.replace(microsecond=0):
+                    if lastTimestamp>=TimeStamp.replace(microsecond=0):
                         return
             except:
                 pass
@@ -685,7 +685,7 @@ class DIY4dot0_Databases(object):
                 lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
                 if lastTimestamp != None:
                     lastTimestamp=lastTimestamp.replace(microsecond=0)
-                    if lastTimestamp==TimeStamp.replace(microsecond=0):
+                    if lastTimestamp>=TimeStamp.replace(microsecond=0):
                         return
             except:
                 pass

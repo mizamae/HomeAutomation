@@ -38,23 +38,24 @@ class MainDeviceVarModel(models.Model):
     PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default='line')
     Units = models.CharField(max_length=10)
     
-    __original_Value = None
+    __previous_value = None
     
     def __str__(self):
         return self.Label
     
     def __init__(self, *args, **kwargs):
         super(MainDeviceVarModel, self).__init__(*args, **kwargs)
-        self.__original_Value = self.Value
+        self.__previous_value = self.Value
         
     def save(self, *args, **kwargs):
-        if self.Value != self.__original_Value and self.__original_Value != '':
+        if self.Value != self.__previous_value and self.__previous_value != '':
+            self.__previous_value = self.Value
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             timestamp=timezone.now()-datetime.timedelta(seconds=1) #para hora con info UTC
             registerDB.insert_VARs_register(TimeStamp=timestamp)
-            #logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__original_Value))
-        self.__original_Value = self.Value
+            #logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__previous_value))
+        self.__previous_value = self.Value
         super(MainDeviceVarModel, self).save(*args, **kwargs)
         
     def updateAutomationVars(self):
@@ -83,7 +84,7 @@ class MainDeviceVarModel(models.Model):
         
 @receiver(post_save, sender=MainDeviceVarModel, dispatch_uid="update_MainDeviceVarModel")
 def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
-    timestamp=timezone.now() #para hora con info UTC
+    
     registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     
@@ -93,7 +94,7 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
-    
+    timestamp=timezone.now() #para hora con info UTC
     registerDB.insert_VARs_register(TimeStamp=timestamp)
     instance.updateAutomationVars()
     
@@ -136,7 +137,7 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
         checkHourlySchedules()
     
 def checkHourlySchedules():
-    logger.info('Checking hourly schedules on process ' + str(os.getpid()))
+    #logger.info('Checking hourly schedules on process ' + str(os.getpid()))
     schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
     timestamp=datetime.datetime.now()
     #logger.info('Timestamp: ' + str(timestamp))
@@ -392,7 +393,7 @@ class AutomationRuleModel(models.Model):
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                IO.value=Action['IOValue']
+                IO.value=int(Action['IOValue'])
                 IO.save(update_fields=['value'])
             logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
         
