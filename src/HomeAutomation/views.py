@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 from django.utils import timezone
+import datetime
 import json
 import logging
 import sys
@@ -100,7 +101,79 @@ def settimezone(request):
         return HttpResponseRedirect(reverse('advancedDevice'))
     else:
         return render(request, 'timezones.html', {'timezones': pytz.common_timezones})
-    
+
+@user_passes_test(lambda u: u.has_perm('HomeAutomation.view_schedules'))
+def viewSchedules(request):
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        SCHDs=HomeAutomation.models.MainDeviceVarWeeklyScheduleModel.objects.all()
+        VARs=[]
+        for SCHD in SCHDs:
+            if not SCHD.Var in VARs:
+                VARs.append(SCHD.Var)
+        now=datetime.datetime.now()
+        return render(request,'schedulesList.html',
+                          {'DJNGO_HOUR':now.hour,'VARs':VARs,'SCHDs':SCHDs})   
+
+@user_passes_test(lambda u: u.has_perm('HomeAutomation.activate_schedule'))
+def activateSchedule(request,pk):
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        SCHD=HomeAutomation.models.MainDeviceVarWeeklyScheduleModel.objects.get(pk=pk)
+        SCHD.Active=True
+        SCHD.save()
+        return HttpResponseRedirect(reverse('viewSchedules'))
+
+@user_passes_test(lambda u: u.has_perm('HomeAutomation.edit_schedule'))
+def modifySchedule(request,pk,value,sense):
+    import decimal
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        SCHD=HomeAutomation.models.MainDeviceVarWeeklyScheduleModel.objects.get(pk=pk)
+        if value=='LValue':
+            if sense=='-':
+                SCHD.LValue-=decimal.Decimal.from_float(0.5)
+            else:
+                SCHD.LValue+=decimal.Decimal.from_float(0.5)
+            SCHD.save()
+        elif value=='HValue':
+            if sense=='-':
+                SCHD.HValue-=decimal.Decimal.from_float(0.5)
+            else:
+                SCHD.HValue+=decimal.Decimal.from_float(0.5)
+            SCHD.save()
+        elif value=='REFValue':
+            if SCHD.Var.Value==SCHD.HValue:
+                SCHD.Var.Value=SCHD.LValue
+            else:
+                SCHD.Var.Value=SCHD.HValue
+            SCHD.Var.save()
+            
+        return HttpResponseRedirect(reverse('viewSchedules'))
+
+@user_passes_test(lambda u: u.has_perm('HomeAutomation.view_rules'))
+def viewRules(request):
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        RULs=HomeAutomation.models.AutomationRuleModel.objects.all()
+                
+        return render(request,'rulesList.html',
+                          {'RULs':RULs})   
+        
+@user_passes_test(lambda u: u.has_perm('HomeAutomation.activate_rule'))
+def activateRule(request,pk):
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        RUL=HomeAutomation.models.AutomationRuleModel.objects.get(pk=pk)
+        RUL.Active=not RUL.Active
+        RUL.save()
+        return HttpResponseRedirect(reverse('viewRules'))
+        
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_device'))
 def DeleteDevice(request,devicename):
@@ -718,8 +791,9 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
 def AdvancedDevicepage(request,pk):
     import json
     DV=Devices.models.DeviceModel.objects.get(pk=pk)
+    LatestData=DV.getLatestData()
     return render(request, DV.Type.Code+'.html',
-        {'Device':DV})
+        {'Device':DV,'Latest':LatestData})
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('profiles.view_tracking'))

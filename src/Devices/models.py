@@ -132,6 +132,36 @@ class DeviceModel(models.Model):
             tables=str(self.pk)+'_'+str(DG.pk)
         return tables
     
+    def getLatestData(self):
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
+        if self.CustomLabels!='':
+            CustomLabels=json.loads(self.CustomLabels)
+        else:
+            CustomLabels=None
+        
+        Data={}
+        if len(DGs)>0 and CustomLabels!=None:
+            applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+            
+            for DG in DGs:
+                table=self.getRegistersTables(DG=DG)
+                vars=''
+                for name in CustomLabels[DG.Identifier]:
+                    vars+=',"'+name+'"'
+                sql='SELECT '+vars[1:]+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+                row=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+                if row != None:
+                    for i,name in enumerate(CustomLabels[DG.Identifier]):
+                        Data[CustomLabels[DG.Identifier][name]]=row[i]
+                else:
+                    for name in CustomLabels[DG.Identifier]:
+                        Data[CustomLabels[DG.Identifier][name]]=None
+        else:
+            Data=None
+        #print(Data)
+        return Data
+        
     def getDeviceVariables(self):
         DeviceVars=[]
         DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)

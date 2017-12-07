@@ -160,9 +160,16 @@
 	   </div>
 	   <div class="row">
         <div class="col-xs-6 col-md-3">
-	      <h2>{% trans "Spare" %}</h2>
-	      <p>{% trans "Nothing established yet..." %}</p>
+	      <h2>{% trans "Automation and control" %}</h2>
+	      <p>{% trans "Here you will be able to control all the automated aspects of your home environment such as heating/cooling, motorized curtains, etc." %}</p>
 	      <p>
+	      {% if perms.HomeAutomation.view_schedules %}
+	      <a class="btn btn-primary" href="{% url 'viewSchedules' %}" role="button">{% trans "Schedules" %} &raquo;</a>
+	      <a class="btn btn-primary" href="{% url 'viewRules' %}" role="button">{% trans "Automation rules" %} &raquo;</a>
+	      {% else %}
+	      <a class="btn btn-primary" href="" role="button" disabled=True>{% trans "Schedules" %} &raquo;</a>
+	      <a class="btn btn-primary" href="" role="button" disabled=True>{% trans "Automation rules" %} &raquo;</a>
+	      {% endif %}
 	      </p>
 	    </div>
 	    {% if user.is_superuser %}

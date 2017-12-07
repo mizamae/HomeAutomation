@@ -6,6 +6,8 @@ import HomeAutomation.models
 import Devices.GlobalVars
 import Devices.BBDD
 
+from Events.consumers import PublishEvent
+
 logger = logging.getLogger("project")
 
 scheduler = BackgroundScheduler()                    
@@ -16,14 +18,12 @@ def compactRegistersDB():
     rows=AppDB.registersDB.retrieve_DB_structure(fields='*')
     import datetime
     now=datetime.datetime.now()
-    size = os.path.getsize(Devices.GlobalVars.REGISTERS_DB_PATH.replace('_XYEARX_', str(now.year)))
-    logger.info('The DB size was ' + str(size/1000) + ' kB') 
+    sizep = os.path.getsize(Devices.GlobalVars.REGISTERS_DB_PATH.replace('_XYEARX_', str(now.year)))
     for row in rows:
         table_name=row[1]
-        logger.info('Compacting table '+ table_name+ ' on process ' + str(os.getpid()))
         AppDB.registersDB.compact_table(table=table_name)
     size = os.path.getsize(Devices.GlobalVars.REGISTERS_DB_PATH.replace('_XYEARX_', str(now.year)))
-    logger.info('The DB size after compactation is ' + str(size/1000) + ' kB') 
+    PublishEvent(Severity=0,Text='The DB size is reduced from ' +str(sizep/1000) + ' to ' + str(size/1000) + ' kB after compactation',Persistent=True)
     
 def start_registersDBcompactingTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00

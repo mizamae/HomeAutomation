@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-28 14:07+0100\n"
+"POT-Creation-Date: 2017-12-07 10:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,7 +51,7 @@ msgid "Error in create_mainVars_table: "
 msgstr ""
 
 #: HTTP_client.py:180 HTTP_client.py:184 HTTP_client.py:189 HTTP_client.py:196
-#: callbacks.py:101
+#: callbacks.py:103
 msgid "The device "
 msgstr "El dispositivo"
 
@@ -75,11 +75,13 @@ msgstr " respondió con el codigo HTTP "
 msgid " did not respond within the timeout margin (default 1 sec)"
 msgstr " no respondió en el tiempo establecido (1 seg)"
 
-#: HTTP_client.py:199
-msgid "Unexpected error in request_datagram:"
+#: HTTP_client.py:201
+#, fuzzy
+#| msgid "Unexpected error in request_datagram:"
+msgid "Unexpected error in request_datagram: "
 msgstr "Error inesperado en la funcion request_datagram:"
 
-#: HTTP_client.py:202
+#: HTTP_client.py:204
 msgid "Retrying the request to "
 msgstr "Enviada solicitud a "
 
@@ -111,11 +113,11 @@ msgstr "Definir las etiquetas particularizadas para las variables"
 msgid "Devices"
 msgstr "Dispositivos"
 
-#: callbacks.py:95
+#: callbacks.py:97
 msgid " updated OK"
 msgstr " atualizado OK"
 
-#: callbacks.py:101
+#: callbacks.py:103
 msgid " does not have any Beacon associated."
 msgstr " no tiene ningun Beacon asociado."
 
@@ -343,35 +345,39 @@ msgstr "Linea suavizada"
 msgid "Bars"
 msgstr "Columnas"
 
-#: models.py:344
+#: models.py:326
+msgid "Area"
+msgstr ""
+
+#: models.py:345
 msgid "Datagram item"
 msgstr "Elemento de trama"
 
-#: models.py:345
+#: models.py:346
 msgid "Datagram items"
 msgstr "Elementos de trama"
 
-#: models.py:412
+#: models.py:413
 msgid "Datagram"
 msgstr "Trama"
 
-#: models.py:413
+#: models.py:414
 msgid "Datagrams"
 msgstr "Tramas"
 
-#: models.py:504
+#: models.py:505
 msgid "Item"
 msgstr "Elemento"
 
-#: models.py:505
+#: models.py:506
 msgid "Items"
 msgstr "Elementos"
 
-#: models.py:531
+#: models.py:532
 msgid "Command"
 msgstr "Orden"
 
-#: models.py:532
+#: models.py:533
 msgid "Commands"
 msgstr "Órdenes"
 

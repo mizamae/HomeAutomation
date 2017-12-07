@@ -106,6 +106,20 @@ class MainDeviceVarWeeklyScheduleModel(models.Model):
     HValue = models.DecimalField(max_digits=6, decimal_places=2)
     
     Days = models.ManyToManyField('HomeAutomation.inlineDaily',blank=True)
+    
+    def get_today_pattern(self):
+        timestamp=datetime.datetime.now()
+        weekDay=timestamp.weekday()
+        hour=timestamp.hour
+        dailySchedules=self.inlinedaily_set.all()
+        pattern=[]
+        for daily in dailySchedules:
+            if daily.Day==weekDay:
+                for i in range(0,24):
+                    Setpoint=getattr(daily,'Hour'+str(i))
+                    pattern.append(Setpoint)
+                return pattern
+        return None
         
     def get_formset(self):
         from django.forms import inlineformset_factory
@@ -115,6 +129,11 @@ class MainDeviceVarWeeklyScheduleModel(models.Model):
         verbose_name = _('Main device var weekly schedule')
         verbose_name_plural = _('Main device var weekly schedules') 
         unique_together = (('Label', 'Var'))
+        permissions = (
+            ("view_schedules", "Can see available automation schedules"),
+            ("activate_schedule", "Can change the state of the schedules"),
+            ("edit_schedule", "Can create and edit a schedule")
+        )
 
 @receiver(post_save, sender=MainDeviceVarWeeklyScheduleModel, dispatch_uid="update_MainDeviceVarWeeklyScheduleModel")
 def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kwargs):
@@ -353,6 +372,12 @@ class AutomationRuleModel(models.Model):
     
     def __str__(self):
         return self.Identifier
+    
+    def printEvaluation(self):
+        result=self.evaluate()
+        if result==None:
+            result='Error - ' + self.get_OnError_display()
+        return str(result)
         
     def evaluate(self):
         if self.Active:
@@ -382,8 +407,12 @@ class AutomationRuleModel(models.Model):
         else:
             return ''
     
-    def execute(self):
-        result=self.evaluate()
+    def execute(self,error=None):
+        if error==None:
+            result=self.evaluate()
+        else:
+            result=None
+            
         if result!=None:
             result=eval(result)
         else:
@@ -396,10 +425,22 @@ class AutomationRuleModel(models.Model):
                 IO.value=int(Action['IOValue'])
                 IO.save(update_fields=['value'])
             logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
-        
+        elif result==False:
+            Action=json.loads(self.Action)
+            if Action['IO']!=None:
+                IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
+                IO.value=int(not int(Action['IOValue']))
+                IO.save(update_fields=['value'])
+            logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
+            
     class Meta:
         verbose_name = _('Automation rule')
         verbose_name_plural = _('Automation rules')
+        permissions = (
+            ("view_rules", "Can see available automation rules"),
+            ("activate_rules", "Can change the state of the rules"),
+            ("edit_rules", "Can create and edit a rule")
+        )
         
 @receiver(post_save, sender=AutomationRuleModel, dispatch_uid="update_AutomationRuleModel")
 def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):    
@@ -407,3 +448,5 @@ def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):
         logger.info('Se ha modificado la regla de automatizacion ' + str(instance.Identifier))
     else:
         logger.info('Se ha creado la regla de automatizacion ' + str(instance.Identifier))
+    if instance.Active==False:
+        instance.execute(error=True)

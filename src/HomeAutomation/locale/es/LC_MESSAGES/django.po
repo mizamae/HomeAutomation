@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-28 14:07+0100\n"
+"POT-Creation-Date: 2017-12-07 10:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:22 admin.py:69
+#: admin.py:22 admin.py:69 admin.py:130
 msgid "Current value"
 msgstr "Valor actual"
 
@@ -30,7 +30,7 @@ msgstr "Consigna actual"
 msgid "Set as active schedule"
 msgstr "Establecer como programación activa"
 
-#: admin.py:138 forms.py:132
+#: admin.py:146 forms.py:147
 msgid "Activate the rule"
 msgstr "Activar la regla"
 
@@ -102,65 +102,107 @@ msgstr "Valor de histéresis"
 msgid "Operator with the next rule"
 msgstr "Operador para la siguiente regla"
 
-#: forms.py:100
+#: forms.py:101
+#, fuzzy
+#| msgid "This field cannot be left empty if 'Constant value' is checked"
+msgid "This field cannot be left empty if 'IsConstant' has been selected"
+msgstr ""
+"Este campo no se puede dejar vacío si 'El segundo término es una constante' "
+"está seleccionado"
+
+#: forms.py:104
+#, fuzzy
+#| msgid "This field cannot be left empty if 'Constant value' is checked"
+msgid "This field cannot be left empty if 'IsConstant' is not selected"
+msgstr ""
+"Este campo no se puede dejar vacío si 'El segundo término es una constante' "
+"está seleccionado"
+
+#: forms.py:114
 msgid "Activate output on Main"
 msgstr "Activar salida en la unidad Principal"
 
-#: forms.py:101
+#: forms.py:115
 msgid "Send command to a device"
 msgstr "Enviar orden a un dispositivo"
 
-#: forms.py:102
+#: forms.py:116
 msgid "Send an email"
 msgstr "Enviar un email"
 
-#: forms.py:105
+#: forms.py:117 models.py:266
+msgid "None"
+msgstr "Ninguno"
+
+#: forms.py:120
 msgid "Select the action"
 msgstr "Selecciona la acción"
 
-#: forms.py:106
+#: forms.py:121
 msgid "Select the output"
 msgstr "Selecciona la salida"
 
-#: forms.py:107
+#: forms.py:122
 msgid "Select the output value when the rule is True"
 msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
 
-#: forms.py:108
+#: forms.py:123
 msgid "Select the device to send the order to"
 msgstr "Selecciona el dispositivo al que enviar la orden"
 
-#: forms.py:109
+#: forms.py:124
 msgid "Select the order to send"
 msgstr "Selecciona la orden a enviar"
 
-#: forms.py:131
+#: forms.py:146
 msgid "Set the name for the automation rule"
 msgstr "Introduce el nombre de la regla de automatización"
 
-#: forms.py:142
+#: forms.py:148
+#, fuzzy
+#| msgid "Select the output value when the rule is True"
+msgid "Select the output value in case of error"
+msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
+
+#: forms.py:149
+#, fuzzy
+#| msgid "Enter the previous rule to be chained"
+msgid "Select the previous rule to be chained"
+msgstr "Selecciona la regla anterior a encadenar"
+
+#: forms.py:151
+#, fuzzy
+#| msgid "Enter the operator between the previous rule and this one"
+msgid "Select the operator between the previous rule and this one"
+msgstr "Selecciona el operador entre la regla anterior y esta"
+
+#: forms.py:162
 msgid "Save"
 msgstr "Guardar"
 
-#: forms.py:158
+#: forms.py:176
+#, fuzzy
+#| msgid "This field cannot be left empty if 'Constant value' is checked"
+msgid "This field cannot be left empty if a previous rule has been selected"
+msgstr ""
+"Este campo no se puede dejar vacío si 'El segundo término es una constante' "
+"está seleccionado"
+
+#: forms.py:181
 msgid ""
 "This field cannot be left empty if 'Activate output on Main' is selected as "
 "action"
 msgstr ""
-"Este campo no se puede dejar vacío si 'Activar salida de la unidad Principal' está seleccionada como "
-"acción"
+"Este campo no se puede dejar vacío si 'Activar salida de la unidad "
+"Principal' está seleccionada como acción"
 
-#: forms.py:163 forms.py:166
+#: forms.py:186 forms.py:189
 msgid ""
 "This field cannot be left empty if Send command to a device is selected as "
 "action"
 msgstr ""
-"Este campo no se puede dejar vacío si 'Mandar una orden a un dispositivo' está seleccionada como "
-"acción"
-
-#: forms.py:172
-msgid "This field cannot be left empty if 'Constant value' is checked"
-msgstr "Este campo no se puede dejar vacío si 'El segundo término es una constante' está seleccionado"
+"Este campo no se puede dejar vacío si 'Mandar una orden a un dispositivo' "
+"está seleccionada como acción"
 
 #: models.py:26
 msgid "Float"
@@ -182,131 +224,131 @@ msgstr "Linea suavizada"
 msgid "Bars"
 msgstr "Columnas"
 
-#: models.py:80
+#: models.py:33
+msgid "Area"
+msgstr ""
+
+#: models.py:82
 msgid "Main device var"
 msgstr "Variable de la unidad Principal"
 
-#: models.py:81
+#: models.py:83
 msgid "Main device vars"
 msgstr "Variables de la unidad principal"
 
-#: models.py:91
+#: models.py:93
 msgid "Variable "
 msgstr "Variable "
 
-#: models.py:91
+#: models.py:93
 msgid " has changed. Current value is "
 msgstr " ha cambiado. El valor actual es "
 
-#: models.py:113
+#: models.py:129
 msgid "Main device var weekly schedule"
 msgstr "Programación semanal de variables de la unidad Principal"
 
-#: models.py:114
+#: models.py:130
 msgid "Main device var weekly schedules"
 msgstr "Programaciones semanales de variables de la unidad Principal"
 
-#: models.py:123
+#: models.py:144
 msgid "The weekly schedule "
 msgstr "La programación semanal "
 
-#: models.py:123
+#: models.py:144
 msgid " has been modified."
 msgstr " ha sido modificada."
 
-#: models.py:170
+#: models.py:191
 msgid "Monday"
 msgstr "Lunes"
 
-#: models.py:171
+#: models.py:192
 msgid "Tuesday"
 msgstr "Martes"
 
-#: models.py:172
+#: models.py:193
 msgid "Wednesday"
 msgstr "Miércoles"
 
-#: models.py:173
+#: models.py:194
 msgid "Thursday"
 msgstr "Jueves"
 
-#: models.py:174
+#: models.py:195
 msgid "Friday"
 msgstr "Viernes"
 
-#: models.py:175
+#: models.py:196
 msgid "Saturday"
 msgstr "Sábado"
 
-#: models.py:176
+#: models.py:197
 msgid "Sunday"
 msgstr "Domingo"
 
-#: models.py:179
+#: models.py:200
 msgid "LOW"
 msgstr "BAJO"
 
-#: models.py:180
+#: models.py:201
 msgid "HIGH"
 msgstr "ALTO"
 
-#: models.py:215
+#: models.py:236
 msgid "Main device var hourly schedule"
 msgstr "Programación horaria de variables de la unidad Principal"
 
-#: models.py:216
+#: models.py:237
 msgid "Main device var hourly schedules"
 msgstr "Programaciones horarias de variables de la unidad Principal"
 
-#: models.py:232
+#: models.py:253
 msgid "Automation variable"
 msgstr "Variable de automatización"
 
-#: models.py:233
+#: models.py:254
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:244
-msgid "None"
-msgstr "Ninguno"
-
-#: models.py:245
+#: models.py:267
 msgid "NOT"
 msgstr ""
 
-#: models.py:256
+#: models.py:278 models.py:355
 msgid "AND"
 msgstr ""
 
-#: models.py:257
+#: models.py:279 models.py:356
 msgid "OR"
 msgstr ""
 
-#: models.py:260
+#: models.py:282
 msgid "Order of execution"
 msgstr "Orden de ejecución"
 
-#: models.py:327
+#: models.py:350
 msgid "Automation expression"
 msgstr "Expresión de automatización"
 
-#: models.py:328
+#: models.py:351
 msgid "Automation expressions"
 msgstr "Expresiones de automatización"
 
-#: models.py:370
-msgid "The rule "
-msgstr "La regla "
+#: models.py:359
+msgid "False"
+msgstr ""
 
-#: models.py:370
-msgid " evaluated to True. Action executed."
-msgstr " se evaluón como Verdadera. La acción se ha ejecutado."
+#: models.py:360
+msgid "True"
+msgstr ""
 
-#: models.py:373
+#: models.py:431
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:374
+#: models.py:432
 msgid "Automation rules"
 msgstr "Reglas de automatización"
 
@@ -318,11 +360,11 @@ msgstr "Español"
 msgid "English"
 msgstr "Inglés"
 
-#~ msgid "Enter the previous rule to be chained"
-#~ msgstr "Selecciona la regla anterior a encadenar"
+#~ msgid "The rule "
+#~ msgstr "La regla "
 
-#~ msgid "Enter the operator between the previous rule and this one"
-#~ msgstr "Selecciona el operador entre la regla anterior y esta"
+#~ msgid " evaluated to True. Action executed."
+#~ msgstr " se evaluón como Verdadera. La acción se ha ejecutado."
 
 #~ msgid "Enter the first variable in the rule"
 #~ msgstr "Selecciona la primera variable de la regla"

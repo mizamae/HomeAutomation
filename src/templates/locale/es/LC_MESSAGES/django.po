@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-28 14:07+0100\n"
+"POT-Creation-Date: 2017-12-07 10:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: 3xDHT22.html:43 GPIOs.html:50 advanced_device.html:95
+#: 3xDHT22.html:43 GPIOs.html:50 advanced_device.html:95 rulesList.html:43
+#: schedulesList.html:52
 msgid "Description"
 msgstr "Descripci&oacute;n"
 
@@ -68,7 +69,7 @@ msgstr ""
 "En la siguiente tabla, puedes encontrar todas las E/S configuradas en la "
 "unidad Master."
 
-#: GPIOs.html:51
+#: GPIOs.html:51 schedulesList.html:55
 msgid "Current value"
 msgstr "Valor actual"
 
@@ -164,7 +165,7 @@ msgid " finished OK"
 msgstr " termin&oacute; OK"
 
 #: admin/customLabels.html:11 reportItemsList.html:75 reqconfdevice.html:16
-#: showdevices.html:266
+#: rulesList.html:71 schedulesList.html:116 showdevices.html:266
 msgid "Return to Main"
 msgstr "Volver "
 
@@ -234,7 +235,7 @@ msgstr "Seleccionar zona horaria"
 
 #: advanced_device.html:76
 msgid "Where is a user"
-msgstr ""
+msgstr "D&oacute;nde est&aacute; un usuario"
 
 #: advanced_device.html:77
 msgid "Here you can see the GPS position of a user (if provided)."
@@ -264,7 +265,7 @@ msgstr "Marcar como le&iacute;da"
 msgid "OK"
 msgstr ""
 
-#: advanced_device.html:120 home_device.html:186
+#: advanced_device.html:120 home_device.html:193
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
 
@@ -274,7 +275,7 @@ msgstr "Dispositivo registrado correctamente con nombre"
 
 #: confDatagramdevice.html:8
 msgid "Setup the custom labels for the variables"
-msgstr ""
+msgstr "Define las etiquetas para las variables"
 
 #: confDatagramdevice.html:11 reqconfdevice.html:18
 msgid "Something failed"
@@ -395,22 +396,34 @@ msgid "View plots"
 msgstr "Ver gr&aacute;ficos"
 
 #: home_device.html:163
-msgid "Spare"
-msgstr "Reserva"
+msgid "Automation and control"
+msgstr "Automatizaci&oacute;n y control"
 
 #: home_device.html:164
-msgid "Nothing established yet..."
-msgstr "No hay nada definido todavia..."
+msgid ""
+"Here you will be able to control all the automated aspects of your home "
+"environment such as heating/cooling, motorized curtains, etc."
+msgstr ""
+"Aqu&iacute; puedes controlar todos los aspectos automatizados de tu casa "
+"como la calefacci&oacute;n, persianas motorizadas, etc."
 
-#: home_device.html:170
+#: home_device.html:167 home_device.html:170
+msgid "Schedules"
+msgstr "Programaciones"
+
+#: home_device.html:168 home_device.html:171
+msgid "Automation rules"
+msgstr "Reglas de autotatizaci&oacute;n"
+
+#: home_device.html:177
 msgid "Advanced features"
 msgstr "Acciones avanzadas"
 
-#: home_device.html:171
+#: home_device.html:178
 msgid "Here you can do some advanced stuff."
 msgstr "Aqu&iacute; puedes hacer algunas cosillas mas avanzadas. "
 
-#: home_device.html:173
+#: home_device.html:180
 msgid "Let me in"
 msgstr "Dejame entrar"
 
@@ -653,6 +666,46 @@ msgstr "No se ha encontrado ning&uacute;n dispositivo"
 msgid "Back"
 msgstr "Volver"
 
+#: rulesList.html:32
+msgid "List of automation rules"
+msgstr "Lista de reglas de automatizaci&oacute;n"
+
+#: rulesList.html:44 schedulesList.html:53
+msgid "Status"
+msgstr "Estado"
+
+#: rulesList.html:45 schedulesList.html:54
+msgid "Activate"
+msgstr "Activar"
+
+#: rulesList.html:46
+msgid "Current evaluation"
+msgstr "Evaluaci&oacute;n actual"
+
+#: rulesList.html:54 schedulesList.html:66
+msgid "Active"
+msgstr "Activa"
+
+#: rulesList.html:59 schedulesList.html:72
+msgid "Inactive"
+msgstr "Inactiva"
+
+#: schedulesList.html:32
+msgid "List of schedules"
+msgstr "Lista de las programaciones"
+
+#: schedulesList.html:37
+msgid "Variable "
+msgstr ""
+
+#: schedulesList.html:56
+msgid "LOW value"
+msgstr "Valor BAJO"
+
+#: schedulesList.html:57
+msgid "HIGH value"
+msgstr "Valor ALTO"
+
 #: showdevices.html:32
 msgid "Device List"
 msgstr "Lista de dispositivos"
@@ -784,6 +837,12 @@ msgstr "Precisi&oacute;n [m]"
 #: trackUsers.html:51
 msgid "Last update"
 msgstr "Ultima actualizaci&oacute;n"
+
+#~ msgid "Spare"
+#~ msgstr "Reserva"
+
+#~ msgid "Nothing established yet..."
+#~ msgstr "No hay nada definido todavia..."
 
 #~ msgid "Load the configuration of the GPIOs from XML"
 #~ msgstr "Cargar la configuraci&oacute;n de las E/S desde el XML"

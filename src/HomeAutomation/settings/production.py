@@ -79,7 +79,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': join(LOGFILE_ROOT, 'django.log'),
-            'maxBytes': 100000,
+            'maxBytes': 1000000,
             'backupCount': 1,
             'formatter': 'verbose'
         },

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-28 14:07+0100\n"
+"POT-Creation-Date: 2017-12-07 10:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,39 +22,49 @@ msgstr ""
 msgid "I/Os manager"
 msgstr "Gestor de E/S"
 
-#: models.py:53
+#: models.py:55
 msgid "Output"
 msgstr "Salida"
 
-#: models.py:54
+#: models.py:56
 msgid "Input"
 msgstr "Entrada"
 
-#: models.py:55
+#: models.py:57
 msgid "Sensor"
 msgstr "Sensor"
 
-#: models.py:58
+#: models.py:60
 msgid "LOW"
 msgstr "BAJO"
 
-#: models.py:59
+#: models.py:61
 msgid "HIGH"
 msgstr "ALTO"
 
-#: models.py:116
+#: models.py:80
+msgid "The value of the GPIO "
+msgstr ""
+
+#: models.py:80
+#, fuzzy
+#| msgid " has changed to "
+msgid " has changed. Now it is "
+msgstr " ha cambiado a "
+
+#: models.py:138
 msgid "Input/Output"
 msgstr "Entrada/Salida"
 
-#: models.py:117
+#: models.py:139
 msgid "Inputs/Outputs"
 msgstr "Entradas/Salidas"
 
-#: signal_handlers.py:50
+#: signal_handlers.py:49
 msgid "Received notification that the input "
 msgstr "Notificación de que la entrada "
 
-#: signal_handlers.py:50
+#: signal_handlers.py:49
 msgid " has changed to "
 msgstr " ha cambiado a "
 
