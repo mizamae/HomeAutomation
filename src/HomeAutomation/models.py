@@ -302,7 +302,8 @@ class RuleItem(models.Model):
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
         local_tz=get_localzone()
         now = timezone.now()
-        evaluable=''
+        evaluableTRUE=''
+        evaluableFALSE=''
         sql='SELECT timestamp,"'+self.Var1.Tag+'" FROM "'+ self.Var1.Table +'" WHERE "'+self.Var1.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
         timestamp1,value1=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
         
@@ -336,15 +337,19 @@ class RuleItem(models.Model):
             value2=self.Constant
                 
         if self.Operator12.find('>')>=0:
-            histeresis='+' + str(self.Var2Hyst)
+            histeresisTRUE='+' + str(self.Var2Hyst)
+            histeresisFALSE='-' + str(self.Var2Hyst)
         elif self.Operator12.find('<')>=0:
-            histeresis='-' + str(self.Var2Hyst)
+            histeresisTRUE='-' + str(self.Var2Hyst)
+            histeresisFALSE='+' + str(self.Var2Hyst)
         else:
-            histeresis=''
+            histeresisTRUE=''
+            histeresisFALSE=''
         
-        evaluable+='('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresis + ')'
+        evaluableTRUE+='('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisTRUE + ')'
+        evaluableFALSE+='not ('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisFALSE + ')'
         
-        return eval(evaluable)
+        return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
             
     class Meta:
         verbose_name = _('Automation expression')
@@ -379,53 +384,84 @@ class AutomationRuleModel(models.Model):
             result='Error - ' + self.get_OnError_display()
         return str(result)
         
+    def switchBOOLOperator(self,operator):
+        if operator=='&':
+            return '|'
+        elif operator=='|':
+            return '&'
+        else:
+            return None
+            
     def evaluate(self):
         if self.Active:
-            evaluable=''
+            evaluableTRUE=''
+            evaluableFALSE=''
             if self.PreviousRule!=None:
-                evaluable+=str(self.PreviousRule.evaluate()) + ' ' + self.OperatorPrev
+                evaluableTRUE+=str(self.PreviousRule.evaluate()['TRUE']) + ' ' + self.OperatorPrev
+                evaluableFALSE+=str(self.PreviousRule.evaluate()['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
             RuleItems=RuleItem.objects.filter(Rule=self.pk).order_by('order')
             if len(RuleItems):
                 for item in RuleItems:
-                    result=item.evaluate()
-                    if result!=None:
+                    resultTRUE=item.evaluate()['TRUE']
+                    if resultTRUE!=None:
                         if item.Operator3!=None:
-                            evaluable+=' ' + str(result) + ' ' + item.Operator3
+                            evaluableTRUE+=' ' + str(resultTRUE) + ' ' + item.Operator3
                         else:
-                            evaluable+=' ' + str(result)
+                            evaluableTRUE+=' ' + str(resultTRUE)
                     else:
-                        return None
-                if len(evaluable)>1:
-                    if evaluable[-1]=='&' or evaluable[-1]=='|':
-                        evaluable=evaluable[:-1]
+                        evaluableTRUE = None
+                    
+                    resultFALSE=item.evaluate()['FALSE']
+                    if resultFALSE!=None:
+                        if item.Operator3!=None:
+                            evaluableFALSE+=' ' + str(resultFALSE) + ' ' + self.switchBOOLOperator(operator=item.Operator3)
+                        else:
+                            evaluableFALSE+=' ' + str(resultFALSE)
+                    else:
+                        evaluableFALSE = None
+                    
+                if len(evaluableTRUE)>1:
+                    if evaluableTRUE[-1]=='&' or evaluableTRUE[-1]=='|':
+                        evaluableTRUE=evaluableTRUE[:-1]
+                if len(evaluableFALSE)>1:
+                    if evaluableFALSE[-1]=='&' or evaluableFALSE[-1]=='|':
+                        evaluableFALSE=evaluableFALSE[:-1]
                 try:
-                    return evaluable
+                    return {'TRUE':evaluableTRUE,'FALSE':evaluableFALSE}
                 except:
-                    return None
+                    return {'TRUE':None,'FALSE':None}
             else:
-                return None
+                return {'TRUE':None,'FALSE':None}
         else:
             return ''
     
     def execute(self,error=None):
         if error==None:
-            result=self.evaluate()
+            resultTRUE=self.evaluate()['TRUE']
         else:
-            result=None
-            
-        if result!=None:
-            result=eval(result)
+            resultTRUE=None
+        if resultTRUE!=None:
+            resultTRUE=eval(resultTRUE)
         else:
-            result=eval(self.get_OnError_display())
+            resultTRUE=eval(self.get_OnError_display())
+        
+        if error==None:
+            resultFALSE=self.evaluate()['FALSE']
+        else:
+            resultFALSE=None
+        if resultFALSE!=None:
+            resultFALSE=eval(resultFALSE)
+        else:
+            resultFALSE=eval('not ' + self.get_OnError_display())
             
-        if result==True:
+        if resultTRUE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 IO.value=int(Action['IOValue'])
                 IO.save(update_fields=['value'])
             logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
-        elif result==False:
+        elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])

@@ -76,17 +76,17 @@
                     <td class="text-center">---</td>
                     {% endif %}
                     <td>
-                    	<div class=" col-xs-12 text-center">{{ SCHD.LValue }}{{ SCHD.Var.Units }}</div>
-	                    <div class="col-xs-12">
-		                    <a class="col-xs-6 btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'LValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
-		                    <a class="col-xs-6 btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'LValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
+                    	<div class=" row text-center">{{ SCHD.LValue }}{{ SCHD.Var.Units }}</div>
+	                    <div class="row text-center">
+		                    <a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'LValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
+		                    <a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'LValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
 	                   	</div>
                     </td>
                     <td>
-                    	<div class=" col-xs-12 text-center">{{ SCHD.HValue }}{{ SCHD.Var.Units }}</div>
-	                    <div class="col-xs-12">
-		                    <a class="col-xs-6 btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'HValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
-		                    <a class="col-xs-6 btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'HValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
+                    	<div class="row text-center">{{ SCHD.HValue }}{{ SCHD.Var.Units }}</div>
+	                    <div class="row text-center">
+		                    <a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'HValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
+		                    <a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'HValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
 	                   	</div>
                     </td>
                    </tr>
@@ -96,17 +96,21 @@
                    		{% for hourValue in SCHD.get_today_pattern %}
                    			<div class="col-xs-1">
                    			{% if forloop.counter0 == DJNGO_HOUR and SCHD.Active %}
+                   			{% with border="border-style: double" %}
                    				{% if SCHD.Var.Value == SCHD.HValue %}
-                   				<a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'REFValue' '-' %}" style="font-size:16px;background-color:green;">{{ hourValue }}</a>
+                   				<a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'REFValue' '-' %}" style="font-size: 16px;background-color:green; {{ border }} ">{{ hourValue }}</a>
                    				{% else %}
-                   				<a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'REFValue' '+' %}" style="font-size:16px;background-color:red;">{{ hourValue }}</a>
+                   				<a class="btn btn-default" href="{% url 'modifySchedule' SCHD.pk 'REFValue' '+' %}" style="font-size: 16px;background-color:red; {{ border }}">{{ hourValue }}</a>
                    				{% endif %}
+                   			{% endwith %}
                    			{% else %}
+                   			{% with border="" %}
                    				{% if hourValue == 1 %}
-                   				<div class="short-div text-center" style="background-color:green;">{{ hourValue }}</div>
+                   				<div class="short-div text-center" style="background-color:green; {{ border }} ">{{ hourValue }}</div>
                    				{% else %}
-                   				<div class="short-div text-center" style="background-color:red;">{{ hourValue }}</div>
+                   				<div class="short-div text-center" style="background-color:red; {{ border }}">{{ hourValue }}</div>
                    				{% endif %}
+                   			{% endwith %}
                    			{% endif %}
                    				
                    				<div class="short-div text-center">{{ forloop.counter0 }}h</div>

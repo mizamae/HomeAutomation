@@ -107,7 +107,7 @@ def viewSchedules(request):
     if request.method == 'POST':
         return HttpResponseRedirect(reverse('home'))
     else:
-        SCHDs=HomeAutomation.models.MainDeviceVarWeeklyScheduleModel.objects.all()
+        SCHDs=HomeAutomation.models.MainDeviceVarWeeklyScheduleModel.objects.all().order_by('-Active')
         VARs=[]
         for SCHD in SCHDs:
             if not SCHD.Var in VARs:
@@ -159,7 +159,7 @@ def viewRules(request):
     if request.method == 'POST':
         return HttpResponseRedirect(reverse('home'))
     else:
-        RULs=HomeAutomation.models.AutomationRuleModel.objects.all()
+        RULs=HomeAutomation.models.AutomationRuleModel.objects.all().order_by('-Active')
                 
         return render(request,'rulesList.html',
                           {'RULs':RULs})   
