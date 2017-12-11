@@ -154,6 +154,7 @@
     	{
 	    	djangoData = JSON.parse('{{ chart|safe }}');
 	    	var i;
+            var totalTime={{ Form.toDate.value|date:'U' }}-{{ Form.fromDate.value|date:'U' }};
 	    	var base=document.getElementById('base');
 	    	var buttonINCHeight=document.createElement('a');
 	    	buttonINCHeight.className="btn btn-default btn-xl";
@@ -334,7 +335,7 @@
 				    					if (stats_data[stats_labels[k]].length>0){var value=stats_data[stats_labels[k]][j-1][l];}
 				    					else{var value=null;}
 				    						
-			    						text=text.concat(stats_labels[k],' value: ',value);
+			    						text=text.concat(stats_labels[k],' value: ',value,' [s] (',Math.round(value/totalTime*100*100)/100,'%)');
 				    					
 				    					item.appendChild(document.createTextNode(text));
 				    					stats_list.appendChild(item);

@@ -314,7 +314,7 @@ class RuleItem(models.Model):
             if (now-timestamp1>datetime.timedelta(seconds=2.5*self.Var1.Sample)):
                 logger.warning('The rule ' + str(self) + ' was evaluated with data older than expected')
                 logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' was ' + str(timestamp1))
-                return None
+                return {'TRUE':None,'FALSE':None}
         
         if self.Var1.BitPos!=None:
             value1=value1 & (1<<self.Var1.BitPos) 
@@ -329,7 +329,7 @@ class RuleItem(models.Model):
                 if (now-timestamp2>datetime.timedelta(seconds=2.5*self.Var2.Sample)):
                     logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
                     logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' was ' + str(timestamp2))
-                    return None
+                    return {'TRUE':None,'FALSE':None}
                     
             if self.Var2.BitPos!=None:
                 value2=value2 & (1<<self.Var2.BitPos)
@@ -349,7 +349,10 @@ class RuleItem(models.Model):
         evaluableTRUE+='('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisTRUE + ')'
         evaluableFALSE+='not ('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisFALSE + ')'
         
-        return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
+        try:
+            return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
+        except:
+            return {'TRUE':None,'FALSE':None}
             
     class Meta:
         verbose_name = _('Automation expression')
@@ -410,6 +413,8 @@ class AutomationRuleModel(models.Model):
                             evaluableTRUE+=' ' + str(resultTRUE)
                     else:
                         evaluableTRUE = None
+                        text='The evaluableTRUE of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)
+                        PublishEvent(Severity=0,Text=text,Persistent=True)
                     
                     resultFALSE=item.evaluate()['FALSE']
                     if resultFALSE!=None:
@@ -419,6 +424,8 @@ class AutomationRuleModel(models.Model):
                             evaluableFALSE+=' ' + str(resultFALSE)
                     else:
                         evaluableFALSE = None
+                        text='The evaluableFALSE of rule ' + self.Identifier + ' evaluated to Error on item '+str(item)
+                        PublishEvent(Severity=0,Text=text,Persistent=True)
                     
                 if len(evaluableTRUE)>1:
                     if evaluableTRUE[-1]=='&' or evaluableTRUE[-1]=='|':
@@ -460,14 +467,18 @@ class AutomationRuleModel(models.Model):
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 IO.value=int(Action['IOValue'])
                 IO.save(update_fields=['value'])
-            logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
+            #logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
+            text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
+            PublishEvent(Severity=0,Text=text)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 IO.value=int(not int(Action['IOValue']))
                 IO.save(update_fields=['value'])
-            logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
+            #logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
+            text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
+            PublishEvent(Severity=0,Text=text)
             
     class Meta:
         verbose_name = _('Automation rule')

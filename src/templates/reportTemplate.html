@@ -155,6 +155,7 @@
     	{
 	    	djangoData = JSON.parse('{{ reportData|safe }}').charts;
 	    	var i;
+            var totalTime={{ toDate|date:'U' }}-{{ fromDate|date:'U' }};
 	    	var base=document.getElementById('base');
 	    	var buttonINCHeight=document.createElement('a');
 	    	buttonINCHeight.className="btn btn-default btn-xl";
@@ -243,7 +244,8 @@
                             {
                                 if (stats_labels[k].includes('on_') || stats_labels[k].includes('off_'))
 			    				{
-                                    text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j],' [s]');
+                                    //text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j],' [s]');
+                                    text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j],' [s] (',Math.round(stats_data[stats_labels[k]][j]/totalTime*100*100)/100,'%)');
 			    					item.appendChild(document.createTextNode(text));
 			    					stats_list.appendChild(item);
 			    					text='';
