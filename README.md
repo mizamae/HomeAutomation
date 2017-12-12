@@ -45,11 +45,6 @@ If you just want to use the application and have no interest on developing, you 
 
 ### Quick start
 
-To set up a development environment quickly, first install Python 3. It
-comes with virtualenv built-in. So create a virtual env by:
-
-	1. `$ python3 -m venv HomeAutomation`
-	2. `$ . HomeAutomation/bin/activate`
 
 Install all dependencies:
 
