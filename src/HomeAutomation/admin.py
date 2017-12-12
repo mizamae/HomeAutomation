@@ -124,8 +124,8 @@ class AutomationRuleModelAdmin(admin.ModelAdmin):
     
     def printEvaluation(self,instance):
         result=instance.evaluate()
-        if result==None:
-            result='Error - ' + instance.get_OnError_display()
+        if result['ERROR']==[]:
+            result.pop('ERROR', None)
         return str(result)
     printEvaluation.short_description = _("Current value")
     

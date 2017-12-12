@@ -61,6 +61,8 @@ urlpatterns = [
     url(r'^modifySchedule/(?P<pk>.+)/(?P<value>.+)/(?P<sense>.+)/$', views.modifySchedule,name='modifySchedule'),
     url(r'^view_rules/$', views.viewRules,name='viewRules'),
     url(r'^activateRule/(?P<pk>.+)/$', views.activateRule,name='activateRule'),
+    url(r'^gitupdate/$', views.GitUpdate,name='gitupdate'),
+    url(r'^softreset/$', views.SoftReset,name='softreset'),
     url(r'^users/', include(profiles.urls, namespace='profiles')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin/Devices/setcustomlabels/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),

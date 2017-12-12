@@ -18,6 +18,7 @@ DEVICES_ROOT = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.abspath(os.path.dirname(__name__))
 DEVICES_DB_PATH = os.path.join(DEVICES_ROOT,'..','..', 'Devices.sqlite3')
 REGISTERS_DB_PATH = os.path.join(DEVICES_ROOT,'..','..', 'Registers_XYEARX_.sqlite3')
+GIT_PATH = os.path.join(DEVICES_ROOT,'..','..')
 XML_CONFFILE_PATH=os.path.join(DEVICES_ROOT,'configuration.xml')
 
 singletaskingProcess=cache.get('single_tasking')

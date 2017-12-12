@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-07 10:30+0100\n"
+"POT-Creation-Date: 2017-12-12 17:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -130,7 +130,7 @@ msgstr "Enviar orden a un dispositivo"
 msgid "Send an email"
 msgstr "Enviar un email"
 
-#: forms.py:117 models.py:266
+#: forms.py:117 models.py:278
 msgid "None"
 msgstr "Ninguno"
 
@@ -304,51 +304,51 @@ msgstr "Programación horaria de variables de la unidad Principal"
 msgid "Main device var hourly schedules"
 msgstr "Programaciones horarias de variables de la unidad Principal"
 
-#: models.py:253
+#: models.py:265
 msgid "Automation variable"
 msgstr "Variable de automatización"
 
-#: models.py:254
+#: models.py:266
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:267
+#: models.py:279
 msgid "NOT"
 msgstr ""
 
-#: models.py:278 models.py:355
+#: models.py:290 models.py:363
 msgid "AND"
 msgstr ""
 
-#: models.py:279 models.py:356
+#: models.py:291 models.py:364
 msgid "OR"
 msgstr ""
 
-#: models.py:282
+#: models.py:294
 msgid "Order of execution"
 msgstr "Orden de ejecución"
 
-#: models.py:350
+#: models.py:358
 msgid "Automation expression"
 msgstr "Expresión de automatización"
 
-#: models.py:351
+#: models.py:359
 msgid "Automation expressions"
 msgstr "Expresiones de automatización"
 
-#: models.py:359
+#: models.py:367
 msgid "False"
 msgstr ""
 
-#: models.py:360
+#: models.py:368
 msgid "True"
 msgstr ""
 
-#: models.py:431
+#: models.py:484
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:432
+#: models.py:485
 msgid "Automation rules"
 msgstr "Reglas de automatización"
 
@@ -359,6 +359,47 @@ msgstr "Español"
 #: settings/base.py:143
 msgid "English"
 msgstr "Inglés"
+
+#: views.py:907
+msgid "Gunicorn processes restarted"
+msgstr "Relanzados los procesos Gunicorn"
+
+#: views.py:929
+msgid "Checking for updates..."
+msgstr "Buscando actualizaciones..."
+
+#: views.py:943
+#, python-format
+msgid "%s the latest revision '%s'."
+msgstr "%s la últmia revisión '%s'."
+
+#: views.py:944
+msgid "Already at"
+msgstr "Ya se encontraba en"
+
+#: views.py:944
+msgid "Updated to"
+msgstr "Actualizada a "
+
+#: views.py:947
+msgid "Restart processes to apply the new changes"
+msgstr "Reinicia los procesos para aplicar los nuevos cambios"
+
+#: views.py:949
+msgid "Problem occurred while updating program."
+msgstr "Ocurrió un problema en la actualización de la aplicación."
+
+#: views.py:990
+msgid "Attemping to run update again..."
+msgstr "Intentando actualizar de nuevo..."
+
+#: views.py:993
+msgid "Unable to reset local copy to current git branch."
+msgstr "No se ha podido resetear la copia local a la branch actual"
+
+#: views.py:999
+msgid "Please make sure that you have a 'git' package installed. Error: "
+msgstr "Asegurate de que el packete 'git' se encuentra instalado. Error: "
 
 #~ msgid "The rule "
 #~ msgstr "La regla "

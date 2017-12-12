@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-07 10:30+0100\n"
+"POT-Creation-Date: 2017-12-12 17:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: 3xDHT22.html:43 GPIOs.html:50 advanced_device.html:95 rulesList.html:43
+#: 3xDHT22.html:43 GPIOs.html:50 advanced_device.html:101 rulesList.html:43
 #: schedulesList.html:52
 msgid "Description"
 msgstr "Descripci&oacute;n"
@@ -33,11 +33,12 @@ msgid "Pin"
 msgstr "Pin"
 
 #: 3xDHT22.html:63 DHT11.html:45 DHT22.html:45 GAPQv1.html:45
+#: OpenWeatherMap.html:45
 msgid "Type"
 msgstr "Tipo"
 
 #: 3xDHT22.html:203 DHT11.html:124 DHT22.html:124 GAPQv1.html:123
-#: GPIOs.html:90 timezones.html:49 trackUsers.html:74
+#: GPIOs.html:90 OpenWeatherMap.html:124 timezones.html:49 trackUsers.html:74
 msgid "Return"
 msgstr "Volver "
 
@@ -84,6 +85,12 @@ msgstr "Cambiar estado"
 #: GPIOs.html:78
 msgid "No IOs configured!!"
 msgstr "No hay E/S configuradas!!"
+
+#: OpenWeatherMap.html:44
+#, fuzzy
+#| msgid "Action"
+msgid "Connection"
+msgstr "Acci&oacute;n"
 
 #: _navbar.html:3
 msgid "About"
@@ -165,7 +172,7 @@ msgid " finished OK"
 msgstr " termin&oacute; OK"
 
 #: admin/customLabels.html:11 reportItemsList.html:75 reqconfdevice.html:16
-#: rulesList.html:71 schedulesList.html:116 showdevices.html:266
+#: rulesList.html:71 schedulesList.html:129 showdevices.html:266
 msgid "Return to Main"
 msgstr "Volver "
 
@@ -245,27 +252,43 @@ msgstr "Aqu&iacute puedes ver la posic&oacute;n GPS de un usuario."
 msgid "View ubication"
 msgstr "Ver ubicaci&oacute;n"
 
+#: advanced_device.html:81
+msgid "Software update"
+msgstr "Actualizar software"
+
+#: advanced_device.html:82
+msgid "Here you can check for updates in the official DIY4dot0 repository"
+msgstr "Comprobar las actualizaciones en el repositorio oficial de DIY4dot0"
+
 #: advanced_device.html:83
+msgid "Check for updates"
+msgstr "Buscar actualizaciones"
+
+#: advanced_device.html:84
+msgid "Restart processes"
+msgstr "Reiniciar procesos"
+
+#: advanced_device.html:89
 msgid "Events and alarms"
 msgstr "Eventos y alarmas"
 
-#: advanced_device.html:93
+#: advanced_device.html:99
 msgid "Timestamp"
 msgstr ""
 
-#: advanced_device.html:94
+#: advanced_device.html:100
 msgid "Severity"
 msgstr "Severidad"
 
-#: advanced_device.html:96
+#: advanced_device.html:102
 msgid "Acknowledge"
 msgstr "Marcar como le&iacute;da"
 
-#: advanced_device.html:111
+#: advanced_device.html:117
 msgid "OK"
 msgstr ""
 
-#: advanced_device.html:120 home_device.html:193
+#: advanced_device.html:126 home_device.html:193
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
 
@@ -691,8 +714,10 @@ msgid "Inactive"
 msgstr "Inactiva"
 
 #: schedulesList.html:32
-msgid "List of schedules"
-msgstr "Lista de las programaciones"
+#, fuzzy
+#| msgid "List of automation rules"
+msgid "List of automation items"
+msgstr "Lista de reglas de automatizaci&oacute;n"
 
 #: schedulesList.html:37
 msgid "Variable "
@@ -837,6 +862,9 @@ msgstr "Precisi&oacute;n [m]"
 #: trackUsers.html:51
 msgid "Last update"
 msgstr "Ultima actualizaci&oacute;n"
+
+#~ msgid "List of schedules"
+#~ msgstr "Lista de las programaciones"
 
 #~ msgid "Spare"
 #~ msgstr "Reserva"

@@ -32,7 +32,7 @@ import Devices.XML_parser
 import Devices.forms
 import Devices.models
 import Master_GPIOs.models
-#import RemoteDevices.models
+from Events.consumers import PublishEvent
 import HomeAutomation.models
 
 #import LocalDevices.models
@@ -900,6 +900,105 @@ def arduinoCode(request):
     return resp
     #raise Http404
 
+@user_passes_test(lambda u: u.is_superuser)
+def SoftReset(request):
+    import os
+    os.system("sudo systemctl restart gunicorn")
+    PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False)
+    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
+    
+@user_passes_test(lambda u: u.is_superuser)
+def GitUpdate(request):
+    from os import walk
+    for root, dirs, n in walk(Devices.GlobalVars.GIT_PATH):
+        if ".git" in dirs:
+            #print("\"%s\" has git dir: \"%s\"" % (root, dirs))
+            #dirs.remove('.git')
+
+            update(root)
+            break
+    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
+
+def update(root):
+    """
+    Updates the program via git pull.
+    """
+    import re    
+    from sys import stdout as sys_stdout
+    from subprocess import Popen, PIPE
+    PublishEvent(Severity=0,Text=_("Checking for updates..."),Persistent=False)
+
+    process = Popen("git pull", cwd=root, shell=True,
+                    stdout=PIPE, stderr=PIPE,universal_newlines=True)
+    stdout, stderr = process.communicate()
+    success = not process.returncode
+
+    if success:
+        updated = "Already" not in stdout
+        process = Popen("git rev-parse --verify HEAD", cwd=root, shell=True,
+                        stdout=PIPE, stderr=PIPE,universal_newlines=True)
+        stdout, err = process.communicate()
+        revision = (stdout[:7] if stdout and
+                    re.search(r"(?i)[0-9a-f]{32}", stdout) else "-")
+        PublishEvent(Severity=0,Text=_("%s the latest revision '%s'.") %
+              (_("Already at") if not updated else _("Updated to"), revision),Persistent=False)
+        
+        if updated:
+            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False)
+    else:
+        PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False)
+
+        err = re.search(r"(?P<error>error:[^:]*files\swould\sbe\soverwritten"
+                      r"\sby\smerge:(?:\n\t[^\n]+)*)", stderr)
+        if err:
+            def question():
+                """Asks question until a valid answer of y or n is provided."""
+                print("\nWould you like to overwrite your changes and set "
+                      "your local copy to the latest commit?")
+                sys_stdout.write("ALL of your local changes will be deleted"
+                                 " [Y/n]: ")
+                ans = raw_input()
+
+                if not ans:
+                    ans = "y"
+
+                if ans.lower() == "n":
+                    return False
+                elif ans.lower() == "y":
+                    return True
+                else:
+                    #print("Did not understand your answer! Try again.")
+                    question()
+
+            #print("%s" % err.group("error"))
+
+            # if not question():
+                # return
+
+            if "untracked" in stderr:
+                cmd = "git clean -df"
+            else:
+                cmd = "git reset --hard"
+
+            process = Popen(cmd, cwd=root, shell=True,
+                            stdout=PIPE, stderr=PIPE,universal_newlines=True)
+            stdout, err = process.communicate()
+
+            if "HEAD is now at" in stdout:
+                #print("\nLocal copy reset to current git branch.")
+                #print("Attemping to run update again...\n")
+                PublishEvent(Severity=0,Text=_("Attemping to run update again..."),Persistent=False)
+            else:
+                #print("Unable to reset local copy to current git branch.")
+                PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False)
+                return
+
+            update(root)
+        else:
+            #print("Please make sure that you have a 'git' package installed.")
+            PublishEvent(Severity=5,Text=_("Please make sure that you have a 'git' package installed. Error: ") + str(stderr),Persistent=False)
+            #print(stderr)
+            
 def custom_error500_view(request):
     exceptionType= sys.exc_info()[0].__name__
     if exceptionType=='XMLException':

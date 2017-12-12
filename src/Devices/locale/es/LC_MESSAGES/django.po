@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-07 10:30+0100\n"
+"POT-Creation-Date: 2017-12-12 17:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -256,128 +256,128 @@ msgstr "El nombre del dispositivo"
 msgid " has changed. Now it is named "
 msgstr " ha cambiado. Ahora se llama "
 
-#: models.py:195
+#: models.py:225
 msgid "Slave device"
 msgstr "Dispositivo"
 
-#: models.py:196
+#: models.py:226
 msgid "Slave devices"
 msgstr "Dispositivos"
 
-#: models.py:235
+#: models.py:265
 msgid "Every day"
 msgstr "Todos los dias"
 
-#: models.py:236
+#: models.py:266
 msgid "Every week"
 msgstr "Todas las semanas"
 
-#: models.py:237
+#: models.py:267
 msgid "Every month"
 msgstr "Todos los meses"
 
-#: models.py:240
+#: models.py:270
 msgid "No aggregation"
 msgstr "Sin agregación"
 
-#: models.py:241
+#: models.py:271
 msgid "Hourly"
 msgstr "Horaria"
 
-#: models.py:242
+#: models.py:272
 msgid "Daily"
 msgstr "Diaria"
 
-#: models.py:243
+#: models.py:273
 msgid "Monthly"
 msgstr "Mensual"
 
-#: models.py:245
+#: models.py:275
 msgid "Invalid report title - This title already exists in the DB."
 msgstr "Título de informe erróneo - El título ya existe en la BBDD."
 
-#: models.py:246
+#: models.py:276
 msgid "How often the report will be generated"
 msgstr "Con cuanta frcuencia se generaran los informes"
 
-#: models.py:247
+#: models.py:277
 msgid "Data directly from the DB or averaged over a period"
 msgstr ""
 "Datos directamente de la BBDD o promediados a lo largo de algun periodo"
 
-#: models.py:291
+#: models.py:321
 msgid "Report"
 msgstr "Informe"
 
-#: models.py:292
+#: models.py:322
 msgid "Reports"
 msgstr "Informes"
 
-#: models.py:311
+#: models.py:341
 msgid "Generated report"
 msgstr "Informe generado"
 
-#: models.py:312
+#: models.py:342
 msgid "Generated reports"
 msgstr "Informes generados"
 
-#: models.py:318
+#: models.py:348
 msgid "Analog Integer"
 msgstr "Analógico Entero"
 
-#: models.py:319
+#: models.py:349
 msgid "Analog Float"
 msgstr "Analógico Float"
 
-#: models.py:320
+#: models.py:350
 msgid "Digital"
 msgstr "Digital"
 
-#: models.py:323
+#: models.py:353
 msgid "Hard Line"
 msgstr "Linea"
 
-#: models.py:324
+#: models.py:354
 msgid "Smoothed Line"
 msgstr "Linea suavizada"
 
-#: models.py:325
+#: models.py:355
 msgid "Bars"
 msgstr "Columnas"
 
-#: models.py:326
+#: models.py:356
 msgid "Area"
 msgstr ""
 
-#: models.py:345
+#: models.py:375
 msgid "Datagram item"
 msgstr "Elemento de trama"
 
-#: models.py:346
+#: models.py:376
 msgid "Datagram items"
 msgstr "Elementos de trama"
 
-#: models.py:413
+#: models.py:443
 msgid "Datagram"
 msgstr "Trama"
 
-#: models.py:414
+#: models.py:444
 msgid "Datagrams"
 msgstr "Tramas"
 
-#: models.py:505
+#: models.py:535
 msgid "Item"
 msgstr "Elemento"
 
-#: models.py:506
+#: models.py:536
 msgid "Items"
 msgstr "Elementos"
 
-#: models.py:532
+#: models.py:562
 msgid "Command"
 msgstr "Orden"
 
-#: models.py:533
+#: models.py:563
 msgid "Commands"
 msgstr "Órdenes"
 

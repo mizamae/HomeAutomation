@@ -248,6 +248,18 @@ class AutomationVariablesModel(models.Model):
     def __str__(self):
         return self.Label
     
+    def getValue(self,localized=True):
+        applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+        sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE "'+self.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
+        timestamp,value=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+        if localized:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            timestamp = local_tz.localize(timestamp)
+            timestamp=timestamp+timestamp.utcoffset() 
+        return timestamp,value
+        
     class Meta:
         unique_together = ('Tag','BitPos','Table')
         verbose_name = _('Automation variable')
@@ -294,42 +306,30 @@ class RuleItem(models.Model):
         return str(self.Rule) + '.' + str(self.order)
     
     def evaluate(self):
-        import Devices.BBDD
         import datetime
-        from tzlocal import get_localzone
         
-        applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
-        local_tz=get_localzone()
         now = timezone.now()
         evaluableTRUE=''
         evaluableFALSE=''
-        sql='SELECT timestamp,"'+self.Var1.Tag+'" FROM "'+ self.Var1.Table +'" WHERE "'+self.Var1.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
-        timestamp1,value1=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-        
-        timestamp1 = local_tz.localize(timestamp1)
-        timestamp1=timestamp1+timestamp1.utcoffset() 
+        timestamp1,value1=self.Var1.getValue(localized=True)
         
         if self.Var1.Sample>0:
             if (now-timestamp1>datetime.timedelta(seconds=2.5*self.Var1.Sample)):
                 logger.warning('The rule ' + str(self) + ' was evaluated with data older than expected')
-                logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' was ' + str(timestamp1))
-                return {'TRUE':None,'FALSE':None}
+                logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' is ' + str(timestamp1))
+                return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var1)}
         
         if self.Var1.BitPos!=None:
             value1=value1 & (1<<self.Var1.BitPos) 
          
         
         if self.Var2!= None:
-            sql='SELECT timestamp,"'+self.Var2.Tag+'" FROM "'+ self.Var2.Table +'" WHERE "'+self.Var2.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
-            timestamp2,value2=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-            timestamp2 = local_tz.localize(timestamp2)
-            timestamp2=timestamp2+timestamp2.utcoffset()
+            timestamp2,value2=self.Var2.getValue(localized=True)
             if self.Var2.Sample>0:
                 if (now-timestamp2>datetime.timedelta(seconds=2.5*self.Var2.Sample)):
                     logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
-                    logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' was ' + str(timestamp2))
-                    return {'TRUE':None,'FALSE':None}
+                    logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' is ' + str(timestamp2))
+                    return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var2)}
                     
             if self.Var2.BitPos!=None:
                 value2=value2 & (1<<self.Var2.BitPos)
@@ -352,7 +352,7 @@ class RuleItem(models.Model):
         try:
             return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
         except:
-            return {'TRUE':None,'FALSE':None}
+            return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Unknown'}
             
     class Meta:
         verbose_name = _('Automation expression')
@@ -383,8 +383,8 @@ class AutomationRuleModel(models.Model):
     
     def printEvaluation(self):
         result=self.evaluate()
-        if result==None:
-            result='Error - ' + self.get_OnError_display()
+        if result['ERROR']==[]:
+            result.pop('ERROR', None)
         return str(result)
         
     def switchBOOLOperator(self,operator):
@@ -400,65 +400,64 @@ class AutomationRuleModel(models.Model):
             evaluableTRUE=''
             evaluableFALSE=''
             if self.PreviousRule!=None:
-                evaluableTRUE+=str(self.PreviousRule.evaluate()['TRUE']) + ' ' + self.OperatorPrev
-                evaluableFALSE+=str(self.PreviousRule.evaluate()['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
+                result=self.PreviousRule.evaluate()
+                evaluableTRUE+=str(result['TRUE']) + ' ' + self.OperatorPrev
+                evaluableFALSE+=str(result['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
             RuleItems=RuleItem.objects.filter(Rule=self.pk).order_by('order')
             if len(RuleItems):
+                errors=[]
                 for item in RuleItems:
-                    resultTRUE=item.evaluate()['TRUE']
-                    if resultTRUE!=None:
-                        if item.Operator3!=None:
-                            evaluableTRUE+=' ' + str(resultTRUE) + ' ' + item.Operator3
-                        else:
-                            evaluableTRUE+=' ' + str(resultTRUE)
+                    result=item.evaluate()
+                    resultTRUE=result['TRUE']
+                    resultFALSE=result['FALSE']
+                    if item.Operator3!=None:
+                        evaluableTRUE+=' ' + str(resultTRUE) + ' ' + item.Operator3
+                        evaluableFALSE+=' ' + str(resultFALSE) + ' ' + self.switchBOOLOperator(operator=item.Operator3)
                     else:
-                        evaluableTRUE = None
-                        text='The evaluableTRUE of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)
+                        evaluableTRUE+=' ' + str(resultTRUE)
+                        evaluableFALSE+=' ' + str(resultFALSE)
+                            
+                    if 'ERROR' in result:
+                        text='The evaluation of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)+'. Error: ' + str(result['ERROR'])
                         PublishEvent(Severity=0,Text=text,Persistent=True)
-                    
-                    resultFALSE=item.evaluate()['FALSE']
-                    if resultFALSE!=None:
-                        if item.Operator3!=None:
-                            evaluableFALSE+=' ' + str(resultFALSE) + ' ' + self.switchBOOLOperator(operator=item.Operator3)
-                        else:
-                            evaluableFALSE+=' ' + str(resultFALSE)
-                    else:
-                        evaluableFALSE = None
-                        text='The evaluableFALSE of rule ' + self.Identifier + ' evaluated to Error on item '+str(item)
-                        PublishEvent(Severity=0,Text=text,Persistent=True)
-                    
+                        errors.append(result['ERROR'])
+                
+                evaluableTRUE=evaluableTRUE.strip()
+                evaluableFALSE=evaluableFALSE.strip()
                 if len(evaluableTRUE)>1:
                     if evaluableTRUE[-1]=='&' or evaluableTRUE[-1]=='|':
                         evaluableTRUE=evaluableTRUE[:-1]
+                    if evaluableTRUE[0]=='&' or evaluableTRUE[0]=='|':
+                        evaluableTRUE=evaluableTRUE[1:]
                 if len(evaluableFALSE)>1:
                     if evaluableFALSE[-1]=='&' or evaluableFALSE[-1]=='|':
                         evaluableFALSE=evaluableFALSE[:-1]
+                    if evaluableFALSE[0]=='&' or evaluableFALSE[0]=='|':
+                        evaluableFALSE=evaluableFALSE[1:]
                 try:
-                    return {'TRUE':evaluableTRUE,'FALSE':evaluableFALSE}
+                    return {'TRUE':evaluableTRUE,'FALSE':evaluableFALSE,'ERROR':errors}
                 except:
-                    return {'TRUE':None,'FALSE':None}
+                    return {'TRUE':None,'FALSE':None,'ERROR':'Unknown'}
             else:
-                return {'TRUE':None,'FALSE':None}
+                return {'TRUE':None,'FALSE':None,'ERROR':'Unknown'}
         else:
-            return ''
+            return {'TRUE':'','FALSE':'','ERROR':'Inactive Rule'}
     
     def execute(self,error=None):
-        if error==None:
-            resultTRUE=self.evaluate()['TRUE']
-        else:
-            resultTRUE=None
-        if resultTRUE!=None:
-            resultTRUE=eval(resultTRUE)
-        else:
-            resultTRUE=eval(self.get_OnError_display())
         
-        if error==None:
-            resultFALSE=self.evaluate()['FALSE']
+        if error!=None:
+            resultTRUE=eval(self.get_OnError_display())
+            resultFALSE=eval('not ' + self.get_OnError_display())
         else:
-            resultFALSE=None
-        if resultFALSE!=None:
+            result=self.evaluate()
+            resultTRUE=result['TRUE']
+            resultFALSE=result['FALSE']
+            
+        try:
+            resultTRUE=eval(resultTRUE)
             resultFALSE=eval(resultFALSE)
-        else:
+        except:
+            resultTRUE=eval(self.get_OnError_display())
             resultFALSE=eval('not ' + self.get_OnError_display())
             
         if resultTRUE==True:

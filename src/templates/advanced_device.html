@@ -77,6 +77,12 @@
 		      <p>{% trans "Here you can see the GPS position of a user (if provided)."  %}</p>
 		      <p><a class="btn btn-primary" href="{% url 'viewUserUbication' %}" role="button">{% trans "View ubication" %} &raquo;</a></p>
 		  </div>
+          <div class="col-lg-4">
+		      <h2>{% trans "Software update" %}</h2>
+		      <p>{% trans "Here you can check for updates in the official DIY4dot0 repository"  %}</p>
+		      <p><a class="btn btn-primary" href="{% url 'gitupdate' %}" role="button">{% trans "Check for updates" %} &raquo;</a></p>
+              <p><a class="btn btn-primary" href="{% url 'softreset' %}" role="button">{% trans "Restart processes" %} &raquo;</a></p>
+		  </div>
 	    </div>
 	</div>
     <div class="container hidden" id="eventsContainer">
