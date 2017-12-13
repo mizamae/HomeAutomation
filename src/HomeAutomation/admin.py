@@ -10,8 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 
 
 
-from HomeAutomation.models import MainDeviceVarModel,MainDeviceVarWeeklyScheduleModel,inlineDaily,AutomationRuleModel,AutomationVariablesModel,RuleItem
-from HomeAutomation.forms import MainDeviceVarForm,inlineDailyForm,AutomationRuleForm,RuleItemForm
+from HomeAutomation.models import MainDeviceVarModel,AdditionalCalculationsModel,MainDeviceVarWeeklyScheduleModel,inlineDaily,AutomationRuleModel,AutomationVariablesModel,RuleItem
+from HomeAutomation.forms import MainDeviceVarForm,AdditionalCalculationsForm,inlineDailyForm,AutomationRuleForm,RuleItemForm
 
 
 
@@ -25,6 +25,15 @@ class MainDeviceVarModelAdmin(admin.ModelAdmin):
     form = MainDeviceVarForm
     pass      
 
+class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
+    def printCalculation(self,instance):
+        return str(instance)
+    
+    printCalculation.short_description = _("Description")
+    
+    list_display = ('printCalculation',)
+    form = AdditionalCalculationsForm
+    
 class inlineDailyFormset(forms.models.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super(inlineDailyFormset, self).__init__(*args, **kwargs)
@@ -175,6 +184,7 @@ class AutomationVariablesModelAdmin(admin.ModelAdmin):
                 
 
 admin.site.register(MainDeviceVarModel,MainDeviceVarModelAdmin)
+admin.site.register(AdditionalCalculationsModel,AdditionalCalculationsModelAdmin)
 admin.site.register(MainDeviceVarWeeklyScheduleModel,MainDeviceVarWeeklyScheduleModelAdmin)
 admin.site.register(AutomationRuleModel,AutomationRuleModelAdmin)
 admin.site.register(AutomationVariablesModel,AutomationVariablesModelAdmin)

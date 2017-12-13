@@ -53,6 +53,7 @@ urlpatterns = [
     url(r'^master_gpios/$', Master_GPIOs.views.master_gpios,name='master_gpios'),
     url(r'^reports/$', views.viewReports,name='viewReports'),
     url(r'^reports/(?P<pk>.+)/$', views.viewReports,name='viewReports'),
+    url(r'^reports/delete/(?P<pk>.+)/$', views.deleteReport,name='deleteReport'),
     url(r'^reportpreview/(?P<title>.+)/$', views.previewReport,name='previewReport'),
     url(r'^owntracks/(?P<user>.+)/$', views.handleLocation,name='handleLocation'),
     url(r'^userubication/$', views.viewUserUbication,name='viewUserUbication'),

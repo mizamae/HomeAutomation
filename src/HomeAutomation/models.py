@@ -33,10 +33,11 @@ class MainDeviceVarModel(models.Model):
         ('area',_('Area')),
     )
     Label = models.CharField(max_length=50,unique=True)
-    Value = models.DecimalField(max_digits=6, decimal_places=2)
+    Value = models.DecimalField(max_digits=6, decimal_places=2,null=True)
     Datatype=models.PositiveSmallIntegerField(choices=DATATYPE_CHOICES,default=0)
     PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default='line')
     Units = models.CharField(max_length=10)
+    UserEditable = models.BooleanField(default=True)
     
     __previous_value = None
     
@@ -47,16 +48,21 @@ class MainDeviceVarModel(models.Model):
         super(MainDeviceVarModel, self).__init__(*args, **kwargs)
         self.__previous_value = self.Value
         
-    def save(self, *args, **kwargs):
-        if self.Value != self.__previous_value and self.__previous_value != '':
-            self.__previous_value = self.Value
+    def update_value(self,newValue,timestamp=None,writeDB=True):
+        if writeDB:
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
-            timestamp=timezone.now()-datetime.timedelta(seconds=1) #para hora con info UTC
-            registerDB.insert_VARs_register(TimeStamp=timestamp)
-            #logger.info('Se ha modificado la variable local ' + str(self) + ' del valor ' + str(self.__previous_value))
-        self.__previous_value = self.Value
-        super(MainDeviceVarModel, self).save(*args, **kwargs)
+                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+            if timestamp==None:
+                now=timezone.now()
+                registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs=self)
+            else:
+                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=self)
+                
+        self.Value=newValue
+        self.save()
+        
+        if writeDB and timestamp==None:
+            registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
         
     def updateAutomationVars(self):
         AutomationVars=AutomationVariablesModel.objects.filter(Device='Main')
@@ -95,9 +101,129 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
     timestamp=timezone.now() #para hora con info UTC
-    registerDB.insert_VARs_register(TimeStamp=timestamp)
+    #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
     instance.updateAutomationVars()
+
+class AdditionalCalculationsModel(models.Model):
+    PERIODICITY_CHOICES=(
+        (0,_('With every new value')),
+        (1,_('Every hour')),
+        (2,_('Every day')),
+        (3,_('Every week')),
+        (4,_('Every month'))
+    )
     
+    CALCULATION_CHOICES=(
+        (0,_('Duty cycle OFF')),
+        (1,_('Duty cycle ON')),
+        (2,_('Mean value')),
+        (3,_('Max value')),
+        (4,_('Min value')),
+        (5,_('Cummulative sum')),
+    )
+    
+    MainVar = models.OneToOneField(MainDeviceVarModel,on_delete=models.CASCADE,related_name='mvar',blank=True,null=True) # variable that will hold the result of the calculation
+    AutomationVar= models.ForeignKey('HomeAutomation.AutomationVariablesModel',on_delete=models.CASCADE,related_name='avar') # variable whose change triggers the calculation
+    Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
+    Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
+    
+    def __str__(self):
+        try:
+            return str(self.get_Calculation_display())+'('+self.AutomationVar.Label + ')'
+        except:
+            return ''
+    
+    def checkTrigger(self):
+        if self.Periodicity==0:
+            return True
+        else:
+            import datetime
+            now=datetime.datetime.now()
+            if self.Periodicity==1 and now.minute==0: # hourly calculation launched at minute XX:00
+                return True
+            elif now.hour==0 and now.minute==0:
+                if self.Periodicity==2: # daily calculation launched on next day at 00:00
+                    return True
+                elif self.Periodicity==3 and now.weekday()==0: # weekly calculation launched on Monday at 00:00
+                    return True
+                elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
+                    return True
+        return False
+    
+    def calculate(self):
+        import datetime
+        import calendar
+        if self.Periodicity==1: # Every hour
+            offset=datetime.timedelta(hours=1)
+        elif self.Periodicity==2: # Every day
+            offset=datetime.timedelta(hours=24)
+        elif self.Periodicity==3: # Every week
+            offset=datetime.timedelta(weeks=1)
+        elif self.Periodicity==4: # Every month
+            now=datetime.datetime.now()
+            days=calendar.monthrange(now.year, now.month)[1]
+            offset=datetime.timedelta(hours=days*24)
+        else:
+            return
+        toDate=timezone.now() 
+        fromDate=toDate-offset
+        DBDate=toDate-offset/2
+        toDate=toDate-datetime.timedelta(minutes=1)
+        data_rows=self.AutomationVar.getValues(fromDate=fromDate,toDate=toDate,localized=False)
+        if data_rows!=[]:
+            self.df=pd.DataFrame.from_records(data=data_rows,columns=['timestamp',str(self)])
+            self.df['weekday'] = self.df['timestamp'].dt.weekday_name
+            
+            if self.Calculation==0:     # Duty cycle OFF
+                result= self.duty(level=False)
+            if self.Calculation==1:     # Duty cycle ON
+                result= self.duty(level=True)
+            elif self.Calculation==2:   # Mean value
+                result=self.df.mean()[0]
+            elif self.Calculation==3:   # Max value
+                result= self.df.max()[0]
+            elif self.Calculation==4:   # Min value
+                result= self.df.min()[0]
+            elif self.Calculation==5:   # Cummulative sum
+                result= self.df.cumsum()[0]
+            elif self.Calculation==6:
+                result= None
+            
+            if result!=None:
+                self.MainVar.update_value(newValue=result,timestamp=DBDate,writeDB=True)
+        else:
+            text='No registers found to calculate ' + str(self)
+            PublishEvent(Severity=3,Text=text,Persistent=True)
+
+    def duty(self,level=False):
+        totalTime=self.df['timestamp'].iloc[-1]-self.df['timestamp'].iloc[0]
+        totalTime=totalTime.days*86400+totalTime.seconds
+        time=0
+        previousDate=self.df['timestamp'].iloc[0]
+        for index, row in self.df.iterrows():
+            date=row['timestamp']
+            sampletime=date-previousDate
+            time+=int(row[str(self)]==level)*(sampletime.days*86400+sampletime.seconds)
+            previousDate=date
+        return time/totalTime*100
+
+
+@receiver(post_save, sender=AdditionalCalculationsModel, dispatch_uid="update_AdditionalCalculationsModel")
+def update_AdditionalCalculationsModel(sender, instance, update_fields,**kwargs):
+    if kwargs['created']:   # an instance has been created
+        logger.info('Se ha creado el calculo ' + str(instance))
+        label= str(instance)
+        try:
+            mainVar=MainDeviceVarModel.objects.get(Label=label)
+        except:
+            if instance.Calculation>1: # it is not a duty calculation
+                mainVar=MainDeviceVarModel(Label=label,Value=0,Datatype=0,Units=instance.AutomationVar.Label.split('_')[-1],UserEditable=False)
+            else:
+                mainVar=MainDeviceVarModel(Label=label,Value=0,Datatype=0,Units='%',UserEditable=False)
+            mainVar.save()
+        instance.MainVar=mainVar
+        instance.save()
+
 class MainDeviceVarWeeklyScheduleModel(models.Model):
     Label = models.CharField(max_length=50,unique=True)
     Active = models.BooleanField(default=False)
@@ -155,9 +281,9 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
                 schedule.save()
         checkHourlySchedules()
     
-def checkHourlySchedules():
+def checkHourlySchedules(init=False):
     #logger.info('Checking hourly schedules on process ' + str(os.getpid()))
-    schedules=MainDeviceVarWeeklyScheduleModel.objects.all()
+    schedules=MainDeviceVarWeeklyScheduleModel.objects.filter(Active=True)
     timestamp=datetime.datetime.now()
     #logger.info('Timestamp: ' + str(timestamp))
     weekDay=timestamp.weekday()        
@@ -178,12 +304,10 @@ def checkHourlySchedules():
                         Value=schedule.LValue
                     else:
                         Value=schedule.HValue
-                    variable=MainDeviceVarModel.objects.get(Label=schedule.Var.Label)
                     #logger.info('Variable.value = ' + str(variable.Value))
                     #logger.info('Value = ' + str(Value))
-                    if variable.Value!=Value:
-                        variable.Value=Value
-                        variable.save()
+                    if schedule.Var.Value!=Value or init:
+                        schedule.Var.update_value(newValue=Value,writeDB=True)
                     break
 
 class inlineDaily(models.Model):
@@ -259,6 +383,21 @@ class AutomationVariablesModel(models.Model):
             timestamp = local_tz.localize(timestamp)
             timestamp=timestamp+timestamp.utcoffset() 
         return timestamp,value
+        
+    def getValues(self,fromDate,toDate,localized=True):
+        applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+        sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
+        data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
+        if localized and len(data_rows)>0:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            for row in data_rows:
+                row=list(row)
+                row[0] = local_tz.localize(row[0])
+                row[0]=row[0]+row[0].utcoffset() 
+        
+        return data_rows
         
     class Meta:
         unique_together = ('Tag','BitPos','Table')
@@ -496,3 +635,10 @@ def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):
         logger.info('Se ha creado la regla de automatizacion ' + str(instance.Identifier))
     if instance.Active==False:
         instance.execute(error=True)
+        
+def init_Rules():
+    RULs=AutomationRuleModel.objects.filter(Active=True)
+    if len(RULs)>0:
+        for RUL in RULs:
+            if not '"ActionType": "z"' in RUL.Action:
+                RUL.execute() 

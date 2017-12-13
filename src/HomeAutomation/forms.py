@@ -53,6 +53,44 @@ class MainDeviceVarForm(ModelForm):
         model = HomeAutomation.models.MainDeviceVarModel
         fields=['Label','Datatype','Value','Units','PlotType']
 
+class AdditionalCalculationsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AdditionalCalculationsForm, self).__init__(*args, **kwargs)
+        # If you pass FormHelper constructor a form instance
+        # It builds a default layout with all its fields
+        self.helper = FormHelper(self)
+        self.helper.labels_uppercase = True
+        self.helper.label_class = 'col-sm-4'
+        self.helper.field_class = 'col-sm-6'
+#         self.helper.form_id = 'id-DeviceForm'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method = 'post'
+        
+        self.fields['AutomationVar'].label = _("Select the source variable")        
+        self.fields['Periodicity'].label = _("Select the calculation update frequency")
+        self.fields['Calculation'].label = _("Select the calculation")
+        
+        self.helper.layout = Layout(
+            Field('AutomationVar', css_class='input-sm'),
+            #Field('MainVar', css_class='input-sm'),
+            Field('Periodicity', css_class='input-sm'),
+            Field('Calculation', css_class='input-sm'),
+            Submit('submit', _('Submit'),css_class='btn-primary'),
+            )
+        
+    def clean(self):
+        cleaned_data=super().clean() # to use the validation of the fields from the model
+        Periodicity = cleaned_data['Periodicity']
+        AutomationVar = cleaned_data['AutomationVar']
+        Calculation = cleaned_data['Calculation']
+        
+        
+        return cleaned_data
+    
+    class Meta:
+        model = HomeAutomation.models.AdditionalCalculationsModel
+        fields=['AutomationVar','Periodicity','Calculation']
+        
 class inlineDailyForm(ModelForm):  
     def __init__(self, *args, **kwargs):
         super(inlineDailyForm, self).__init__(*args, **kwargs)

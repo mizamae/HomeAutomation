@@ -363,6 +363,8 @@ class DHT22(object):
         self.sensor.LastUpdated=timestamp
         if error!='':
             PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
+        else:
+            PublishEvent(Severity=0,Text=self.sensor.DeviceName + ' updated OK',Persistent=False)
         self.sensor.Error=error
         self.sensor.save()
         self._lastTemp=temperature

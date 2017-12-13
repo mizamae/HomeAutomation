@@ -29,7 +29,7 @@ def start_registersDBcompactingTask():
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
     '''  
     logger.info('Registers DB compacting task is added to scheduler on the process '+ str(os.getpid())) 
-    scheduler.add_job(func=compactRegistersDB,trigger='cron',id='registerDBcompact',day='last',hour=0,minute=0)
+    scheduler.add_job(func=compactRegistersDB,trigger='cron',id='registerDBcompact',day='last',hour=0,minute=0,max_instances=1)
     try:
         scheduler.start()
     except:
@@ -41,20 +41,14 @@ def checkReportAvailability():
     '''
     from Devices.models import ReportModel,ReportItems
     import json
-    logger.info('Checking reports availability...')
     reports=ReportModel.objects.all()
-    #logger.info('There are ' + str(len(reports)) + ' reports configured.')
     for report in reports:
-        #logger.info('Report ' + report.ReportTitle)
-        #logger.info('Triggered ' + str(report.checkTrigger()))
         if report.checkTrigger():
             ReportData,fromDate,toDate=report.getReport()
-            reportTitle=report.ReportTitle           
-            #logger.info('Report: '+str(ReportData))            
+            reportTitle=report.ReportTitle                     
             report=ReportModel.objects.get(ReportTitle=reportTitle)
             rp=ReportItems(Report=report,fromDate=fromDate,toDate=toDate,data=json.dumps(ReportData))
             rp.save()
-            #logger.info('Report '+ reportTitle +' generated successfully.')
 
 def updateWeekDay():
     import datetime
@@ -63,42 +57,56 @@ def updateWeekDay():
     weekDay=timestamp.weekday()
     try:
         WeekDay=MainDeviceVarModel.objects.get(Label='Day of the week')
-        WeekDay.Value=weekDay
+        WeekDay.update_value(newValue=weekDay,writeDB=True)
+        #WeekDay.UserEditable=False
     except:
-        WeekDay=MainDeviceVarModel(Label='Day of the week',Value=weekDay,Datatype=1,Units='')
-    WeekDay.save()
+        WeekDay=MainDeviceVarModel(Label='Day of the week',Value=weekDay,Datatype=1,Units='',UserEditable=False)
+        WeekDay.save()
       
 def start_DailyTask():
-    logger.info('Report generation task is added to scheduler on the process '+ str(os.getpid())) 
+    PublishEvent(Severity=0,Text='Daily task is added to scheduler on the process '+ str(os.getpid()),Persistent=False)
     checkReportAvailability()
-    scheduler.add_job(func=checkReportAvailability,trigger='cron',id='checkReportAvailability',hour=0)
+    scheduler.add_job(func=checkReportAvailability,trigger='cron',id='checkReportAvailability',hour=0,max_instances=1)
     updateWeekDay()
-    scheduler.add_job(func=updateWeekDay,trigger='cron',id='updateWeekDay',hour=0)
+    scheduler.add_job(func=updateWeekDay,trigger='cron',id='updateWeekDay',hour=0,max_instances=1)
     try:
         scheduler.start()
     except:
         pass
-    
+
+def checkCustomCalculations():
+    '''THIS TASK IS RUN EVERY HOUR.
+    '''
+    from HomeAutomation.models import AdditionalCalculationsModel
+    aCALCs=AdditionalCalculationsModel.objects.all()
+    for aCALC in aCALCs:
+        if aCALC.checkTrigger():
+            aCALC.calculate()
+            
 def HourlyTask():
     import datetime
     from HomeAutomation.models import MainDeviceVarModel
-    logger.info('Checking hourly tasks...')
-    HomeAutomation.models.checkHourlySchedules()    
+    PublishEvent(Severity=0,Text='Hourly tasks checked',Persistent=False)
+    HomeAutomation.models.checkHourlySchedules(init=True)    
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
     try:
         HourDay=MainDeviceVarModel.objects.get(Label='Hour of the day')
-        HourDay.Value=hourDay
+        HourDay.update_value(newValue=hourDay,writeDB=True)
+        #HourDay.UserEditable=False
     except:
-        HourDay=MainDeviceVarModel(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H')
-    HourDay.save()
+        HourDay=MainDeviceVarModel(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H',UserEditable=False)
+        HourDay.save()
+    
+    checkCustomCalculations()
 
 def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
     HourlyTask()
-    logger.info('Hourly task is added to scheduler on the process '+ str(os.getpid())) 
-    scheduler.add_job(func=HourlyTask,trigger='cron',id='HourlyTask',minute=0)
+    HomeAutomation.models.init_Rules()
+    PublishEvent(Severity=0,Text='Hourly task is added to scheduler on the process '+ str(os.getpid()),Persistent=False)
+    scheduler.add_job(func=HourlyTask,trigger='cron',id='HourlyTask',minute=0,max_instances=1)
     try:
         scheduler.start()
     except:

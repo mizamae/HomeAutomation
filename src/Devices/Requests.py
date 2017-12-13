@@ -72,7 +72,7 @@ def update_requests(DV):
                     callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
                     scheduler.add_job(func=callback,trigger='interval',args=(),
                                       id=id, 
-                                      seconds=DV.Sampletime,replace_existing=True)
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
                         arguments={}
                         #callback(**arguments)
@@ -80,7 +80,7 @@ def update_requests(DV):
                 elif DV.Type.Connection=='REMOTE':
                     scheduler.add_job(func=request_to_device,trigger='interval',args=(DV.DeviceIP,DV.DeviceCode, DG.Identifier),
                                       id=id, 
-                                      seconds=DV.Sampletime,replace_existing=True)
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
                         request_to_device(DV.DeviceIP,DV.DeviceCode, DG.Identifier)
                 elif DV.Type.Connection=='MEMORY':
@@ -88,7 +88,7 @@ def update_requests(DV):
                     arguments={'datagram':DG.Identifier}
                     scheduler.add_job(func=callback,trigger='interval',kwargs=arguments,
                                       id=id, 
-                                      seconds=DV.Sampletime,replace_existing=True)
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
                         callback(**arguments)
                 logger.info('Requests '+id+ ' is added to scheduler') 
@@ -117,7 +117,7 @@ def update_requests(DV):
 
 def request_to_device(deviceIP,deviceCode,DatagramId):
     text=str(_('Sent request ')) +DatagramId+ str(_(' to ')) + deviceIP
-    PublishEvent(Severity=0,Text=text,Persistent=True)
+    PublishEvent(Severity=0,Text=text,Persistent=False)
     HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP)    
     HTTPrequest.request_datagram(DeviceCode=deviceCode,DatagramId=DatagramId) 
   

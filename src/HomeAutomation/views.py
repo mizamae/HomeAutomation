@@ -147,10 +147,10 @@ def modifySchedule(request,pk,value,sense):
             SCHD.save()
         elif value=='REFValue':
             if SCHD.Var.Value==SCHD.HValue:
-                SCHD.Var.Value=SCHD.LValue
+                Value=SCHD.LValue
             else:
-                SCHD.Var.Value=SCHD.HValue
-            SCHD.Var.save()
+                Value=SCHD.HValue
+            SCHD.Var.update_value(newValue=Value,writeDB=True)
             
         return HttpResponseRedirect(reverse('viewSchedules'))
 
@@ -338,7 +338,7 @@ def viewReports(request,pk=None):
                                                             'fromDate':ReportItem.fromDate,
                                                             'toDate':ReportItem.toDate,
                                                             'reportData':ReportItem.data})
-        return Http404
+    return Http404
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_report'))
@@ -350,6 +350,14 @@ def previewReport(request,title):
                                                         'fromDate':ReportItem.fromDate,
                                                         'toDate':ReportItem.toDate,
                                                         'reportData':ReportItem.data})
+                                                        
+@login_required
+@user_passes_test(lambda u: u.has_perm('Devices.add_report'))
+def deleteReport(request,pk):
+    if pk!=None:
+        ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
+        ReportItem.delete()
+    return HttpResponseRedirect(reverse('viewReports'))
     
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_device'))

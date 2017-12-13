@@ -53,7 +53,7 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             try:
                 mainVar=MainDeviceVarModel.objects.get(Label=label)
             except:
-                mainVar=MainDeviceVarModel(Label=label,Value='',Datatype=0,Units='km')
+                mainVar=MainDeviceVarModel(Label=label,Value='',Datatype=0,Units='km',UserEditable=False)
                 logger.info('Creating main Var ' + label)
 
             if instance.Latitude!=None and instance.Longitude!=None:
@@ -61,6 +61,7 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             else:
                 mainVar.Value=-1
             PublishEvent(Severity=0,Text=label+' is ' + str(mainVar.Value),Persistent=False)
+            mainVar.UserEditable=False
             mainVar.save()
         if instance.Latitude!=None and instance.Longitude!=None:
             import json
