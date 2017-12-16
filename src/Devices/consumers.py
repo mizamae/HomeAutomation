@@ -13,7 +13,7 @@ class DeviceModel_updater(JsonWebsocketConsumer):
         #logger.info("DeviceModel_delete original_message" + ":"+ str(content['data']))
         DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
         DV.DeviceState= 0 if (DV.DeviceState==1) else 1
-        DV.save()
+        DV.save(update_fields=[])
         update_requests(DV=DV)
 
 class DeviceModel_delete(JsonWebsocketConsumer):

@@ -406,8 +406,6 @@ class AutomationVariablesModel(models.Model):
 
 @receiver(post_save, sender=AutomationVariablesModel, dispatch_uid="update_AutomationVariablesModel")
 def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs): 
-    import time
-    #time.sleep(5) # to guarantee the latest values are effectively written to DB
     rules=RuleItem.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
     if len(rules)>0:
         for rule in rules:

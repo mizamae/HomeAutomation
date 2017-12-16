@@ -48,8 +48,7 @@ def initializeIOs(declareInputEvent=True):
                     
                     
                 logger.info("   - Initialized Input on pin " + str(IO.pin))
-            #IO.save(update_fields=['value'])
-            
+            #IO.save(update_fields=['value'])        
                 
 class IOmodelManager(models.Manager):
     def create_IO(self, pin,label,direction,default=0,value=0):

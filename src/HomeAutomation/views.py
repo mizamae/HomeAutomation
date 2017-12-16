@@ -210,7 +210,7 @@ def ConfDevice(request,code):
                 code=int(code)
                 DV=Devices.models.DeviceModel(DeviceName=name,DeviceCode=code,DeviceIP=IP,Type=DeviceType,
                                                                  DeviceState=DeviceState,Sampletime=Sampletime)
-                DV.save()
+                DV.save(update_fields=[])
                 state='RegisteredOK'
             
                 DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
@@ -233,7 +233,7 @@ def ConfDevice(request,code):
                 DeviceName=form.cleaned_data['DeviceName']
                 CustomLabels=form.get_variablesLabels()
                 DV.CustomLabels=json.dumps(CustomLabels)
-                DV.save()
+                DV.save(update_fields=[])
                 DV.updateAutomationVars()
                 #print('OK!!!')
                 state='FinishedOK'
@@ -303,7 +303,7 @@ def adminSetCustomLabels(request,devicePK):
             DeviceName=form.cleaned_data['DeviceName']
             CustomLabels=form.get_variablesLabels()
             DV.CustomLabels=json.dumps(CustomLabels)
-            DV.save()
+            DV.save(update_fields=[])
             DV.updateAutomationVars()
             state='FinishedOK'
         return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':DV.DeviceName.upper(),'Form': form})
