@@ -55,14 +55,17 @@ class MainDeviceVarModel(models.Model):
             if timestamp==None:
                 now=timezone.now()
                 registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs=self)
-            else:
-                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=self)
                 
         self.Value=newValue
-        self.save()
+        self.save(update_fields=['Value'])
         
-        if writeDB and timestamp==None:
-            registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
+        if writeDB :
+            if timestamp==None:
+                registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
+            else:
+                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=self)
+        
+        self.updateAutomationVars()
         
     def updateAutomationVars(self):
         AutomationVars=AutomationVariablesModel.objects.filter(Device='Main')
@@ -100,9 +103,6 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
-    timestamp=timezone.now() #para hora con info UTC
-    #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
-    instance.updateAutomationVars()
 
 class AdditionalCalculationsModel(models.Model):
     PERIODICITY_CHOICES=(
@@ -405,7 +405,9 @@ class AutomationVariablesModel(models.Model):
         verbose_name_plural = _('Automation variables')
 
 @receiver(post_save, sender=AutomationVariablesModel, dispatch_uid="update_AutomationVariablesModel")
-def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs):    
+def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs): 
+    import time
+    #time.sleep(5) # to guarantee the latest values are effectively written to DB
     rules=RuleItem.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
     if len(rules)>0:
         for rule in rules:
@@ -487,7 +489,7 @@ class RuleItem(models.Model):
         
         evaluableTRUE+='('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisTRUE + ')'
         evaluableFALSE+='not ('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisFALSE + ')'
-        
+        #logger.info('The rule ' + str(self) + ' evaluated: resultTRUE= ' + str(evaluableTRUE) + ' - resultFALSE= ' + str(evaluableFALSE))
         try:
             return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
         except:
@@ -598,23 +600,21 @@ class AutomationRuleModel(models.Model):
         except:
             resultTRUE=eval(self.get_OnError_display())
             resultFALSE=eval('not ' + self.get_OnError_display())
-            
+        
         if resultTRUE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                IO.value=int(Action['IOValue'])
-                IO.save(update_fields=['value'])
-            #logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
+                newValue=int(Action['IOValue'])
+                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                IO.value=int(not int(Action['IOValue']))
-                IO.save(update_fields=['value'])
-            #logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
+                newValue=int(not int(Action['IOValue']))
+                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
             

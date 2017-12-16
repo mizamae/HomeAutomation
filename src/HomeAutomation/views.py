@@ -147,10 +147,10 @@ def modifySchedule(request,pk,value,sense):
             SCHD.save()
         elif value=='REFValue':
             if SCHD.Var.Value==SCHD.HValue:
-                Value=SCHD.LValue
+                newValue=SCHD.LValue
             else:
-                Value=SCHD.HValue
-            SCHD.Var.update_value(newValue=Value,writeDB=True)
+                newValue=SCHD.HValue
+            SCHD.Var.update_value(newValue=newValue,writeDB=True)
             
         return HttpResponseRedirect(reverse('viewSchedules'))
 

@@ -30,25 +30,31 @@ def initializeIOs(declareInputEvent=True):
             if IO.direction=='OUT':
                 GPIO.setup(int(IO.pin), GPIO.OUT)
                 GPIO.output(int(IO.pin),IO.value)
+                newValue=IO.value
                 logger.info("   - Initialized Output on pin " + str(IO.pin))
+                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
             elif IO.direction=='IN':
                 if declareInputEvent:
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
                     #GPIO.remove_event_detect(int(IO.pin))
                     GPIO.add_event_detect(int(IO.pin), GPIO.BOTH, callback=IO.InputChangeEvent, bouncetime=200)
                     IO.value=GPIO.input(int(IO.pin))
+                    newValue=IO.value
+                    IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
                 else:
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
                     #GPIO.remove_event_detect(int(IO.pin))
+                
                     
                     
                 logger.info("   - Initialized Input on pin " + str(IO.pin))
-            IO.save()
+            #IO.save(update_fields=['value'])
+            
                 
 class IOmodelManager(models.Manager):
     def create_IO(self, pin,label,direction,default=0,value=0):
         IO = self.create(pin=pin,label=label,direction=direction,default=default,value=value)
-        IO.save()
+        IO.save(update_fields=['value'])
     
 class IOmodel(models.Model):
     DIRECTION_CHOICES=(
@@ -74,25 +80,33 @@ class IOmodel(models.Model):
         super(IOmodel, self).__init__(*args, **kwargs)
         self.__previous_value = self.value
     
-    def save(self, *args, **kwargs):
-        if self.value != self.__previous_value and self.__previous_value != None:
-            self.__previous_value = self.value
-            text=str(_('The value of the GPIO ')) +self.label+str(_(' has changed. Now it is ')) + str(self.value)
-            PublishEvent(Severity=0,Text=text)
+    def update_value(self,newValue,timestamp=None,writeDB=True):
+        if writeDB:
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                               configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
-            timestamp=timezone.now() #para hora con info UTC
-            registerDB.insert_IOs_register(TimeStamp=timestamp-datetime.timedelta(seconds=1),direction=self.direction)
-        self.__previous_value = self.value
-        super(IOmodel, self).save(*args, **kwargs)
+                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+            registerDB.check_IOsTables()
+            if timestamp==None:
+                now=timezone.now()
+                registerDB.insert_IOs_register(TimeStamp=now-datetime.timedelta(seconds=1),direction=self.direction)
+                            
+        self.value=newValue
+        self.save(update_fields=['value'])
         
+        if writeDB :
+            if timestamp==None:
+                registerDB.insert_IOs_register(TimeStamp=now,direction=self.direction)
+            else:
+                registerDB.insert_IOs_register(TimeStamp=timestamp,direction=self.direction)
+        
+        self.updateAutomationVars()
+               
     def InputChangeEvent(self,*args):
         #sleep(0.1) # to avoid reading the input during the debounce time
         # if GPIO.gpio_function(self.pin)!=GPIO.IN:
             # GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
         val=GPIO.input(self.pin)
         self.value=int(val)
-        self.save()
+        self.update_value(newValue=self.value,timestamp=None,writeDB=True)
         #Master_GPIOs.signals.IN_change_notification.send(sender=None, number=self.pin, value=val)
     
     def updateAutomationVars(self):
@@ -155,7 +169,7 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             GPIO.add_event_detect(int(instance.pin), GPIO.BOTH, callback=instance.InputChangeEvent, bouncetime=200)  
             logger.info("Initialized Input on pin " + str(instance.pin))
     else:
-        if instance.direction=='OUT':
+        if instance.direction=='OUT' and 'value' in update_fields:
             #logger.info("Instance.value= " + str(instance.value))
             GPIO.setup(int(instance.pin), GPIO.OUT)
             if instance.value==1:
@@ -163,11 +177,6 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             elif instance.value==0:
                 GPIO.output(int(instance.pin),GPIO.LOW)
 
-    if instance.direction!='SENS':
-        instance.updateAutomationVars()
-        registerDB.check_IOsTables()
-        timestamp=timezone.now() #para hora con info UTC
-        registerDB.insert_IOs_register(TimeStamp=timestamp,direction=instance.direction)
 
 @receiver(post_delete, sender=IOmodel, dispatch_uid="delete_IOmodel")
 def delete_IOmodel(sender, instance,**kwargs):

@@ -29,6 +29,7 @@
 {% endblock extrahead %}
 {% block container %}     
     <div class="container">
+        <a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a></p>
 		<h1>{% trans "List of automation items" %}</h1>
 		
 	    {% for VAR in VARs %}
@@ -125,8 +126,6 @@
 	    </table>
 	    </div>
 	    {% endfor %} 
-        
-	    <a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a></p>
     </div><!-- /.container -->
           
 {% endblock container %} 

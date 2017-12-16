@@ -234,7 +234,8 @@ def update_DeviceModel(sender, instance, update_fields,**kwargs):
         registerDB.create_DeviceRegistersTables(DV=instance)
         update_requests(DV=instance)
 
-    instance.updateAutomationVars()
+    if 'LastUpdated' in update_fields:
+        instance.updateAutomationVars()
                
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_DeviceModel")
 def delete_DeviceModel(sender, instance,**kwargs):

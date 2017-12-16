@@ -98,7 +98,7 @@ class OpenWeatherMap(object):
             self.sensor.Error=error
             if error!='':
                 PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
-            self.sensor.save()
+            self.sensor.save(update_fields=["LastUpdated"])
         else:
             PublishEvent(Severity=5,Text=str(_('The device ')) + self.sensor.DeviceName + str(_(' does not have any Beacon associated.')),Persistent=True)
         
@@ -366,7 +366,7 @@ class DHT22(object):
         else:
             PublishEvent(Severity=0,Text=self.sensor.DeviceName + ' updated OK',Persistent=False)
         self.sensor.Error=error
-        self.sensor.save()
+        self.sensor.save(update_fields=["LastUpdated"])
         self._lastTemp=temperature
         
     def query_sensor(self,**kwargs):
