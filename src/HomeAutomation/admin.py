@@ -21,7 +21,7 @@ class MainDeviceVarModelAdmin(admin.ModelAdmin):
     
     printValue.short_description = _("Current value")
     
-    list_display = ('Label','printValue')
+    list_display = ('Label','printValue','pk')
     form = MainDeviceVarForm
     pass      
 

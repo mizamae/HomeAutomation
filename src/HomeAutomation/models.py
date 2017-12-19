@@ -18,6 +18,7 @@ import Devices.BBDD
 import Master_GPIOs.models
 
 import logging
+#import pandas as pd
 
 logger = logging.getLogger("project")
                                            
@@ -153,6 +154,7 @@ class AdditionalCalculationsModel(models.Model):
     def calculate(self):
         import datetime
         import calendar
+        #logger.info(str(self)+ ' periodicity: ' + str(self.Periodicity))
         if self.Periodicity==1: # Every hour
             offset=datetime.timedelta(hours=1)
         elif self.Periodicity==2: # Every day
@@ -169,7 +171,9 @@ class AdditionalCalculationsModel(models.Model):
         fromDate=toDate-offset
         DBDate=toDate-offset/2
         toDate=toDate-datetime.timedelta(minutes=1)
+        #logger.info(str(self)+ ' offset: ' + str(offset))
         data_rows=self.AutomationVar.getValues(fromDate=fromDate,toDate=toDate,localized=False)
+        #logger.info(str(self)+ ' data_rows: ' + str(data_rows))
         if data_rows!=[]:
             self.df=pd.DataFrame.from_records(data=data_rows,columns=['timestamp',str(self)])
             self.df['weekday'] = self.df['timestamp'].dt.weekday_name

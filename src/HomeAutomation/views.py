@@ -331,8 +331,8 @@ def viewReports(request,pk=None):
         #logger.info('Found : ' + str(elements))
         return render(request, 'reportItemsList.html',{'reportTitles':reportTitles,'items':ReportItems})
     else:
-        #from HomeAutomation.tasks import checkReportAvailability            
-        #checkReportAvailability()        
+        #from HomeAutomation.tasks import checkCustomCalculations            
+        #checkCustomCalculations()        
         ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
         return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
                                                             'fromDate':ReportItem.fromDate,
