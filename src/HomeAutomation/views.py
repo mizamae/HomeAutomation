@@ -147,10 +147,10 @@ def modifySchedule(request,pk,value,sense):
             SCHD.save()
         elif value=='REFValue':
             if SCHD.Var.Value==SCHD.HValue:
-                newValue=SCHD.LValue
+                Value=SCHD.LValue
             else:
-                newValue=SCHD.HValue
-            SCHD.Var.update_value(newValue=newValue,writeDB=True)
+                Value=SCHD.HValue
+            SCHD.Var.update_value(newValue=Value,writeDB=True)
             
         return HttpResponseRedirect(reverse('viewSchedules'))
 
@@ -210,7 +210,7 @@ def ConfDevice(request,code):
                 code=int(code)
                 DV=Devices.models.DeviceModel(DeviceName=name,DeviceCode=code,DeviceIP=IP,Type=DeviceType,
                                                                  DeviceState=DeviceState,Sampletime=Sampletime)
-                DV.save(update_fields=[])
+                DV.save()
                 state='RegisteredOK'
             
                 DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
@@ -233,7 +233,7 @@ def ConfDevice(request,code):
                 DeviceName=form.cleaned_data['DeviceName']
                 CustomLabels=form.get_variablesLabels()
                 DV.CustomLabels=json.dumps(CustomLabels)
-                DV.save(update_fields=[])
+                DV.save()
                 DV.updateAutomationVars()
                 #print('OK!!!')
                 state='FinishedOK'
@@ -303,7 +303,7 @@ def adminSetCustomLabels(request,devicePK):
             DeviceName=form.cleaned_data['DeviceName']
             CustomLabels=form.get_variablesLabels()
             DV.CustomLabels=json.dumps(CustomLabels)
-            DV.save(update_fields=[])
+            DV.save()
             DV.updateAutomationVars()
             state='FinishedOK'
         return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':DV.DeviceName.upper(),'Form': form})
@@ -331,8 +331,8 @@ def viewReports(request,pk=None):
         #logger.info('Found : ' + str(elements))
         return render(request, 'reportItemsList.html',{'reportTitles':reportTitles,'items':ReportItems})
     else:
-        #from HomeAutomation.tasks import checkCustomCalculations            
-        #checkCustomCalculations()        
+        #from HomeAutomation.tasks import checkReportAvailability            
+        #checkReportAvailability()        
         ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
         return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
                                                             'fromDate':ReportItem.fromDate,

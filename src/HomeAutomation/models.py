@@ -18,7 +18,7 @@ import Devices.BBDD
 import Master_GPIOs.models
 
 import logging
-#import pandas as pd
+import pandas as pd
 
 logger = logging.getLogger("project")
                                            
@@ -154,7 +154,6 @@ class AdditionalCalculationsModel(models.Model):
     def calculate(self):
         import datetime
         import calendar
-        #logger.info(str(self)+ ' periodicity: ' + str(self.Periodicity))
         if self.Periodicity==1: # Every hour
             offset=datetime.timedelta(hours=1)
         elif self.Periodicity==2: # Every day
@@ -171,9 +170,7 @@ class AdditionalCalculationsModel(models.Model):
         fromDate=toDate-offset
         DBDate=toDate-offset/2
         toDate=toDate-datetime.timedelta(minutes=1)
-        #logger.info(str(self)+ ' offset: ' + str(offset))
         data_rows=self.AutomationVar.getValues(fromDate=fromDate,toDate=toDate,localized=False)
-        #logger.info(str(self)+ ' data_rows: ' + str(data_rows))
         if data_rows!=[]:
             self.df=pd.DataFrame.from_records(data=data_rows,columns=['timestamp',str(self)])
             self.df['weekday'] = self.df['timestamp'].dt.weekday_name
@@ -409,7 +406,7 @@ class AutomationVariablesModel(models.Model):
         verbose_name_plural = _('Automation variables')
 
 @receiver(post_save, sender=AutomationVariablesModel, dispatch_uid="update_AutomationVariablesModel")
-def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs): 
+def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs):    
     rules=RuleItem.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
     if len(rules)>0:
         for rule in rules:
@@ -491,7 +488,7 @@ class RuleItem(models.Model):
         
         evaluableTRUE+='('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisTRUE + ')'
         evaluableFALSE+='not ('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisFALSE + ')'
-        #logger.info('The rule ' + str(self) + ' evaluated: resultTRUE= ' + str(evaluableTRUE) + ' - resultFALSE= ' + str(evaluableFALSE))
+        
         try:
             return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
         except:

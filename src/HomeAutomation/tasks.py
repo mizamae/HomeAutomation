@@ -79,9 +79,7 @@ def checkCustomCalculations():
     '''
     from HomeAutomation.models import AdditionalCalculationsModel
     aCALCs=AdditionalCalculationsModel.objects.all()
-    #logger.info('The following additional calculations were found: '+ str(aCALCs)) 
     for aCALC in aCALCs:
-        #logger.info('The additional calculation '+ str(aCALC) + ' returned ' + str(aCALC.checkTrigger())) 
         if aCALC.checkTrigger():
             aCALC.calculate()
             

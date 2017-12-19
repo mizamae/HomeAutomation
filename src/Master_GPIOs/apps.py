@@ -34,7 +34,7 @@ class GPIOsConfig(AppConfig):
                 cache.set(self.name, os.getpid(), 40)
                 logger.info('Initializing IOs inputs events on the process ' + str(os.getpid()))
                 initializeIOs(declareInputEvent=True)
-        else:
+        elif 'gunicorn' in sys.argv:
             initializeIOs(declareInputEvent=False)
             logger.info('Initializing IOs on the process ' + str(os.getpid()))
 
