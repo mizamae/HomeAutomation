@@ -133,25 +133,6 @@ def modifySchedule(request,pk,value,sense):
     else:
         SCHD=HomeAutomation.models.MainDeviceVarWeeklyScheduleModel.objects.get(pk=pk)
         SCHD.modify_schedule(value=value,sense=sense)
-        # if value=='LValue':
-            # if sense=='-':
-                # SCHD.LValue-=decimal.Decimal.from_float(0.5)
-            # else:
-                # SCHD.LValue+=decimal.Decimal.from_float(0.5)
-            # SCHD.save()
-        # elif value=='HValue':
-            # if sense=='-':
-                # SCHD.HValue-=decimal.Decimal.from_float(0.5)
-            # else:
-                # SCHD.HValue+=decimal.Decimal.from_float(0.5)
-            # SCHD.save()
-        # elif value=='REFValue':
-            # if SCHD.Var.Value==SCHD.HValue:
-                # Value=SCHD.LValue
-            # else:
-                # Value=SCHD.HValue
-            # SCHD.Var.update_value(newValue=Value,writeDB=True)
-            
         return HttpResponseRedirect(reverse('viewSchedules'))
 
 @user_passes_test(lambda u: u.has_perm('HomeAutomation.view_rules'))

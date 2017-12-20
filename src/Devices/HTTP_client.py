@@ -170,7 +170,7 @@ class HTTP_requests():
                                 DV.Error='The device did not acknowledge the resetStatics order'
                             DV.save(update_fields=["LastUpdated","Error"])
                             #Devices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,Device=DV,DatagramId=DatagramId,values=datagram)
-                            
+                            PublishEvent(Severity=0,Text=str(_("The device "))+DV.DeviceName+str(_(" updated OK ")),Persistent=True)
                             return
                         else:
                             return datagram

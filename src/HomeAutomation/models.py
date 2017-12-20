@@ -89,7 +89,7 @@ class MainDeviceVarModel(models.Model):
         verbose_name_plural = _('Main device vars')   
         
 @receiver(post_save, sender=MainDeviceVarModel, dispatch_uid="update_MainDeviceVarModel")
-def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
+def update_MainDeviceVarModel(sender, instance, update_fields=[],**kwargs):
     
     registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
