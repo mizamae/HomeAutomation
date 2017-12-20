@@ -226,15 +226,15 @@ class DeviceModel(models.Model):
         verbose_name_plural = _('Slave devices')
         
 @receiver(post_save, sender=DeviceModel, dispatch_uid="update_DeviceModel")
-def update_DeviceModel(sender, instance, update_fields=[],**kwargs):
+def update_DeviceModel(sender, instance, update_fields,**kwargs):
     from Devices.Requests import update_requests
     if kwargs['created']:   # new instance is created
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
         registerDB.create_DeviceRegistersTables(DV=instance)
         update_requests(DV=instance)
-
-    if 'LastUpdated' in update_fields:
+    
+    if update_fields!=None and 'LastUpdated' in update_fields:
         instance.updateAutomationVars()
                
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_DeviceModel")

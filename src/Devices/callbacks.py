@@ -272,7 +272,7 @@ class DHT22(object):
                 x=x-1
             
             x=x+1
-            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
+            time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
             
         if samplesT>0:
             self._lastTemp=round(temperature/samplesT,3)
@@ -328,7 +328,9 @@ class DHT22(object):
                 error+=' - maxRetries'
                 break
             x=x+1
-            time.sleep(5)   # waiting 2 sec between measurements to release DHT sensor
+            
+            if (x < self._numberMeasures):
+                time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
         
         if retries>=self._MAX_RETRIES:
             if temperature>0:
@@ -364,7 +366,7 @@ class DHT22(object):
         if error!='':
             PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
         else:
-            PublishEvent(Severity=0,Text=self.sensor.DeviceName + ' updated OK',Persistent=False)
+            PublishEvent(Severity=0,Text=self.sensor.DeviceName + ' updated OK',Persistent=True)
         self.sensor.Error=error
         self.sensor.save()
         self._lastTemp=temperature

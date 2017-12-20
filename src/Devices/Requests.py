@@ -116,8 +116,8 @@ def update_requests(DV):
         PublishEvent(Severity=0,Text=text,Persistent=True)
 
 def request_to_device(deviceIP,deviceCode,DatagramId):
-    text=str(_('Sent request ')) +DatagramId+ str(_(' to ')) + deviceIP
-    PublishEvent(Severity=0,Text=text,Persistent=False)
+    #text=str(_('Sent request ')) +DatagramId+ str(_(' to ')) + deviceIP
+    #PublishEvent(Severity=0,Text=text,Persistent=False)
     HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+deviceIP)    
     HTTPrequest.request_datagram(DeviceCode=deviceCode,DatagramId=DatagramId) 
   

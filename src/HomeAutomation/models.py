@@ -59,10 +59,12 @@ class MainDeviceVarModel(models.Model):
                 registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=self)
                 
         self.Value=newValue
-        self.save()
+        self.save(update_fields=['Value'])
         
         if writeDB and timestamp==None:
             registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
+        
+        self.updateAutomationVars()
         
     def updateAutomationVars(self):
         AutomationVars=AutomationVariablesModel.objects.filter(Device='Main')
@@ -102,7 +104,7 @@ def update_MainDeviceVarModel(sender, instance, update_fields=[],**kwargs):
         registerDB.check_IOsTables()
     timestamp=timezone.now() #para hora con info UTC
     #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
-    instance.updateAutomationVars()
+    
 
 class AdditionalCalculationsModel(models.Model):
     PERIODICITY_CHOICES=(
@@ -631,8 +633,8 @@ class AutomationRuleModel(models.Model):
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                IO.value=int(Action['IOValue'])
-                IO.save(update_fields=['value'])
+                newValue=int(Action['IOValue'])
+                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
             #logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
@@ -640,8 +642,8 @@ class AutomationRuleModel(models.Model):
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                IO.value=int(not int(Action['IOValue']))
-                IO.save(update_fields=['value'])
+                newValue=int(not int(Action['IOValue']))
+                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
             #logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)

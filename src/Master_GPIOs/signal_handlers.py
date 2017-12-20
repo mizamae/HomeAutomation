@@ -19,15 +19,15 @@ def OUT_toggle_request_handler(sender, **kwargs):
     value=GPIO.input(number)
     GPIO.output(number, not value)
     IO=Master_GPIOs.models.IOmodel.objects.get(pin=number)
-    IO.value=GPIO.input(number)
-    
+    newValue=GPIO.input(number)
+    IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
     timestamp=timezone.now() #para hora con info UTC 
     #logger.info("Output was "+str(value) + " and now is " + str(IO.value))
     
     #applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
     #                                  configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
     #applicationDBs.insert_IOs_register(TimeStamp=timestamp-datetime.timedelta(seconds=1),direction='OUT')
-    IO.save()
+    #IO.save()
     #applicationDBs.insert_event(TimeStamp=timestamp,Sender='Web: '+str(sender),DeviceName='Main',EventType=applicationDBs.EVENT_TYPES['OUTPUT_CHANGE'],value=IO.value)
     #applicationDBs.insert_IOs_register(TimeStamp=timestamp,direction='OUT')
         
@@ -39,14 +39,6 @@ def IN_change_notification_handler(sender, **kwargs):
     #logger.info("Received notification that the input " + str(number) + " has changed to " +str(value)+ " on the process " + str(os.getpid()))
     IO=Master_GPIOs.models.IOmodel.objects.get(pin=number)
     
-    timestamp=timezone.now() #para hora con info UTC 
-    #applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-    #                                  configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
-    # applicationDBs.insert_IOs_register(TimeStamp=timestamp-datetime.timedelta(seconds=1),direction='IN')
-    #IO.value=value
-    #IO.save()
-    #applicationDBs.insert_IOs_register(TimeStamp=timestamp,direction='IN')
-    PublishEvent(Severity=0,Text=str(_("Received notification that the input ")) + str(number) + str(_(" has changed to ")) +str(value),Persistent=False)
     
 
     

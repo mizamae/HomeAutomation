@@ -687,17 +687,7 @@ class DIY4dot0_Databases(object):
                 table='outputs'
             else:
                 raise ValueError('The value of parameter "direction" can only be "IN" for inputs or "OUT" for outputs')
-                
-            try:
-                sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
-                lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
-                if lastTimestamp != None:
-                    lastTimestamp=lastTimestamp.replace(microsecond=0)
-                    if lastTimestamp>=TimeStamp.replace(microsecond=0):
-                        return
-            except:
-                pass
-                
+                            
             sql=self.registersDB.SQLinsertIOs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             #logger.info('SQL: ' + sql)
