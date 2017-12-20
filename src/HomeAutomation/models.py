@@ -18,7 +18,6 @@ import Devices.BBDD
 import Master_GPIOs.models
 
 import logging
-import pandas as pd
 
 logger = logging.getLogger("project")
                                            
@@ -56,17 +55,14 @@ class MainDeviceVarModel(models.Model):
             if timestamp==None:
                 now=timezone.now()
                 registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs=self)
-                
-        self.Value=newValue
-        self.save(update_fields=['Value'])
-        
-        if writeDB :
-            if timestamp==None:
-                registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
             else:
                 registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=self)
+                
+        self.Value=newValue
+        self.save()
         
-        self.updateAutomationVars()
+        if writeDB and timestamp==None:
+            registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
         
     def updateAutomationVars(self):
         AutomationVars=AutomationVariablesModel.objects.filter(Device='Main')
@@ -104,6 +100,9 @@ def update_MainDeviceVarModel(sender, instance, update_fields,**kwargs):
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
+    timestamp=timezone.now() #para hora con info UTC
+    #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
+    instance.updateAutomationVars()
 
 class AdditionalCalculationsModel(models.Model):
     PERIODICITY_CHOICES=(
@@ -234,6 +233,18 @@ class MainDeviceVarWeeklyScheduleModel(models.Model):
     
     Days = models.ManyToManyField('HomeAutomation.inlineDaily',blank=True)
     
+    def set_Active(self,value=True):
+        self.Active=value
+        self.save()
+        
+        if self.Active:
+            logger.info('Se ha activado la planificacion semanal ' + str(self.Label) + ' para la variable ' + str(self.Var))
+            schedules=MainDeviceVarWeeklyScheduleModel.objects.filter(Var=self.Var)
+            for schedule in schedules:
+                if schedule.Label!=self.Label:
+                    schedule.set_Active(value=False)
+            checkHourlySchedules()
+        
     def get_today_pattern(self):
         timestamp=datetime.datetime.now()
         weekDay=timestamp.weekday()
@@ -248,6 +259,28 @@ class MainDeviceVarWeeklyScheduleModel(models.Model):
                 return pattern
         return None
         
+    def modify_schedule(self,value,sense='+'):
+        import decimal
+        if value=='LValue':
+            if sense=='-':
+                self.LValue-=decimal.Decimal.from_float(0.5)
+            else:
+                self.LValue+=decimal.Decimal.from_float(0.5)
+            self.save()
+        elif value=='HValue':
+            if sense=='-':
+                self.HValue-=decimal.Decimal.from_float(0.5)
+            else:
+                self.HValue+=decimal.Decimal.from_float(0.5)
+            self.save()
+        elif value=='REFValue':
+            if self.Var.Value==self.HValue:
+                Value=self.LValue
+            else:
+                Value=self.HValue
+            self.Var.update_value(newValue=Value,writeDB=True)
+        #checkHourlySchedules()
+            
     def get_formset(self):
         from django.forms import inlineformset_factory
         MainDeviceVarWeeklyScheduleFormset = inlineformset_factory (MainDeviceVarDailyScheduleModel,MainDeviceVarWeeklyScheduleModel,fk_name)
@@ -267,20 +300,14 @@ def update_MainDeviceVarWeeklyScheduleModel(sender, instance, update_fields,**kw
     timestamp=timezone.now() #para hora con info UTC
     
     if not kwargs['created']:   # an instance has been modified
-        logger.info('Se ha modificado la planificacion semanal ' + str(instance.Label))
-        text=str(_('The weekly schedule ')) + str(instance.Label) + str(_(' has been modified.'))
-        PublishEvent(Severity=0,Text=text)
+        # logger.info('Se ha modificado la planificacion semanal ' + str(instance.Label))
+        # text=str(_('The weekly schedule ')) + str(instance.Label) + str(_(' has been modified.'))
+        # PublishEvent(Severity=0,Text=text)
+        pass
     else:
         logger.info('Se ha creado la planificacion semanal ' + str(instance.Label))
     
-    if instance.Active:
-        logger.info('Se ha activado la planificacion semanal ' + str(instance.Label) + ' para la variable ' + str(instance.Var))
-        schedules=MainDeviceVarWeeklyScheduleModel.objects.filter(Var=instance.Var)
-        for schedule in schedules:
-            if schedule.Label!=instance.Label:
-                schedule.Active=False
-                schedule.save()
-        checkHourlySchedules()
+    
     
 def checkHourlySchedules(init=False):
     #logger.info('Checking hourly schedules on process ' + str(os.getpid()))
@@ -599,21 +626,23 @@ class AutomationRuleModel(models.Model):
         except:
             resultTRUE=eval(self.get_OnError_display())
             resultFALSE=eval('not ' + self.get_OnError_display())
-        
+            
         if resultTRUE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                newValue=int(Action['IOValue'])
-                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
+                IO.value=int(Action['IOValue'])
+                IO.save(update_fields=['value'])
+            #logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None:
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                newValue=int(not int(Action['IOValue']))
-                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
+                IO.value=int(not int(Action['IOValue']))
+                IO.save(update_fields=['value'])
+            #logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
             

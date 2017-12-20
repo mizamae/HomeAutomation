@@ -644,6 +644,15 @@ class DIY4dot0_Databases(object):
             valuesHolder=valuesHolder[:-1]
             table='MainVariables'
             
+            try:
+                sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+                lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
+                if lastTimestamp != None:
+                    lastTimestamp=lastTimestamp.replace(microsecond=0)
+                    if lastTimestamp>=TimeStamp:
+                        return
+            except:
+                pass
             sql=self.registersDB.SQLinsertMainVARs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             #logger.info('SQL: ' + sql)
@@ -678,19 +687,26 @@ class DIY4dot0_Databases(object):
                 table='outputs'
             else:
                 raise ValueError('The value of parameter "direction" can only be "IN" for inputs or "OUT" for outputs')
-               
-            #logger.info('SQL: ' + self.registersDB.SQLinsertIOs_statement)
+                
+            try:
+                sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+                lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
+                if lastTimestamp != None:
+                    lastTimestamp=lastTimestamp.replace(microsecond=0)
+                    if lastTimestamp>=TimeStamp.replace(microsecond=0):
+                        return
+            except:
+                pass
+                
             sql=self.registersDB.SQLinsertIOs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             #logger.info('SQL: ' + sql)
             returned=self.registersDB.insert_row(SQL_statement=sql, row_values=values)
-            # if returned==-1:
-                # #logger.info('SQL: ' + self.registersDB.SQLupdateIOs_statement)
-                # sql=self.registersDB.SQLupdateIOs_statement.replace('$table',table)
-                # for IO in IOs:
-                    # self.registersDB.update_field(SQL_statement=sql,
-                                                  # fieldupdate='"'+str(IO.pin)+'"',fieldupdate_value=IO.value,keyfield='"timestamp"',keyfield_value=TimeStamp)
-                # PublishEvent(Severity=2,Text='UNIQUE contraint failed in IOs but solved updating',Persistent=False)
+            if returned==-1:
+                for IO in IOs:
+                    self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateIOs_statement.replace('$table',table),
+                                                  fieldupdate='"'+str(IO.pin)+'"',fieldupdate_value=IO.value,keyfield='"timestamp"',keyfield_value=TimeStamp)
+                PublishEvent(Severity=2,Text='UNIQUE contraint failed in IOs but solved updating',Persistent=False)
                 
         except:
             logger.error("Unexpected error in insert_IOs_register:" + str(sys.exc_info()[1]))
