@@ -627,11 +627,14 @@ class DIY4dot0_Databases(object):
         for DG in DGs:
             self.registersDB.create_datagram_table(DV=DV,DG=DG)
    
-    def insert_VARs_register(self,TimeStamp,VARs):
+    def insert_VARs_register(self,TimeStamp,VARs='all'):
 
         try:
-            if not isinstance(VARs, list):
-                VARs=[VARs,]
+            if VARs=='all':
+                VARs=HomeAutomation.models.MainDeviceVarModel.objects.all()
+            else:
+                if not isinstance(VARs, list):
+                    VARs=[VARs,]
             TimeStamp=TimeStamp.replace(microsecond=0)
             values=[TimeStamp]
             valuesHolder='?,'
@@ -692,11 +695,11 @@ class DIY4dot0_Databases(object):
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             #logger.info('SQL: ' + sql)
             returned=self.registersDB.insert_row(SQL_statement=sql, row_values=values)
-            if returned==-1:
-                for IO in IOs:
-                    self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateIOs_statement.replace('$table',table),
-                                                  fieldupdate='"'+str(IO.pin)+'"',fieldupdate_value=IO.value,keyfield='"timestamp"',keyfield_value=TimeStamp)
-                PublishEvent(Severity=2,Text='UNIQUE contraint failed in IOs but solved updating',Persistent=False)
+            # if returned==-1:
+                # for IO in IOs:
+                    # self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateIOs_statement.replace('$table',table),
+                                                  # fieldupdate='"'+str(IO.pin)+'"',fieldupdate_value=IO.value,keyfield='"timestamp"',keyfield_value=TimeStamp)
+                # PublishEvent(Severity=2,Text='UNIQUE contraint failed in IOs but solved updating',Persistent=False)
                 
         except:
             logger.error("Unexpected error in insert_IOs_register:" + str(sys.exc_info()[1]))

@@ -50,19 +50,23 @@ class MainDeviceVarModel(models.Model):
         
     def update_value(self,newValue,timestamp=None,writeDB=True):
         if writeDB:
+            now=timezone.now()
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                             configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             if timestamp==None:
-                now=timezone.now()
-                registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs=self)
-            else:
-                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=self)
-                
-        self.Value=newValue
-        self.save(update_fields=['Value'])
+                registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs='all')
         
-        if writeDB and timestamp==None:
-            registerDB.insert_VARs_register(TimeStamp=now,VARs=self)
+        if newValue!=self.Value:
+            text=str(_('The value of the MainVAR "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
+            PublishEvent(Severity=0,Text=text)
+            self.Value=newValue
+            self.save(update_fields=['Value'])
+        
+        if writeDB :
+            if timestamp==None:
+                registerDB.insert_VARs_register(TimeStamp=now,VARs='all')
+            else:
+                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs='all')
         
         self.updateAutomationVars()
         
@@ -98,7 +102,7 @@ def update_MainDeviceVarModel(sender, instance, update_fields=[],**kwargs):
     
     if not kwargs['created']:   # an instance has been modified
         #logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
-        PublishEvent(Severity=0,Text=str(_('Variable '))+instance.Label+str(_(' has changed. Current value is '))+str(instance.Value) + str(instance.Units))
+        pass
     else:
         logger.info('Se ha creado la variable local ' + str(instance))
         registerDB.check_IOsTables()
@@ -268,20 +272,21 @@ class MainDeviceVarWeeklyScheduleModel(models.Model):
                 self.LValue-=decimal.Decimal.from_float(0.5)
             else:
                 self.LValue+=decimal.Decimal.from_float(0.5)
-            self.save()
+            self.save(update_fields=['LValue'])
+            checkHourlySchedules()
         elif value=='HValue':
             if sense=='-':
                 self.HValue-=decimal.Decimal.from_float(0.5)
             else:
                 self.HValue+=decimal.Decimal.from_float(0.5)
-            self.save()
+            self.save(update_fields=['HValue'])
+            checkHourlySchedules()
         elif value=='REFValue':
             if self.Var.Value==self.HValue:
                 Value=self.LValue
             else:
                 Value=self.HValue
             self.Var.update_value(newValue=Value,writeDB=True)
-        #checkHourlySchedules()
             
     def get_formset(self):
         from django.forms import inlineformset_factory
@@ -332,10 +337,12 @@ def checkHourlySchedules(init=False):
                     #logger.info('Setpoint Hour'+str(hour)+' = ' + str(Setpoint))
                     if Setpoint==0:
                         Value=schedule.LValue
-                    else:
+                    elif Setpoint==1:
                         Value=schedule.HValue
-                    #logger.info('Variable.value = ' + str(variable.Value))
-                    #logger.info('Value = ' + str(Value))
+                    else:
+                        text='The schedule ' + schedule.Label + ' returned a non-understandable setpoint (0=LOW,1=HIGH). It returned ' + str(Setpoint)
+                        PublishEvent(Severity=2,Text=text,Persistent=True)
+                        break
                     if schedule.Var.Value!=Value or init:
                         schedule.Var.update_value(newValue=Value,writeDB=True)
                     break

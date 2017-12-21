@@ -46,6 +46,7 @@ def initializeIOs(declareInputEvent=True):
                     #GPIO.remove_event_detect(int(IO.pin))
                     
                     
+                    
                 logger.info("   - Initialized Input on pin " + str(IO.pin))
             #IO.save()
                 
@@ -80,28 +81,29 @@ class IOmodel(models.Model):
     
     def update_value(self,newValue,timestamp=None,writeDB=True):
         if writeDB:
+            now=timezone.now()
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                                         configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             registerDB.check_IOsTables()
             if timestamp==None:
-                now=timezone.now()
                 registerDB.insert_IOs_register(TimeStamp=now-datetime.timedelta(seconds=1),direction=self.direction)
+            
+        if newValue!=self.value:
+            text=str(_('The value of the GPIO "')) +self.label+str(_('" has changed. Now it is ')) + str(newValue)
+            PublishEvent(Severity=0,Text=text)
+            self.value=newValue
+            self.save(update_fields=['value'])
+        
+        if writeDB :
+            if timestamp==None:
+                registerDB.insert_IOs_register(TimeStamp=now,direction=self.direction)
             else:
                 registerDB.insert_IOs_register(TimeStamp=timestamp,direction=self.direction)
-                
-        self.value=newValue
-        self.save(update_fields=['value'])
-        
-        if writeDB and timestamp==None:
-            registerDB.insert_IOs_register(TimeStamp=now,direction=self.direction)
+            
         
         self.updateAutomationVars()
         
-        text=str(_('The value of the GPIO ')) +self.label+str(_(' has changed. Now it is ')) + str(self.value)
-        PublishEvent(Severity=0,Text=text)
         
-    def save(self, *args, **kwargs):
-        super(IOmodel, self).save(*args, **kwargs)
         
     def InputChangeEvent(self,*args):
         #sleep(0.1) # to avoid reading the input during the debounce time
