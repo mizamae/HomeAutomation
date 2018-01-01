@@ -1,6 +1,7 @@
 import logging
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
+import apscheduler.events as events
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 import datetime
@@ -19,8 +20,21 @@ import xml.etree.ElementTree as ET
 logger = logging.getLogger("project")
 
 scheduler = BackgroundScheduler()
+url = 'sqlite:///scheduler.sqlite'
+scheduler.add_jobstore('sqlalchemy', url=url)
 
-   
+def my_listener(event):
+    if event.exception:
+        try:
+            text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
+        except:
+            text='Error on scheduler: ' + str(event.exception)
+        PublishEvent(Severity=4,Text=text,Persistent=True)
+    else:
+        pass
+
+scheduler.add_listener(my_listener, events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
+
 def initialize_polling_devices():
     DVs=Devices.models.DeviceModel.objects.all()
     if DVs is not None:
@@ -69,8 +83,8 @@ def update_requests(DV):
                     
                 
                 if DV.Type.Connection=='LOCAL':
-                    callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
-                    scheduler.add_job(func=callback,trigger='interval',args=(),
+                    callback=lambda:getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor() # gets the link to the function read_sensor of the appropriate class
+                    scheduler.add_job(func=callback,trigger='interval',
                                       id=id, 
                                       seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
@@ -84,14 +98,20 @@ def update_requests(DV):
                     if executeNow:
                         request_to_device(DV.DeviceIP,DV.DeviceCode, DG.Identifier)
                 elif DV.Type.Connection=='MEMORY':
-                    callback=getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor # gets the link to the function read_sensor of the appropriate class
+                    callback=lambda:getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor(datagram=DG.Identifier) # gets the link to the function read_sensor of the appropriate class
                     arguments={'datagram':DG.Identifier}
-                    scheduler.add_job(func=callback,trigger='interval',kwargs=arguments,
+                    scheduler.add_job(func=callback,trigger='interval',#kwargs=arguments,
                                       id=id, 
                                       seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
                         callback(**arguments)
-                logger.info('Requests '+id+ ' is added to scheduler') 
+                
+                JOBs=scheduler.get_jobs()
+                for JOB in JOBs:
+                    if JOB.id==id: 
+                        PublishEvent(Severity=0,Text='Requests '+id+ ' is added to scheduler',Persistent=False)
+                        break
+            
         if len(DGs)>0:
             text=str(_('Polling for the device '))+DV.DeviceName+str(_(' is started with sampletime= ')) + str(DV.Sampletime)  
             PublishEvent(Severity=0,Text=text,Persistent=True)
@@ -102,6 +122,7 @@ def update_requests(DV):
         else:
             logger.warning('The device types ' +str(DV.Type) + ' have no datagrams defined')
         #updates the state of the device in the DB
+        
     else:
         logger.info('There are still these polls active '+ str(scheduler.get_jobs()))  
         for DG in DGs:
@@ -114,6 +135,8 @@ def update_requests(DV):
                     logger.error('Job ID '+id+' does not exist!!')   
         text=str(_('Polling for the device '))+DV.DeviceName+str(_(' is stopped ')) 
         PublishEvent(Severity=0,Text=text,Persistent=True)
+        
+    
 
 def request_to_device(deviceIP,deviceCode,DatagramId):
     #text=str(_('Sent request ')) +DatagramId+ str(_(' to ')) + deviceIP

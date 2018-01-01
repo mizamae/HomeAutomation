@@ -81,6 +81,7 @@ def checkCustomCalculations():
     aCALCs=AdditionalCalculationsModel.objects.all()
     for aCALC in aCALCs:
         if aCALC.checkTrigger():
+            #PublishEvent(Severity=0,Text=str(aCALC)+' evaluated to True',Persistent=True)
             aCALC.calculate()
             
 def HourlyTask():

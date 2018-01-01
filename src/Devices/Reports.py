@@ -103,7 +103,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                 firstRow.append(0)
             else:
                 if extrapolate=='keepPrevious':
-                    sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" ORDER BY timestamp DESC LIMIT 1'
+                    sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND "'+variable +'" not null ORDER BY timestamp DESC LIMIT 1'
                     row=AppDB.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
                     if row != None:
                         firstRow.append(row[1])
@@ -137,7 +137,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             limit=10000
                     
             #sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" ORDER BY timestamp DESC LIMIT '+str(limit)
-            sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC LIMIT ' + str(limit)
+            sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" AND "'+variable +'" not null ORDER BY timestamp ASC LIMIT ' + str(limit)
             #logger.info(str(sql))
             data_rows=AppDB.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
             #logger.info(str(data_rows))
@@ -148,7 +148,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             isFirstRow=True
             if len(data_rows):
                 for row in data_rows:
-                    tempStats['num_rows']+=1
+                    
                     match=False # checks if the x-axis data coincide
                     localdate = local_tz.localize(row[0])
                     localdate=localdate+localdate.utcoffset()-datetime.timedelta(microseconds=localdate.microsecond) 
@@ -159,7 +159,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                                 actualXValue=localdate
                                 num_items=0
                         elif aggregation==2: #'daily':
-                            localdate=localdate-datetime.timedelta(hours=localdate.hours)+datetime.timedelta(hours=12)-datetime.timedelta(minutes=localdate.minute)-datetime.timedelta(seconds=localdate.second)-datetime.timedelta(microseconds=localdate.microsecond)
+                            localdate=localdate-datetime.timedelta(hours=localdate.hour)+datetime.timedelta(hours=12)-datetime.timedelta(minutes=localdate.minute)-datetime.timedelta(seconds=localdate.second)-datetime.timedelta(microseconds=localdate.microsecond)
                             if localdate!=actualXValue:
                                 actualXValue=localdate
                                 num_items=0                
@@ -170,8 +170,9 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                         
                     for data in row[1:]:
                         if aggregation!=0 and (data==None or data==''):
-                            data=0
+                            data=None
                         if data!=None:
+                            tempStats['num_rows']+=1
                             if bitPos!=None or datatype=='digital':
                                 data= 1 if (data & (1<<int(bitPos)))>0 else 0
                                 if isFirstRow==False:
@@ -201,10 +202,13 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                                 elif x>localdate:
                                     break
                             if match:
-                                if data!=None:
-                                    num_items+=1
-                                if data!=None and tempY[i][columnNumber]!=None and aggregation!=0:
-                                    tempY[i][columnNumber]+=(data-tempY[i][columnNumber])/num_items
+                                if aggregation!=0:
+                                    if data!=None and tempY[i][columnNumber]!=None:
+                                        tempY[i][columnNumber]+=(data-tempY[i][columnNumber])/num_items
+                                    elif data!=None:
+                                        tempY[i][columnNumber]=data
+                                    if data!=None:
+                                        num_items+=1
                                 else:
                                     tempY[i][columnNumber]=data
                                 
@@ -221,7 +225,8 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                                 tempX.append(localdate)
                                 tempX2.append(fecha)
                         else:
-                            num_items+=1
+                            if data!=None:
+                                num_items+=1
                             tempX.append(localdate)
                             tempX2.append(fecha)
                             tempY.append(newRow[:])
@@ -230,7 +235,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                     isFirstRow=False
                     prevRow=row
             else:
-                sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" ORDER BY timestamp DESC LIMIT 1'
+                sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND "'+variable +'" not null ORDER BY timestamp DESC LIMIT 1'
                 row=AppDB.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
                 if row != None:
                     if extrapolate=='keepPrevious':

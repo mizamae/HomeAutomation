@@ -16,6 +16,7 @@ import Devices.GlobalVars
 import Devices.BBDD
 
 import Master_GPIOs.models
+import pandas as pd
 
 import logging
 
@@ -54,7 +55,7 @@ class MainDeviceVarModel(models.Model):
             registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                             configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
             if timestamp==None:
-                registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs='all')
+                registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs=[self,])
         
         if newValue!=self.Value:
             text=str(_('The value of the MainVAR "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
@@ -64,9 +65,9 @@ class MainDeviceVarModel(models.Model):
         
         if writeDB :
             if timestamp==None:
-                registerDB.insert_VARs_register(TimeStamp=now,VARs='all')
+                registerDB.insert_VARs_register(TimeStamp=now,VARs=[self,])#VARs='all')
             else:
-                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs='all')
+                registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=[self,])
         
         self.updateAutomationVars()
         
@@ -195,6 +196,7 @@ class AdditionalCalculationsModel(models.Model):
             elif self.Calculation==6:
                 result= None
             
+            PublishEvent(Severity=0,Text=str(self)+' calculated to ' + str(result),Persistent=True)
             if result!=None:
                 self.MainVar.update_value(newValue=result,timestamp=DBDate,writeDB=True)
         else:
@@ -413,8 +415,13 @@ class AutomationVariablesModel(models.Model):
         applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
         sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE "'+self.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
-        timestamp,value=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-        if localized:
+        data=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+        if data!=None:
+            timestamp=data[0]
+            value=data[1]
+        else:
+            return None,None
+        if localized and timestamp!=None:
             from tzlocal import get_localzone
             local_tz=get_localzone()
             timestamp = local_tz.localize(timestamp)

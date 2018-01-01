@@ -32,11 +32,14 @@ class OpenWeatherMap(object):
     def query_sensor(self,**kwargs):
         pass
         
-    def read_sensor(self,**kwargs):
+    def read_sensor(self,datagram = 'observation'):
         #logger.error('Callback for the device ' + self.sensor.DeviceName)
         if self.place!=None:
             
-            datagram=kwargs['datagram']
+            # try:
+                # datagram = kwargs['datagram']
+            # except:
+                # datagram = 'observation'
             #logger.error('Datagram: ' + datagram)
             error=''
             if datagram=='observation':
@@ -282,7 +285,7 @@ class DHT22(object):
             logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
         
                                 
-    def read_sensor(self,**kwargs):
+    def read_sensor(self):
         """
         Read temperature and humidity from DHT sensor.
         """
