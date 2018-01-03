@@ -932,7 +932,13 @@ def update(root):
         PublishEvent(Severity=0,Text=_("%s the latest revision '%s'.") %
               (_("Already at") if not updated else _("Updated to"), revision),Persistent=False)
         
+        process = Popen("python manage.py showmigrations --list", cwd=root, shell=True,
+                        stdout=PIPE, stderr=PIPE,universal_newlines=True)
+        stdout, err = process.communicate()
+        logger.debug(str(stdout))
+            
         if updated:
+            
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False)
     else:
         PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False)
