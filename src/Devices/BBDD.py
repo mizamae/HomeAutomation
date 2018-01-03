@@ -29,25 +29,25 @@ class Database(object):
     
     def __init__(self,location=''):  
         if location != '':
-            self.__conn = dbapi.connect(location,detect_types=dbapi.PARSE_DECLTYPES)
+            self.conn = dbapi.connect(location,detect_types=dbapi.PARSE_DECLTYPES)
         else:
-            self.__conn= None
+            self.conn= None
             print ("Incorrect argument, missing location:", sys.exc_info()[1])            
             
     def rename_table(self,sql):
         try:
-            cur=self.__conn.cursor()
+            cur=self.conn.cursor()
             cur.execute(sql)
-            self.__conn.commit()
+            self.conn.commit()
         except:
             print ("Unexpected error in rename_table:", sys.exc_info()[1])
             logger.error("Unexpected error in rename_table: "+ str(sys.exc_info()[1]))
             
     def create_table(self,SQLstatement):
         try:
-            cur=self.__conn.cursor()
+            cur=self.conn.cursor()
             cur.execute(SQLstatement)
-            self.__conn.commit()
+            self.conn.commit()
         except:
             text=str(_("Error in Create_table: ")) + str(sys.exc_info()[1])
             PublishEvent(Severity=5,Text=text + 'SQL: ' + SQLstatement,Persistent=True)
@@ -56,18 +56,18 @@ class Database(object):
     def delete_table(self,table):
         try:
             sql_delete_table="DROP TABLE IF EXISTS %s"
-            cur=self.__conn.cursor()
+            cur=self.conn.cursor()
             cur.execute(sql_delete_table % table)
-            self.__conn.commit()
+            self.conn.commit()
         except:
             logger.error("Error in Delete_table: "+ str(sys.exc_info()[1]))
     
     def insert_column(self,table,column,type):
         sql='ALTER TABLE "' + table + '" ADD COLUMN "' + column + '" ' + type
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql)
-            self.__conn.commit()  
+            self.conn.commit()  
             return 0
         except:
             text= str(_("Error in insert_column: ")) + str(sys.exc_info()[1])
@@ -83,7 +83,7 @@ class Database(object):
         :return: the rows
         """
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             if values[0]!=None:
                 cur.execute(sql,values) 
             else:
@@ -106,7 +106,7 @@ class Database(object):
         :return: the rows
         """
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql) 
             rows = cur.fetchall()
             cur.close()
@@ -123,7 +123,7 @@ class Database(object):
         :return:
         """
         sql = "SELECT Count() FROM %s" % table
-        cur = self.__conn.cursor()
+        cur = self.conn.cursor()
         cur.execute(sql)
         numberOfRows  = cur.fetchone()[0]
         cur.close()
@@ -140,10 +140,10 @@ class Database(object):
         SQLupdateDecide_statement = ''' UPDATE devices SET %s=? WHERE %s=?'''
         """
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             sql=SQL_statement % (fieldupdate,keyfield)
             cur.execute(sql, (fieldupdate_value,keyfield_value))
-            self.__conn.commit()
+            self.conn.commit()
             cur.close()
         except:
             print ("Unexpected error in update_row:", sys.exc_info()[1])
@@ -160,9 +160,9 @@ class Database(object):
             table='"'+table+'"'
             
         sql = 'DELETE FROM ?'
-        cur = self.__conn.cursor()
+        cur = self.conn.cursor()
         cur.execute(sql,table)
-        self.__conn.commit()
+        self.conn.commit()
         cur.close()  
    
     def retrieve_cols_number(self,table):
@@ -175,7 +175,7 @@ class Database(object):
         if table.find('"')<0:
             table='"'+table+'"'
         sql = "PRAGMA table_info(%s)".replace('%s',table)
-        cur = self.__conn.cursor()
+        cur = self.conn.cursor()
         cur.execute(sql)
         numberOfColumns = len(cur.fetchall())
         cur.close()
@@ -190,7 +190,7 @@ class Database(object):
         """
         if table.find('"')<0:
             table='"'+table+'"'
-        cur = self.__conn.cursor()
+        cur = self.conn.cursor()
         sql='PRAGMA TABLE_INFO(%s)'.replace('%s',table)
         cur.execute(sql)      
         info = cur.fetchall()
@@ -204,7 +204,7 @@ class Database(object):
        
     def retrieve_DB_structure(self, fields):
         sql='SELECT %s FROM sqlite_master WHERE type="table"' % (fields) 
-        cur = self.__conn.cursor()
+        cur = self.conn.cursor()
         cur.execute(sql)
         info = cur.fetchall()
         return info
@@ -219,9 +219,9 @@ class Database(object):
         :return: inserted row Id
         """
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(SQL_statement, row_values)
-            self.__conn.commit()
+            self.conn.commit()
             lastRow=cur.lastrowid  
             cur.close()
             return lastRow   
@@ -244,9 +244,9 @@ class Database(object):
                 field='"'+field+'"'
                 
             sql = 'DELETE FROM %s WHERE %s=?' % (table,field)
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql, (value,))
-            self.__conn.commit()
+            self.conn.commit()
             cur.close()
         except:
             text = str(_("Error in delete_row: ")) + str(sys.exc_info()[1]) 
@@ -261,9 +261,9 @@ class Database(object):
             
         sql='ALTER TABLE ' + table + ' ADD COLUMN ' + column + ' ' + type
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql)
-            self.__conn.commit()  
+            self.conn.commit()  
             return 0
         except:
             text = str(_("Error in insert_column: ")) + str(sys.exc_info()[1]) 
@@ -277,9 +277,9 @@ class Database(object):
             
         sql='VACUUM ' + table
         try:
-            cur = self.__conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql)
-            self.__conn.commit()  
+            self.conn.commit()  
             return 0
         except:
             text = str(_("Error in compact_table: ")) + str(sys.exc_info()[1]) 

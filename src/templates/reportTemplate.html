@@ -303,7 +303,8 @@
             csvContent+="\n";
             for(var j=0; j<arrayData.x_axis.length;j++)
             {	
-                var date=eval("new " + arrayData.x_axis[j].v).ddmmyyyy();
+                //var date=eval("new " + arrayData.x_axis[j].v).ddmmyyyy();
+                var date=new Date(arrayData.x_axis[j]).ddmmyyyy();
                 var row=arrayData.y_axis[j].join(";");
 
                 csvContent += date + ";"+row.split(thousandsSeparator).join(decimalSeparator)+"\n"; // to replace all the occurences in the row
@@ -376,7 +377,8 @@
 		max=null;
         min=null;
         var height=ChartsHeight;
-        var firstDate=eval("new " + x_axis[0].v);
+        var firstDate=new Date(x_axis[0]);
+        //var firstDate=eval("new " + x_axis[0].v);
         var dateformat='%e/%b/%Y %H:%M';
         var appendix='',max_data,min_data;
         var error_multiplier; // to avoid sowing error bars if data is null
@@ -388,15 +390,14 @@
 			column=j;
             if (1==1)
             {
-                var current_hour=eval("new " + x_axis[0].v).getHours();
-                var current_day=eval("new " + x_axis[0].v).getDay();
                 var accumulated=0.,count=0;
                 max_data=-10000000000;
                 min_data=10000000000;
                 
                 for (var i=0;i<x_axis.length;i++)
                 {
-                    fecha=eval("new " + x_axis[i].v);
+                    //fecha=eval("new " + x_axis[i].v);
+                    fecha=new Date(x_axis[i]);
                     variable_data.push([Date.parse(fecha),data[i][column]]);
                 }
                 

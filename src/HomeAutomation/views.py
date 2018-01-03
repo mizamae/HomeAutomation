@@ -315,22 +315,22 @@ def viewReports(request,pk=None):
         #from HomeAutomation.tasks import checkReportAvailability            
         #checkReportAvailability()        
         ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
+        data=json.dumps(ReportItem.Report.getReportData(toDate=ReportItem.toDate)[0])
         return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
                                                             'fromDate':ReportItem.fromDate,
                                                             'toDate':ReportItem.toDate,
-                                                            'reportData':ReportItem.data})
+                                                            'reportData':data})
     return Http404
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_report'))
 def previewReport(request,title):
     Report=Devices.models.ReportModel.objects.get(ReportTitle=title)
-    ReportData,fromDate,toDate=Report.getReport()
-    ReportItem=Devices.models.ReportItems(Report=Report,fromDate=fromDate,toDate=toDate,data=json.dumps(ReportData))
-    return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
-                                                        'fromDate':ReportItem.fromDate,
-                                                        'toDate':ReportItem.toDate,
-                                                        'reportData':ReportItem.data})
+    ReportData,fromDate,toDate=Report.getReportData()
+    return render(request, 'reportTemplate.html',{'reportTitle':Report.ReportTitle,
+                                                        'fromDate':fromDate,
+                                                        'toDate':toDate,
+                                                        'reportData':json.dumps(ReportData)})
                                                         
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))

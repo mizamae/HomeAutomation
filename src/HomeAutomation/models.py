@@ -134,11 +134,21 @@ class AdditionalCalculationsModel(models.Model):
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
     
+    def __init__(self,*args,**kwargs):
+        try:
+            self.df=kwargs.pop('df')
+            self.key=kwargs.pop('key')
+        except:
+            self.df=pd.DataFrame()
+            self.key=''
+
+        super(AdditionalCalculationsModel, self).__init__(*args, **kwargs)
+        
     def __str__(self):
         try:
             return str(self.get_Calculation_display())+'('+self.AutomationVar.Label + ')'
         except:
-            return ''
+            return self.key
     
     def checkTrigger(self):
         if self.Periodicity==0:
@@ -176,11 +186,25 @@ class AdditionalCalculationsModel(models.Model):
         fromDate=toDate-offset
         DBDate=toDate-offset/2
         toDate=toDate-datetime.timedelta(minutes=1)
-        data_rows=self.AutomationVar.getValues(fromDate=fromDate,toDate=toDate,localized=False)
-        if data_rows!=[]:
-            self.df=pd.DataFrame.from_records(data=data_rows,columns=['timestamp',str(self)])
-            self.df['weekday'] = self.df['timestamp'].dt.weekday_name
+        query=self.AutomationVar.getQuery(fromDate=fromDate,toDate=toDate)
+        self.df=pd.read_sql_query(sql=query['sql'],con=query['conn'],index_col='timestamp')
+        if not self.df.empty:
+            self.key=self.AutomationVar.Tag
+            # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
+                
+            addedtime=pd.to_datetime(arg=self.df.index.values[0])-fromDate.replace(tzinfo=None)
+            if addedtime>datetime.timedelta(minutes=1):
+                ts = pd.to_datetime(fromDate.replace(tzinfo=None))
+                new_row = pd.DataFrame([[self.df[self.key].iloc[0]]], columns = [self.key], index=[ts])
+                self.df=pd.concat([pd.DataFrame(new_row),self.df], ignore_index=False)
+                
+            # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
             
+            addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=self.df.index.values[-1])
+            if addedtime>datetime.timedelta(minutes=1):
+                ts = pd.to_datetime(toDate.replace(tzinfo=None))
+                new_row = pd.DataFrame([[self.df[self.key].iloc[-1]]], columns = [self.key], index=[ts])
+                self.df=pd.concat([self.df,pd.DataFrame(new_row)], ignore_index=False)
             if self.Calculation==0:     # Duty cycle OFF
                 result= self.duty(level=False)
             if self.Calculation==1:     # Duty cycle ON
@@ -195,25 +219,32 @@ class AdditionalCalculationsModel(models.Model):
                 result= self.df.cumsum()[0]
             elif self.Calculation==6:
                 result= None
-            
-            PublishEvent(Severity=0,Text=str(self)+' calculated to ' + str(result),Persistent=True)
-            if result!=None:
-                self.MainVar.update_value(newValue=result,timestamp=DBDate,writeDB=True)
         else:
-            text='No registers found to calculate ' + str(self)
-            PublishEvent(Severity=3,Text=text,Persistent=True)
+            result= None
+            self.MainVar.update_value(newValue=None,timestamp=DBDate,writeDB=True)
+        
+        if result!=None:
+            self.MainVar.update_value(newValue=result,timestamp=DBDate,writeDB=True)
+            
 
-    def duty(self,level=False):
-        totalTime=self.df['timestamp'].iloc[-1]-self.df['timestamp'].iloc[0]
-        totalTime=totalTime.days*86400+totalTime.seconds
-        time=0
-        previousDate=self.df['timestamp'].iloc[0]
-        for index, row in self.df.iterrows():
-            date=row['timestamp']
-            sampletime=date-previousDate
-            time+=int(row[str(self)]==level)*(sampletime.days*86400+sampletime.seconds)
-            previousDate=date
-        return time/totalTime*100
+    def duty(self,level=False,decimals=2,absoluteValue=False):
+        if not self.df.empty:
+            totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
+            totalTime=totalTime.days*86400+totalTime.seconds
+            time=0
+            previousDate=self.df.index.values[0]
+            for index, row in self.df.iterrows():
+                date=row.name
+                sampletime=date-previousDate
+                time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
+                previousDate=date
+            if absoluteValue==True:
+                return time
+            else:
+                return round(time/totalTime*100,decimals)
+        else:
+            return None
+
 
 
 @receiver(post_save, sender=AdditionalCalculationsModel, dispatch_uid="update_AdditionalCalculationsModel")
@@ -442,6 +473,12 @@ class AutomationVariablesModel(models.Model):
                 row[0]=row[0]+row[0].utcoffset() 
         
         return data_rows
+    
+    def getQuery(self,fromDate,toDate):
+        AppDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+        sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
+        return {'conn':AppDB.registersDB.conn,'sql':sql}
         
     class Meta:
         unique_together = ('Tag','BitPos','Table')

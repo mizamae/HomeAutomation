@@ -44,11 +44,7 @@ def checkReportAvailability():
     reports=ReportModel.objects.all()
     for report in reports:
         if report.checkTrigger():
-            ReportData,fromDate,toDate=report.getReport()
-            reportTitle=report.ReportTitle                     
-            report=ReportModel.objects.get(ReportTitle=reportTitle)
-            rp=ReportItems(Report=report,fromDate=fromDate,toDate=toDate,data=json.dumps(ReportData))
-            rp.save()
+            report.generate()
 
 def updateWeekDay():
     import datetime
