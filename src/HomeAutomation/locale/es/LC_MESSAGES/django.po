@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-12 17:07+0100\n"
+"POT-Creation-Date: 2018-01-03 15:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,19 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:22 admin.py:69 admin.py:130
+#: admin.py:22 admin.py:78 admin.py:139
 msgid "Current value"
 msgstr "Valor actual"
 
-#: admin.py:84
+#: admin.py:32
+msgid "Description"
+msgstr "Descripción"
+
+#: admin.py:93
 msgid "Current setpoint"
 msgstr "Consigna actual"
 
-#: admin.py:103
+#: admin.py:112
 msgid "Set as active schedule"
 msgstr "Establecer como programación activa"
 
-#: admin.py:146 forms.py:147
+#: admin.py:155 forms.py:185
 msgid "Activate the rule"
 msgstr "Activar la regla"
 
@@ -58,145 +62,138 @@ msgstr "Introduce las unidades de la variable"
 msgid "Set the type of plot for the variable"
 msgstr "Selecciona el tipo de gráfico de la variable"
 
-#: forms.py:49
+#: forms.py:49 forms.py:78
 msgid "Submit"
 msgstr "Enviar"
 
-#: forms.py:82
+#: forms.py:69
+msgid "Select the source variable"
+msgstr "Selecciona la variable origen"
+
+#: forms.py:70
+msgid "Select the calculation update frequency"
+msgstr "Selecciona la frecuencia de refresco del cálculo"
+
+#: forms.py:71
+msgid "Select the calculation"
+msgstr "Selecciona el cálculo"
+
+#: forms.py:120
 msgid "Execution order"
 msgstr "Orden de ejecución"
 
-#: forms.py:83
+#: forms.py:121
 msgid "Prefix for the first term"
 msgstr "Modificador del primer término"
 
-#: forms.py:84
+#: forms.py:122
 msgid "First term"
 msgstr "Primer término"
 
-#: forms.py:85
+#: forms.py:123
 msgid "Operator"
 msgstr "Operador"
 
-#: forms.py:86
+#: forms.py:124
 msgid "Prefix for the second term"
 msgstr "Modificador del segundo término"
 
-#: forms.py:87
+#: forms.py:125
 msgid "Second term"
 msgstr "Segundo término"
 
-#: forms.py:88
+#: forms.py:126
 msgid "Second term is a constant"
 msgstr "El segundo término es una constante"
 
-#: forms.py:89
+#: forms.py:127
 msgid "Constant value"
 msgstr "Valor de la constante"
 
-#: forms.py:90
+#: forms.py:128
 msgid "Hysteresis value"
 msgstr "Valor de histéresis"
 
-#: forms.py:91
+#: forms.py:129
 msgid "Operator with the next rule"
 msgstr "Operador para la siguiente regla"
 
-#: forms.py:101
-#, fuzzy
-#| msgid "This field cannot be left empty if 'Constant value' is checked"
+#: forms.py:139
 msgid "This field cannot be left empty if 'IsConstant' has been selected"
-msgstr ""
-"Este campo no se puede dejar vacío si 'El segundo término es una constante' "
-"está seleccionado"
+msgstr "Este campo no se puede dejar vacío si 'El segundo término es una constante' está seleccionado"
 
-#: forms.py:104
-#, fuzzy
-#| msgid "This field cannot be left empty if 'Constant value' is checked"
+#: forms.py:142
 msgid "This field cannot be left empty if 'IsConstant' is not selected"
-msgstr ""
-"Este campo no se puede dejar vacío si 'El segundo término es una constante' "
-"está seleccionado"
+msgstr "Este campo no se puede dejar vacío si 'El segundo término es una constante' no está seleccionado"
 
-#: forms.py:114
+#: forms.py:152
 msgid "Activate output on Main"
 msgstr "Activar salida en la unidad Principal"
 
-#: forms.py:115
+#: forms.py:153
 msgid "Send command to a device"
 msgstr "Enviar orden a un dispositivo"
 
-#: forms.py:116
+#: forms.py:154
 msgid "Send an email"
 msgstr "Enviar un email"
 
-#: forms.py:117 models.py:278
+#: forms.py:155 models.py:498
 msgid "None"
 msgstr "Ninguno"
 
-#: forms.py:120
+#: forms.py:158
 msgid "Select the action"
 msgstr "Selecciona la acción"
 
-#: forms.py:121
+#: forms.py:159
 msgid "Select the output"
 msgstr "Selecciona la salida"
 
-#: forms.py:122
+#: forms.py:160
 msgid "Select the output value when the rule is True"
 msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
 
-#: forms.py:123
+#: forms.py:161
 msgid "Select the device to send the order to"
 msgstr "Selecciona el dispositivo al que enviar la orden"
 
-#: forms.py:124
+#: forms.py:162
 msgid "Select the order to send"
 msgstr "Selecciona la orden a enviar"
 
-#: forms.py:146
+#: forms.py:184
 msgid "Set the name for the automation rule"
 msgstr "Introduce el nombre de la regla de automatización"
 
-#: forms.py:148
-#, fuzzy
-#| msgid "Select the output value when the rule is True"
+#: forms.py:186
 msgid "Select the output value in case of error"
-msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
+msgstr "Selecciona el valor de la salida en el caso de error"
 
-#: forms.py:149
-#, fuzzy
-#| msgid "Enter the previous rule to be chained"
+#: forms.py:187
 msgid "Select the previous rule to be chained"
 msgstr "Selecciona la regla anterior a encadenar"
 
-#: forms.py:151
-#, fuzzy
-#| msgid "Enter the operator between the previous rule and this one"
+#: forms.py:189
 msgid "Select the operator between the previous rule and this one"
 msgstr "Selecciona el operador entre la regla anterior y esta"
 
-#: forms.py:162
+#: forms.py:200
 msgid "Save"
 msgstr "Guardar"
 
-#: forms.py:176
-#, fuzzy
-#| msgid "This field cannot be left empty if 'Constant value' is checked"
+#: forms.py:214
 msgid "This field cannot be left empty if a previous rule has been selected"
-msgstr ""
-"Este campo no se puede dejar vacío si 'El segundo término es una constante' "
-"está seleccionado"
+msgstr "Este campo no se puede dejar vacío si se ha seleccionado una regla anterior"
 
-#: forms.py:181
+#: forms.py:219
 msgid ""
 "This field cannot be left empty if 'Activate output on Main' is selected as "
 "action"
-msgstr ""
-"Este campo no se puede dejar vacío si 'Activar salida de la unidad "
+msgstr "Este campo no se puede dejar vacío si 'Activar salida de la unidad "
 "Principal' está seleccionada como acción"
 
-#: forms.py:186 forms.py:189
+#: forms.py:224 forms.py:227
 msgid ""
 "This field cannot be left empty if Send command to a device is selected as "
 "action"
@@ -204,151 +201,191 @@ msgstr ""
 "Este campo no se puede dejar vacío si 'Mandar una orden a un dispositivo' "
 "está seleccionada como acción"
 
-#: models.py:26
+#: models.py:27
 msgid "Float"
 msgstr "Float"
 
-#: models.py:27
+#: models.py:28
 msgid "Integer"
 msgstr "Entero"
 
-#: models.py:30
+#: models.py:31
 msgid "Hard Line"
 msgstr "Linea"
 
-#: models.py:31
+#: models.py:32
 msgid "Smoothed Line"
 msgstr "Linea suavizada"
 
-#: models.py:32
+#: models.py:33
 msgid "Bars"
 msgstr "Columnas"
 
-#: models.py:33
+#: models.py:34
 msgid "Area"
-msgstr ""
+msgstr "Área"
 
-#: models.py:82
+#: models.py:61
+msgid "The value of the MainVAR \""
+msgstr "El valor de la variable \""
+
+#: models.py:61
+msgid "\" has changed. Now it is "
+msgstr "\" ha cambiado. El valor actual es "
+
+#: models.py:95
 msgid "Main device var"
 msgstr "Variable de la unidad Principal"
 
-#: models.py:83
+#: models.py:96
 msgid "Main device vars"
 msgstr "Variables de la unidad principal"
 
-#: models.py:93
-msgid "Variable "
-msgstr "Variable "
+#: models.py:116
+msgid "With every new value"
+msgstr "Con cada nuevo valor"
 
-#: models.py:93
-msgid " has changed. Current value is "
-msgstr " ha cambiado. El valor actual es "
+#: models.py:117
+msgid "Every hour"
+msgstr "Cada hora"
+
+#: models.py:118
+msgid "Every day"
+msgstr "Cada dia"
+
+#: models.py:119
+msgid "Every week"
+msgstr "Cada semana"
+
+#: models.py:120
+msgid "Every month"
+msgstr "Cada mes"
+
+#: models.py:124
+msgid "Duty cycle OFF"
+msgstr "Ciclo de trabajo a OFF"
+
+#: models.py:125
+msgid "Duty cycle ON"
+msgstr "Ciclo de trabajo a ON"
+
+#: models.py:126
+msgid "Mean value"
+msgstr "Valor medio"
+
+#: models.py:127
+msgid "Max value"
+msgstr "Valor máximo"
+
+#: models.py:128
+msgid "Min value"
+msgstr "Valor mínimo"
 
 #: models.py:129
+msgid "Cummulative sum"
+msgstr "Suma acumulada"
+
+#: models.py:134
+msgid "How often the calculation will be updated"
+msgstr "Frecuencia con la que se actualizará el cálculo"
+
+#: models.py:329
 msgid "Main device var weekly schedule"
 msgstr "Programación semanal de variables de la unidad Principal"
 
-#: models.py:130
+#: models.py:330
 msgid "Main device var weekly schedules"
 msgstr "Programaciones semanales de variables de la unidad Principal"
 
-#: models.py:144
-msgid "The weekly schedule "
-msgstr "La programación semanal "
-
-#: models.py:144
-msgid " has been modified."
-msgstr " ha sido modificada."
-
-#: models.py:191
+#: models.py:385
 msgid "Monday"
 msgstr "Lunes"
 
-#: models.py:192
+#: models.py:386
 msgid "Tuesday"
 msgstr "Martes"
 
-#: models.py:193
+#: models.py:387
 msgid "Wednesday"
 msgstr "Miércoles"
 
-#: models.py:194
+#: models.py:388
 msgid "Thursday"
 msgstr "Jueves"
 
-#: models.py:195
+#: models.py:389
 msgid "Friday"
 msgstr "Viernes"
 
-#: models.py:196
+#: models.py:390
 msgid "Saturday"
 msgstr "Sábado"
 
-#: models.py:197
+#: models.py:391
 msgid "Sunday"
 msgstr "Domingo"
 
-#: models.py:200
+#: models.py:394
 msgid "LOW"
 msgstr "BAJO"
 
-#: models.py:201
+#: models.py:395
 msgid "HIGH"
 msgstr "ALTO"
 
-#: models.py:236
+#: models.py:430
 msgid "Main device var hourly schedule"
 msgstr "Programación horaria de variables de la unidad Principal"
 
-#: models.py:237
+#: models.py:431
 msgid "Main device var hourly schedules"
 msgstr "Programaciones horarias de variables de la unidad Principal"
 
-#: models.py:265
+#: models.py:485
 msgid "Automation variable"
 msgstr "Variable de automatización"
 
-#: models.py:266
+#: models.py:486
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:279
+#: models.py:499
 msgid "NOT"
 msgstr ""
 
-#: models.py:290 models.py:363
+#: models.py:510 models.py:583
 msgid "AND"
 msgstr ""
 
-#: models.py:291 models.py:364
+#: models.py:511 models.py:584
 msgid "OR"
 msgstr ""
 
-#: models.py:294
+#: models.py:514
 msgid "Order of execution"
 msgstr "Orden de ejecución"
 
-#: models.py:358
+#: models.py:578
 msgid "Automation expression"
 msgstr "Expresión de automatización"
 
-#: models.py:359
+#: models.py:579
 msgid "Automation expressions"
 msgstr "Expresiones de automatización"
 
-#: models.py:367
+#: models.py:587
 msgid "False"
-msgstr ""
+msgstr "Falso"
 
-#: models.py:368
+#: models.py:588
 msgid "True"
-msgstr ""
+msgstr "Verdadero"
 
-#: models.py:484
+#: models.py:703
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:485
+#: models.py:704
 msgid "Automation rules"
 msgstr "Reglas de automatización"
 
@@ -360,46 +397,70 @@ msgstr "Español"
 msgid "English"
 msgstr "Inglés"
 
-#: views.py:907
+#: views.py:896
 msgid "Gunicorn processes restarted"
 msgstr "Relanzados los procesos Gunicorn"
 
-#: views.py:929
+#: views.py:918
 msgid "Checking for updates..."
 msgstr "Buscando actualizaciones..."
 
-#: views.py:943
-#, python-format
-msgid "%s the latest revision '%s'."
-msgstr "%s la últmia revisión '%s'."
+#: views.py:932
+msgid "%s the latest source revision '%s'."
+msgstr "%s la última revisión del código '%s'."
 
-#: views.py:944
+#: views.py:933
 msgid "Already at"
 msgstr "Ya se encontraba en"
 
-#: views.py:944
+#: views.py:933
 msgid "Updated to"
 msgstr "Actualizada a "
 
-#: views.py:947
+#: views.py:942
+msgid "Error checking migrations: "
+msgstr "Error comprobando migraciones: "
+
+#: views.py:949
+msgid "Updating DB with new migrations. Relax, it may take a while"
+msgstr "Actualizando la BBDD con las nuevas migraciones. Relájate, puede llevarle un rato"
+
+#: views.py:954
+msgid "Django DB updated OK"
+msgstr "La BBDD de Django se ha actualizado OK"
+
+#: views.py:956
+msgid "Error applying the migration: "
+msgstr "Error ejecutando la migración: "
+
+#: views.py:960
 msgid "Restart processes to apply the new changes"
 msgstr "Reinicia los procesos para aplicar los nuevos cambios"
 
-#: views.py:949
+#: views.py:962
 msgid "Problem occurred while updating program."
 msgstr "Ocurrió un problema en la actualización de la aplicación."
 
-#: views.py:990
+#: views.py:1003
 msgid "Attemping to run update again..."
 msgstr "Intentando actualizar de nuevo..."
 
-#: views.py:993
+#: views.py:1006
 msgid "Unable to reset local copy to current git branch."
 msgstr "No se ha podido resetear la copia local a la branch actual"
 
-#: views.py:999
+#: views.py:1012
 msgid "Please make sure that you have a 'git' package installed. Error: "
 msgstr "Asegurate de que el packete 'git' se encuentra instalado. Error: "
+
+#~ msgid "Variable "
+#~ msgstr "Variable "
+
+#~ msgid "The weekly schedule "
+#~ msgstr "La programación semanal "
+
+#~ msgid " has been modified."
+#~ msgstr " ha sido modificada."
 
 #~ msgid "The rule "
 #~ msgstr "La regla "

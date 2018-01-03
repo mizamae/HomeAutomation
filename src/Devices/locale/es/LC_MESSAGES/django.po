@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-12 17:07+0100\n"
+"POT-Creation-Date: 2018-01-03 15:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,38 +22,40 @@ msgstr ""
 msgid "Error in Create_table: "
 msgstr ""
 
-#: BBDD.py:73 BBDD.py:271
+#: BBDD.py:73 BBDD.py:269
 msgid "Error in insert_column: "
 msgstr ""
 
-#: BBDD.py:229
-msgid "Error in insert_row: "
-msgstr ""
-
-#: BBDD.py:254
+#: BBDD.py:252
 msgid "Error in delete_row: "
 msgstr ""
 
-#: BBDD.py:287
+#: BBDD.py:285
 msgid "Error in compact_table: "
 msgstr ""
 
-#: BBDD.py:381
+#: BBDD.py:380
 msgid "Error in create_datagram_table: "
 msgstr ""
 
-#: BBDD.py:428
+#: BBDD.py:427
 msgid "Error in create_ios_table: "
 msgstr ""
 
-#: BBDD.py:453
+#: BBDD.py:452
 msgid "Error in create_mainVars_table: "
 msgstr ""
 
-#: HTTP_client.py:180 HTTP_client.py:184 HTTP_client.py:189 HTTP_client.py:196
-#: callbacks.py:103
+#: HTTP_client.py:173 HTTP_client.py:180 HTTP_client.py:184 HTTP_client.py:189
+#: HTTP_client.py:196 callbacks.py:106
 msgid "The device "
 msgstr "El dispositivo"
+
+#: HTTP_client.py:173
+#, fuzzy
+#| msgid " updated OK"
+msgid " updated OK "
+msgstr " atualizado OK"
 
 #: HTTP_client.py:180
 msgid " responded with a different DeviceCode than the one expected, expected "
@@ -85,25 +87,17 @@ msgstr "Error inesperado en la funcion request_datagram:"
 msgid "Retrying the request to "
 msgstr "Enviada solicitud a "
 
-#: Requests.py:96 Requests.py:115
+#: Requests.py:116 Requests.py:136
 msgid "Polling for the device "
 msgstr "El muestreo del dispositivo"
 
-#: Requests.py:96
+#: Requests.py:116
 msgid " is started with sampletime= "
 msgstr " ha empezado con una frecuencia= "
 
-#: Requests.py:115
+#: Requests.py:136
 msgid " is stopped "
 msgstr " se ha detenido "
-
-#: Requests.py:119
-msgid "Sent request "
-msgstr "Enviada solicitud "
-
-#: Requests.py:119
-msgid " to "
-msgstr " a "
 
 #: admin.py:45
 msgid "Define custom labels for the variables"
@@ -113,11 +107,11 @@ msgstr "Definir las etiquetas particularizadas para las variables"
 msgid "Devices"
 msgstr "Dispositivos"
 
-#: callbacks.py:97
+#: callbacks.py:100
 msgid " updated OK"
 msgstr " atualizado OK"
 
-#: callbacks.py:103
+#: callbacks.py:106
 msgid " does not have any Beacon associated."
 msgstr " no tiene ningun Beacon asociado."
 
@@ -264,122 +258,128 @@ msgstr "Dispositivo"
 msgid "Slave devices"
 msgstr "Dispositivos"
 
-#: models.py:265
+#: models.py:266
 msgid "Every day"
 msgstr "Todos los dias"
 
-#: models.py:266
+#: models.py:267
 msgid "Every week"
 msgstr "Todas las semanas"
 
-#: models.py:267
+#: models.py:268
 msgid "Every month"
 msgstr "Todos los meses"
 
-#: models.py:270
+#: models.py:271
 msgid "No aggregation"
 msgstr "Sin agregación"
 
-#: models.py:271
+#: models.py:272
 msgid "Hourly"
 msgstr "Horaria"
 
-#: models.py:272
+#: models.py:273
 msgid "Daily"
 msgstr "Diaria"
 
-#: models.py:273
+#: models.py:274
 msgid "Monthly"
 msgstr "Mensual"
 
-#: models.py:275
+#: models.py:276
 msgid "Invalid report title - This title already exists in the DB."
 msgstr "Título de informe erróneo - El título ya existe en la BBDD."
 
-#: models.py:276
+#: models.py:277
 msgid "How often the report will be generated"
 msgstr "Con cuanta frcuencia se generaran los informes"
 
-#: models.py:277
+#: models.py:278
 msgid "Data directly from the DB or averaged over a period"
 msgstr ""
 "Datos directamente de la BBDD o promediados a lo largo de algun periodo"
 
-#: models.py:321
+#: models.py:333
 msgid "Report"
 msgstr "Informe"
 
-#: models.py:322
+#: models.py:334
 msgid "Reports"
 msgstr "Informes"
 
-#: models.py:341
+#: models.py:353
 msgid "Generated report"
 msgstr "Informe generado"
 
-#: models.py:342
+#: models.py:354
 msgid "Generated reports"
 msgstr "Informes generados"
 
-#: models.py:348
+#: models.py:360
 msgid "Analog Integer"
 msgstr "Analógico Entero"
 
-#: models.py:349
+#: models.py:361
 msgid "Analog Float"
 msgstr "Analógico Float"
 
-#: models.py:350
+#: models.py:362
 msgid "Digital"
 msgstr "Digital"
 
-#: models.py:353
+#: models.py:365
 msgid "Hard Line"
 msgstr "Linea"
 
-#: models.py:354
+#: models.py:366
 msgid "Smoothed Line"
 msgstr "Linea suavizada"
 
-#: models.py:355
+#: models.py:367
 msgid "Bars"
 msgstr "Columnas"
 
-#: models.py:356
+#: models.py:368
 msgid "Area"
 msgstr ""
 
-#: models.py:375
+#: models.py:387
 msgid "Datagram item"
 msgstr "Elemento de trama"
 
-#: models.py:376
+#: models.py:388
 msgid "Datagram items"
 msgstr "Elementos de trama"
 
-#: models.py:443
+#: models.py:455
 msgid "Datagram"
 msgstr "Trama"
 
-#: models.py:444
+#: models.py:456
 msgid "Datagrams"
 msgstr "Tramas"
 
-#: models.py:535
+#: models.py:547
 msgid "Item"
 msgstr "Elemento"
 
-#: models.py:536
+#: models.py:548
 msgid "Items"
 msgstr "Elementos"
 
-#: models.py:562
+#: models.py:574
 msgid "Command"
 msgstr "Orden"
 
-#: models.py:563
+#: models.py:575
 msgid "Commands"
 msgstr "Órdenes"
+
+#~ msgid "Sent request "
+#~ msgstr "Enviada solicitud "
+
+#~ msgid " to "
+#~ msgstr " a "
 
 #~ msgid "Enter the type of the device"
 #~ msgstr "Introduce el tipo de dispositivo"

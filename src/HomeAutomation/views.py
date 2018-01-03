@@ -929,20 +929,38 @@ def update(root):
         stdout, err = process.communicate()
         revision = (stdout[:7] if stdout and
                     re.search(r"(?i)[0-9a-f]{32}", stdout) else "-")
-        PublishEvent(Severity=0,Text=_("%s the latest revision '%s'.") %
+        PublishEvent(Severity=0,Text=_("%s the latest source revision '%s'.") %
               (_("Already at") if not updated else _("Updated to"), revision),Persistent=False)
         
-        process = Popen("python manage.py showmigrations --list", cwd=root, shell=True,
-                        stdout=PIPE, stderr=PIPE,universal_newlines=True)
-        stdout, err = process.communicate()
-        logger.debug(str(stdout))
-            
         if updated:
-            
+            # CHECK IF THERE IS ANY UNAPPLIED MIGRATION
+            process = Popen("python src/manage.py showmigrations --list", cwd=root, shell=True,
+                        stdout=PIPE, stderr=PIPE,universal_newlines=True)
+            stdout, err = process.communicate()
+            if err:
+                logger.debug('MIGRATIONS CHECK ERROR: ' + str(err))
+                PublishEvent(Severity=5,Text=_("Error checking migrations: " + str(err)),Persistent=True)
+                return
+                
+            migrations= "[ ]" in stdout
+             
+            if migrations:
+                logger.debug('MIGRATIONS: ' + str(stdout))
+                PublishEvent(Severity=0,Text=_("Updating DB with new migrations. Relax, it may take a while"),Persistent=False)
+                process = Popen("python src/manage.py migrate", cwd=root, shell=True,
+                        stdout=PIPE, stderr=PIPE,universal_newlines=True)
+                stdout, err = process.communicate()
+                if not err:
+                    PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False)
+                else:
+                    PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),Persistent=False)
+                    logger.debug('MIGRATIONS APPLICATION ERROR: ' + str(err))
+                    return
+                        
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False)
     else:
         PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False)
-
+        
         err = re.search(r"(?P<error>error:[^:]*files\swould\sbe\soverwritten"
                       r"\sby\smerge:(?:\n\t[^\n]+)*)", stderr)
         if err:

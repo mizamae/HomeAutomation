@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-12 17:07+0100\n"
+"POT-Creation-Date: 2018-01-03 15:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,51 +22,49 @@ msgstr ""
 msgid "I/Os manager"
 msgstr "Gestor de E/S"
 
-#: models.py:55
+#: models.py:60
 msgid "Output"
 msgstr "Salida"
 
-#: models.py:56
+#: models.py:61
 msgid "Input"
 msgstr "Entrada"
 
-#: models.py:57
+#: models.py:62
 msgid "Sensor"
 msgstr "Sensor"
 
-#: models.py:60
+#: models.py:65
 msgid "LOW"
 msgstr "BAJO"
 
-#: models.py:61
+#: models.py:66
 msgid "HIGH"
 msgstr "ALTO"
 
-#: models.py:80
-msgid "The value of the GPIO "
+#: models.py:92
+msgid "The value of the GPIO \""
 msgstr ""
 
-#: models.py:80
+#: models.py:92
 #, fuzzy
 #| msgid " has changed to "
-msgid " has changed. Now it is "
+msgid "\" has changed. Now it is "
 msgstr " ha cambiado a "
 
-#: models.py:138
+#: models.py:164
 msgid "Input/Output"
 msgstr "Entrada/Salida"
 
-#: models.py:139
+#: models.py:165
 msgid "Inputs/Outputs"
 msgstr "Entradas/Salidas"
 
-#: signal_handlers.py:49
-msgid "Received notification that the input "
-msgstr "Notificación de que la entrada "
+#~ msgid "Received notification that the input "
+#~ msgstr "Notificación de que la entrada "
 
-#: signal_handlers.py:49
-msgid " has changed to "
-msgstr " ha cambiado a "
+#~ msgid " has changed to "
+#~ msgstr " ha cambiado a "
 
 #~ msgid " on pin "
 #~ msgstr " en el pin "

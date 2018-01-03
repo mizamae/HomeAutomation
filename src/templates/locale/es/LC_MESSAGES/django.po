@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-12 17:07+0100\n"
+"POT-Creation-Date: 2018-01-03 15:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -171,7 +171,7 @@ msgstr "Definici&oacute;n de las etiquetas para el dispositivo "
 msgid " finished OK"
 msgstr " termin&oacute; OK"
 
-#: admin/customLabels.html:11 reportItemsList.html:75 reqconfdevice.html:16
+#: admin/customLabels.html:11 reportItemsList.html:80 reqconfdevice.html:16
 #: rulesList.html:71 schedulesList.html:129 showdevices.html:266
 msgid "Return to Main"
 msgstr "Volver "
@@ -601,19 +601,25 @@ msgstr "Informes"
 msgid "Preview next report"
 msgstr "Previsualizar el siguiente informe"
 
-#: reportItemsList.html:53 reportItemsList.html:62
+#: reportItemsList.html:54 reportItemsList.html:64
 msgid "From"
 msgstr "Desde"
 
-#: reportItemsList.html:54 reportItemsList.html:63
+#: reportItemsList.html:55 reportItemsList.html:65
 msgid "To"
 msgstr "Hasta"
 
-#: reportItemsList.html:55
+#: reportItemsList.html:56
 msgid "Link"
 msgstr "Link"
 
-#: reportItemsList.html:65
+#: reportItemsList.html:57 reportItemsList.html:70
+#, fuzzy
+#| msgid "Delete device"
+msgid "Delete"
+msgstr "Eliminar dispositivo"
+
+#: reportItemsList.html:67
 msgid "View report"
 msgstr "Ver informe"
 
