@@ -17,6 +17,7 @@ import Devices.BBDD
 
 import Master_GPIOs.models
 import pandas as pd
+import numpy as np
 
 import logging
 
@@ -127,6 +128,7 @@ class AdditionalCalculationsModel(models.Model):
         (3,_('Max value')),
         (4,_('Min value')),
         (5,_('Cummulative sum')),
+        (6,_('Integral over time')),
     )
     
     MainVar = models.OneToOneField(MainDeviceVarModel,on_delete=models.CASCADE,related_name='mvar',blank=True,null=True) # variable that will hold the result of the calculation
@@ -191,7 +193,6 @@ class AdditionalCalculationsModel(models.Model):
         if not self.df.empty:
             self.key=self.AutomationVar.Tag
             # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
-                
             addedtime=pd.to_datetime(arg=self.df.index.values[0])-fromDate.replace(tzinfo=None)
             if addedtime>datetime.timedelta(minutes=1):
                 ts = pd.to_datetime(fromDate.replace(tzinfo=None))
@@ -199,12 +200,16 @@ class AdditionalCalculationsModel(models.Model):
                 self.df=pd.concat([pd.DataFrame(new_row),self.df], ignore_index=False)
                 
             # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
-            
             addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=self.df.index.values[-1])
             if addedtime>datetime.timedelta(minutes=1):
                 ts = pd.to_datetime(toDate.replace(tzinfo=None))
                 new_row = pd.DataFrame([[self.df[self.key].iloc[-1]]], columns = [self.key], index=[ts])
                 self.df=pd.concat([self.df,pd.DataFrame(new_row)], ignore_index=False)
+            
+            # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
+            self.df=self.df.resample('1T').mean()
+            self.df=self.df.interpolate(method='zero')
+                    
             if self.Calculation==0:     # Duty cycle OFF
                 result= self.duty(level=False)
             if self.Calculation==1:     # Duty cycle ON
@@ -217,8 +222,9 @@ class AdditionalCalculationsModel(models.Model):
                 result= self.df.min()[0]
             elif self.Calculation==5:   # Cummulative sum
                 result= self.df.cumsum()[0]
-            elif self.Calculation==6:
-                result= None
+            elif self.Calculation==6:   # integral over time
+                from scipy import integrate
+                result=integrate.trapz(y=self.df[self.key], x=self.df[self.key].index.astype(np.int64) / 10**9)
         else:
             result= None
             self.MainVar.update_value(newValue=None,timestamp=DBDate,writeDB=True)
@@ -226,24 +232,57 @@ class AdditionalCalculationsModel(models.Model):
         if result!=None:
             self.MainVar.update_value(newValue=result,timestamp=DBDate,writeDB=True)
             
-
     def duty(self,level=False,decimals=2,absoluteValue=False):
         if not self.df.empty:
             totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
             totalTime=totalTime.days*86400+totalTime.seconds
-            time=0
+            value=next(self.df.iterrows())[1]
+            if not isinstance(value[0], list):
+                time=0
+                islist=False
+            else:
+                time=[]
+                for data in value[0]:
+                    time.append(0)
+                islist=True
+                    
             previousDate=self.df.index.values[0]
             for index, row in self.df.iterrows():
                 date=row.name
                 sampletime=date-previousDate
-                time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
+                if not islist:
+                    time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
+                else:
+                    for i,data in enumerate(row[self.key]):
+                        time[i]+=int(data==level)*(sampletime.days*86400+sampletime.seconds)
                 previousDate=date
+                    
             if absoluteValue==True:
                 return time
             else:
-                return round(time/totalTime*100,decimals)
+                if not islist:
+                    return round(time/totalTime*100,decimals)
+                else:
+                    return [round(x/totalTime*100,decimals) for x in time]
         else:
             return None
+    # def duty(self,level=False,decimals=2,absoluteValue=False):
+        # if not self.df.empty:
+            # totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
+            # totalTime=totalTime.days*86400+totalTime.seconds
+            # time=0
+            # previousDate=self.df.index.values[0]
+            # for index, row in self.df.iterrows():
+                # date=row.name
+                # sampletime=date-previousDate
+                # time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
+                # previousDate=date
+            # if absoluteValue==True:
+                # return time
+            # else:
+                # return round(time/totalTime*100,decimals)
+        # else:
+            # return None
 
 
 
