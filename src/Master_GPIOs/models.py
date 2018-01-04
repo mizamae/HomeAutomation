@@ -20,6 +20,7 @@ logger = logging.getLogger("project")
 
 #set up GPIO using BCM numbering
 GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
 def initializeIOs(declareInputEvent=True):
     IOs=IOmodel.objects.all()

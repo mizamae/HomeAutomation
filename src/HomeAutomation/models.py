@@ -266,25 +266,6 @@ class AdditionalCalculationsModel(models.Model):
                     return [round(x/totalTime*100,decimals) for x in time]
         else:
             return None
-    # def duty(self,level=False,decimals=2,absoluteValue=False):
-        # if not self.df.empty:
-            # totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
-            # totalTime=totalTime.days*86400+totalTime.seconds
-            # time=0
-            # previousDate=self.df.index.values[0]
-            # for index, row in self.df.iterrows():
-                # date=row.name
-                # sampletime=date-previousDate
-                # time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
-                # previousDate=date
-            # if absoluteValue==True:
-                # return time
-            # else:
-                # return round(time/totalTime*100,decimals)
-        # else:
-            # return None
-
-
 
 @receiver(post_save, sender=AdditionalCalculationsModel, dispatch_uid="update_AdditionalCalculationsModel")
 def update_AdditionalCalculationsModel(sender, instance, update_fields,**kwargs):
