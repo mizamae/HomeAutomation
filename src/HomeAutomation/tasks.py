@@ -94,7 +94,7 @@ def HourlyTask():
     except:
         HourDay=MainDeviceVarModel(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H',UserEditable=False)
         HourDay.save()
-    
+    #updateWeekDay()
     checkCustomCalculations()
 
 def start_HourlyTask():

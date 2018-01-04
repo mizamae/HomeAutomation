@@ -3,6 +3,8 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 from django.utils import timezone
+import pandas as pd
+import numpy as np
 import datetime
 import json
 import logging
@@ -306,10 +308,6 @@ def viewReports(request,pk=None):
         reportTitles=[]
         for RP in RPs:
             reportTitles.append(RP.ReportTitle)
-            #logger.info('Report: ' + Item.Report.ReportTitle)
-        # for Item in ReportItems:
-            # elements.append(Item)
-        #logger.info('Found : ' + str(elements))
         return render(request, 'reportItemsList.html',{'reportTitles':reportTitles,'items':ReportItems})
     else:
         #from HomeAutomation.tasks import checkReportAvailability            
@@ -551,229 +549,307 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
     sql='SELECT '+vars+' FROM "'+ table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC LIMIT ' + str(limit)
     #logger.info('SQL:' + sql)
     
-    data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
+    # data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
+    df=pd.read_sql_query(sql=sql,con=applicationDBs.registersDB.conn,index_col='timestamp')
     
-    tempData=[]
-    tempStats={'number':5,'num_rows':[],'mean':[],'max':[],'min':[],'on_time':[],'off_time':[]}
-    isFirstRow=True
-    
-    local_tz=get_localzone()
-    
-    if data_rows==[] or data_rows==None: # this may happen in asynchronous datagrams
-        # get the last row from the DB
-        temp=[]
-        sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
-        row=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-        if row != None:
+    if not df.empty:
+        
+        # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
+        addedtime=pd.to_datetime(arg=df.index.values[0])-fromDate.replace(tzinfo=None)
+        if addedtime>datetime.timedelta(minutes=1):
+            ts = pd.to_datetime(fromDate.replace(tzinfo=None))
+            new_row = pd.DataFrame([df.iloc[0].values], columns = df.columns, index=[ts])
+            df=pd.concat([pd.DataFrame(new_row),df], ignore_index=False)
             
-            for k,col in enumerate(row):
-                if types[k]=='analog':
-                    temp.append(col)
-                elif types[k]=='digital':
-                    data=[]
-                    for i in range(0,8):
-                        if col!=None:
-                            data.append(1 if (col & (1<<int(i)))>0 else 0)
-                        else:
-                            data.append(None)
-                    temp.append(data)
-                else:   # for the datetime
-                    temp.append(col)
-        else:
-            temp.append(fromDate)
-            for k,var in enumerate(vars.split(',')):
-                if types[k]=='analog':
-                    temp.append(None)
-                elif types[k]=='digital':
-                    data=[]
-                    for i in range(0,8):
-                            data.append(None)
-                    temp.append(data)
-        now = timezone.now()
-        localdate = fromDate
-        localdate=localdate+localdate.utcoffset() 
-        fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-Devices.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(1)+')'}
-        del temp[0] #removes the column with the original datetimes
-        temp.insert(0, fecha)
-        tempData.append(temp)
-        # extrapolate the last row from the DB
-        temp=[]
-        if row != None:
-            for k,col in enumerate(row):
-                if types[k]=='analog':
-                    temp.append(col)
-                elif types[k]=='digital':
-                    data=[]
-                    for i in range(0,8):
-                        if col!=None:
-                            data.append(1 if (col & (1<<int(i)))>0 else 0)
-                        else:
-                            data.append(None)
-                    temp.append(data)
-                else:   # for the datetime
-                    temp.append(col)
-        else:
-            temp.append(toDate)
-            for k,var in enumerate(vars.split(',')):
-                if types[k]=='analog':
-                    temp.append(None)
-                elif types[k]=='digital':
-                    data=[]
-                    for i in range(0,8):
-                            data.append(None)
-                    temp.append(data)
-                
-        fecha={'v':'Date('+str(toDate.year)+','+str(toDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(toDate.day)+','+str(toDate.hour)+','+str(toDate.minute)+','+str(toDate.second)+')'}
-        del temp[0] #removes the column with the original datetimes
-        temp.insert(0, fecha)
-        tempData.append(temp)           
+        # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
+        addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=df.index.values[-1])
+        if addedtime>datetime.timedelta(minutes=1):
+            ts = pd.to_datetime(toDate.replace(tzinfo=None))
+            new_row = pd.DataFrame([df.iloc[-1].values], columns = df.columns, index=[ts])
+            df=pd.concat([df,pd.DataFrame(new_row)], ignore_index=False)
+        
+        # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
+        df_res=df.resample('1T').mean()
+        df_int=df_res.interpolate(method='zero')
     else:
-        if sampletime==0:
-            row_ini=list(data_rows[0])
-            row_ini[0]=fromDate.replace(tzinfo=None)
-            data_rows.insert(0,tuple(row_ini)) # introduces in the first position a row dated in fromDate with the values of the first real register
-            row_ini=data_rows[1]
-            row_ini=list(data_rows[len(data_rows)-1])
-            row_ini[0]=toDate.replace(tzinfo=None)
-            data_rows.append(tuple(row_ini)) # introduces in the last position a row dated in toDate with the values of the last real register
-                 
-        for row in data_rows:
-            temp=[]
-            localdate = local_tz.localize(row[0])
-            localdate=localdate+localdate.utcoffset() 
-            fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-Devices.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(localdate.second)+')'}
-            #logger.info(str(fecha))      
-            if isFirstRow==False:
-                sampletime=row[0]-prevRow[0]
-#             if row[-1]!=None:
-#                 tempStats['num_rows']+=1
-            k=0
-            for col in row:
-                if col=='':
-                    col=None
-                if types[k]=='analog':
-                    temp.append(col)
-                elif types[k]=='digital':
-                    data=[]
-                    for i in range(0,8):
-                        if col!=None:
-                            data.append(1 if (col & (1<<int(i)))>0 else 0)
-                        else:
-                            data.append(None)
-                    temp.append(data)
-                else:   # for the datetime
-                    temp.append(col)
-                if col!=None:
-                    if k>=1: # to avoid including the timestamp in the statistics
-                        if isFirstRow:
-                            if types[k]=='analog':
-                                tempStats['mean'].append(col)
-                                tempStats['max'].append(col)
-                                tempStats['min'].append(col)
-                                tempStats['num_rows'].append(0)
-                                tempStats['on_time'].append(0)
-                                tempStats['off_time'].append(0)
-                            else:
-                                vectON=[]
-                                vectOFF=[]
-                                for i in range(0,8):
-                                    data= 1 if (col & (1<<int(i)))>0 else 0
-                                    vectON.append(data*sampletime)
-                                    vectOFF.append((not data)*sampletime)
-                                tempStats['mean'].append(0)
-                                tempStats['max'].append(-10000000)
-                                tempStats['min'].append(10000000)
-                                tempStats['num_rows'].append(0)
-                                tempStats['on_time'].append(vectON)
-                                tempStats['off_time'].append(vectOFF)
-                        else:
-                            #tempStats['mean'][k-1]=(tempStats['mean'][k-1]*(tempStats['number']-1)+col)/tempStats['number'] # moving average
-                            try:
-                                tempStats['num_rows'][k-1]+=1
-                                #logger.debug('COL=' + str(col))
-                                if types[k]=='analog':
-                                    if tempStats['mean'][k-1]!=None:
-                                        tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'][k-1] # moving average
-                                    else:
-                                        tempStats['mean'][k-1]=col
-                                    if tempStats['max'][k-1]!=None:
-                                        if col>tempStats['max'][k-1]:
-                                            tempStats['max'][k-1]=col
-                                    else:
-                                        tempStats['max'][k-1]=col
-                                    if tempStats['min'][k-1]!=None:
-                                        if col<tempStats['min'][k-1]:
-                                            tempStats['min'][k-1]=col
-                                    else:
-                                        tempStats['min'][k-1]=col
-                                elif types[k]=='digital':
-                                    for i in range(0,8):
-                                        data= 1 if (col & (1<<int(i)))>0 else 0
-                                        if tempStats['on_time'][k-1][i]!=None:
-                                            tempStats['on_time'][k-1][i]+=data*(sampletime.days*86400+sampletime.seconds)
-                                            tempStats['off_time'][k-1][i]+=(not data)*(sampletime.days*86400+sampletime.seconds)
-                                        else:
-                                            tempStats['on_time'][k-1][i]=data*(sampletime.days*86400+sampletime.seconds)
-                                            tempStats['off_time'][k-1][i]=(not data)*(sampletime.days*86400+sampletime.seconds)
-                            except IndexError: # this can happen when some variables are added to a datagram and want to show on a same plot the previous and the new datagram (with more variables)
-                                if types[k]=='analog':
-                                    tempStats['mean'].append(col)
-                                    tempStats['max'].append(col)
-                                    tempStats['min'].append(col)
-                                    tempStats['num_rows'].append(0)
-                                    tempStats['on_time'].append(None)
-                                    tempStats['off_time'].append(None)
-                                else:
-                                    tempStats['mean'].append(None)
-                                    tempStats['max'].append(None)
-                                    tempStats['min'].append(None)
-                                    tempStats['num_rows'].append(0)
-                                    vectON=[]
-                                    vectOFF=[]  
-                                    if col!=None:
-                                        for i in range(0,8):
-                                            data= 1 if (col & (1<<int(i)))>0 else 0
-                                            vectON.append(data*(sampletime.days*86400+sampletime.seconds))
-                                            vectOFF.append((not data)*(sampletime.days*86400+sampletime.seconds))
-                                    else:
-                                        for i in range(0,8):
-                                            vectON.append(None)
-                                            vectOFF.append(None)
-                                    tempStats['on_time'].append(vectON)
-                                    tempStats['off_time'].append(vectOFF)
-                else:
-                    if k>=1 and isFirstRow: # to avoid including the timestamp in the statistics
-                        if types[k]=='analog':
-                            tempStats['mean'].append(None)
-                            tempStats['max'].append(None)
-                            tempStats['min'].append(None)
-                            tempStats['num_rows'].append(0)
-                            tempStats['on_time'].append(None)
-                            tempStats['off_time'].append(None)
-                        else:
-                            vectON=[]
-                            vectOFF=[]
-                            for i in range(0,8):
-                                vectON.append(None)
-                                vectOFF.append(None)
-                            tempStats['mean'].append(None)
-                            tempStats['max'].append(None)
-                            tempStats['min'].append(None)
-                            tempStats['num_rows'].append(0)
-                            tempStats['on_time'].append(vectON)
-                            tempStats['off_time'].append(vectOFF)
-                k+=1
+        sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+        df=pd.read_sql_query(sql=sql,con=applicationDBs.registersDB.conn,index_col='timestamp')
+        if not df.empty:
+            values=np.concatenate([df.values,df.values])
+        # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
+        ts_ini = pd.to_datetime(fromDate.replace(tzinfo=None))
+        ts_end = pd.to_datetime(toDate.replace(tzinfo=None))
+        df = pd.DataFrame(data=values,index=[ts_ini,ts_end],columns=df.columns)
+        df_int=df
             
-            del temp[0] #removes the column with the original datetimes
-            temp.insert(0, fecha)
-            tempData.append(temp)
-            prevRow=row
-            isFirstRow=False    
+    tempStats={'number':5,'num_rows':df.count(numeric_only=True).tolist(),'mean':[],'max':df.max(numeric_only=True).tolist(),'min':df.min(numeric_only=True).tolist(),'on_time':[],'off_time':[]}
+    
+    for name,type in zip(names,types):
+        if type=='digital':
+            def dec2bin(x):
+                data=[]
+                for i in range(0,8):
+                    try:
+                        x=int(x)
+                        data.append(1 if (x & (1<<int(i)))>0 else 0)
+                    except:
+                        data.append(None)
+                return data
+                    
+            try:
+                df[name]=df[name].apply(func=dec2bin)
+                from HomeAutomation.models import AdditionalCalculationsModel
+                kk=pd.DataFrame(df[name])
+                CALC=AdditionalCalculationsModel(df=kk,key=name)
+                tempStats['on_time'].append(CALC.duty(level=True,absoluteValue=True))
+                tempStats['off_time'].append(CALC.duty(level=False,absoluteValue=True))
+            except KeyError:
+                tempStats['on_time'].append(None)
+                tempStats['off_time'].append(None)
+            
+
+            tempStats['mean'].append(None)
+        elif type=='analog':
+            try:
+                # AN ERROR CAN OCCUR IF THE VARIABLE HAS NO VALUE ALONG THE TIMESPAN
+                tempStats['mean'].append(df_int[str(name)].mean())
+            except KeyError:
+                tempStats['mean'].append(None)
+            tempStats['on_time'].append(None)
+            tempStats['off_time'].append(None)
+    
+    tempX2 = [x / 1000000 for x in df.index.values.tolist()]
+    # TRANSFORMING THE NANs TO NONEs TO AVOID JSON ENCODING ISSUES
+    tempData=df.where(pd.notnull(df), None).values.tolist()
+    
+    for row,timestamp in zip(tempData,tempX2):
+        row.insert(0,timestamp)   
          
     chart['rows']=tempData
     chart['statistics']=tempStats
     #print (str(chart))
     return chart
+    # tempData=[]
+    # tempStats={'number':5,'num_rows':[],'mean':[],'max':[],'min':[],'on_time':[],'off_time':[]}
+    # isFirstRow=True
+    
+    # local_tz=get_localzone()
+    
+    # if data_rows==[] or data_rows==None: # this may happen in asynchronous datagrams
+        # # get the last row from the DB
+        # temp=[]
+        # sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+        # row=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
+        # if row != None:
+            
+            # for k,col in enumerate(row):
+                # if types[k]=='analog':
+                    # temp.append(col)
+                # elif types[k]=='digital':
+                    # data=[]
+                    # for i in range(0,8):
+                        # if col!=None:
+                            # data.append(1 if (col & (1<<int(i)))>0 else 0)
+                        # else:
+                            # data.append(None)
+                    # temp.append(data)
+                # else:   # for the datetime
+                    # temp.append(col)
+        # else:
+            # temp.append(fromDate)
+            # for k,var in enumerate(vars.split(',')):
+                # if types[k]=='analog':
+                    # temp.append(None)
+                # elif types[k]=='digital':
+                    # data=[]
+                    # for i in range(0,8):
+                            # data.append(None)
+                    # temp.append(data)
+        # now = timezone.now()
+        # localdate = fromDate
+        # localdate=localdate+localdate.utcoffset() 
+        # fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-Devices.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(1)+')'}
+        # del temp[0] #removes the column with the original datetimes
+        # temp.insert(0, fecha)
+        # tempData.append(temp)
+        # # extrapolate the last row from the DB
+        # temp=[]
+        # if row != None:
+            # for k,col in enumerate(row):
+                # if types[k]=='analog':
+                    # temp.append(col)
+                # elif types[k]=='digital':
+                    # data=[]
+                    # for i in range(0,8):
+                        # if col!=None:
+                            # data.append(1 if (col & (1<<int(i)))>0 else 0)
+                        # else:
+                            # data.append(None)
+                    # temp.append(data)
+                # else:   # for the datetime
+                    # temp.append(col)
+        # else:
+            # temp.append(toDate)
+            # for k,var in enumerate(vars.split(',')):
+                # if types[k]=='analog':
+                    # temp.append(None)
+                # elif types[k]=='digital':
+                    # data=[]
+                    # for i in range(0,8):
+                            # data.append(None)
+                    # temp.append(data)
+                
+        # fecha={'v':'Date('+str(toDate.year)+','+str(toDate.month-Devices.GlobalVars.daysmonths_offset)+','+str(toDate.day)+','+str(toDate.hour)+','+str(toDate.minute)+','+str(toDate.second)+')'}
+        # del temp[0] #removes the column with the original datetimes
+        # temp.insert(0, fecha)
+        # tempData.append(temp)           
+    # else:
+        # if sampletime==0:
+            # row_ini=list(data_rows[0])
+            # row_ini[0]=fromDate.replace(tzinfo=None)
+            # data_rows.insert(0,tuple(row_ini)) # introduces in the first position a row dated in fromDate with the values of the first real register
+            # row_ini=data_rows[1]
+            # row_ini=list(data_rows[len(data_rows)-1])
+            # row_ini[0]=toDate.replace(tzinfo=None)
+            # data_rows.append(tuple(row_ini)) # introduces in the last position a row dated in toDate with the values of the last real register
+                 
+        # for row in data_rows:
+            # temp=[]
+            # localdate = local_tz.localize(row[0])
+            # localdate=localdate+localdate.utcoffset() 
+            # fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-Devices.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(localdate.second)+')'}
+            # #logger.info(str(fecha))      
+            # if isFirstRow==False:
+                # sampletime=row[0]-prevRow[0]
+# #             if row[-1]!=None:
+# #                 tempStats['num_rows']+=1
+            # k=0
+            # for col in row:
+                # if col=='':
+                    # col=None
+                # if types[k]=='analog':
+                    # temp.append(col)
+                # elif types[k]=='digital':
+                    # data=[]
+                    # for i in range(0,8):
+                        # if col!=None:
+                            # data.append(1 if (col & (1<<int(i)))>0 else 0)
+                        # else:
+                            # data.append(None)
+                    # temp.append(data)
+                # else:   # for the datetime
+                    # temp.append(col)
+                # if col!=None:
+                    # if k>=1: # to avoid including the timestamp in the statistics
+                        # if isFirstRow:
+                            # if types[k]=='analog':
+                                # tempStats['mean'].append(col)
+                                # tempStats['max'].append(col)
+                                # tempStats['min'].append(col)
+                                # tempStats['num_rows'].append(0)
+                                # tempStats['on_time'].append(0)
+                                # tempStats['off_time'].append(0)
+                            # else:
+                                # vectON=[]
+                                # vectOFF=[]
+                                # for i in range(0,8):
+                                    # data= 1 if (col & (1<<int(i)))>0 else 0
+                                    # vectON.append(data*sampletime)
+                                    # vectOFF.append((not data)*sampletime)
+                                # tempStats['mean'].append(0)
+                                # tempStats['max'].append(-10000000)
+                                # tempStats['min'].append(10000000)
+                                # tempStats['num_rows'].append(0)
+                                # tempStats['on_time'].append(vectON)
+                                # tempStats['off_time'].append(vectOFF)
+                        # else:
+                            # #tempStats['mean'][k-1]=(tempStats['mean'][k-1]*(tempStats['number']-1)+col)/tempStats['number'] # moving average
+                            # try:
+                                # tempStats['num_rows'][k-1]+=1
+                                # #logger.debug('COL=' + str(col))
+                                # if types[k]=='analog':
+                                    # if tempStats['mean'][k-1]!=None:
+                                        # tempStats['mean'][k-1]=tempStats['mean'][k-1]+(col-tempStats['mean'][k-1])/tempStats['num_rows'][k-1] # moving average
+                                    # else:
+                                        # tempStats['mean'][k-1]=col
+                                    # if tempStats['max'][k-1]!=None:
+                                        # if col>tempStats['max'][k-1]:
+                                            # tempStats['max'][k-1]=col
+                                    # else:
+                                        # tempStats['max'][k-1]=col
+                                    # if tempStats['min'][k-1]!=None:
+                                        # if col<tempStats['min'][k-1]:
+                                            # tempStats['min'][k-1]=col
+                                    # else:
+                                        # tempStats['min'][k-1]=col
+                                # elif types[k]=='digital':
+                                    # for i in range(0,8):
+                                        # data= 1 if (col & (1<<int(i)))>0 else 0
+                                        # if tempStats['on_time'][k-1][i]!=None:
+                                            # tempStats['on_time'][k-1][i]+=data*(sampletime.days*86400+sampletime.seconds)
+                                            # tempStats['off_time'][k-1][i]+=(not data)*(sampletime.days*86400+sampletime.seconds)
+                                        # else:
+                                            # tempStats['on_time'][k-1][i]=data*(sampletime.days*86400+sampletime.seconds)
+                                            # tempStats['off_time'][k-1][i]=(not data)*(sampletime.days*86400+sampletime.seconds)
+                            # except IndexError: # this can happen when some variables are added to a datagram and want to show on a same plot the previous and the new datagram (with more variables)
+                                # if types[k]=='analog':
+                                    # tempStats['mean'].append(col)
+                                    # tempStats['max'].append(col)
+                                    # tempStats['min'].append(col)
+                                    # tempStats['num_rows'].append(0)
+                                    # tempStats['on_time'].append(None)
+                                    # tempStats['off_time'].append(None)
+                                # else:
+                                    # tempStats['mean'].append(None)
+                                    # tempStats['max'].append(None)
+                                    # tempStats['min'].append(None)
+                                    # tempStats['num_rows'].append(0)
+                                    # vectON=[]
+                                    # vectOFF=[]  
+                                    # if col!=None:
+                                        # for i in range(0,8):
+                                            # data= 1 if (col & (1<<int(i)))>0 else 0
+                                            # vectON.append(data*(sampletime.days*86400+sampletime.seconds))
+                                            # vectOFF.append((not data)*(sampletime.days*86400+sampletime.seconds))
+                                    # else:
+                                        # for i in range(0,8):
+                                            # vectON.append(None)
+                                            # vectOFF.append(None)
+                                    # tempStats['on_time'].append(vectON)
+                                    # tempStats['off_time'].append(vectOFF)
+                # else:
+                    # if k>=1 and isFirstRow: # to avoid including the timestamp in the statistics
+                        # if types[k]=='analog':
+                            # tempStats['mean'].append(None)
+                            # tempStats['max'].append(None)
+                            # tempStats['min'].append(None)
+                            # tempStats['num_rows'].append(0)
+                            # tempStats['on_time'].append(None)
+                            # tempStats['off_time'].append(None)
+                        # else:
+                            # vectON=[]
+                            # vectOFF=[]
+                            # for i in range(0,8):
+                                # vectON.append(None)
+                                # vectOFF.append(None)
+                            # tempStats['mean'].append(None)
+                            # tempStats['max'].append(None)
+                            # tempStats['min'].append(None)
+                            # tempStats['num_rows'].append(0)
+                            # tempStats['on_time'].append(vectON)
+                            # tempStats['off_time'].append(vectOFF)
+                # k+=1
+            
+            # del temp[0] #removes the column with the original datetimes
+            # temp.insert(0, fecha)
+            # tempData.append(temp)
+            # prevRow=row
+            # isFirstRow=False    
+         
+    # chart['rows']=tempData
+    # chart['statistics']=tempStats
+    # #print (str(chart))
+    # return chart
     
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_plots'))

@@ -119,7 +119,7 @@
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
     <script src="http://code.highcharts.com/modules/exporting.js"></script>
     <script type="text/javascript">
-    var language,datesFormat;
+    var language,datesFormat,decimalSeparator,thousandsSeparator;
 	var djangoData;
 	var graphic_class="col-sm-8 col-lg-9";
 	var statistics_class="col-sm-4 col-lg-3";
@@ -142,9 +142,13 @@
 	    {% if LANGUAGE_CODE == 'es' %}
 	    	language='es';
 	    	datesFormat='dd/mm/yyyy hh:ii:ss';
+            decimalSeparator=",";
+            thousandsSeparator="."
 	    {% else %}
 	    	language='en';
 	    	datesFormat='yyyy-mm-dd hh:ii:ss';
+            decimalSeparator=".";
+            thousandsSeparator=","
 	    {% endif %}
 	}
 	
@@ -388,7 +392,16 @@
                         
             for(var j=0; j<DataLabels.length;j++)
             {	
-                var label=parseLabel(DataLabels[j].label);
+            	if (DataLabels[j].label instanceof Array)
+            	{
+            		var label="";
+            		for (lab in DataLabels[j].label)
+           			{
+            			label+=DataLabels[j].label[lab]+";"
+           			}
+            		label = label.substring(0, label.length - 1);
+            	}
+            	else{var label=parseLabel(DataLabels[j].label);}
                 if (label.includes('timestamp')){label="Date;Time";}
                 csvContent += j < DataLabels.length ? label+";": label+ "\n";
             }
@@ -396,10 +409,27 @@
             csvContent+="\n";
             for(var j=0; j<arrayData.length;j++)
             {	
-                var date=eval("new " + arrayData[j][0].v).ddmmyyyy();
-                var row=arrayData[j].join(";");
-                row=row.replace("[object Object]",date);
-                csvContent += row+"\n";
+                //var date=eval("new " + arrayData[j][0].v).ddmmyyyy();
+                var date=new Date(arrayData[j][0]).ddmmyyyy();
+                var dataArray=arrayData[j].slice(1);
+                var row="";
+                for (col in dataArray)
+               	{
+                	if (dataArray[col] instanceof Array)
+         			{
+                		for (k = 0; k < dataArray[col].length; k++) {
+                			row += dataArray[col][k]+";";
+                		}
+         			}else
+       				{
+         				row += dataArray[col]+";";
+       				}
+                	
+               	}
+                row = row.substring(0, row.length - 1);
+                
+                //csvContent += row+"\n";
+                csvContent += date + ";"+row.split(thousandsSeparator).join(decimalSeparator)+"\n"; // to replace all the occurences in the row
             }
             //console.log(csvContent);
         }
@@ -502,7 +532,8 @@
 		max=null;
         min=null;
         var height=ChartsHeight;
-        var firstDate=eval("new " + x_axis[0].v);
+        //var firstDate=eval("new " + x_axis[0].v);
+        var firstDate=new Date(x_axis[0]);
         var dateformat='%e/%b/%Y %H:%M';
         var appendix='',max_data,min_data;
         var error_multiplier; // to avoid sowing error bars if data is null
@@ -514,15 +545,17 @@
 			column=columns[j];
             if (chartId.includes('analog'))
             {
-                var current_hour=eval("new " + x_axis[0].v).getHours();
-                var current_day=eval("new " + x_axis[0].v).getDay();
+                //var current_hour=eval("new " + x_axis[0].v).getHours();
+                //var current_day=eval("new " + x_axis[0].v).getDay();
+                var current_hour=new Date(x_axis[0]).getHours();
+                var current_day=new Date(x_axis[0]).getDay();
                 var accumulated=0.,count=0;
                 max_data=-10000000000;
                 min_data=10000000000;
                 
                 for (var i=0;i<x_axis.length;i++)
                 {
-                    fecha=eval("new " + x_axis[i].v);
+                    fecha=new Date(x_axis[i]);
                     if (HourlyData) 
                     {
                         if (fecha.getHours()==current_hour)
@@ -538,7 +571,7 @@
                             }else{error_multiplier=0;}
                         }else
                         {
-                            var fecha_ant_end=eval("new " + x_axis[i-1].v);
+                            var fecha_ant_end=new Date(x_axis[i-1]);
                             var fecha_ant_ini=fecha_ant_end-fecha_ant_end.getMinutes()*60000;
                             var fecha_chart=fecha_ant_ini+(fecha_ant_end-fecha_ant_ini)/2;
                             if (count>0){variable_data.push([fecha_chart,accumulated/count]);}
@@ -569,7 +602,7 @@
                             }else{error_multiplier=0;}
                         }else
                         {
-                            var fecha_ant_end=eval("new " + x_axis[i-1].v);
+                            var fecha_ant_end=new Date(x_axis[i-1]);
                             var fecha_ant_ini=fecha_ant_end-fecha_ant_end.getHours()*60*60000-fecha_ant_end.getMinutes()*60000;
                             var fecha_chart=fecha_ant_ini+(fecha_ant_end-fecha_ant_ini)/2;
                             if (count>0){variable_data.push([fecha_chart,accumulated/count]);}
@@ -591,7 +624,7 @@
                 // to include the last hour interval
                 if (HourlyData && fecha.getHours()==current_hour)
                 {
-                    var fecha_ant_end=eval("new " + x_axis[x_axis.length-1].v);
+                    var fecha_ant_end=new Date(x_axis[x_axis.length-1]);
                     var fecha_ant_ini=fecha_ant_end-fecha_ant_end.getMinutes()*60000;
                     var fecha_chart=fecha_ant_ini+(fecha_ant_end-fecha_ant_ini)/2;
                     variable_data.push([fecha_chart,accumulated/count]);
@@ -603,7 +636,7 @@
                 }
                 if (DailyData && fecha.getDay()==current_day)
                 {
-                    var fecha_ant_end=eval("new " + x_axis[x_axis.length-1].v);
+                    var fecha_ant_end=new Date(x_axis[x_axis.length-1]);
                     var fecha_ant_ini=fecha_ant_end-fecha_ant_end.getHours()*60*60000-fecha_ant_end.getMinutes()*60000;
                     var fecha_chart=fecha_ant_ini+(fecha_ant_end-fecha_ant_ini)/2;
                     variable_data.push([fecha_chart,accumulated/count]);
@@ -649,7 +682,7 @@
                 max=1.1;
                 for (var i=0;i<x_axis.length;i++)
                 {
-                    fecha=eval("new " + x_axis[i].v);
+                    fecha=new Date(x_axis[i]);
                     temp=[Date.parse(fecha)];
                     for (var element in data[i][column]){temp.push(data[i][column][element]);} 
                     variable_data.push(temp);
