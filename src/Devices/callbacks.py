@@ -12,6 +12,10 @@ import logging
 logger = logging.getLogger("project")
 
 import Adafruit_DHT
+
+def callback_handler (instance,**kwargs):
+    instance(**kwargs)
+    
 '''
 A class with the name of each of the DeviceTypes defined for local connection need to be created.
 The method to be called when polling the device must be called "read_sensor"
@@ -32,7 +36,7 @@ class OpenWeatherMap(object):
     def query_sensor(self,**kwargs):
         pass
         
-    def read_sensor(self,datagram = 'observation'):
+    def __call__(self,datagram = 'observation'):
         #logger.error('Callback for the device ' + self.sensor.DeviceName)
         if self.place!=None:
             
@@ -154,7 +158,7 @@ class DHT11(object):
             self._lastTemp=None
             logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
             
-    def read_sensor(self,**kwargs):
+    def __call__(self,**kwargs):
         """
         Read temperature and humidity from DHT sensor.
         """
@@ -285,7 +289,7 @@ class DHT22(object):
             logger.error('Calibration of sensor ' + str(self.sensor.DeviceName) + ' failed')
         
                                 
-    def read_sensor(self):
+    def __call__(self):
         """
         Read temperature and humidity from DHT sensor.
         """

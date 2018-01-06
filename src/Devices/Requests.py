@@ -9,6 +9,7 @@ from tzlocal import get_localzone
 
 import Devices.GlobalVars
 import Devices.callbacks
+from Devices.callbacks import callback_handler
 import Devices.XML_parser
 import Devices.models
 import Devices.HTTP_client
@@ -23,7 +24,15 @@ scheduler = BackgroundScheduler()
 url = 'sqlite:///scheduler.sqlite'
 scheduler.add_jobstore('sqlalchemy', url=url)
 
+try:
+    scheduler.start()
+except BaseException as e:
+    logger.info('Exception APS: ' + str(e))
+                
 def my_listener(event):
+    pass
+    # logger.debug("APS: " + str(event.traceback))
+    # logger.debug("APS: " + str(event.exception))
     if event.exception:
         try:
             text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
@@ -33,7 +42,7 @@ def my_listener(event):
     else:
         pass
 
-scheduler.add_listener(my_listener, events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
+scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
 
 def initialize_polling_devices():
     DVs=Devices.models.DeviceModel.objects.all()
@@ -50,9 +59,10 @@ def update_requests(DV):
     AppDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     now=timezone.now()
+    next_run_time = now + datetime.timedelta(seconds=10)
     tables=DV.getRegistersTables()
     local_tz=get_localzone()
-    
+    #executeNow=False
     if len(tables)>0:
         for table in tables:                                       
             sql='SELECT timestamp FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
@@ -69,56 +79,56 @@ def update_requests(DV):
                 break
     else:
         executeNow=False
-    executeNow=False
+        
     if DV.DeviceState==1:
         for DG in DGs:
             datagramID=DG.Identifier
             if DG.isSynchronous():#int(datagram['sample'])>0:
                 id=DV.DeviceName+'-'+DG.Identifier
-                try:
-                    scheduler.remove_job(id)
-                    logger.info('Killed previous job ID '+id)
-                except:
-                    pass 
-                    
+                SCHD=scheduler.get_job(job_id=id,jobstore='DevicesPolling')                   
                 
                 if DV.Type.Connection=='LOCAL':
-                    callback=lambda:getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor() # gets the link to the function read_sensor of the appropriate class
-                    scheduler.add_job(func=callback,trigger='interval',
-                                      id=id, 
-                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1)
+                    callback=callback_handler
                     if executeNow:
-                        arguments={}
-                        #callback(**arguments)
+                        scheduler.add_job(func=callback,trigger='interval',
+                                      id=id, next_run_time=next_run_time,args=[getattr(Devices.callbacks, DV.Type.Code)(DV),],
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1,coalesce=True)
+                    else:  
+                        scheduler.add_job(func=callback,trigger='interval',
+                                      id=id,args=[getattr(Devices.callbacks, DV.Type.Code)(DV),], 
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1,coalesce=True)
                         
                 elif DV.Type.Connection=='REMOTE':
-                    scheduler.add_job(func=request_to_device,trigger='interval',args=(DV.DeviceIP,DV.DeviceCode, DG.Identifier),
-                                      id=id, 
-                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
-                        request_to_device(DV.DeviceIP,DV.DeviceCode, DG.Identifier)
+                        scheduler.add_job(func=request_to_device,trigger='interval',args=(DV.DeviceIP,DV.DeviceCode, DG.Identifier),
+                                      id=id, next_run_time=next_run_time, 
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1,coalesce=True)
+                    else:
+                        scheduler.add_job(func=request_to_device,trigger='interval',args=(DV.DeviceIP,DV.DeviceCode, DG.Identifier),
+                                      id=id,
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1,coalesce=True)
+                                      
                 elif DV.Type.Connection=='MEMORY':
-                    callback=lambda:getattr(Devices.callbacks, DV.Type.Code)(DV).read_sensor(datagram=DG.Identifier) # gets the link to the function read_sensor of the appropriate class
+                    callback=callback_handler
                     arguments={'datagram':DG.Identifier}
-                    scheduler.add_job(func=callback,trigger='interval',#kwargs=arguments,
-                                      id=id, 
-                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1)
                     if executeNow:
-                        callback(**arguments)
+                        scheduler.add_job(func=callback,trigger='interval',kwargs=arguments,
+                                      id=id, next_run_time=next_run_time, args=[getattr(Devices.callbacks, DV.Type.Code)(DV),], 
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1,coalesce=True)
+                    else:
+                        scheduler.add_job(func=callback,trigger='interval',kwargs=arguments,
+                                      id=id, args=[getattr(Devices.callbacks, DV.Type.Code)(DV),], 
+                                      seconds=DV.Sampletime,replace_existing=True,max_instances=1,coalesce=True)
                 
                 JOBs=scheduler.get_jobs()
                 for JOB in JOBs:
                     if JOB.id==id: 
-                        PublishEvent(Severity=0,Text='Requests '+id+ ' is added to scheduler',Persistent=False)
+                        PublishEvent(Severity=0,Text='Requests '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
                         break
             
         if len(DGs)>0:
             text=str(_('Polling for the device '))+DV.DeviceName+str(_(' is started with sampletime= ')) + str(DV.Sampletime)  
-            PublishEvent(Severity=0,Text=text,Persistent=True)
-            try:
-                scheduler.start()
-            except:
-                logger.info('Main thread was already started')
+            PublishEvent(Severity=0,Text=text,Persistent=False)
         else:
             logger.warning('The device types ' +str(DV.Type) + ' have no datagrams defined')
         #updates the state of the device in the DB

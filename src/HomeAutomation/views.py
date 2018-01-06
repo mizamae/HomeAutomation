@@ -795,7 +795,6 @@ def update(root):
             if err:
                 logger.debug('MIGRATIONS CHECK ERROR: ' + str(err))
                 PublishEvent(Severity=5,Text=_("Error checking migrations: " + str(err)),Persistent=True)
-                return
                 
             migrations= "[ ]" in stdout
              

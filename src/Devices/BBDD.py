@@ -226,7 +226,7 @@ class Database(object):
             cur.close()
             return lastRow   
         except:
-            #logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
+            logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
             #logger.error("SQL: "+ SQL_statement)
             return -1
        
@@ -693,8 +693,10 @@ class DIY4dot0_Databases(object):
                             
             sql=self.registersDB.SQLinsertIOs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
-            #logger.info('SQL: ' + sql)
+            
             returned=self.registersDB.insert_row(SQL_statement=sql, row_values=values)
+            if direction=='OUT':
+                logger.info('Timestamp: '+ str(TimeStamp) +'SQL: ' + sql + ' values= ' + str(values) )
             # if returned==-1:
                 # for IO in IOs:
                     # self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateIOs_statement.replace('$table',table),
