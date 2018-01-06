@@ -721,20 +721,18 @@ class AutomationRuleModel(models.Model):
             
         if resultTRUE==True:
             Action=json.loads(self.Action)
-            if Action['IO']!=None:
+            if Action['IO']!=None and Action['ActionType']=='a':
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 newValue=int(Action['IOValue'])
                 IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
-            #logger.info('The rule ' + self.Identifier + ' evaluated to True. Action executed.')
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
-            if Action['IO']!=None:
+            if Action['IO']!=None and Action['ActionType']=='a':
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 newValue=int(not int(Action['IOValue']))
                 IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
-            #logger.info('The rule ' + self.Identifier + ' evaluated to False. Action executed.')
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
             
