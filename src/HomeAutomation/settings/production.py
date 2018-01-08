@@ -99,6 +99,14 @@ LOGGING = {
             'backupCount': 0,
             'formatter': 'verbose'
         },
+        'scheduler_log_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': join(LOGFILE_ROOT, 'scheduler.log'),
+            'maxBytes': 10000,
+            'backupCount': 0,
+            'formatter': 'verbose'
+        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -119,6 +127,10 @@ LOGGING = {
             'handlers': ['proc_log_file'],
             'level': 'DEBUG',
         },
+        'apscheduler.scheduler':{
+            'handlers': ['scheduler_log_file'],
+            'level': 'DEBUG',
+        }
     }
 }
 

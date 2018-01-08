@@ -73,6 +73,7 @@ class DeviceModel(models.Model):
     Sampletime=models.PositiveIntegerField(default=600)
     RTsampletime=models.PositiveIntegerField(default=60)
     LastUpdated= models.DateTimeField(blank = True,null=True)
+    NextUpdate= models.DateTimeField(blank = True,null=True)
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
     CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     Error= models.CharField(max_length=100,default='',blank=True)
@@ -105,6 +106,45 @@ class DeviceModel(models.Model):
         self.__original_DeviceName = self.DeviceName
         self.__DeviceTypeCode=self.Type.Code
         super(DeviceModel, self).save(*args, **kwargs)
+    
+    def stopPolling(self):
+        from Devices.Requests import update_requests
+        if self.DeviceState==1:
+            self.DeviceState=0
+            self.save()
+        update_requests(DV=self)
+    
+    def startPolling(self):
+        from Devices.Requests import update_requests
+        if self.DeviceState==0:
+            self.DeviceState=1
+            self.save()
+        update_requests(DV=self)
+    
+    def togglePolling(self):
+        if self.DeviceState==0:
+            self.startPolling()
+        else:
+            self.stopPolling()
+            
+    def getPollingJobIDs(self):
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
+        jobIDs=[]
+        if DGs != []:
+            for DG in DGs:
+                if DG.isSynchronous():
+                    jobIDs.append({'id':self.DeviceName + '-' + DG.Identifier,'DG':DG})
+        return jobIDs
+        
+    def setNextUpdate(self,jobID):
+        if jobID!=None:
+            from Devices.Requests import scheduler
+            JOB=scheduler.get_job(job_id=jobID)
+            if JOB!=None:
+                self.NextUpdate=JOB.next_run_time
+            else:
+                self.NextUpdate=None
+            self.save()
         
     def updateCustomLabels(self):
         DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)

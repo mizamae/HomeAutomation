@@ -9,12 +9,9 @@ logger = logging.getLogger("project")
 
 class DeviceModel_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
-        from Devices.Requests import update_requests
         #logger.info("DeviceModel_delete original_message" + ":"+ str(content['data']))
         DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
-        DV.DeviceState= 0 if (DV.DeviceState==1) else 1
-        DV.save()
-        update_requests(DV=DV)
+        DV.togglePolling()
 
 class DeviceModel_delete(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):

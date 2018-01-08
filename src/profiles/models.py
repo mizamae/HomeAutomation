@@ -4,6 +4,7 @@ from django.utils.translation import ugettext as _
 import uuid
 from channels.binding.websockets import WebsocketBinding
 
+from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -49,7 +50,7 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
         from HomeAutomation.models import MainDeviceVarModel
         for beacon in beacons:
             label='Distance from ' + instance.user.name + ' to ' + str(beacon) 
-            
+            timestamp=timezone.now()
             try:
                 mainVar=MainDeviceVarModel.objects.get(Label=label)
             except:
@@ -57,12 +58,11 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
                 logger.info('Creating main Var ' + label)
 
             if instance.Latitude!=None and instance.Longitude!=None:
-                mainVar.Value=beacon.distance_to(other=instance)
+                newValue=beacon.distance_to(other=instance)
             else:
-                mainVar.Value=-1
+                newValue=-1
+            mainVar.update_value(newValue=newValue,timestamp=timestamp,writeDB=True)
             PublishEvent(Severity=0,Text=label+' is ' + str(mainVar.Value),Persistent=False)
-            mainVar.UserEditable=False
-            mainVar.save()
         if instance.Latitude!=None and instance.Longitude!=None:
             import json
             from tzlocal import get_localzone

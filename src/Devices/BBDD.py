@@ -665,7 +665,7 @@ class DIY4dot0_Databases(object):
                 for VAR in VARs:
                     self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateMainVARs_statement,
                                                   fieldupdate='"'+str(VAR.pk)+'"',fieldupdate_value=VAR.Value,keyfield='"timestamp"',keyfield_value=TimeStamp)
-                PublishEvent(Severity=2,Text='UNIQUE contraint failed in MainVars but solved updating',Persistent=False)
+                #PublishEvent(Severity=2,Text='UNIQUE contraint failed in MainVars but solved updating',Persistent=False)
         except:
             logger.error("Unexpected error in insert_MainVariables_register:" + str(sys.exc_info()[1]))
             

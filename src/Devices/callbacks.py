@@ -13,8 +13,11 @@ logger = logging.getLogger("project")
 
 import Adafruit_DHT
 
-def callback_handler (instance,**kwargs):
-    instance(**kwargs)
+# def callback_handler (instance,**kwargs):
+    
+    # instance(**kwargs)
+    # DV=instance.sensor
+    # DV.setNextUpdate(jobID=instance.jobID)  
     
 '''
 A class with the name of each of the DeviceTypes defined for local connection need to be created.
@@ -119,9 +122,9 @@ class DHT11(object):
     _minH=0
     _lastTemp=None
     
-    def __init__(self,DHTsensor):
+    def __init__(self,DV):
         self.type = Adafruit_DHT.DHT11
-        self.sensor=DHTsensor
+        self.sensor=DV
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2ºC per minute
 
     def initial_calibration(self):
@@ -200,6 +203,8 @@ class DHT11(object):
         #Device_datagram_reception.send(sender=None, Device=self.sensor,values=reading)
         self._lastTemp=temperature
         
+        
+        
     def query_sensor(self,**kwargs):
         """
         Read temperature and humidity from DHT sensor.
@@ -222,9 +227,9 @@ class DHT22(object):
     _MAX_RETRIES=3
     _CalnumberMeasures=10
     
-    def __init__(self,DHTsensor):
+    def __init__(self,DV):
         self.type = Adafruit_DHT.DHT22
-        self.sensor=DHTsensor
+        self.sensor=DV
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2ºC per minute
     
     def convertCtoF(self,c):
@@ -377,6 +382,8 @@ class DHT22(object):
         self.sensor.Error=error
         self.sensor.save()
         self._lastTemp=temperature
+
+                
         
     def query_sensor(self,**kwargs):
         """
