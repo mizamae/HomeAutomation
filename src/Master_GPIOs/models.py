@@ -32,8 +32,8 @@ def initializeIOs(declareInputEvent=True):
                 GPIO.setup(int(IO.pin), GPIO.OUT)
                 GPIO.output(int(IO.pin),IO.value)
                 newValue=IO.value
-                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
-                logger.info("   - Initialized Output on pin " + str(IO.pin))
+                IO.update_value(newValue=newValue,timestamp=None,writeDB=True,force=True)
+                print("   - Initialized Output on pin " + str(IO.pin))
             elif IO.direction=='IN':
                 if declareInputEvent:
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
@@ -41,14 +41,12 @@ def initializeIOs(declareInputEvent=True):
                     GPIO.add_event_detect(int(IO.pin), GPIO.BOTH, callback=IO.InputChangeEvent, bouncetime=200)
                     IO.value=GPIO.input(int(IO.pin))
                     newValue=IO.value
-                    IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
+                    IO.update_value(newValue=newValue,timestamp=None,writeDB=True,force=True)
                 else:
                     GPIO.setup(int(IO.pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
                     #GPIO.remove_event_detect(int(IO.pin))
-                    
-                    
-                    
-                logger.info("   - Initialized Input on pin " + str(IO.pin))
+
+                print("   - Initialized Input on pin " + str(IO.pin))
             #IO.save()
                 
 class IOmodelManager(models.Manager):
@@ -80,31 +78,37 @@ class IOmodel(models.Model):
         super(IOmodel, self).__init__(*args, **kwargs)
         self.__previous_value = self.value
     
-    def update_value(self,newValue,timestamp=None,writeDB=True):
-        if writeDB:
-            now=timezone.now()
-            registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                                        configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
-            registerDB.check_IOsTables()
-            if timestamp==None:
-                registerDB.insert_IOs_register(TimeStamp=now-datetime.timedelta(seconds=1),direction=self.direction)
+    def update_value(self,newValue,timestamp=None,writeDB=True,force=False):
+        if newValue!=self.value or force:
+            if writeDB:
+                now=timezone.now()
+                registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
+                                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+                registerDB.check_IOsTables()
+                if timestamp==None:
+                    registerDB.insert_IOs_register(TimeStamp=now-datetime.timedelta(seconds=1),direction=self.direction)
+                
+            if newValue!=self.value:
+                text=str(_('The value of the GPIO "')) +self.label+str(_('" has changed. Now it is ')) + str(newValue)
+                PublishEvent(Severity=0,Text=text)
+                self.value=newValue
+                self.save(update_fields=['value'])
             
-        if newValue!=self.value:
-            text=str(_('The value of the GPIO "')) +self.label+str(_('" has changed. Now it is ')) + str(newValue)
-            PublishEvent(Severity=0,Text=text)
-            self.value=newValue
-            self.save(update_fields=['value'])
-        
-        if writeDB :
-            if timestamp==None:
-                registerDB.insert_IOs_register(TimeStamp=now,direction=self.direction)
-            else:
-                registerDB.insert_IOs_register(TimeStamp=timestamp,direction=self.direction)
+            if writeDB :
+                if timestamp==None:
+                    registerDB.insert_IOs_register(TimeStamp=now,direction=self.direction)
+                else:
+                    registerDB.insert_IOs_register(TimeStamp=timestamp,direction=self.direction)
+                
+            if self.direction=='OUT':
+                GPIO.setup(int(self.pin), GPIO.OUT)
+                if self.value==1:
+                    GPIO.output(int(self.pin),GPIO.HIGH)
+                elif self.value==0:
+                    GPIO.output(int(self.pin),GPIO.LOW)
+                
+            self.updateAutomationVars()
             
-        
-        self.updateAutomationVars()
-        
-        
         
     def InputChangeEvent(self,*args):
         #sleep(0.1) # to avoid reading the input during the debounce time
@@ -137,16 +141,11 @@ class IOmodel(models.Model):
         except:
             avar=None
             
-        if avar!=None:
-            avar.Label=dvar['Label']
-        else:
+        if avar==None:
             avar=HomeAutomation.models.AutomationVariablesModel()
-            avar.Label=dvar['Label']
-            avar.Device=dvar['Device']
-            avar.Tag=dvar['Tag']
-            avar.Table=dvar['Table']
-            avar.BitPos=dvar['BitPos']
-        avar.save()
+            avar.create(Label=dvar['Label'],Tag=dvar['Tag'],Device=dvar['Device'],Table=dvar['Table'],BitPos=dvar['BitPos'],Sample=dvar['Sample'])
+        
+        avar.executeAutomationRules()
     
     def deleteAutomationVars(self):
         if self.direction=='IN':
@@ -155,8 +154,11 @@ class IOmodel(models.Model):
             table='outputs'
         else:
             return
-        avar=HomeAutomation.models.AutomationVariablesModel.objects.get(Device='Main',Tag=str(self.pk),Table=table)
-        avar.delete()
+        try:
+            avar=HomeAutomation.models.AutomationVariablesModel.objects.get(Device='Main',Tag=str(self.pk),Table=table)
+            avar.delete()
+        except:
+            pass
         
     def __str__(self):
         return self.label + ' on pin ' + str(self.pin)
@@ -182,13 +184,14 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             GPIO.add_event_detect(int(instance.pin), GPIO.BOTH, callback=instance.InputChangeEvent, bouncetime=200)  
             logger.info("Initialized Input on pin " + str(instance.pin))
     else:
-        if instance.direction=='OUT':
-            #logger.info("Instance.value= " + str(instance.value))
-            GPIO.setup(int(instance.pin), GPIO.OUT)
-            if instance.value==1:
-                GPIO.output(int(instance.pin),GPIO.HIGH)
-            elif instance.value==0:
-                GPIO.output(int(instance.pin),GPIO.LOW)
+        pass
+        # if instance.direction=='OUT':
+            # #logger.info("Instance.value= " + str(instance.value))
+            # GPIO.setup(int(instance.pin), GPIO.OUT)
+            # if instance.value==1:
+                # GPIO.output(int(instance.pin),GPIO.HIGH)
+            # elif instance.value==0:
+                # GPIO.output(int(instance.pin),GPIO.LOW)
 
 @receiver(post_delete, sender=IOmodel, dispatch_uid="delete_IOmodel")
 def delete_IOmodel(sender, instance,**kwargs):

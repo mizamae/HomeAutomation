@@ -48,7 +48,7 @@ class OpenWeatherMap(object):
             # except:
                 # datagram = 'observation'
             #logger.error('Datagram: ' + datagram)
-            error=''
+            Error=''
             if datagram=='observation':
                 retries=self._MAX_RETRIES
                 while retries>0:
@@ -78,11 +78,11 @@ class OpenWeatherMap(object):
                         values=(temperature,humidity,windspeed,rain,clouds)
                         retries=0
                         null=False
-                        if error!='':
-                            error=error+' - retried OK'
+                        if Error!='':
+                            Error=Error+' - retried OK'
                     except:
                         retries=retries-1
-                        error='APIError'
+                        Error='APIError'
                         values=(None,None,None,None,None)
                         null=True
                 
@@ -101,14 +101,13 @@ class OpenWeatherMap(object):
             try:
                 registerDB.insert_device_register(TimeStamp=timestamp,DeviceCode=None,DeviceName=self.sensor.DeviceName,DatagramId=datagram,year='',values=values,NULL=null)
             except:
-                error='DB Error'
+                Error='DB Error'
+                
             if null==False:
-                self.sensor.LastUpdated=timezone.now()
-                PublishEvent(Severity=0,Text=self.sensor.DeviceName+str(_(' updated OK')),Persistent=True)
-            self.sensor.Error=error
-            if error!='':
-                PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
-            self.sensor.save()
+                LastUpdated=timezone.now()
+            else:
+                LastUpdated=None
+            return {'Error':Error,'LastUpdated':LastUpdated}
         else:
             PublishEvent(Severity=5,Text=str(_('The device ')) + self.sensor.DeviceName + str(_(' does not have any Beacon associated.')),Persistent=True)
         
@@ -303,7 +302,7 @@ class DHT22(object):
         temperature=0
         retries=0
         x=0
-        error=''
+        Error=''
         while (x < self._numberMeasures):
             h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
             if t==None:
@@ -314,20 +313,20 @@ class DHT22(object):
             if self._lastTemp!=None: 
                 if abs(self._lastTemp-t)>self._maxDT:
                     logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
-                    error+=' - maxDT'
+                    Error+=' - maxDT'
                     t = self._maxT
                 
             if (t < self._maxT and t > self._minT):
                 temperature=temperature+t
             else:
                 logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Temperature: ' + str(t))
-                error+=' - maxminT'
+                Error+=' - maxminT'
                 
             if (h < self._maxH and h > self._minH):
                 humidity=humidity+h
             else:
                 logger.warning('Measure from ' + str(self.sensor.DeviceName) + ' out of bounds!! Humidity: '+ str(h))
-                error+=' - maxminH'
+                Error+=' - maxminH'
             
             if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
                 break
@@ -337,7 +336,7 @@ class DHT22(object):
                 
             if retries>=self._MAX_RETRIES:
                 logger.error('Maximum number of retries reached!!!')
-                error+=' - maxRetries'
+                Error+=' - maxRetries'
                 break
             x=x+1
             
@@ -374,14 +373,13 @@ class DHT22(object):
             'humidity':humidity,
             'heat index':hi,
         }
-        self.sensor.LastUpdated=timestamp
-        if error!='':
-            PublishEvent(Severity=3,Text=self.sensor.DeviceName+' '+error,Persistent=True)
+        if null==False:
+            LastUpdated=timestamp
         else:
-            PublishEvent(Severity=0,Text=self.sensor.DeviceName + ' updated OK',Persistent=True)
-        self.sensor.Error=error
-        self.sensor.save()
+            LastUpdated=None
+        
         self._lastTemp=temperature
+        return {'Error':Error,'LastUpdated':LastUpdated}
 
                 
         

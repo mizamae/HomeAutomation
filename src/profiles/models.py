@@ -35,6 +35,14 @@ class BaseProfile(models.Model):
     Accuracy = models.FloatField(_("Last known position accuracy"),null=True,blank=True)
     LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     
+    def updateLocationData(self,Latitude,Longitude,Accuracy):
+        timestamp=timezone.now()
+        self.Latitude=Latitude
+        self.Longitude=Longitude
+        self.Accuracy=Accuracy
+        self.LastUpdated=timestamp
+        self.save()
+        
     class Meta:
         abstract = True
         permissions = (

@@ -95,12 +95,9 @@ INSTALLED_APPS = (
     'accounts',
     'HomeAutomation',
     'Devices',
-    #'RemoteDevices',
-    #'LocalDevices',
     'Master_GPIOs',
     'Events',
     'Tracks',
- #   'sortedm2m',
 )
 
 
@@ -173,7 +170,7 @@ MESSAGE_TAGS = {
 AUTH_USER_MODEL = 'authtools.User'
 AUTH_PROFILE_MODULE = "profiles.BaseProfile"
 
-LOGIN_REDIRECT_URL = reverse_lazy("profiles:show_self")
+LOGIN_REDIRECT_URL = reverse_lazy("home")#"profiles:show_self")
 LOGIN_URL = reverse_lazy("accounts:login")
 
 THUMBNAIL_EXTENSION = 'png'     # Or any extn for your thumbnails

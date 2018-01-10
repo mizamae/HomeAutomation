@@ -37,9 +37,8 @@ class DeviceModelAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if 'DeviceName' in form.changed_data:
             messages.add_message(request, messages.INFO, 'DeviceName has been changed')
-        if 'Sampletime' in form.changed_data:
-            from Devices.Requests import update_requests
-            update_requests(obj)
+        if 'Sampletime' in form.changed_data or 'DeviceState' in form.changed_data:
+            obj.update_requests()
         super(DeviceModelAdmin, self).save_model(request, obj, form, change)
 
     defineCustomLabels.short_description = _("Define custom labels for the variables")

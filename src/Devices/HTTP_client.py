@@ -157,48 +157,42 @@ class HTTP_requests():
                     #logger.info('The device responded:' + str(datagram))
                     if int(deviceCode)==DeviceCode:
                         del datagram[0:2]
-                        DV.Error=''
+                        Error=''
                         if writeToDB:
                             self.AppDB.check_registersDB()
                             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=deviceName, DatagramId=DatagramId, 
                                                               year=timestamp.year, values=datagram,NULL=False)
-                            DV.LastUpdated=timestamp
                             (code,x) = self.request_orders(order='resetStatics',payload={})
                             if code==200:
-                                DV.Error=''
+                                Error=''
                             else:
-                                DV.Error='The device did not acknowledge the resetStatics order'
-                            DV.save(update_fields=["LastUpdated","Error"])
+                                Error='The device did not acknowledge the resetStatics order'
                             #Devices.signals.Device_datagram_reception.send(sender=None, timestamp=timestamp,Device=DV,DatagramId=DatagramId,values=datagram)
-                            PublishEvent(Severity=0,Text=str(_("The device "))+DV.DeviceName+str(_(" updated OK ")),Persistent=True)
-                            return
+                            return {'Error':Error,'LastUpdated':timestamp}
                         else:
                             return datagram
                     else:
-                        DV.Error='The device responded with a different DeviceCode than the one expected'
-                        DV.save(update_fields=["Error",])
-                        PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with a different DeviceCode than the one expected, expected "))+ str(DeviceCode)+str(_(' but received '))+str(deviceCode),Persistent=True)
+                        Error='The device responded with a different DeviceCode than the one expected'
+                        #PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with a different DeviceCode than the one expected, expected "))+ str(DeviceCode)+str(_(' but received '))+str(deviceCode),Persistent=True)
+                        return {'Error':Error,'LastUpdated':None}
                 else:
-                    DV.Error='Error in the format of the datagram received'
-                    DV.save(update_fields=["Error",])
-                    PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" sent a badly formatted datagram: "))+str(datagram),Persistent=True)
-                    #Devices.signals.Device_datagram_format_error.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,values=datagram)
+                    Error='Error in the format of the datagram received'
+                    #PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" sent a badly formatted datagram: "))+str(datagram),Persistent=True)
+                    return {'Error':Error,'LastUpdated':None}
             else:
-                DV.Error='Error HTTP ' + str(r.status_code)
-                DV.save(update_fields=["Error",])
-                PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with HTTP code "))+str(r.status_code),Persistent=True)
-                #Devices.signals.Device_datagram_exception.send(sender=None, DeviceName=deviceName,DatagramId=DatagramId,HTMLCode=r.status_code)
+                Error='Error HTTP ' + str(r.status_code)
+                #PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" responded with HTTP code "))+str(r.status_code),Persistent=True)
+                return {'Error':Error,'LastUpdated':None}
         except:
             
             if str(sys.exc_info()[0]).find('ConnectTimeout')>=0:
-                DV.Error="The device did not respond within the timeout margin (default 1 sec)"
-                DV.save(update_fields=["Error",])
-                PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" did not respond within the timeout margin (default 1 sec)")),Persistent=True)
-                #Devices.signals.Device_datagram_timeout.send(sender=None, Device=DV,Datagram=DatagramId)
+                Error="The device did not respond within the timeout margin (default 1 sec)"
+                #PublishEvent(Severity=4,Text=str(_("The device "))+DV.DeviceName+str(_(" did not respond within the timeout margin (default 1 sec)")),Persistent=True)
+                return {'Error':Error,'LastUpdated':None}
             else:
-                DV.Error="Unexpected error"
-                DV.save(update_fields=["Error",])
-                PublishEvent(Severity=6,Text=str(_("Unexpected error in request_datagram: ")) + str(sys.exc_info()[1]),Persistent=True)
+                Error="Unexpected error"
+                #PublishEvent(Severity=6,Text=str(_("Unexpected error in request_datagram: ")) + str(sys.exc_info()[1]),Persistent=True)
+                return {'Error':Error,'LastUpdated':None}
         if retries>0:
             retries-=1
             PublishEvent(Severity=2,Text=str(_("Retrying the request to "))+DV.DeviceName,Persistent=True)
@@ -206,8 +200,10 @@ class HTTP_requests():
             time.sleep(5)
             self.request_datagram(DeviceCode=DeviceCode,DatagramId=DatagramId,timeout=timeout,writeToDB=writeToDB,retries=retries)
         elif writeToDB:
+            Error='Max retries reached without response from slave '+DV.DeviceName
             self.AppDB.insert_device_register(TimeStamp=timestamp, DeviceCode=DeviceCode, DeviceName=deviceName, DatagramId=DatagramId, 
                                                           year=timestamp.year, values=(None,),NULL=True)
+            return {'Error':Error,'LastUpdated':None}
 
 
 def main():

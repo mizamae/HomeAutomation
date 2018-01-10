@@ -135,5 +135,5 @@ def run_afterBoot():
     HomeAutomation.models.init_Rules()
     HourlyTask()
     updateWeekDay()
-    from Devices.Requests import initialize_polling_devices
+    from Devices.models import initialize_polling_devices
     initialize_polling_devices()
