@@ -81,16 +81,11 @@ class MainDeviceVarModel(models.Model):
         except:
             avar=None
             
-        if avar!=None:
-            avar.Label=dvar['Label']
-        else:
-            avar=AutomationVariablesModel()
-            avar.Label=dvar['Label']
-            avar.Device=dvar['Device']
-            avar.Tag=dvar['Tag']
-            avar.Table=dvar['Table']
-            avar.BitPos=dvar['BitPos']
-        avar.save()
+        if avar==None:
+            avar=HomeAutomation.models.AutomationVariablesModel()
+            avar.create(Label=dvar['Label'],Tag=dvar['Tag'],Device=dvar['Device'],Table=dvar['Table'],BitPos=dvar['BitPos'],Sample=dvar['Sample'])
+        
+        avar.executeAutomationRules()
         
     class Meta:
         verbose_name = _('Main device var')
@@ -462,6 +457,15 @@ class AutomationVariablesModel(models.Model):
     def __str__(self):
         return self.Label
     
+    def create(self,Label,Tag,Device,Table,BitPos,Sample):
+        self.Label=Label
+        self.Device=Device
+        self.Tag=Tag
+        self.Table=Table
+        self.BitPos=BitPos
+        self.Sample=Sample
+        self.save()
+    
     def getValue(self,localized=True):
         applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
@@ -500,18 +504,26 @@ class AutomationVariablesModel(models.Model):
         sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
         return {'conn':AppDB.registersDB.conn,'sql':sql}
         
+    def executeAutomationRules(self):
+        rules=RuleItem.objects.filter((Q(Var1__Tag=self.Tag) & Q(Var1__Device=self.Device)) | (Q(Var2__Tag=self.Tag) & Q(Var2__Device=self.Device)))
+        if len(rules)>0:
+            for rule in rules:
+                if not '"ActionType": "z"' in rule.Rule.Action:
+                    rule.Rule.execute() 
+                    
     class Meta:
         unique_together = ('Tag','BitPos','Table')
         verbose_name = _('Automation variable')
         verbose_name_plural = _('Automation variables')
 
 @receiver(post_save, sender=AutomationVariablesModel, dispatch_uid="update_AutomationVariablesModel")
-def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs):    
-    rules=RuleItem.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
-    if len(rules)>0:
-        for rule in rules:
-            if not '"ActionType": "z"' in rule.Rule.Action:
-                rule.Rule.execute()         
+def update_AutomationVariablesModel(sender, instance, update_fields,**kwargs):   
+    pass
+    # rules=RuleItem.objects.filter((Q(Var1__Tag=instance.Tag) & Q(Var1__Device=instance.Device)) | (Q(Var2__Tag=instance.Tag) & Q(Var2__Device=instance.Device)))
+    # if len(rules)>0:
+        # for rule in rules:
+            # if not '"ActionType": "z"' in rule.Rule.Action:
+                # rule.Rule.execute()         
                 
 class RuleItem(models.Model):
     PREFIX_CHOICES=(
@@ -659,7 +671,7 @@ class AutomationRuleModel(models.Model):
                             
                     if 'ERROR' in result:
                         text='The evaluation of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)+'. Error: ' + str(result['ERROR'])
-                        PublishEvent(Severity=0,Text=text,Persistent=True)
+                        PublishEvent(Severity=3,Text=text,Persistent=True)
                         errors.append(result['ERROR'])
                 
                 evaluableTRUE=evaluableTRUE.strip()

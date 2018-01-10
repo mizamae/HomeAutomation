@@ -1,7 +1,7 @@
 import logging
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
-
+import apscheduler.events as events
 import HomeAutomation.models
 import Devices.GlobalVars
 import Devices.BBDD
@@ -10,7 +10,27 @@ from Events.consumers import PublishEvent
 
 logger = logging.getLogger("project")
 
-scheduler = BackgroundScheduler()                    
+scheduler = BackgroundScheduler()   
+url = 'sqlite:///TasksScheduler.sqlite'
+scheduler.add_jobstore('sqlalchemy', url=url)
+                
+def my_listener(event):
+    pass
+    if event.exception:
+        try:
+            text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
+        except:
+            text='Error on scheduler: ' + str(event.exception)
+        PublishEvent(Severity=4,Text=text,Persistent=True)
+    else:
+        pass
+
+scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
+
+try:
+    scheduler.start()
+except BaseException as e:
+    logger.info('Exception Tasks APS: ' + str(e))
 
 def compactRegistersDB():
     AppDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
@@ -28,12 +48,11 @@ def compactRegistersDB():
 def start_registersDBcompactingTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
     '''  
-    logger.info('Registers DB compacting task is added to scheduler on the process '+ str(os.getpid())) 
-    scheduler.add_job(func=compactRegistersDB,trigger='cron',id='registerDBcompact',day='last',hour=0,minute=0,max_instances=1)
-    try:
-        scheduler.start()
-    except:
-        pass
+    id='registerDBcompact'
+    scheduler.add_job(func=compactRegistersDB,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
+    JOB=scheduler.get_job(job_id=id)
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
+
 
 def checkReportAvailability():
     '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
@@ -60,15 +79,17 @@ def updateWeekDay():
         WeekDay.save()
       
 def start_DailyTask():
-    PublishEvent(Severity=0,Text='Daily task is added to scheduler on the process '+ str(os.getpid()),Persistent=False)
-    checkReportAvailability()
-    scheduler.add_job(func=checkReportAvailability,trigger='cron',id='checkReportAvailability',hour=0,max_instances=1)
-    updateWeekDay()
-    scheduler.add_job(func=updateWeekDay,trigger='cron',id='updateWeekDay',hour=0,max_instances=1)
-    try:
-        scheduler.start()
-    except:
-        pass
+    #checkReportAvailability()
+    id='checkReportAvailability'
+    scheduler.add_job(func=checkReportAvailability,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    JOB=scheduler.get_job(job_id=id)
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
+    #updateWeekDay()
+    id='updateWeekDay'
+    scheduler.add_job(func=updateWeekDay,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    JOB=scheduler.get_job(job_id=id)
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
+
 
 def checkCustomCalculations():
     '''THIS TASK IS RUN EVERY HOUR.
@@ -83,7 +104,6 @@ def checkCustomCalculations():
 def HourlyTask():
     import datetime
     from HomeAutomation.models import MainDeviceVarModel
-    PublishEvent(Severity=0,Text='Hourly tasks checked',Persistent=False)
     HomeAutomation.models.checkHourlySchedules(init=True)    
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
@@ -100,11 +120,20 @@ def HourlyTask():
 def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
-    HourlyTask()
+    #HourlyTask()
+    #HomeAutomation.models.init_Rules()
+    id='HourlyTask'
+    scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    JOB=scheduler.get_job(job_id=id)
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
+    id='afterBoot'
+    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+
+def run_afterBoot():
+    id='afterBoot'
+    scheduler.remove_job(id)
     HomeAutomation.models.init_Rules()
-    PublishEvent(Severity=0,Text='Hourly task is added to scheduler on the process '+ str(os.getpid()),Persistent=False)
-    scheduler.add_job(func=HourlyTask,trigger='cron',id='HourlyTask',minute=0,max_instances=1)
-    try:
-        scheduler.start()
-    except:
-        pass
+    HourlyTask()
+    updateWeekDay()
+    from Devices.models import initialize_polling_devices
+    initialize_polling_devices()

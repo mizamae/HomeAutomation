@@ -661,17 +661,18 @@ def handleLocation(request,user):
         users = User.objects.all()
         for usr in users:
             if usr.email.find(user)>=0:
-                print('Found user : ' + str(usr))
+                #print('Found user : ' + str(usr))
                 if usr.profile.tracking:
                     timestamp=timezone.now()
                     applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                       configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
                     applicationDBs.insert_track(TimeStamp=timestamp,User=str(usr.email),Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
-                    usr.profile.Latitude=data['lat']
-                    usr.profile.Longitude=data['lon']
-                    usr.profile.Accuracy=data['acc']
-                    usr.profile.LastUpdated=timestamp
-                    usr.profile.save()
+                    usr.profile.updateLocationData(Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
+                    # usr.profile.Latitude=data['lat']
+                    # usr.profile.Longitude=data['lon']
+                    # usr.profile.Accuracy=data['acc']
+                    # usr.profile.LastUpdated=timestamp
+                    # usr.profile.save()
                     
         #JSON: {"_type":"location","tid":"MZ","acc":54,"batt":79,"conn":"m","lat":42.8175305,"lon":-1.6015541,"t":"u","tst":1510664016}
         

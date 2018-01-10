@@ -1,7 +1,12 @@
+import os
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+
+from apscheduler.schedulers.background import BackgroundScheduler
+import apscheduler.events as events
 
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
@@ -22,6 +27,31 @@ import logging
 logger = logging.getLogger("project")
 #replace print by logger.info
 
+scheduler = BackgroundScheduler()
+url = 'sqlite:///scheduler.sqlite'
+scheduler.add_jobstore('sqlalchemy', url=url)
+
+                
+def my_listener(event):
+    if event.exception:
+        try:
+            text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
+            logger.info("APS: " + str(event.traceback))
+        except:
+            text='Error on scheduler: ' + str(event.exception)
+            logger.info("APS: " + str(event.exception))
+        PublishEvent(Severity=4,Text=text,Persistent=True)
+        initialize_polling_devices()
+    else:
+        pass
+
+scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
+
+try:
+    scheduler.start()
+except BaseException as e:
+    logger.info('Exception APS: ' + str(e))
+    
 def path_file_name(instance, filename):
     import os
     filename, file_extension = os.path.splitext(filename)
@@ -53,7 +83,24 @@ class DeviceTypeModel(models.Model):
 def delete_DeviceTypeModel(sender, instance,**kwargs):
     instance.Picture.delete(False)
 
-
+def initialize_polling_devices():
+    DVs=Devices.models.DeviceModel.objects.all()
+    if DVs is not None:
+        for DV in DVs:
+            DV.update_requests()
+            
+def request_callback(DV,DG,jobID,**kwargs): 
+    if (DV.Type.Connection=='LOCAL' or DV.Type.Connection=='MEMORY'):
+        import Devices.callbacks
+        class_=getattr(Devices.callbacks, DV.Type.Code)
+        instance=class_(DV)
+        status=instance(**kwargs)
+    elif DV.Type.Connection=='REMOTE':
+        import Devices.HTTP_client
+        HTTPrequest=Devices.HTTP_client.HTTP_requests(server='http://'+DV.DeviceIP)    
+        status=HTTPrequest.request_datagram(DeviceCode=DV.DeviceCode,DatagramId=DG.Identifier) 
+    NextUpdate=DV.getNextUpdate(jobID=jobID) 
+    DV.updatePollingStatus(LastUpdated=status['LastUpdated'],Error=status['Error'],NextUpdate=NextUpdate)
 
 class DeviceModel(models.Model):
     
@@ -73,6 +120,7 @@ class DeviceModel(models.Model):
     Sampletime=models.PositiveIntegerField(default=600)
     RTsampletime=models.PositiveIntegerField(default=60)
     LastUpdated= models.DateTimeField(blank = True,null=True)
+    NextUpdate= models.DateTimeField(blank = True,null=True)
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
     CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     Error= models.CharField(max_length=100,default='',blank=True)
@@ -105,6 +153,134 @@ class DeviceModel(models.Model):
         self.__original_DeviceName = self.DeviceName
         self.__DeviceTypeCode=self.Type.Code
         super(DeviceModel, self).save(*args, **kwargs)
+    
+    def stopPolling(self):
+        if self.DeviceState==1:
+            self.DeviceState=0
+            self.save()
+        self.update_requests()
+    
+    def startPolling(self):
+        if self.DeviceState==0:
+            self.DeviceState=1
+            self.save()
+        self.update_requests()
+    
+    def togglePolling(self):
+        if self.DeviceState==0:
+            self.startPolling()
+        else:
+            self.stopPolling()
+            
+    def getPollingJobIDs(self):
+        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
+        jobIDs=[]
+        if DGs != []:
+            for DG in DGs:
+                if DG.isSynchronous():
+                    jobIDs.append({'id':self.DeviceName + '-' + DG.Identifier,'DG':DG})
+        return jobIDs
+    
+    def update_requests(self):
+        global scheduler
+        jobIDs=self.getPollingJobIDs()
+        
+        # process=os.getpid()
+        # logger.info("Enters update_requests on process " + str(process))
+        
+        if self.DeviceState==1:
+            if jobIDs != []:
+                for job in jobIDs:      
+                    id=job['id']
+                    DG=job['DG']
+                    JOB=scheduler.get_job(job_id=id)
+                    if JOB==None:     
+                        callback="Devices.models:request_callback"
+                        if self.Type.Connection=='LOCAL': 
+                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),seconds=self.Sampletime,replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                        elif self.Type.Connection=='REMOTE':   
+                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                        elif self.Type.Connection=='MEMORY':
+                            kwargs={'datagram':DG.Identifier}
+                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                        JOB=scheduler.get_job(job_id=id)
+                        if JOB!=None: 
+                            text=str(_('Polling for the device '))+self.DeviceName+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
+                            PublishEvent(Severity=0,Text=text,Persistent=True)
+                        else:
+                            PublishEvent(Severity=4,Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.DeviceName+' could not be started' ,Persistent=True)
+                            self.DeviceState=0
+                            self.save()
+                    else:
+                        PublishEvent(Severity=0,Text='Requests '+id+ ' already was in the scheduler. ' + str(_('Next request at ') + str(JOB.next_run_time)),Persistent=True)
+            else:        
+                self.DeviceState=0
+                self.save()
+                text=str(_('Polling for device '))+self.DeviceName+str(_(' could not be started. It has no Datagrams defined '))
+                PublishEvent(Severity=3,Text=text,Persistent=True)
+        else:
+            if jobIDs != []:
+                for job in jobIDs:
+                    id=job['id']
+                    JOB=scheduler.get_job(job_id=id)
+                    if JOB!=None: 
+                        scheduler.remove_job(id)
+                        JOBs=scheduler.get_jobs()
+                        if JOB in JOBs:
+                            self.DeviceState=1
+                            self.save()
+                            text='Polling for the device '+self.DeviceName+' could not be stopped '
+                            severity=5
+                        else:
+                            text='Polling for the device '+self.DeviceName+' is stopped ' 
+                            severity=0
+                    else:
+                        text=str(_('Requests DB mismatch. Job ')) + str(id) + str(_(' did not exist.')) 
+                        severity=5  
+            else:
+                text='Unhandled error on update_requests for device ' + str(self.DeviceName) 
+                severity=5  
+                
+            PublishEvent(Severity=severity,Text=text,Persistent=True)
+    
+    def updatePollingStatus(self,LastUpdated,Error,NextUpdate):
+        updateFields=['Error']
+        if NextUpdate != None:
+            self.NextUpdate=NextUpdate
+            updateFields.append('NextUpdate')
+        if LastUpdated!= None:
+            self.LastUpdated=LastUpdated
+            updateFields.append('LastUpdated')
+            PublishEvent(Severity=0,Text=self.DeviceName+str(_(' updated OK')),Persistent=True)
+        self.Error=Error
+        if Error!='':
+            PublishEvent(Severity=3,Text=self.DeviceName+' '+Error,Persistent=True)
+            
+        self.save(update_fields=updateFields)
+        
+        if 'LastUpdated' in updateFields:
+            self.updateAutomationVars()
+        
+    def setLastUpdated(self,newValue):
+        self.LastUpdated=newValue
+        self.save(update_fields=['LastUpdated','Error','NextUpdate'])
+    
+    def getNextUpdate(self,jobID):
+        if jobID!=None:
+            JOB=scheduler.get_job(job_id=jobID)
+            if JOB!=None:
+                return JOB.next_run_time
+            else:
+                return None
+            
+    def setNextUpdate(self,jobID):
+        if jobID!=None:
+            JOB=scheduler.get_job(job_id=jobID)
+            if JOB!=None:
+                self.NextUpdate=JOB.next_run_time
+            else:
+                self.NextUpdate=None
+            self.save(update_fields=['NextUpdate',])
         
     def updateCustomLabels(self):
         DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)
@@ -200,18 +376,11 @@ class DeviceModel(models.Model):
             except:
                 avar=None
                 
-            if avar!=None:
-                avar.Label=dvar['Label']
-                avar.Sample=dvar['Sample']
-            else:
+            if avar==None:
                 avar=HomeAutomation.models.AutomationVariablesModel()
-                avar.Label=dvar['Label']
-                avar.Device=dvar['Device']
-                avar.Tag=dvar['Tag']
-                avar.Table=dvar['Table']
-                avar.BitPos=dvar['BitPos']
-                avar.Sample=dvar['Sample']
-            avar.save()
+                avar.create(Label=dvar['Label'],Tag=dvar['Tag'],Device=dvar['Device'],Table=dvar['Table'],BitPos=dvar['BitPos'],Sample=dvar['Sample'])
+            
+            avar.executeAutomationRules()
             
     def deleteAutomationVars(self):
         HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.pk).delete()
@@ -227,15 +396,15 @@ class DeviceModel(models.Model):
         
 @receiver(post_save, sender=DeviceModel, dispatch_uid="update_DeviceModel")
 def update_DeviceModel(sender, instance, update_fields,**kwargs):
-    from Devices.Requests import update_requests
     if kwargs['created']:   # new instance is created
         registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
         registerDB.create_DeviceRegistersTables(DV=instance)
-        update_requests(DV=instance)
+        instance.update_requests()
     
     if update_fields!=None and 'LastUpdated' in update_fields:
-        instance.updateAutomationVars()
+        pass
+        #instance.updateAutomationVars()
                
 @receiver(post_delete, sender=DeviceModel, dispatch_uid="delete_DeviceModel")
 def delete_DeviceModel(sender, instance,**kwargs):

@@ -32,13 +32,14 @@ class Database(object):
             self.conn = dbapi.connect(location,detect_types=dbapi.PARSE_DECLTYPES)
         else:
             self.conn= None
-            print ("Incorrect argument, missing location:", sys.exc_info()[1])            
+            print ("Incorrect argument, missing location: ", sys.exc_info()[1])            
             
     def rename_table(self,sql):
         try:
             cur=self.conn.cursor()
             cur.execute(sql)
             self.conn.commit()
+            cur.close()
         except:
             print ("Unexpected error in rename_table:", sys.exc_info()[1])
             logger.error("Unexpected error in rename_table: "+ str(sys.exc_info()[1]))
@@ -48,6 +49,7 @@ class Database(object):
             cur=self.conn.cursor()
             cur.execute(SQLstatement)
             self.conn.commit()
+            cur.close()
         except:
             text=str(_("Error in Create_table: ")) + str(sys.exc_info()[1])
             PublishEvent(Severity=5,Text=text + 'SQL: ' + SQLstatement,Persistent=True)
@@ -59,6 +61,7 @@ class Database(object):
             cur=self.conn.cursor()
             cur.execute(sql_delete_table % table)
             self.conn.commit()
+            cur.close()
         except:
             logger.error("Error in Delete_table: "+ str(sys.exc_info()[1]))
     
@@ -68,6 +71,7 @@ class Database(object):
             cur = self.conn.cursor()
             cur.execute(sql)
             self.conn.commit()  
+            cur.close()
             return 0
         except:
             text= str(_("Error in insert_column: ")) + str(sys.exc_info()[1])
@@ -95,7 +99,8 @@ class Database(object):
             cur.close()
             return rows
         except: 
-            logger.error("Unexpected error in retrieve_from_table: "+ str(sys.exc_info()[1]))
+            text="Unexpected error in retrieve_from_table: "+ str(sys.exc_info()[1])
+            PublishEvent(Severity=5,Text=text,Persistent=True)
             return None
     
     def retrieve_all_from_table(self,sql):
@@ -112,7 +117,7 @@ class Database(object):
             cur.close()
             return rows
         except:
-            logger.error("Unexpected error in retrieve_all_from_table: "+ str(sys.exc_info()[1]))
+            print("Unexpected error in retrieve_all_from_table: "+ str(sys.exc_info()[1]))
             return None
         
     def retrieve_rows_number(self,table):
@@ -146,8 +151,13 @@ class Database(object):
             self.conn.commit()
             cur.close()
         except:
-            print ("Unexpected error in update_row:", sys.exc_info()[1])
-            logger.error("Unexpected error in update_row: "+ str(sys.exc_info()[1]))
+            text="Unexpected error in update_field:", sys.exc_info()[1]
+            print (text)
+            PublishEvent(Severity=5,Text=text,Persistent=True)
+            if "database is locked" in text:
+                self.conn.interrupt()
+                PublishEvent(Severity=0,Text="Connections are resetted",Persistent=True)
+                
     
     def delete_all_from_table(self,table):
         """
@@ -163,7 +173,7 @@ class Database(object):
         cur = self.conn.cursor()
         cur.execute(sql,table)
         self.conn.commit()
-        cur.close()  
+        cur.close() 
    
     def retrieve_cols_number(self,table):
         """
@@ -226,8 +236,12 @@ class Database(object):
             cur.close()
             return lastRow   
         except:
-            logger.error("Unexpected error in insert_row: "+ str(sys.exc_info()[1]))
-            #logger.error("SQL: "+ SQL_statement)
+            text="Unexpected error in insert_row: "+ str(sys.exc_info()[1])
+            print (text)
+            PublishEvent(Severity=5,Text=text,Persistent=True)
+            if "database is locked" in text:
+                self.conn.interrupt()
+                PublishEvent(Severity=0,Text="Connections are resetted",Persistent=True)
             return -1
        
     def delete_row(self,table,field,value):
@@ -264,6 +278,7 @@ class Database(object):
             cur = self.conn.cursor()
             cur.execute(sql)
             self.conn.commit()  
+            cur.close()
             return 0
         except:
             text = str(_("Error in insert_column: ")) + str(sys.exc_info()[1]) 
@@ -279,7 +294,8 @@ class Database(object):
         try:
             cur = self.conn.cursor()
             cur.execute(sql)
-            self.conn.commit()  
+            self.conn.commit() 
+            cur.close()
             return 0
         except:
             text = str(_("Error in compact_table: ")) + str(sys.exc_info()[1]) 
@@ -665,7 +681,7 @@ class DIY4dot0_Databases(object):
                 for VAR in VARs:
                     self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateMainVARs_statement,
                                                   fieldupdate='"'+str(VAR.pk)+'"',fieldupdate_value=VAR.Value,keyfield='"timestamp"',keyfield_value=TimeStamp)
-                PublishEvent(Severity=2,Text='UNIQUE contraint failed in MainVars but solved updating',Persistent=False)
+                #PublishEvent(Severity=2,Text='UNIQUE contraint failed in MainVars but solved updating',Persistent=False)
         except:
             logger.error("Unexpected error in insert_MainVariables_register:" + str(sys.exc_info()[1]))
             
