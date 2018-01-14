@@ -202,24 +202,24 @@ class AdditionalCalculationsModel(models.Model):
                 self.df=pd.concat([self.df,pd.DataFrame(new_row)], ignore_index=False)
             
             # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
-            self.df=self.df.resample('1T').mean()
-            self.df=self.df.interpolate(method='zero')
+            df_resampled=self.df.resample('1T').mean()
+            self.df_interpolated=df_resampled.interpolate(method='zero')
                     
             if self.Calculation==0:     # Duty cycle OFF
                 result= self.duty(level=False)
             if self.Calculation==1:     # Duty cycle ON
                 result= self.duty(level=True)
             elif self.Calculation==2:   # Mean value
-                result=self.df.mean()[0]
+                result= self.df_interpolated.mean()[0]
             elif self.Calculation==3:   # Max value
                 result= self.df.max()[0]
             elif self.Calculation==4:   # Min value
                 result= self.df.min()[0]
             elif self.Calculation==5:   # Cummulative sum
-                result= self.df.cumsum()[0]
+                result= self.df_interpolated.cumsum()[0]
             elif self.Calculation==6:   # integral over time
                 from scipy import integrate
-                result=integrate.trapz(y=self.df[self.key], x=self.df[self.key].index.astype(np.int64) / 10**9)
+                result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
         else:
             result= None
             self.MainVar.update_value(newValue=None,timestamp=DBDate,writeDB=True)

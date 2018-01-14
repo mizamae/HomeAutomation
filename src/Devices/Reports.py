@@ -198,7 +198,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                     tempStats['min'][columnNumber]=resultDF[variable].min()
                 else:
                     from HomeAutomation.models import AdditionalCalculationsModel
-                    kk=pd.DataFrame(resultDF_interpolated[variable])
+                    kk=pd.DataFrame(resultDF[variable])
                     CALC=AdditionalCalculationsModel(df=kk,key=variable)
                     tempStats['mean'][columnNumber]=None
                     tempStats['on_time'][columnNumber]=CALC.duty(level=True,absoluteValue=True)
