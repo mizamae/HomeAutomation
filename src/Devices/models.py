@@ -27,31 +27,6 @@ import logging
 logger = logging.getLogger("project")
 #replace print by logger.info
 
-scheduler = BackgroundScheduler()
-url = 'sqlite:///scheduler.sqlite'
-scheduler.add_jobstore('sqlalchemy', url=url)
-
-                
-def my_listener(event):
-    if event.exception:
-        try:
-            text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
-            logger.info("APS: " + str(event.traceback))
-        except:
-            text='Error on scheduler: ' + str(event.exception)
-            logger.info("APS: " + str(event.exception))
-        PublishEvent(Severity=4,Text=text,Persistent=True)
-        initialize_polling_devices()
-    else:
-        pass
-
-scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
-
-try:
-    scheduler.start()
-except BaseException as e:
-    logger.info('Exception APS: ' + str(e))
-    
 def path_file_name(instance, filename):
     import os
     filename, file_extension = os.path.splitext(filename)
@@ -182,11 +157,34 @@ class DeviceModel(models.Model):
         return jobIDs
     
     def update_requests(self):
-        global scheduler
+        scheduler = BackgroundScheduler()
+        url = 'sqlite:///scheduler.sqlite'
+        scheduler.add_jobstore('sqlalchemy', url=url)
+                        
+        def my_listener(event):
+            if event.exception:
+                try:
+                    text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
+                    logger.info("APS: " + str(event.traceback))
+                except:
+                    text='Error on scheduler: ' + str(event.exception)
+                    logger.info("APS: " + str(event.exception))
+                PublishEvent(Severity=4,Text=text,Persistent=True)
+                initialize_polling_devices()
+            else:
+                pass
+
+        scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
+
+        try:
+            scheduler.start()
+        except BaseException as e:
+            logger.info('Exception APS: ' + str(e))
+            
         jobIDs=self.getPollingJobIDs()
         
-        # process=os.getpid()
-        # logger.info("Enters update_requests on process " + str(process))
+        process=os.getpid()
+        logger.info("Enters update_requests on process " + str(process))
         
         if self.DeviceState==1:
             if jobIDs != []:

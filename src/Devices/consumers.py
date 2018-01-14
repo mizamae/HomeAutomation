@@ -13,8 +13,8 @@ class DeviceModel_updater(JsonWebsocketConsumer):
         process=os.getpid()
         logger.info("WS: Websocket request on process " + str(process))
         DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
-        Devices.signals.Toggle_DeviceStatus.send(sender=None,Device=DV)
-        #DV.togglePolling()
+        #Devices.signals.Toggle_DeviceStatus.send(sender=None,Device=DV)
+        DV.togglePolling()
 
 class DeviceModel_delete(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
