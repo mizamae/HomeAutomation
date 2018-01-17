@@ -27,31 +27,6 @@ import logging
 logger = logging.getLogger("project")
 #replace print by logger.info
 
-scheduler = BackgroundScheduler()
-url = 'sqlite:///scheduler.sqlite'
-scheduler.add_jobstore('sqlalchemy', url=url)
-
-                
-def my_listener(event):
-    if event.exception:
-        try:
-            text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
-            logger.info("APS: " + str(event.traceback))
-        except:
-            text='Error on scheduler: ' + str(event.exception)
-            logger.info("APS: " + str(event.exception))
-        PublishEvent(Severity=4,Text=text,Persistent=True)
-        initialize_polling_devices()
-    else:
-        pass
-
-scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
-
-try:
-    scheduler.start()
-except BaseException as e:
-    logger.info('Exception APS: ' + str(e))
-    
 def path_file_name(instance, filename):
     import os
     filename, file_extension = os.path.splitext(filename)
@@ -84,10 +59,34 @@ def delete_DeviceTypeModel(sender, instance,**kwargs):
     instance.Picture.delete(False)
 
 def initialize_polling_devices():
+    scheduler = BackgroundScheduler()
+    url = 'sqlite:///scheduler.sqlite'
+    scheduler.add_jobstore('sqlalchemy', url=url)
+                    
+    def my_listener(event):
+        if event.exception:
+            try:
+                text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
+                logger.info("APS: " + str(event.traceback))
+            except:
+                text='Error on scheduler: ' + str(event.exception)
+                logger.info("APS: " + str(event.exception))
+            PublishEvent(Severity=4,Text=text,Persistent=True)
+            #initialize_polling_devices()
+        else:
+            pass
+
+    scheduler.add_listener(callback=my_listener, mask=events.EVENT_JOB_EXECUTED | events.EVENT_JOB_ERROR)
+
+    try:
+        scheduler.start()
+    except BaseException as e:
+        logger.info('Exception APS: ' + str(e))
+    
     DVs=Devices.models.DeviceModel.objects.all()
     if DVs is not None:
         for DV in DVs:
-            DV.update_requests()
+            DV.update_requests(sched=scheduler)
             
 def request_callback(DV,DG,jobID,**kwargs): 
     if (DV.Type.Connection=='LOCAL' or DV.Type.Connection=='MEMORY'):
@@ -154,6 +153,12 @@ class DeviceModel(models.Model):
         self.__DeviceTypeCode=self.Type.Code
         super(DeviceModel, self).save(*args, **kwargs)
     
+    def getScheduler(self):
+        scheduler = BackgroundScheduler()
+        url = 'sqlite:///scheduler.sqlite'
+        scheduler.add_jobstore('sqlalchemy', url=url)
+        return scheduler
+        
     def stopPolling(self):
         if self.DeviceState==1:
             self.DeviceState=0
@@ -181,12 +186,21 @@ class DeviceModel(models.Model):
                     jobIDs.append({'id':self.DeviceName + '-' + DG.Identifier,'DG':DG})
         return jobIDs
     
-    def update_requests(self):
-        global scheduler
+    def update_requests(self,sched=None):
+        
+        if sched==None:
+            scheduler=self.getScheduler()
+        else:
+            scheduler=sched
+        
+        try:
+            scheduler.start()
+        except:
+            pass
         jobIDs=self.getPollingJobIDs()
         
-        # process=os.getpid()
-        # logger.info("Enters update_requests on process " + str(process))
+        process=os.getpid()
+        #logger.info("Enters update_requests on process " + str(process))
         
         if self.DeviceState==1:
             if jobIDs != []:
@@ -242,6 +256,9 @@ class DeviceModel(models.Model):
                 severity=5  
                 
             PublishEvent(Severity=severity,Text=text,Persistent=True)
+        
+        if sched==None:
+            scheduler.shutdown()
     
     def updatePollingStatus(self,LastUpdated,Error,NextUpdate):
         updateFields=['Error']
@@ -267,20 +284,21 @@ class DeviceModel(models.Model):
     
     def getNextUpdate(self,jobID):
         if jobID!=None:
+            scheduler=self.getScheduler()
+            #scheduler.start()
             JOB=scheduler.get_job(job_id=jobID)
+            #scheduler.shutdown()
             if JOB!=None:
                 return JOB.next_run_time
-            else:
-                return None
+        return None
             
     def setNextUpdate(self,jobID):
-        if jobID!=None:
-            JOB=scheduler.get_job(job_id=jobID)
-            if JOB!=None:
-                self.NextUpdate=JOB.next_run_time
-            else:
-                self.NextUpdate=None
-            self.save(update_fields=['NextUpdate',])
+        next_run_time=getNextUpdate(jobID=jobID)
+        self.NextUpdate=next_run_time
+        if next_run_time==None:
+            PublishEvent(Severity=3,Text='Next run time for job '+jobID+ ' could not be fetched.',Persistent=True)
+        self.save(update_fields=['NextUpdate',])
+        
         
     def updateCustomLabels(self):
         DGs=Devices.models.DatagramModel.objects.filter(DeviceType=self.Type)

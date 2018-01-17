@@ -1,3 +1,4 @@
+import os
 import logging
 import Devices.BBDD
 import Devices.GlobalVars
@@ -42,10 +43,11 @@ def DeviceName_changed_handler(sender,**kwargs):
     #applicationDBs.rename_DeviceRegister_tables(OldDeviceName=OLDdeviceName,NewDeviceName=NEWdeviceName)
 
 def Toggle_DeviceStatus_handler(sender,**kwargs):
+    process=os.getpid()
     #logger.info("SIGNALS: Enters Toggle_DeviceStatus_handler.")
     DV=kwargs['Device']
-    Devices.Requests.update_requests(DV=DV)
-    #logger.info("SIGNALS: Ha cambiado el estado del dispositivo " +DV.DeviceName+".")
+    #Devices.Requests.update_requests(DV=DV)
+    logger.info("SIGNALS: Ha cambiado el estado del dispositivo " +DV.DeviceName+" en el proceso "+str(process))
 
 
     

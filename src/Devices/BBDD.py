@@ -235,14 +235,16 @@ class Database(object):
             lastRow=cur.lastrowid  
             cur.close()
             return lastRow   
-        except:
+        except dbapi.IntegrityError:
+            pass
+        except dbapi.Error as e:
             text="Unexpected error in insert_row: "+ str(sys.exc_info()[1])
             print (text)
-            PublishEvent(Severity=5,Text=text,Persistent=True)
+            #PublishEvent(Severity=5,Text=text,Persistent=True)
             if "database is locked" in text:
                 self.conn.interrupt()
                 PublishEvent(Severity=0,Text="Connections are resetted",Persistent=True)
-            return -1
+        return -1
        
     def delete_row(self,table,field,value):
         """
@@ -663,15 +665,15 @@ class DIY4dot0_Databases(object):
             valuesHolder=valuesHolder[:-1]
             table='MainVariables'
             
-            try:
-                sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
-                lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
-                if lastTimestamp != None:
-                    lastTimestamp=lastTimestamp.replace(microsecond=0)
-                    if lastTimestamp>=TimeStamp:
-                        return
-            except:
-                pass
+            # try:
+                # sql='SELECT "timestamp" FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+                # lastTimestamp=self.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))[0]
+                # if lastTimestamp != None:
+                    # lastTimestamp=lastTimestamp.replace(microsecond=0)
+                    # if lastTimestamp>=TimeStamp:
+                        # return
+            # except:
+                # pass
             sql=self.registersDB.SQLinsertMainVARs_statement.replace('%s',table).replace('*',columns).replace('?',valuesHolder)
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             #logger.info('SQL: ' + sql)
@@ -711,8 +713,8 @@ class DIY4dot0_Databases(object):
             #''' INSERT INTO %s(*) VALUES($) ''' # the * will be replaced by the column names and the $ by the values 
             
             returned=self.registersDB.insert_row(SQL_statement=sql, row_values=values)
-            if direction=='OUT':
-                logger.info('Timestamp: '+ str(TimeStamp) +'SQL: ' + sql + ' values= ' + str(values) )
+            # if direction=='OUT':
+                # logger.info('Timestamp: '+ str(TimeStamp) +'SQL: ' + sql + ' values= ' + str(values) )
             # if returned==-1:
                 # for IO in IOs:
                     # self.registersDB.update_field(SQL_statement=self.registersDB.SQLupdateIOs_statement.replace('$table',table),
