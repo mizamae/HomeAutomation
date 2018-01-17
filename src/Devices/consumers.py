@@ -11,7 +11,7 @@ logger = logging.getLogger("project")
 class DeviceModel_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         process=os.getpid()
-        logger.info("WS: Websocket request on process " + str(process))
+        #logger.info("WS: Websocket request on process " + str(process))
         DV=DeviceModel.objects.get(DeviceName=content['data']["DeviceName"])
         #Devices.signals.Toggle_DeviceStatus.send(sender=None,Device=DV)
         DV.togglePolling()
