@@ -10,8 +10,13 @@ import json
 from django.utils.translation import ugettext_lazy as _
 
 from .constants import APP_TEMPLATE_NAMESPACE
-from DevicesAPP.models import DeviceTypes,DatagramItems,Datagrams,ItemOrdering,DeviceCommands,Devices,Beacons
-from DevicesAPP.forms import DeviceTypesForm, ItemOrderingForm,DevicesForm,BeaconsForm
+from DevicesAPP.models import DeviceTypes,DatagramItems,Datagrams,ItemOrdering,DeviceCommands,Devices,Beacons,MasterGPIOs
+from DevicesAPP.forms import DeviceTypesForm, ItemOrderingForm,DevicesForm,BeaconsForm,MasterGPIOsForm
+
+
+class MasterGPIOsAdmin(admin.ModelAdmin):
+    list_display = ('Pin','Label','Direction','Value')
+    #form=MasterGPIOsForm
 
 class DeviceTypeAdmin(admin.ModelAdmin):
     list_display = ('Code','Description','Connection')
@@ -78,7 +83,7 @@ class BeaconsAdmin(admin.ModelAdmin):
      form=BeaconsForm
 
 
-
+admin.site.register(MasterGPIOs,MasterGPIOsAdmin)
 admin.site.register(DeviceTypes,DeviceTypeAdmin)
 admin.site.register(Devices,DevicesAdmin)
 admin.site.register(DatagramItems,DatagramItemModelAdmin)

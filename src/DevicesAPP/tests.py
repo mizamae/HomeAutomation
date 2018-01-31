@@ -23,7 +23,7 @@ from .forms import DevicesForm,DatagramCustomLabelsForm
 P1=None
 P2=None
 
-MasterGPIODict={'Pin':17,'Label':'Test Output 1','Direction':GPIO_OUTPUT,'Default':GPIO_HIGH,'Value':GPIO_HIGH}
+MasterGPIODict={'Pin':17,'Label':'Test Output 1','Direction':GPIO_OUTPUT,'Value':GPIO_HIGH}
 DatagramItemDict={'Tag':'Digital Item 1','DataType':DTYPE_DIGITAL,'PlotType':SPLINE_PLOT,'Units':''}
 ItemOrderingDict={'DG':'','ITM':'','Order':0}
 DatagramDict={'Identifier':'Datagram','Code':0,'Type':DG_SYNCHRONOUS,'DVT':0}
@@ -91,7 +91,10 @@ def resetPowersXML():
     file=join(DevicesModelTests.ApacheHTTPpath, 'powers.xml')
     file_bak=join(DevicesModelTests.ApacheHTTPpath, 'powers.xml.bak')
     import os
-    os.remove(path=file)
+    try:
+        os.remove(path=file)
+    except:
+        pass
     os.rename(src=file_bak,dst=file)
 
 print('############################################')

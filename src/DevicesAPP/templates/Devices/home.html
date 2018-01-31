@@ -21,9 +21,9 @@
 {% block container %}
 {% if user.is_authenticated %}
 <div class="container container-fluid home-container">
-		{% include "Devices/_model_acordion.html" with var_permission_main=perms.DevicesAPP.view_devicetypes var_header="DEVICE TYPES MANAGEMENT DASHBOARD" var_model='devicetypes' var_permission_add=perms.DevicesAPP.add_devicetypes var_permission_view=perms.DevicesAPP.view_devicetypes %}
-	
-		{% include "Devices/_model_acordion.html" with var_permission_main=perms.DevicesAPP.view_devices var_header="DEVICES MANAGEMENT DASHBOARD" var_model='devices' var_permission_add=perms.DevicesAPP.add_devices var_permission_view=perms.DevicesAPP.view_devices %}
+	{% include "Devices/_model_acordion.html" with panelID="accordion1" collapseID="collapse1" var_permission_main=perms.DevicesAPP.view_devicetypes var_header="DEVICE TYPES MANAGEMENT DASHBOARD" var_model='devicetypes' var_permission_add=perms.DevicesAPP.add_devicetypes var_permission_view=perms.DevicesAPP.view_devicetypes %}
+	{% include "Devices/_model_acordion.html" with panelID="accordion2" collapseID="collapse2" var_permission_main=perms.DevicesAPP.view_devices var_header="DEVICES MANAGEMENT DASHBOARD" var_model='devices' var_permission_add=perms.DevicesAPP.add_devices var_permission_view=perms.DevicesAPP.view_devices %}
+	{% include "Devices/_model_acordion.html" with panelID="accordion3" collapseID="collapse3" var_permission_main=perms.DevicesAPP.view_mastergpios var_header="GPIOs MANAGEMENT DASHBOARD" var_model='mastergpios' var_permission_add=perms.DevicesAPP.add_mastergpios var_permission_view=perms.DevicesAPP.view_mastergpios %}
 	<hr>
 	<div class="row">
 		<div class="col-xs-3 col-md-2">

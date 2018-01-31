@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ block.super }}Power2U{% endblock %}
+    
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="home" %}
+{% endblock %}
+
+{% block navbar-right %}
+  {% if not user.is_authenticated %}
+<a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
+<!--<a class="btn btn-primary" href="{% url 'accounts:signup' %}" role="button">Sign up</a> -->
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block splash %}
+<br>
+{% endblock splash %}
+{% block extrahead %}
+    <style>
+    .btn {
+    	font-size: 10px;
+    }
+    
+    </style>
+{% endblock extrahead %}
+{% block container %}     
+    <div class="container">
+		<h1>{% trans "Master GPIOs List" %}</h1>
+	    {% trans "Outputs" as header %}
+       	{% trans "There are no registered outputs in the installation." as nodevices_label %}
+        {% include "Devices/_iotable.html" with header=header tableId="OUTs" colnumber=4 numrows=numrows_out rows=outList nodevices_label=nodevices_label %}
+        
+        {% trans "Inputs" as header %}
+       	{% trans "There are no registered inputs in the installation." as nodevices_label %}
+        {% include "Devices/_iotable.html" with header=header tableId="INs" colnumber=3 numrows=numrows_in rows=inList nodevices_label=nodevices_label %}
+        
+	    <a class="btn btn-primary" href="{% url 'Devices:home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a>
+    </div><!-- /.container -->
+          
+{% endblock container %} 
+
+{% block scripts %}
+<script>
+		var ws_path =  "/stream/DevicesAPP/";
+		console.log("Connecting to " + ws_path);
+		var webSocketBridge = new channels.WebSocketBridge();
+		webSocketBridge.connect(ws_path);
+		webSocketBridge.listen();
+			
+		$(function () {
+            
+            webSocketBridge.demultiplex('GPIO_values', function(payload, streamName) {
+                // Handle different actions
+                if (payload.action == "create") {
+                    // Create the new GPIO model
+					add_GPIO(payload.pk,payload.data.label,payload.data.value,payload.data.direction)
+                    console.log("New IO model created");
+                } else if (payload.action == "update") {
+					update_GPIO(payload.pk,payload.data.value,payload.data.label)
+                    console.log("Port ["+ String(payload.pk) + "] has changed to "+ payload.data.value);
+                } else if (payload.action == "delete") {
+					delete_GPIO(parseInt(payload.pk))
+                	console.log("IO model deleted");
+                } else {
+                    console.log("Unknown action " + payload.action);
+                }
+            });
+
+            // Helpful debugging
+            webSocketBridge.socket.addEventListener('open', 
+                function() { 
+                    console.log("Connected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="LimeGreen";
+                    label.innerHTML="Connected to RT engine"
+            });
+            webSocketBridge.socket.addEventListener('close', 
+                function() { 
+                    console.log("Disconnected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="Red";
+                    label.innerHTML="Disconnected from RT engine"
+            });
+        });
+
+		function add_GPIO(pin,label,value,direction){
+			var table=document.getElementById('GPIOs_table');
+			var row = table.insertRow(-1);
+			var cell1 = row.insertCell(0);
+			var cell2 = row.insertCell(1);
+			var cell3 = row.insertCell(2);
+			var cell4 = row.insertCell(3);
+			cell1.innerHTML=pin;
+			row.appendChild(cell1);
+			cell2.innerHTML=label;
+			row.appendChild(cell2);
+			if (value==false)
+			{cell3.innerHTML="OFF";}
+			else{cell3.innerHTML="ON";}
+			row.appendChild(cell3);
+			cell4.innerHTML="";
+			if(direction=="OUT")
+			{
+				var button=document.createElement('a');
+				button.className="btn btn-default btn-xs";
+				button.role="button";
+				button.innerHTML="Toggle >>";
+				button.addEventListener("click", function(){ toggle_GPIO(pin); });
+				cell4.appendChild(button);
+			}
+			row.appendChild(cell4);
+		}
+		
+		function toggle_GPIO(pin) {
+			var table=document.getElementById('GPIOs_table');
+            var rownum=-1;
+			for (var i = 0, row; row = table.rows[i]; i++) {
+				if (parseInt(row.cells[0].innerHTML)==pin)
+				{
+					rownum=i;
+					break;
+				}
+			}
+			if (rownum>0)
+			{
+                var value=(row.cells[2].innerHTML=="OFF" ? "1":"0");
+                webSocketBridge.stream('GPIO_update').send({
+                        "pk": pin,
+                        "action": "update",
+                        "data": {
+                            "value": value,
+                        }
+                    });
+            }
+		}
+		
+		function update_GPIO(pin,value,label){
+			var table=document.getElementById('GPIOs_table');
+			var rownum=-1;
+			for (var i = 0, row; row = table.rows[i]; i++) {
+				if (parseInt(row.cells[0].innerHTML)==pin)
+				{
+					rownum=i;
+					break;
+				}
+			}
+			if (rownum>0)
+			{
+				var row=table.rows[rownum];
+				if (typeof label != "undefined") {row.cells[1].innerHTML=label;}
+				if (typeof value != "undefined") {row.cells[2].innerHTML=(value==false ? "OFF":"ON")}
+			}
+		}
+		
+		function delete_GPIO(pin) {
+            var table=document.getElementById('GPIOs_table');
+			for (var i = 0, row; row = table.rows[i]; i++) {
+				if (parseInt(row.cells[0].innerHTML)==pin)
+				{
+					table.deleteRow(i);
+					break;
+				}
+			}        
+		}
+        
+    </script>
+	
+{% endblock scripts %}
+	

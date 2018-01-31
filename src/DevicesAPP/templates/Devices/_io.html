@@ -1,0 +1,15 @@
+{% load i18n %}
+<tr> 
+    <td>{{ row.Pin }}</td>
+    <td>{{ row.Label }}</td>
+    <td>{{ row.Value }}</td>
+	
+        {% if perms.DevicesAPP.change_state_mastergpios and row.Direction == 0 %}
+        <td>
+            <a id="toggle{{ forloop.counter }}" class="btn btn-default btn-xs" onclick="toggle_GPIO({{ IO.pin }})" role="button">{% trans "Toggle" %} &raquo;</a>
+        </td>
+        {% else %}
+        
+        {% endif %}
+     
+</tr>

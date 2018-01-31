@@ -28,7 +28,8 @@ from . import forms
 from . import models
 
 from .constants import APP_TEMPLATE_NAMESPACE,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION, \
-                        FORM_FIRST_RENDER_MSG,FORM_ISVALID_MSG,FORM_ISNOTVALID_MSG,SCAN_DEVICENOFOUND,SCAN_DEVICEFOUND,TESTS_USER_AGENT
+                        FORM_FIRST_RENDER_MSG,FORM_ISVALID_MSG,FORM_ISNOTVALID_MSG,SCAN_DEVICENOFOUND,SCAN_DEVICEFOUND,TESTS_USER_AGENT,\
+                        GPIO_INPUT,GPIO_OUTPUT
 
 def home(request):
     if request.method == 'POST': # the form has been submited
@@ -51,8 +52,15 @@ def modelSplitter(model):
         FormKwargs={'action':'add'}
         message=models.DeviceTypes._meta.verbose_name.title()+ str(_(' saved OK'))
         lastAction='add'
+    elif model=='mastergpios':
+        Header1 = models.MasterGPIOs._meta.verbose_name.title()
+        Model=models.MasterGPIOs
+        FormModel=forms.MasterGPIOsForm
+        FormKwargs={'action':'add'}
+        message=models.MasterGPIOs._meta.verbose_name.title()+ str(_(' saved OK'))
+        lastAction='add'
     else:
-        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+        return None
     return {'Header1':Header1,'Model':Model,'FormModel':FormModel,'FormKwargs':FormKwargs,'message':message,'lastAction':lastAction}
 
 def checkUserPermissions(request,action,model):
@@ -63,20 +71,21 @@ def checkUserPermissions(request,action,model):
         return True
     
 # VIEWS FOR THE MODELS
-#@login_required
-#@user_passes_test(lambda u: u.has_perm('DevicesAPP.add_devices'))
 def add(request,model):
     
     if not checkUserPermissions(request=request,action='add',model=model):
         return HttpResponseRedirect(reverse('accounts:login'))
         
     data=modelSplitter(model=model)
-    Header1=str(_('Adding a new ')) +data['Header1']
-    Model=data['Model']
-    FormModel=data['FormModel']
-    FormKwargs=data['FormKwargs']
-    message=data['message']
-    lastAction=data['lastAction']
+    if data==None:
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        Header1=str(_('Adding a new ')) +data['Header1']
+        Model=data['Model']
+        FormModel=data['FormModel']
+        FormKwargs=data['FormKwargs']
+        message=data['message']
+        lastAction=data['lastAction']
     
     if request.method == 'POST': # the form has been submited
         form=FormModel(request.POST,**FormKwargs)
@@ -156,18 +165,21 @@ def setCustomLabels(request,pk):
 @user_passes_test(lambda u: u.has_perm('DevicesAPP.scan_devices'))
 def scan(request,model):
     data=modelSplitter(model=model)
-    Header1=str(_('Scanning for a new ')) +data['Header1']
-    Model=data['Model']
-    FormModel=data['FormModel']
-    message=data['message']
-    lastAction=data['lastAction']
+    if data==None:
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        Header1=str(_('Scanning for a new ')) +data['Header1']
+        Model=data['Model']
+        FormModel=data['FormModel']
+        message=data['message']
+        lastAction=data['lastAction']
     
     if request.method == 'POST': # the form has been submited
         if 'HTTP_USER_AGENT' in request.META and request.META['HTTP_USER_AGENT']==TESTS_USER_AGENT:
             IP='127.0.0.1'
         else:
             IP=None
-        IP='127.0.0.1'
+        #IP='127.0.0.1'
         scan=Model.scan(FormModel=FormModel,IP=IP)
         RedMessages=[]
         if scan['devicetype']!=None:
@@ -204,11 +216,14 @@ def viewList(request,model):
         return HttpResponseRedirect(reverse('accounts:login'))
     
     data=modelSplitter(model=model)
-    Header1=str(_('List of ')) +data['Header1']
-    Model=data['Model']
-    FormModel=data['FormModel']
-    message=data['message']
-    lastAction=data['lastAction']
+    if data==None:
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        Header1=str(_('List of ')) +data['Header1']
+        Model=data['Model']
+        FormModel=data['FormModel']
+        message=data['message']
+        lastAction=data['lastAction']
     
     if request.method == 'POST': # the form has been submited
         return HttpResponseNotFound('<h1>No Page Here</h1>') 
@@ -225,25 +240,39 @@ def viewList(request,model):
                                                                             'numrows_local':numrows_local,'LocaldeviceList':local_DVs,
                                                                             'numrows_memory':numrows_memory,'MemorydeviceList':memory_DVs,})
         elif Model == models.DeviceTypes:
-            DVTs=Model.objects.all()
-            numrows=DVTs.count()
+            RWs=Model.objects.all()
+            numrows=RWs.count()
             message_norows=str(_('There are no ')) + data['Header1'] +str(_(' registered.'))
             return render(request, APP_TEMPLATE_NAMESPACE+'/showList.html',{'Header1':Header1,
                                                                             'numrows':numrows,
                                                                             'message_norows':message_norows,
-                                                                            'rows':DVTs
+                                                                            'rows':RWs
                                                                             })
+        elif Model == models.MasterGPIOs:
+            IOs=Model.objects.all()
+            OUTs=IOs.filter(Direction=GPIO_OUTPUT)
+            numrows_out=OUTs.count()
+            INs=IOs.filter(Direction=GPIO_INPUT)
+            numrows_in=INs.count()
+            return render(request, APP_TEMPLATE_NAMESPACE+'/showIOsList.html',{'numrows_out':numrows_out,'outList':OUTs,
+                                                                                    'numrows_in':numrows_in,'inList':INs,
+                                                                                    })
+        else:
+            return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
 
 def edit(request,model,pk):
     if not checkUserPermissions(request=request,action='change',model=model):
         return HttpResponseRedirect(reverse('accounts:login'))
     
     data=modelSplitter(model=model)
-    Header1=str(_('Editing a ')) +data['Header1']
-    Model=data['Model']
-    FormModel=data['FormModel']
-    message=data['message']
-    lastAction=data['lastAction']
+    if data==None:
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        Header1=str(_('Editing a ')) +data['Header1']
+        Model=data['Model']
+        FormModel=data['FormModel']
+        message=data['message']
+        lastAction=data['lastAction']
     
     Instance = get_object_or_404(Model, pk=pk)
     

@@ -1,18 +1,18 @@
 {% load i18n %}
 {% load staticfiles %}
 {% if var_permission_main %}
-<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+<div class="panel-group" id={{panelID}} role="tablist" aria-multiselectable="true">
 	<div class="panel panel-default">
 		<div class="panel-heading" role="tab" id="heading2">
 			<h1 class="panel-title">
-				<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse2" aria-expanded="true" aria-controls="collapse2">
+				<a role="button" data-toggle="collapse" data-parent="#{{panelID}}" href="#{{collapseID}}" aria-expanded="true" aria-controls={{collapseID}}>
 				{% trans var_header %}
 				</a>
 			</h1>
 		</div>
-		<div id="collapse2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2">
+		<div id={{collapseID}} class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2">
 			<div class="panel-body">
-				<div id="collapse2" class="col-xs-4 col-md-3">
+				<div id={{collapseID}} class="col-xs-4 col-md-3">
 					<h2 style="text-align: center;">{% trans "Add a " %}{{ var_model|slice:":-1" }}</h2>
 					<p>
 					{% if var_permission_add %}
@@ -26,7 +26,7 @@
 					{% endif %}
 					</p>
 				</div>
-				<div id="collapse2" class="col-xs-4 col-md-3">
+				<div id={{collapseID}} class="col-xs-4 col-md-3">
 					<h2 style="text-align: center;">{% trans "View " %}{{ var_model }}</h2>
 					<p>
 					{% if var_permission_view %}

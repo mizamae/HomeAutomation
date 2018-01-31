@@ -22,7 +22,64 @@ from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fi
 
 import logging
 logger = logging.getLogger("project")
-                               
+
+class MasterGPIOsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        instance=kwargs.get('instance',None)
+
+        action=kwargs.pop('action')
+
+        super(MasterGPIOsForm, self).__init__(*args, **kwargs)
+        # If you pass FormHelper constructor a form instance
+        # It builds a default layout with all its fields
+        self.helper = FormHelper(self)
+        self.helper.labels_uppercase = True
+        self.helper.label_class = 'col-sm-4'
+        self.helper.field_class = 'col-sm-6'
+#         self.helper.form_id = 'id-DeviceForm'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method = 'post'
+        
+        if action=='add':
+            self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':add',args=['mastergpios'])
+            buttons=FormActions(
+                    Submit('save', _('Save')),
+                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                )
+        elif action=='edit':
+            self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':edit',args=['mastergpios',instance.pk])
+            buttons=FormActions(
+                    Submit('edit', _('Save changes')),
+                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                )
+        else:
+            raise DevicesAppException(_('The action parameter passed to the form MasterGPIOsForm is not accepted. Action= ') + str(action))
+        
+        self.fields['Pin'].label = _("Enter the pin number")
+        self.fields['Label'].label = _("Enter a label for the IO")
+        self.fields['Direction'].label = _("Set the direction of the IO")
+        self.fields['Value'].label = _("Set the current value for the IO")
+        
+        for field in self.fields:
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
+            else:
+                self.fields[field].widget.attrs.update({'class':'input-sm '})
+                
+        self.helper.layout = Layout(
+            Field('Pin'),
+            Field('Label'),
+            Field('Direction'),
+            Field('Value'),
+            buttons
+            )
+        
+    class Meta:
+        model = models.MasterGPIOs
+        fields=['Pin','Label','Direction','Value']
+                                       
 class DeviceTypesForm(ModelForm):
     def __init__(self, *args, **kwargs):
         instance=kwargs.get('instance',None)

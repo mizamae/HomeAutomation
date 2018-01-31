@@ -6,7 +6,7 @@
     {% if device.State == 0 %}
         <td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
         <td>
-        {% if perms.Devices.change_state %}
+        {% if perms.DevicesAPP.change_state_devices %}
             <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
         {% else %}
         
@@ -24,7 +24,7 @@
         <td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ device.Error }}</font></b></td>
         {% endif %}
         <td>
-        {% if perms.Devices.change_state %}
+        {% if perms.DevicesAPP.change_state_devices %}
             <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
         {% endif %}
         </td>

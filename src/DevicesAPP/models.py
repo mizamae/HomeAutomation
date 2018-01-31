@@ -43,6 +43,13 @@ GPIO.setwarnings(False)
     
 class MasterGPIOs(models.Model):
     
+    class Meta:
+        verbose_name = _('Input/Output')
+        verbose_name_plural = _('Inputs/Outputs')
+        permissions = (
+            ("view_mastergpios", "Can see available gpios"),
+            ("change_state_mastergpios", "Can change the state of the GPIOs"),
+        )
     SQLcreateRegisterTable = ''' 
                                 CREATE TABLE IF NOT EXISTS $ (
                                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -52,11 +59,10 @@ class MasterGPIOs(models.Model):
                                 '''  # the * will be replaced by the column names and $ by inputs or outputs
     SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
     
-    Pin = models.PositiveSmallIntegerField(primary_key=True,unique=True)
-    Label = models.CharField(max_length=50,unique=True)
-    Direction = models.PositiveSmallIntegerField(choices=GPIO_DIRECTION_CHOICES)
-    Default = models.PositiveSmallIntegerField(default=0,choices=GPIOVALUE_CHOICES)
-    Value = models.PositiveSmallIntegerField(default=0,choices=GPIOVALUE_CHOICES)
+    Pin = models.PositiveSmallIntegerField(primary_key=True,unique=True,help_text=str(_('The number of the pin following BCM notation.')))
+    Label = models.CharField(max_length=50,unique=True,help_text=str(_('Label describing the GPIO functional meaning.')))
+    Direction = models.PositiveSmallIntegerField(choices=GPIO_DIRECTION_CHOICES,help_text=str(_('Choose wether the GPIO is to be an output, an input or a sensor interface.')))
+    Value = models.PositiveSmallIntegerField(default=0,choices=GPIOVALUE_CHOICES,help_text=str(_('Set the value of the GPIO (only applies to outputs)')))
     
     def __init__(self, *args, **kwargs):
         super(MasterGPIOs, self).__init__(*args, **kwargs)
@@ -311,9 +317,7 @@ class MasterGPIOs(models.Model):
     def __str__(self):
         return self.Label + ' on pin ' + str(self.Pin)
         
-    class Meta:
-        verbose_name = _('Input/Output')
-        verbose_name_plural = _('Inputs/Outputs')
+    
 
 @receiver(post_save, sender=MasterGPIOs, dispatch_uid="update_MasterGPIOs")
 def update_MasterGPIOs(sender, instance, update_fields,**kwargs):
