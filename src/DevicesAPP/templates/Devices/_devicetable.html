@@ -1,0 +1,45 @@
+{% load i18n %}
+<h3><b>{{ header }}</b></h3>
+<div id="{{ tableId }}list" class="table-responsive">
+	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
+	    <colgroup>
+	      <col class="col-xs-2"></col>
+	      <col class="col-xs-1"></col>
+	      <col class="col-xs-1"></col>
+	      <col class="col-xs-3"></col>
+	      <col class="col-xs-1"></col>
+	      <col class="col-xs-1"></col>
+	      <col class="col-xs-2"></col>
+	      <col class="col-xs-1"></col>
+	    </colgroup>
+	    <thead class="thead-inverse">
+	        <tr>
+	            <th>{% trans "Device name" %}</th>
+	            <th>{{ second_col_header }}</th>
+	            <th>{% trans "Device type" %}</th>
+	            <th colspan="2">{% trans "Device state" %}</th>
+	            <th>{% trans "Delete device" %}</th>
+	            <th>{% trans "Last updated" %}</th>
+	            <th>{% trans "Device webpage" %}</th>
+	        </tr>
+	     </thead>
+	     <tbody>
+	        {% if numrows %}
+	        <tr id="{{ tableId }}TableNoDevices" class="hidden"><td colspan=8>{{ nodevices_label }}</td></tr>
+	        {% else %}
+	        <tr id="{{ tableId }}TableNoDevices" ><td colspan=8>{{ nodevices_label }}</td></tr>
+	        {% endif %} 
+	        
+	        {% for device in devicelist %}
+	        	{% if tableId == "RemoteDevices" %}
+		        	{% include "Devices/_device.html" with device=device second_col=device.IP %}
+	        	{% elif tableId == "LocalDevices" %}
+	        		{% include "Devices/_device.html" with device=device second_col=device.IO.pin %}
+        		{% else %}
+        			{% include "Devices/_device.html" with device=device second_col=device.pk %}
+		        {% endif %}
+	        	
+	        {% endfor %}
+		</tbody>
+	</table>
+</div>

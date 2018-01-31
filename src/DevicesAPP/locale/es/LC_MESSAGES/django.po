@@ -1,0 +1,400 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-01-03 15:03+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: BBDD.py:52
+msgid "Error in Create_table: "
+msgstr ""
+
+#: BBDD.py:73 BBDD.py:269
+msgid "Error in insert_column: "
+msgstr ""
+
+#: BBDD.py:252
+msgid "Error in delete_row: "
+msgstr ""
+
+#: BBDD.py:285
+msgid "Error in compact_table: "
+msgstr ""
+
+#: BBDD.py:380
+msgid "Error in create_datagram_table: "
+msgstr ""
+
+#: BBDD.py:427
+msgid "Error in create_ios_table: "
+msgstr ""
+
+#: BBDD.py:452
+msgid "Error in create_mainVars_table: "
+msgstr ""
+
+#: HTTP_client.py:173 HTTP_client.py:180 HTTP_client.py:184 HTTP_client.py:189
+#: HTTP_client.py:196 callbacks.py:106
+msgid "The device "
+msgstr "El dispositivo"
+
+#: HTTP_client.py:173
+#, fuzzy
+#| msgid " updated OK"
+msgid " updated OK "
+msgstr " atualizado OK"
+
+#: HTTP_client.py:180
+msgid " responded with a different DeviceCode than the one expected, expected "
+msgstr " respondió con un DeviceCode diferente al esperado, se esparaba "
+
+#: HTTP_client.py:180
+msgid " but received "
+msgstr " pero se recibió "
+
+#: HTTP_client.py:184
+msgid " sent a badly formatted datagram: "
+msgstr " envió una trama mal formateada: "
+
+#: HTTP_client.py:189
+msgid " responded with HTTP code "
+msgstr " respondió con el codigo HTTP "
+
+#: HTTP_client.py:196
+msgid " did not respond within the timeout margin (default 1 sec)"
+msgstr " no respondió en el tiempo establecido (1 seg)"
+
+#: HTTP_client.py:201
+#, fuzzy
+#| msgid "Unexpected error in request_datagram:"
+msgid "Unexpected error in request_datagram: "
+msgstr "Error inesperado en la funcion request_datagram:"
+
+#: HTTP_client.py:204
+msgid "Retrying the request to "
+msgstr "Enviada solicitud a "
+
+#: Requests.py:116 Requests.py:136
+msgid "Polling for the device "
+msgstr "El muestreo del dispositivo"
+
+#: Requests.py:116
+msgid " is started with sampletime= "
+msgstr " ha empezado con una frecuencia= "
+
+#: Requests.py:136
+msgid " is stopped "
+msgstr " se ha detenido "
+
+#: admin.py:45
+msgid "Define custom labels for the variables"
+msgstr "Definir las etiquetas particularizadas para las variables"
+
+#: apps.py:14
+msgid "Devices"
+msgstr "Dispositivos"
+
+#: callbacks.py:100
+msgid " updated OK"
+msgstr " atualizado OK"
+
+#: callbacks.py:106
+msgid " does not have any Beacon associated."
+msgstr " no tiene ningun Beacon asociado."
+
+#: forms.py:36
+msgid "Set the connection of the device"
+msgstr "Selecciona la conexión del dispositivo"
+
+#: forms.py:37
+msgid "Enter the type-descriptor of the device"
+msgstr "Introduce el código descriptivo del tipo del dispositivo"
+
+#: forms.py:38
+msgid "Enter the description of the device"
+msgstr "Introduce la descripción del dispositivo"
+
+#: forms.py:39
+msgid "Select the minimum sample time for the device [s]"
+msgstr "Introduce el tiempo de sampleo minimo del dispositivo [s]"
+
+#: forms.py:40
+msgid "Upload an image for the DeviceType"
+msgstr "Carga una imagen para el tipop de dispositivo"
+
+#: forms.py:48 forms.py:90 forms.py:287
+msgid "Submit"
+msgstr "Enviar"
+
+#: forms.py:72
+msgid "Enter the name for the device"
+msgstr "Introduce el nombre del dispositivo"
+
+#: forms.py:73
+msgid "Select the device type"
+msgstr "Selecciona el tipo de dispositivo"
+
+#: forms.py:74
+msgid "Enter the GPIO for the device"
+msgstr "Selecciona la GPIO del dispositivo"
+
+#: forms.py:75
+msgid "Enter the code for the device"
+msgstr "Introduce el codigo de dispositivo"
+
+#: forms.py:76
+msgid "Enter the IP addres for the device"
+msgstr "Introduce la direccion IP del dispositivo"
+
+#: forms.py:77
+msgid "Enter the sample time for the device [s]"
+msgstr "Introduce el tiempo de sampleo del dispositivo [s]"
+
+#: forms.py:78
+msgid "Enter the real-time sample time for the device [s]"
+msgstr "Introduce el tiempo de sampleo en tiempo real del dispositivo [s]"
+
+#: forms.py:79
+msgid "Select the state of the device"
+msgstr "Selecciona el estado del dispositivo"
+
+#: forms.py:137
+msgid "Name of the device"
+msgstr "Nombre del dispositivo"
+
+#: forms.py:172
+msgid "Save"
+msgstr "Guardar"
+
+#: forms.py:219
+msgid "Title of the report"
+msgstr "Titulo del informe"
+
+#: forms.py:220
+msgid "Setup the periodicity"
+msgstr "Introduce la periodicidad"
+
+#: forms.py:221
+msgid "Setup the aggregation of the data"
+msgstr "Introduce el factor de agregación de los datos"
+
+#: forms.py:235
+msgid ""
+"Incompatibility - The aggregation cannot be bigger than the periodicity."
+msgstr ""
+"Incompatibilidad - El factor de agregación no puede ser mayor que el de "
+"periodicidad."
+
+#: forms.py:254
+msgid "Select the device"
+msgstr "Selecciona el dispositivo"
+
+#: forms.py:255
+msgid "From"
+msgstr "Desde"
+
+#: forms.py:256
+msgid "To"
+msgstr "Hasta"
+
+#: forms.py:268
+msgid "Main Unit"
+msgstr ""
+
+#: models.py:49
+msgid "Device type"
+msgstr "Tipo de dispositivo"
+
+#: models.py:50
+msgid "Device types"
+msgstr "Tipos de dispositivos"
+
+#: models.py:67
+msgid "Invalid device name - This name already exists in the DB."
+msgstr "Nombre del dispositivo erróneo - Este nombre ya existe en la BBDD."
+
+#: models.py:69
+msgid "Invalid device code - This code already exists in the DB."
+msgstr "Código de dispositivo erróneo - El código ya existe en la BBDD."
+
+#: models.py:70
+msgid "Invalid IP - This IP already exists in the DB."
+msgstr "Dirección IP errónea - Esta IP ya existe en la BBDD."
+
+#: models.py:88
+msgid "The GPIO selected is not configured as sensor"
+msgstr "La GPIO seleccionada no está configurada como sensor"
+
+#: models.py:90
+msgid "The sample time selected is too low for the "
+msgstr "El tiempo de sampleo introducido es demasiado bajo para "
+
+#: models.py:102
+msgid "The name for the device "
+msgstr "El nombre del dispositivo"
+
+#: models.py:102
+msgid " has changed. Now it is named "
+msgstr " ha cambiado. Ahora se llama "
+
+#: models.py:225
+msgid "Slave device"
+msgstr "Dispositivo"
+
+#: models.py:226
+msgid "Slave devices"
+msgstr "Dispositivos"
+
+#: models.py:266
+msgid "Every day"
+msgstr "Todos los dias"
+
+#: models.py:267
+msgid "Every week"
+msgstr "Todas las semanas"
+
+#: models.py:268
+msgid "Every month"
+msgstr "Todos los meses"
+
+#: models.py:271
+msgid "No aggregation"
+msgstr "Sin agregación"
+
+#: models.py:272
+msgid "Hourly"
+msgstr "Horaria"
+
+#: models.py:273
+msgid "Daily"
+msgstr "Diaria"
+
+#: models.py:274
+msgid "Monthly"
+msgstr "Mensual"
+
+#: models.py:276
+msgid "Invalid report title - This title already exists in the DB."
+msgstr "Título de informe erróneo - El título ya existe en la BBDD."
+
+#: models.py:277
+msgid "How often the report will be generated"
+msgstr "Con cuanta frcuencia se generaran los informes"
+
+#: models.py:278
+msgid "Data directly from the DB or averaged over a period"
+msgstr ""
+"Datos directamente de la BBDD o promediados a lo largo de algun periodo"
+
+#: models.py:333
+msgid "Report"
+msgstr "Informe"
+
+#: models.py:334
+msgid "Reports"
+msgstr "Informes"
+
+#: models.py:353
+msgid "Generated report"
+msgstr "Informe generado"
+
+#: models.py:354
+msgid "Generated reports"
+msgstr "Informes generados"
+
+#: models.py:360
+msgid "Analog Integer"
+msgstr "Analógico Entero"
+
+#: models.py:361
+msgid "Analog Float"
+msgstr "Analógico Float"
+
+#: models.py:362
+msgid "Digital"
+msgstr "Digital"
+
+#: models.py:365
+msgid "Hard Line"
+msgstr "Linea"
+
+#: models.py:366
+msgid "Smoothed Line"
+msgstr "Linea suavizada"
+
+#: models.py:367
+msgid "Bars"
+msgstr "Columnas"
+
+#: models.py:368
+msgid "Area"
+msgstr ""
+
+#: models.py:387
+msgid "Datagram item"
+msgstr "Elemento de trama"
+
+#: models.py:388
+msgid "Datagram items"
+msgstr "Elementos de trama"
+
+#: models.py:455
+msgid "Datagram"
+msgstr "Trama"
+
+#: models.py:456
+msgid "Datagrams"
+msgstr "Tramas"
+
+#: models.py:547
+msgid "Item"
+msgstr "Elemento"
+
+#: models.py:548
+msgid "Items"
+msgstr "Elementos"
+
+#: models.py:574
+msgid "Command"
+msgstr "Orden"
+
+#: models.py:575
+msgid "Commands"
+msgstr "Órdenes"
+
+#~ msgid "Sent request "
+#~ msgstr "Enviada solicitud "
+
+#~ msgid " to "
+#~ msgstr " a "
+
+#~ msgid "Enter the type of the device"
+#~ msgstr "Introduce el tipo de dispositivo"
+
+#~ msgid "Devices common"
+#~ msgstr "Común a todos los dispositivos"
+
+#~ msgid "You cannot select two items for the same position!!"
+#~ msgstr "No puedes seleccionar dos items en la misma posicion"
+
+#~ msgid "Digital fields"
+#~ msgstr "Campos digitales"
+
+#~ msgid "Analog fields"
+#~ msgstr "Campos analógicos"
+
+#~ msgid "Invalid Report Title - Should have minimum 4 characters"
+#~ msgstr "Título del informe erróneo - Debe tener un mínimo de 4 caracteres"

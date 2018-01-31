@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+{% block title %}{{ block.super }}Profile{% endblock %}
+
+<!-- Benefits of the Django application -->
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+{% if user.is_authenticated %}
+<div class="container container-fluid home-container">
+	
+	{% if perms.DeviceTypes.view %}
+	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+		<div class="panel panel-default">
+			<div class="panel-heading" role="tab" id="heading1">
+				<h1 class="panel-title">
+					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse1" aria-expanded="true" aria-controls="collapse1">
+					{% trans "DEVICE TYPES MANAGEMENT DASHBOARD" %}
+					</a>
+				</h1>
+			</div>
+			<div id="collapse1" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading1">
+				<div class="panel-body">
+					<div id="collapse1" class="col-xs-4 col-md-3">
+						<h2 style="text-align: center;">{% trans "Add a Device type" %}</h2>
+						<p>
+						{% if perms.DeviceTypes.add %}
+							<a class="btn btn-primary" href="{% url 'Devices:add' 'devicetypes' %}" role="button">
+								<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
+							</a>
+						{% else %}
+							<a class="btn btn-primary disabled" href="" role="button">
+							<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
+							</a>
+						{% endif %}
+						</p>
+					</div>
+					<!-- <div id="collapse1" class="col-xs-4 col-md-3">
+						<h2 style="text-align: center;">{% trans "Edit a Device type" %}</h2>
+						<p>
+						{% if perms.DeviceTypes.view %}
+							<a class="btn btn-primary" href="{% url 'Devices:view_all' 'devicetypes' %}" role="button">
+							<img src="{% static 'site/img/modify.jpg' %}" alt="SC" height="100%" width="100%">
+							</a>
+						{% else %}
+							<a class="btn btn-primary disabled" href="" role="button">
+							<img src="{% static 'site/img/modify.jpg' %}" alt="SC" height="100%" width="100%">
+							</a>
+						{% endif %}
+						</p>
+					</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+	
+	{% if perms.Devices.view %}
+	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+		<div class="panel panel-default">
+			<div class="panel-heading" role="tab" id="heading2">
+				<h1 class="panel-title">
+					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse2" aria-expanded="true" aria-controls="collapse2">
+					{% trans "DEVICES MANAGEMENT DASHBOARD" %}
+					</a>
+				</h1>
+			</div>
+			<div id="collapse2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2">
+				<div class="panel-body">
+					<div id="collapse2" class="col-xs-4 col-md-3">
+						<h2 style="text-align: center;">{% trans "Add a Device" %}</h2>
+						<p>
+						{% if perms.Devices.add %}
+							<a class="btn btn-primary" href="{% url 'Devices:add' 'devices' %}" role="button">
+								<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
+							</a>
+						{% else %}
+							<a class="btn btn-primary disabled" href="" role="button">
+							<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
+							</a>
+						{% endif %}
+						</p>
+					</div>
+					<div id="collapse2" class="col-xs-4 col-md-3">
+						<h2 style="text-align: center;">{% trans "View Devices" %}</h2>
+						<p>
+						{% if perms.Devices.view %}
+							<a class="btn btn-primary" href="{% url 'Devices:view_all' 'devices' %}" role="button">
+							<img src="{% static 'site/img/view.png' %}" alt="SC" height="100%" width="100%">
+							</a>
+						{% else %}
+							<a class="btn btn-primary disabled" href="" role="button">
+							<img src="{% static 'site/img/no_view.png' %}" alt="SC" height="100%" width="100%">
+							</a>
+						{% endif %}
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+	<hr>
+	<div class="row">
+		<div class="col-xs-6 col-md-3">
+			<h2>{% trans "Back" %}</h2>
+		      <p>
+		       <a class="btn btn-primary" href="{% url 'home' %}" role="button">
+		       	<img src="{% static 'site/img/back.jpg' %}" alt="back" height="100%" width="100%">
+		       </a>
+	       	</p>
+       	</div>
+	</div>
+</div>
+    
+{% else %}
+<div class="container container-fluid home-container">
+	<h2>{% trans "Please log in if you want to do something else..." %}</h2>
+</div>
+{% endif %}
+{% endblock container %}

@@ -1,0 +1,43 @@
+{% load i18n %}
+<tr> 
+    <td>{{ device.Name }}</td>
+    <td>{{ second_col }}</td>
+    <td>{{ device.Type.Code }}</td>
+    {% if device.State == 0 %}
+        <td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
+        <td>
+        {% if perms.Devices.change_state %}
+            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+        {% else %}
+        
+        {% endif %}
+        </td>
+        <td>
+        {% if perms.DevicesAPP.add_devices %}
+            <a id="Rdelete{{ forloop.counter }}" style="visibility:visible;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+        {% endif %}
+        </td>
+    {% elif device.State == 1 %} 
+        {% if device.Error == '' %}
+        <td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+        {% else %}
+        <td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ device.Error }}</font></b></td>
+        {% endif %}
+        <td>
+        {% if perms.Devices.change_state %}
+            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+        {% endif %}
+        </td>
+        <td>
+        {% if perms.DevicesAPP.add_devices %}
+            <a id="Rdelete{{ forloop.counter }}" style="visibility:hidden;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+        {% endif %}
+        </td>
+    {% endif %} 
+        <td>{{ device.LastUpdated }}</td>
+        <td>
+        {% if perms.DevicesAPP.view_devices %}
+            <a class="btn btn-default btn-xs" href="{% url 'Devices:devicepage' device.pk %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
+        {% endif %}
+        </td>
+</tr>

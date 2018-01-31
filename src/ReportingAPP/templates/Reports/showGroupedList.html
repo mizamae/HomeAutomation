@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ block.super }}Power2U{% endblock %}
+    
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="home" %}
+{% endblock %}
+
+{% block navbar-right %}
+  {% if not user.is_authenticated %}
+<a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
+<!--<a class="btn btn-primary" href="{% url 'accounts:signup' %}" role="button">Sign up</a> -->
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block splash %}
+<br>
+{% endblock splash %}
+{% block extrahead %}
+    <style>
+    .btn {
+    	font-size: 10px;
+    }
+    
+    </style>
+{% endblock extrahead %}
+{% block container %}     
+    <div class="container">
+		<h1>{% trans "Device List" %}</h1>
+	    <h3><b>{% trans "REMOTE DEVICES" %}</b></h3>
+	    <div id="remotedevicelist" class="table-responsive">
+	    <table id="RemoteDevicesTable" class="table table-striped table-bordered table-responsive ">
+            <colgroup>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-3"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+            </colgroup>
+	    	<thead class="thead-inverse">
+			    <tr>
+			        <th>{% trans "Device name" %}</th>
+			        <th>{% trans "Device IP" %}</th>
+			        <th>{% trans "Device type" %}</th>
+			        <th colspan="2">{% trans "Device state" %}</th>
+			        <th>{% trans "Delete device" %}</th>
+			        <th>{% trans "Last updated" %}</th>
+			        <th>{% trans "Device webpage" %}</th>
+			    </tr>
+			 </thead>
+			 <tbody>
+                {% if numrows_remote %}
+                <tr id="RemoteDevicesTableNoDevices" class="hidden"><td colspan=8>{% trans "There are no registered local devices in the installation." %}</td></tr>
+                {% else %}
+                <tr id="RemoteDevicesTableNoDevices" ><td colspan=8>{% trans "There are no registered local devices in the installation." %}</td></tr>
+                {% endif %} 
+                {% for device in RemotedeviceList %}
+                <tr> 
+                    <td>{{ device.Name }}</td>
+                    <td>{{ device.IP }}</td>
+                    <td>{{ device.Type.Code }}</td>
+                    {% if device.State == 0 %}
+                        <td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
+                        <td>
+                        {% if perms.Devices.change_state %}
+                            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+                        {% else %}
+                        
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if perms.Devices.add %}
+                            <a id="Rdelete{{ forloop.counter }}" style="visibility:visible;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+                        {% endif %}
+                        </td>
+                    {% elif device.State == 1 %} 
+                        {% if device.Error == '' %}
+                        <td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+                        {% else %}
+                        <td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ device.Error }}</font></b></td>
+                        {% endif %}
+                        <td>
+                        {% if perms.Devices.change_state %}
+                            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','RemoteDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if perms.Devices.add %}
+                            <a id="Rdelete{{ forloop.counter }}" style="visibility:hidden;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+                        {% endif %}
+                        </td>
+                    {% endif %} 
+                        <td>{{ device.LastUpdated }}</td>
+                        <td>
+                        {% if perms.Devices.view_plots %}
+                            <a class="btn btn-default btn-xs" href="{% url 'Devices:devicepage' device.pk %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
+                        {% endif %}
+                        </td>
+                </tr>
+                {% endfor %} 
+            </tbody>
+	    </table>
+	    </div>
+        
+        <h3><b>{% trans "LOCAL DEVICES" %}</b></h3>
+        <div id="localdevicelist" class="table-responsive">
+        <table id="LocalDevicesTable" class="table table-striped table-bordered table-responsive ">
+            <colgroup>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-3"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+            </colgroup>
+            <thead class="thead-inverse">
+                <tr>
+                    <th>{% trans "Device name" %}</th>
+                    <th>{% trans "Pin" %}</th>
+                    <th>{% trans "Device type" %}</th>
+                    <th colspan="2">{% trans "Device state" %}</th>
+                    <th>{% trans "Delete device" %}</th>
+                    <th>{% trans "Last updated" %}</th>
+                    <th>{% trans "Device webpage" %}</th>
+                </tr>
+             </thead>
+             <tbody>
+                {% if numrows_local %}
+                <tr id="LocalDevicesTableNoDevices" class="hidden"><td colspan=8>{% trans "There are no registered local devices in the installation." %}</td></tr>
+                {% else %}
+                <tr id="LocalDevicesTableNoDevices" ><td colspan=8>{% trans "There are no registered local devices in the installation." %}</td></tr>
+                {% endif %} 
+                {% for device in LocaldeviceList %}
+                <tr> 
+                    <td>{{ device.Name }}</td>
+                    <td>{{ device.IO.pin }}</td>
+                    <td>{{ device.Type.Code }}</td>
+                    {% if device.State == 0 %}
+                        <td data-title="Device state" bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
+                        <td>
+                        {% if perms.Devices.change_state %}
+                            <a id="Ltoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','LocalDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+                        {% else %}
+                        
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if perms.Devices.add_device %}
+                            <a id="Ldelete{{ forloop.counter }}" style="visibility:visible;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+                        {% endif %}
+                        </td>
+                    {% elif device.State == 1 %} 
+                        {% if device.Error == '' %}
+                        <td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+                        {% else %}
+                        <td bgcolor="#FACC2E">{% trans "RUNNING" %} {% trans " Error " %} {{ device.Error }}</td>
+                        {% endif %}
+                        <td>
+                        {% if perms.Devices.change_state %}
+                            <a id="Ltoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','LocalDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if perms.Devices.add_device %}
+                            <a id="Ldelete{{ forloop.counter }}" style="visibility:hidden;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+                        {% endif %}
+                        </td>
+                    {% endif %} 
+                        <td>{{ device.LastUpdated }}</td>
+                        <td>
+                        {% if perms.Devices.view_plots %}
+                            <a class="btn btn-default btn-xs" href="{% url 'Devices:devicepage' device.pk %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
+                        {% endif %}
+                        </td>
+                </tr>
+                {% endfor %}
+	      	</tbody>
+	    </table>
+	    </div>
+        
+        <h3><b>{% trans "ON MEMORY DEVICES" %}</b></h3>
+        <div id="memorydevicelist" class="table-responsive">
+        <table id="MemoryDevicesTable" class="table table-striped table-bordered table-responsive ">
+            <colgroup>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-3"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+            </colgroup>
+            <thead class="thead-inverse">
+                <tr>
+                    <th>{% trans "Device name" %}</th>
+                    <th>{% trans "Pin" %}</th>
+                    <th>{% trans "Device type" %}</th>
+                    <th colspan="2">{% trans "Device state" %}</th>
+                    <th>{% trans "Delete device" %}</th>
+                    <th>{% trans "Last updated" %}</th>
+                    <th>{% trans "Device webpage" %}</th>
+                </tr>
+             </thead>
+             <tbody>
+                {% if numrows_memory %}
+                <tr id="MemoryDevicesTableNoDevices" class="hidden"><td colspan=8>{% trans "There are no registered on memory devices in the installation." %}</td></tr>
+                {% else %}
+                <tr id="MemoryDevicesTableNoDevices" ><td colspan=8>{% trans "There are no registered on memory devices in the installation." %}</td></tr>
+                {% endif %} 
+                {% for device in MemorydeviceList %}
+                <tr> 
+                    <td>{{ device.Name }}</td>
+                    <td></td>
+                    <td>{{ device.Type.Code }}</td>
+                    {% if device.State == 0 %}
+                        <td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
+                        <td>
+                        {% if perms.Devices.change_state %}
+                            <a id="Mtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','MemoryDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "RUN" %} &raquo;</a>
+                        {% else %}
+                        
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if perms.Devices.add_device %}
+                            <a id="Mdelete{{ forloop.counter }}" style="visibility:visible;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+                        {% endif %}
+                        </td>
+                    {% elif device.State == 1 %} 
+                        {% if device.Error == '' %}
+                        <td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+                        {% else %}
+                        <td data-title="Device state" bgcolor="#FACC2E">{% trans "RUNNING" %} {% trans " Error " %} {{ device.Error }}</td>
+                        {% endif %}
+                        <td>
+                        {% if perms.Devices.change_state %}
+                            <a id="Mtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ device.Name }}','Device_update','MemoryDevicesTable')" class="btn btn-default btn-xs" id="" role="button">{% trans "STOP" %} &raquo;</a>		        	
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if perms.Devices.add_device %}
+                            <a id="Mdelete{{ forloop.counter }}" style="visibility:hidden;" onclick="delete_Device('{{ device.Name }}')" class="btn btn-default btn-xs" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
+                        {% endif %}
+                        </td>
+                    {% endif %} 
+                        <td>{{ device.LastUpdated }}</td>
+                        <td>
+                        {% if perms.Devices.view_plots %}
+                            <a class="btn btn-default btn-xs" href="{% url 'Devices:devicepage' device.pk %}" id="" role="button">{% trans "Advanced" %}  &raquo;</a>		        	
+                        {% endif %}
+                        </td>
+                </tr>
+                {% endfor %}
+	      	</tbody>
+	    </table>
+	    </div>
+	    <a class="btn btn-primary" href="{% url 'Devices:home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a>
+    </div><!-- /.container -->
+          
+{% endblock container %} 
+
+{% block scripts %}
+<script>
+		var ws_path =  "/stream/DevicesAPP/";
+		console.log("Connecting to " + ws_path);
+		var webSocketBridge = new channels.WebSocketBridge();
+		webSocketBridge.connect(ws_path);
+		webSocketBridge.listen();
+			
+        $(function () {
+            
+            webSocketBridge.demultiplex('Device_params', function(payload, streamName) {
+                // Handle different actions
+                if (payload.action == "create") {
+                    // Create the new GPIO model
+                    if (payload.data.DeviceIP!=null && payload.data.DeviceIP!="")
+                    {
+                        add_Device('RemoteDevicesTable','R',payload.data.Name,payload.data.IP,payload.data.Type,payload.data.State,payload.data.LastUpdated);
+                    }else if (payload.data.IO!=null && payload.data.IO!="")
+                    {
+                        add_Device('LocalDevicesTable','L',payload.data.Name,payload.data.IO,payload.data.Type,payload.data.State,payload.data.LastUpdated);
+                    }else
+                    {
+                        add_Device('MemoryDevicesTable','M',payload.data.Name,payload.data.IO,payload.data.Type,payload.data.State,payload.data.LastUpdated);
+                    }
+                    console.log("New Device model created : " + payload.data.toString());
+                } else if (payload.action == "update") {
+                    if (payload.data.IP!=null && payload.data.IP!="")
+                    {
+                        update_Device('RemoteDevicesTable','R',payload.data.Name,payload.data.IP,payload.data.Type,payload.data.State,payload.data.LastUpdated,payload.data.Error);
+                    }else if (payload.data.IO!=null && payload.data.IO!="")
+                    {
+                        update_Device('LocalDevicesTable','L',payload.data.Name,payload.data.IO,payload.data.Type,payload.data.State,payload.data.LastUpdated,payload.data.Error);
+                    }else
+                    {
+                        update_Device('MemoryDevicesTable','M',payload.data.Name,payload.data.IO,payload.data.Type,payload.data.State,payload.data.LastUpdated,payload.data.Error);
+                    }
+                    console.log("Device updated : " + payload.data.toString());
+                } else if (payload.action == "delete") {
+                    if (payload.data.IP!=null && payload.data.IP!="")
+                    {
+                        delete_Row('RemoteDevicesTable',payload.data.Name);
+                    }else  if (payload.data.IO!=null && payload.data.IO!="")
+                    {
+                        delete_Row('LocalDevicesTable',payload.data.Name);
+                    }else
+                    {
+                        delete_Row('MemoryDevicesTable',payload.data.Name);
+                    }
+                	console.log("Device deleted : " + payload.data.toString());
+                } else {
+                    console.log("Unknown action " + payload.action);
+                }
+            });
+            
+            
+            
+            // Helpful debugging
+            webSocketBridge.socket.addEventListener('open', 
+                function() { 
+                    console.log("Connected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="LimeGreen";
+                    label.innerHTML="Connected to RT engine"
+            });
+            webSocketBridge.socket.addEventListener('close', 
+                function() { 
+                    console.log("Disconnected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="Red";
+                    label.innerHTML="Disconnected from RT engine"
+            });
+        });
+
+		function add_Device(tableID,prefix,DeviceName,IPAddr,DeviceType,DeviceState,LastUpdated){
+			var table=document.getElementById(tableID);
+            NoDeviceRow=document.getElementById(tableID+'NoDevices');
+            NoDeviceRow.className="hidden";
+			var row = table.insertRow(-1);
+			var cell1 = row.insertCell(0);
+			var cell2 = row.insertCell(1);
+			var cell3 = row.insertCell(2);
+			var cell4 = row.insertCell(3);
+            var cell5 = row.insertCell(4);
+            var cell6 = row.insertCell(5);
+            var cell7 = row.insertCell(6);
+            var cell8 = row.insertCell(7);
+            cell1.innerHTML=DeviceName;
+            row.appendChild(cell1);   
+            cell2.innerHTML=IPAddr;
+            row.appendChild(cell2);
+			cell3.innerHTML=DeviceType;
+			row.appendChild(cell3);
+			cell4.innerHTML=((DeviceState>0) ? '{% trans " RUNNING " %}' : '{% trans " STOPPED " %}' );
+            var buttonToggle=document.createElement('a');
+            buttonToggle.className="btn btn-default btn-xs";
+            buttonToggle.role="button";
+            buttonToggle.id=prefix+"toggle"+(table.rows.length-1).toString();
+            var buttonDel=document.createElement('a');
+            buttonDel.className="btn btn-default btn-xs";
+            buttonDel.role="button";
+            buttonDel.id=prefix+"delete"+(table.rows.length-1).toString();
+            var buttonSpan=document.createElement('span');
+            buttonSpan.className="glyphicon glyphicon-remove-circle";
+            buttonDel.appendChild(buttonSpan);
+            if (DeviceState==0)
+            {
+                cell4.style.backgroundColor= "#FF0000";
+                buttonToggle.innerHTML='{% trans " Start " %} >>';
+                buttonDel.style.visibility='visible';
+            }
+            else{
+                cell4.style.backgroundColor= "#00FF00";
+                buttonToggle.innerHTML='{% trans " Stop " %} >>';
+                buttonDel.style.visibility='hidden';
+            }
+            buttonToggle.addEventListener("click", function(){ toggle_Device(DeviceName,prefix + 'Device_update',tableID); });
+            cell5.appendChild(buttonToggle);
+            buttonDel.addEventListener("click", function(){ delete_Device(DeviceName); });
+            cell6.appendChild(buttonDel);
+			row.appendChild(cell4);
+            row.appendChild(cell5);
+            row.appendChild(cell6);
+            cell7.innerHTML="27/11/1981 04:00:00";
+            row.appendChild(cell7);
+            row.appendChild(cell8);
+		}
+		
+		function toggle_Device(DeviceName,stream,table) {
+			var table=document.getElementById(table);
+			webSocketBridge.stream(stream).send({
+                    "pk": 0,
+                    "action": "update",
+                    "data": {
+                        "Name": DeviceName,
+                    }
+                });
+		}
+		
+		function update_Device(tableID,prefix,DeviceName,IPAddr,DeviceType,DeviceState,LastUpdated,Error){
+			var table=document.getElementById(tableID);
+			var rownum=-1;
+			for (var i = 0, row; row = table.rows[i]; i++) {
+				if ((row.cells[0].innerHTML==DeviceName))
+				{
+					rownum=i;
+					break;
+				}
+			}
+			if (rownum>1)
+			{
+				var row=table.rows[rownum];
+				if (typeof DeviceName != "undefined") {row.cells[0].innerHTML=DeviceName;}
+				if (typeof IPAddr != "undefined") {row.cells[1].innerHTML=IPAddr;}
+                if (typeof DeviceType != "undefined") {row.cells[2].innerHTML=DeviceType;}
+                if (typeof DeviceState != "undefined") {
+                    row.cells[3].innerHTML=((DeviceState>0) ? '{% trans " RUNNING " %}' : '{% trans " STOPPED " %}' );
+                    row.cells[3].innerHTML+=" " + Error;
+                    buttonToggle=document.getElementById(prefix+'toggle'+(rownum-1).toString());
+                    buttonDel=document.getElementById(prefix+'delete'+(rownum-1).toString());
+                    if (DeviceState==0)
+                    {
+                        row.cells[3].style.backgroundColor= "#FF0000";
+                        buttonToggle.innerHTML='{% trans " Start " %} >>';
+                        buttonDel.style.visibility='visible';
+                    }
+                    else{
+                        if (Error == '')
+                        {
+                            row.cells[3].style.backgroundColor= "#00FF00";
+                        }else
+                        {
+                            row.cells[3].style.backgroundColor= "#FACC2E";
+                        }
+                        buttonToggle.innerHTML='{% trans " Stop " %} >>';
+                        buttonDel.style.visibility='hidden';
+                    }
+                }
+                if (typeof LastUpdated != "undefined") {
+                    var offset = new Date().getTimezoneOffset();
+                    var d = new Date(LastUpdated);
+                    row.cells[6].innerHTML=d.toLocaleString();
+                }
+			}
+		}
+		
+		function delete_Row(tableID,DeviceName) {
+			var table=document.getElementById(tableID);
+			for (var i = 0, row; row = table.rows[i]; i++) {
+				if (row.cells[0].innerHTML==DeviceName)
+				{
+					table.deleteRow(i);
+					break;
+				}
+			}
+            if (table.rows.length==2)
+            {
+                NoDeviceRow=document.getElementById(tableID+'NoDevices');
+                NoDeviceRow.className="";
+            }
+		}
+        
+        function delete_Device(DeviceName) {
+			webSocketBridge.stream('Device_delete').send({
+                    "pk": 0,
+                    "action": "delete",
+                    "data": {
+                        "Name": DeviceName,
+                    }
+                });
+		}
+    </script>
+	
+{% endblock scripts %}
+	

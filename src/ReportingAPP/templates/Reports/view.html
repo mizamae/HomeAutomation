@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+{% block title %}{{ block.super }}Profile{% endblock %}
+
+<!-- Benefits of the Django application -->
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+  {% block container %}
+	<div class="container">
+		<h1 class="text-primary">{% trans "Projects Management Tool" %}</h1>
+	    <div id="ProjectsList" class="table-responsive">
+	    <table id="ProjectsTable" class="table table-striped table-bordered table-responsive ">
+            <colgroup>
+              <col class="col-xs-2"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-4"></col>
+              <col class="col-xs-1"></col>
+              <col class="col-xs-2"></col>
+            </colgroup>
+	    	<thead class="thead-inverse">
+			    <tr>
+			        <th>{% trans "Code" %}</th>
+			        <th>{% trans "Customer" %}</th>
+			        <th>{% trans "Description" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Edit" %}</th>
+			    </tr>
+			 </thead>
+			 <tbody>
+		      {% for PRJ in PRJs %}
+		      	<tr> 
+			        <td >{{ PRJ.Code }}</td>
+			        <td >{{ PRJ.Customer }}</td>
+			        <td >{{ PRJ.Description }}</td>
+			        <td >{{ PRJ.get_Status_display }}</td>
+	                <td>
+	                    <a class="btn btn-default btn-xs" href="{% url 'Projects:modify' PRJ.pk %}" id="" role="button">{% trans "Edit" %}  &raquo;</a>
+	                </td>
+		    	</tr>
+		      {% endfor %}
+	      	</tbody>
+	    </table>
+	    </div>
+        
+	    <a class="btn btn-primary" href="{% url 'Projects:home' %}"  role="button">{% trans "Return " %} &raquo;</a></p>
+	</div>
+
+  {% endblock container %}
