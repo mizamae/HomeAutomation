@@ -272,7 +272,7 @@ function DeviceChange()
 	{
 		var data=JSON.stringify({DevicePK: selectedDevice});
 		$.ajax({
-		    url: '/ajax_get_orders_for_device/' + selectedDevice,
+		    url: '/Devices/ajax_get_orders_for_device/' + selectedDevice,
 		    type: 'GET',
 		    data:  data,
 		    dataType: "html",

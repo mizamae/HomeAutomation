@@ -3,15 +3,14 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events as events
 import HomeAutomation.models
-import Devices.GlobalVars
-import Devices.BBDD
+from HomeAutomation.constants import REGISTERS_DB_PATH,MANAGEMENT_TASKS_SCHEDULER_URL
 
 from Events.consumers import PublishEvent
 
 logger = logging.getLogger("project")
 
 scheduler = BackgroundScheduler()   
-url = 'sqlite:///TasksScheduler.sqlite'
+url = MANAGEMENT_TASKS_SCHEDULER_URL
 scheduler.add_jobstore('sqlalchemy', url=url)
                 
 def my_listener(event):
@@ -33,16 +32,12 @@ except BaseException as e:
     logger.info('Exception Tasks APS: ' + str(e))
 
 def compactRegistersDB():
-    AppDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
-    rows=AppDB.registersDB.retrieve_DB_structure(fields='*')
     import datetime
-    now=datetime.datetime.now()
-    sizep = os.path.getsize(Devices.GlobalVars.REGISTERS_DB_PATH.replace('_XYEARX_', str(now.year)))
-    for row in rows:
-        table_name=row[1]
-        AppDB.registersDB.compact_table(table=table_name)
-    size = os.path.getsize(Devices.GlobalVars.REGISTERS_DB_PATH.replace('_XYEARX_', str(now.year)))
+    now=datetime.datetime.now()-datetime.timedelta(hours=1)
+    from utils.BBDD import compactRegistersDB
+    result=compactRegistersDB(year=now.year)
+    sizep=result['initial_size']
+    size=result['final_size']
     PublishEvent(Severity=0,Text='The DB size is reduced from ' +str(sizep/1000) + ' to ' + str(size/1000) + ' kB after compactation',Persistent=True)
     
 def start_registersDBcompactingTask(): 
@@ -58,7 +53,7 @@ def checkReportAvailability():
     '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
     IN CASE SO, IT GENERATES THE REPORT.
     '''
-    from Devices.models import ReportModel,ReportItems
+    from DevicesAPP.models import ReportModel,ReportItems
     import json
     reports=ReportModel.objects.all()
     for report in reports:
@@ -127,13 +122,13 @@ def start_HourlyTask():
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
     id='afterBoot'
-    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=1,replace_existing=True)
 
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    HomeAutomation.models.init_Rules()
-    HourlyTask()
-    updateWeekDay()
-    from Devices.models import initialize_polling_devices
+    #HomeAutomation.models.init_Rules()
+    #HourlyTask()
+    #updateWeekDay()
+    from DevicesAPP.models import initialize_polling_devices
     initialize_polling_devices()

@@ -12,10 +12,9 @@ from Events.consumers import PublishEvent
 from django.dispatch import receiver
 from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
 
-import Devices.GlobalVars
-import Devices.BBDD
+from HomeAutomation.constants import REGISTERS_DB_PATH
+import utils.BBDD
 
-import Master_GPIOs.models
 import pandas as pd
 import numpy as np
 
@@ -53,8 +52,7 @@ class MainDeviceVarModel(models.Model):
     def update_value(self,newValue,timestamp=None,writeDB=True):
         if writeDB:
             now=timezone.now()
-            registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+            registerDB=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH,year='')
             if timestamp==None:
                 registerDB.insert_VARs_register(TimeStamp=now-datetime.timedelta(seconds=1),VARs=[self,])
         
@@ -93,9 +91,6 @@ class MainDeviceVarModel(models.Model):
         
 @receiver(post_save, sender=MainDeviceVarModel, dispatch_uid="update_MainDeviceVarModel")
 def update_MainDeviceVarModel(sender, instance, update_fields=[],**kwargs):
-    
-    registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     
     if not kwargs['created']:   # an instance has been modified
         #logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
@@ -467,8 +462,7 @@ class AutomationVariablesModel(models.Model):
         self.save()
     
     def getValue(self,localized=True):
-        applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+        applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
         sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE "'+self.Tag +'" not null ORDER BY timestamp DESC LIMIT 1'
         data=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
         if data!=None:
@@ -484,8 +478,7 @@ class AutomationVariablesModel(models.Model):
         return timestamp,value
         
     def getValues(self,fromDate,toDate,localized=True):
-        applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+        applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
         sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
         data_rows=applicationDBs.registersDB.retrieve_from_table(sql=sql,single=False,values=(None,))
         if localized and len(data_rows)>0:
@@ -499,8 +492,7 @@ class AutomationVariablesModel(models.Model):
         return data_rows
     
     def getQuery(self,fromDate,toDate):
-        AppDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+        AppDB=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
         sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
         return {'conn':AppDB.registersDB.conn,'sql':sql}
         

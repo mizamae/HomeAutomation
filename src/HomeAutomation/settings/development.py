@@ -1,6 +1,6 @@
 import logging.config
 import sys
-
+import os
 from .base import *  # NOQA
 
 
@@ -34,6 +34,29 @@ INTERNAL_IPS = [
     '127.0.0.1',
     '0.0.0.1',
 ]
+
+#CHANNELS CONFIGURATION
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_PORT=6379
+# Channel layer definitions
+# http://channels.readthedocs.org/en/latest/deploying.html#setting-up-a-channel-backend
+CHANNEL_LAYERS = {
+    "default": {
+        # This example app uses the Redis channel layer implementation asgi_redis
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
+        },
+        "ROUTING": "HomeAutomation.routing.channel_routing",
+    },
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': join(BASE_DIR, '..', '..', 'run','django-cache')#'/home/pi/run/django-cache',
+    }
+}
 
 # Log everything to the logs directory at the top
 LOGFILE_ROOT = join(dirname(BASE_DIR), 'logs')

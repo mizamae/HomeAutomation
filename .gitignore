@@ -56,5 +56,26 @@ tramp
 Thumbs.db
 Desktop.ini
 
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+<<<<<<< HEAD
+./src/**/coverage/
+=======
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+>>>>>>> 77b6e2ebe66333f797debc544a1fde538c633f3a
+
 # Project settings
 ./site/
+./src/RPi/
+<<<<<<< HEAD
+./src/Adafruit_DHT/
+=======
+./src/Adafruit_DHT/
+>>>>>>> 77b6e2ebe66333f797debc544a1fde538c633f3a

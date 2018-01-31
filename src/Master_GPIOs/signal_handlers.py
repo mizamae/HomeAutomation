@@ -4,8 +4,8 @@ import logging
 import os
 from django.utils import timezone
 import datetime
-import Devices.GlobalVars
-import Devices.BBDD
+
+import utils.BBDD
 from django.utils.translation import ugettext_lazy as _
 from Events.consumers import PublishEvent
 
@@ -24,8 +24,8 @@ def OUT_toggle_request_handler(sender, **kwargs):
     timestamp=timezone.now() #para hora con info UTC 
     #logger.info("Output was "+str(value) + " and now is " + str(IO.value))
     
-    #applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-    #                                  configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
+    #applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(devicesDBPath=DevicesAPP.GlobalVars.DEVICES_DB_PATH,registerDBPath=DevicesAPP.GlobalVars.REGISTERS_DB_PATH,
+    #                                  configXMLPath=DevicesAPP.GlobalVars.XML_CONFFILE_PATH)
     #applicationDBs.insert_IOs_register(TimeStamp=timestamp-datetime.timedelta(seconds=1),direction='OUT')
     #IO.save()
     #applicationDBs.insert_event(TimeStamp=timestamp,Sender='Web: '+str(sender),DeviceName='Main',EventType=applicationDBs.EVENT_TYPES['OUTPUT_CHANGE'],value=IO.value)

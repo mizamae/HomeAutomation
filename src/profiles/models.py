@@ -53,8 +53,8 @@ class BaseProfile(models.Model):
 @receiver(post_save)
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
     if issubclass(sender, BaseProfile):
-        from Tracks.models import BeaconModel
-        beacons=BeaconModel.objects.all()
+        from DevicesAPP.models import Beacons
+        beacons=Beacons.objects.all()
         from HomeAutomation.models import MainDeviceVarModel
         for beacon in beacons:
             label='Distance from ' + instance.user.name + ' to ' + str(beacon) 

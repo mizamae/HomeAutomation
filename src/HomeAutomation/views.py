@@ -24,31 +24,21 @@ from django.utils.translation import ugettext as _
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
-import Devices.BBDD
-import Devices.GlobalVars
-#import RemoteDevices.HTTP_client
-import Devices.HTTP_client
-import Devices.Reports
-import Devices.Requests
-import Devices.XML_parser
-import Devices.forms
-import Devices.models
-import Master_GPIOs.models
+import utils.BBDD
+
+from .constants import REGISTERS_DB_PATH,GIT_PATH
+import DevicesAPP.forms
+import DevicesAPP.models
 from Events.consumers import PublishEvent
 import HomeAutomation.models
 
-#import LocalDevices.models
-
-import xml.etree.ElementTree as ET
+#import LocalDevicesAPP.models
 
 logger = logging.getLogger("project")
 
 
-class HomePage(generic.TemplateView):
+class Home(generic.TemplateView):
     template_name = "home.html"
-            
-class HomePageDevice(generic.TemplateView):
-    template_name = "home_device.html"
 
 class AboutPage(generic.TemplateView):
     template_name = "about.html"
@@ -73,10 +63,10 @@ class AdvancedDevice(generic.TemplateView):
 @login_required
 def ShowDeviceList(request):
     '''OK BRANCH'''
-    # DVs=RemoteDevices.models.DeviceModel.objects.all()
+    # DVs=RemoteDevicesAPP.models.Devices.objects.all()
     # numrows=len(DVs)
     # return render(request, 'showdevices.html',{'numrows':numrows,'deviceList':DVs})
-    DVs=Devices.models.DeviceModel.objects.all()
+    DVs=DevicesAPP.models.Devices.objects.all()
     
     remote_DVs=DVs.filter(Type__Connection='REMOTE')
     numrows_remote=len(remote_DVs)
@@ -91,10 +81,6 @@ def ShowDeviceList(request):
                                                'numrows_local':numrows_local,'LocaldeviceList':local_DVs,
                                                'numrows_memory':numrows_memory,'MemorydeviceList':memory_DVs,})
 
-@user_passes_test(lambda u: u.has_perm('HomeAutomation.change_state'))
-def ToggleDevice(request,devicename):
-    Devices.Requests.toggle_requests(DeviceName=devicename)
-    return HttpResponseRedirect(reverse('devlist'))
 
 @user_passes_test(lambda u: u.is_superuser)
 def settimezone(request):
@@ -163,125 +149,26 @@ def DeleteDevice(request,devicename):
 
     if devicename!='':   
         try:
-            DV=Devices.models.DeviceModel.objects.get(DeviceName=devicename)
+            DV=DevicesAPP.models.Devices.objects.get(DeviceName=devicename)
             DV.delete()
         except:
             logger.info('Error!! The device with name ' + devicename + ' does not exist in the database')                 
     return HttpResponseRedirect(reverse('devlist'))
 
-@login_required
-@user_passes_test(lambda u: u.has_perm('Devices.add_device'))
-def ConfDevice(request,code):
-    '''OK BRANCH'''
-    state=''
-    if request.method == 'POST': # the form has been submited
-        if 'DeviceCode' in request.POST: # the device form has been submitted
-            form = Devices.forms.DeviceForm(request.POST)
-            code=str(form['DeviceCode'].value())
-            name=form['DeviceName'].value()
-            logger.info('Trying to register the device with code ' + code + ' with the new name ' + name)  
-            # Check if the form is valid:
-            if form.is_valid():
-                logger.info('Form submitted is valid')  
-                code=form.cleaned_data['DeviceCode']
-                name=form.cleaned_data['DeviceName']
-                IP=form.cleaned_data['DeviceIP']
-                DeviceType =form.cleaned_data['Type']  
-                Sampletime =form.cleaned_data['Sampletime']  
-                DeviceState=form.cleaned_data['DeviceState']
-                logger.warning('Found a device type '+str(DeviceType))
-                code=int(code)
-                DV=Devices.models.DeviceModel(DeviceName=name,DeviceCode=code,DeviceIP=IP,Type=DeviceType,
-                                                                 DeviceState=DeviceState,Sampletime=Sampletime)
-                DV.save()
-                state='RegisteredOK'
-            
-                DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
-                form=Devices.forms.DatagramCustomLabelsForm(None,DV=DV,DGs=DGs)
-    
-                return render(request,'reqconfdevice.html',
-                          {'Status':state,'DeviceName':name.upper(),'Form': form})                
-            else:
-                logger.warning('Error!!: Form submitted is NOT valid')  
-                logger.warning('Error!!: ' + str(form.errors))  
-                state='FieldNoOK'
-            return render(request,'reqconfdevice.html',
-                          {'Status':state,'Form': form})
-        else: # the datagram custom labels form has been submitted
-            DeviceName=request.POST['DeviceName']
-            DV=Devices.models.DeviceModel.objects.get(DeviceName=DeviceName)
-            DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
-            form=Devices.forms.DatagramCustomLabelsForm(request.POST,DV=DV,DGs=DGs)
-            if form.is_valid():
-                DeviceName=form.cleaned_data['DeviceName']
-                CustomLabels=form.get_variablesLabels()
-                DV.CustomLabels=json.dumps(CustomLabels)
-                DV.save()
-                DV.updateAutomationVars()
-                #print('OK!!!')
-                state='FinishedOK'
-            return render(request,'reqconfdevice.html',
-                          {'Status':state,'Form': form})
-    else:   # the page is first loaded
-        try :
-            code=int(code)
-        except ValueError:
-            form=Devices.forms.DeviceForm(initial={'DeviceName':'','DeviceCode':'','DeviceIP':''})
-            state='URLNoOK'
-            return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})
-           
-        server='http://10.10.10.'+str(code)
-        #server='http://127.0.0.1'
-        HTTPrequest=Devices.HTTP_client.HTTP_requests(server=server)  
-        (status,root)=HTTPrequest.request_confXML(xmlfile=Devices.GlobalVars.DEVICES_CONFIG_FILE)
-        xmlparser=Devices.XML_parser.XMLParser(xmlroot=root)
-        
-        if status==200:
-            (DEVICE_TYPE,DEVICE_CODE,DEVICE_IP) =xmlparser.parseDeviceConfFile()
-            try:
-                Type=Devices.models.DeviceTypeModel.objects.get(Code=DEVICE_TYPE)
-            except Devices.models.DeviceTypeModel.DoesNotExist: 
-                Type=None
-                
-            lastRow=Devices.models.DeviceModel.objects.all().count()                     
-            DeviceName='Device'+str(lastRow+1)
-            DeviceType=DEVICE_TYPE
-            DEVICE_CODE=lastRow+1+Devices.GlobalVars.IP_OFFSET
-            DeviceIP='10.10.10.'+str(DEVICE_CODE)
-            payload={'DEVC':str(DEVICE_CODE)}
-            (status,r)=HTTPrequest.request_orders(order='SetConf.htm',payload=payload)
-            if status==200:
-                logger.info('Device code assigned OK to ' +str(DEVICE_CODE)+'. Devicename missing')                      
-                form=Devices.forms.DeviceForm(initial={'DeviceName':DeviceName,'Type':Type,'DeviceCode':DEVICE_CODE,'DeviceIP':DeviceIP})
-                state='ConfigOK'
-            else:
-                logger.warning('Device responded to the request of SetConf with HTTP code '+ str(status)) 
-                DEVICE_CODE=0
-                DeviceIP='10.10.10.0'
-                form=Devices.forms.DeviceForm(initial={'DeviceName':DeviceName,'Type':Type,'DeviceCode':DEVICE_CODE,'DeviceIP':DeviceIP})
-                state='ConfigNoOK'
-                return render(request,'adddevice.html',{'Status':state})
-            return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})
-    
-        else:
-            logger.warning('Device responded to the request of Conf with HTTP code '+ str(status)) 
-            form=Devices.forms.DeviceForm(initial={'DeviceName':'','DeviceCode':'','DeviceIP':''})
-            state='NoDevice'
-        return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})   
-           
-    return render(request, 'reqconfdevice.html',{'Status':state,'Form': form})  
+
+
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_device'))
 def adminSetCustomLabels(request,devicePK):
     if request.method == 'POST':
         DeviceName=request.POST['DeviceName']
-        DV=Devices.models.DeviceModel.objects.get(pk=devicePK)
+        DV=DevicesAPP.models.Devices.objects.get(pk=devicePK)
 
-        #datagrams=Devices.models.getDatagramStructure(devicetype=device.Type.pk)
-        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+        #datagrams=DevicesAPP.models.getDatagramStructure(devicetype=device.Type.pk)
+        DGs=DevicesAPP.models.DatagramModel.objects.filter(DeviceType=DV.Type)
         
-        form = Devices.forms.DatagramCustomLabelsForm(request.POST,DV=DV,DGs=DGs)
+        form = DevicesAPP.forms.DatagramCustomLabelsForm(request.POST,DV=DV,DGs=DGs)
         if form.is_valid():
             DeviceName=form.cleaned_data['DeviceName']
             CustomLabels=form.get_variablesLabels()
@@ -291,19 +178,19 @@ def adminSetCustomLabels(request,devicePK):
             state='FinishedOK'
         return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':DV.DeviceName.upper(),'Form': form})
     else:
-        DV=Devices.models.DeviceModel.objects.get(pk=devicePK)
+        DV=DevicesAPP.models.Devices.objects.get(pk=devicePK)
             
-        DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
-        form=Devices.forms.DatagramCustomLabelsForm(None,DV=DV,DGs=DGs)
+        DGs=DevicesAPP.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+        form=DevicesAPP.forms.DatagramCustomLabelsForm(None,DV=DV,DGs=DGs)
         state='RegisteredOK'
-        return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':DV.DeviceName.upper(),'Form': form})
+        return render(request, 'admin/customLabels.html',{'Status':state,'DeviceName':DV.Name.upper(),'Form': form})
             
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_report'))
 def viewReports(request,pk=None):
     if pk==None:
-        ReportItems=Devices.models.ReportItems.objects.all()
-        RPs=Devices.models.ReportModel.objects.all()
+        ReportItems=DevicesAPP.models.ReportItems.objects.all()
+        RPs=DevicesAPP.models.ReportModel.objects.all()
         elements=[]
         reportTitles=[]
         for RP in RPs:
@@ -312,7 +199,7 @@ def viewReports(request,pk=None):
     else:
         #from HomeAutomation.tasks import checkReportAvailability            
         #checkReportAvailability()        
-        ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
+        ReportItem=DevicesAPP.models.ReportItems.objects.get(pk=pk)
         data=json.dumps(ReportItem.Report.getReportData(toDate=ReportItem.toDate)[0])
         return render(request, 'reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
                                                             'fromDate':ReportItem.fromDate,
@@ -323,7 +210,7 @@ def viewReports(request,pk=None):
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.view_report'))
 def previewReport(request,title):
-    Report=Devices.models.ReportModel.objects.get(ReportTitle=title)
+    Report=DevicesAPP.models.ReportModel.objects.get(ReportTitle=title)
     ReportData,fromDate,toDate=Report.getReportData()
     return render(request, 'reportTemplate.html',{'reportTitle':Report.ReportTitle,
                                                         'fromDate':fromDate,
@@ -334,43 +221,19 @@ def previewReport(request,title):
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))
 def deleteReport(request,pk):
     if pk!=None:
-        ReportItem=Devices.models.ReportItems.objects.get(pk=pk)
+        ReportItem=DevicesAPP.models.ReportItems.objects.get(pk=pk)
         ReportItem.delete()
     return HttpResponseRedirect(reverse('viewReports'))
     
-@login_required
-@user_passes_test(lambda u: u.has_perm('Devices.add_device'))
-def ajax_get_data_for_devicetype(request,devicetypePK):
-    if request.is_ajax():
-        DV=Devices.models.DeviceTypeModel.objects.get(pk=devicetypePK)
-        info={'Connection':DV.Connection}
-        return HttpResponse(json.dumps(info))
-    else:
-        return HttpResponse(json.dumps([]))
 
-@login_required
-@user_passes_test(lambda u: u.has_perm('HomeAutomation.add_automationrule'))
-def ajax_get_orders_for_device(request,devicePK):
-    if request.is_ajax():
-        DV=RemoteDevices.models.DeviceModel.objects.get(pk=devicePK)
-        orders=Devices.models.CommandModel.objects.filter(DeviceType=DV.Type)
-        info=[]
-        if len(orders)>0:
-            for order in orders:
-                info.append({'Identifier':order.Identifier,'HumanTag':order.HumanTag})
-                
-        return HttpResponse(json.dumps(info))
-    else:
-        return HttpResponse(json.dumps([]))
         
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))
 def reportbuilder(request,number=0):
     
-    applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+    applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
     form_data={'ReportTitle':'','Periodicity':2,'DataAggregation':0}
-    form=Devices.forms.ReportForm(form_data)  
+    form=DevicesAPP.forms.ReportForm(form_data)  
     if request.method == 'POST':
         json_data=request.body.decode('utf-8')
         #logger.info('Received the post! - '+ json_data)
@@ -382,11 +245,11 @@ def reportbuilder(request,number=0):
         ReportContentJSON=json_data
         #logger.debug('Report content: ' + ReportContentJSON)             
         form_data={'ReportTitle':ReportTitle,'Periodicity':Periodicity,'DataAggregation':DataAggregation,'ReportContentJSON':ReportContentJSON}
-        form=Devices.forms.ReportForm(form_data)
+        form=DevicesAPP.forms.ReportForm(form_data)
         #logger.info('Trying to create a report with the title ' + ReportTitle) 
         if form.is_valid(): 
             #logger.info('Form is valid!')
-            REP=Devices.models.ReportModel.objects.create_Report(ReportTitle=ReportTitle,Periodicity=Periodicity,DataAggregation=DataAggregation,ReportContentJSON=ReportContentJSON)
+            REP=DevicesAPP.models.ReportModel.objects.create_Report(ReportTitle=ReportTitle,Periodicity=Periodicity,DataAggregation=DataAggregation,ReportContentJSON=ReportContentJSON)
             
             #applicationDBs.devicesDB.insert_row(SQL_statement=applicationDBs.devicesDB.SQLinsertReport_statement,row_values=(ReportTitle,ReportCode,ReportContentJSON))
             return HttpResponse(json.dumps({'Confirmation': 'OK'})) 
@@ -394,7 +257,7 @@ def reportbuilder(request,number=0):
             logger.error('Form error ' + str(form.errors))
             return HttpResponse(json.dumps({'Error': form.errors})) 
     else:
-        info=Devices.models.getAllVariables()
+        info=DevicesAPP.models.getAllVariables()
         #logger.debug(info)       
         return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps(info)})    
     
@@ -404,7 +267,7 @@ def reportbuilder(request,number=0):
 def device_report(request):
      
     if request.method == 'POST': # the form has been submited
-        form = Devices.forms.DeviceGraphs(request.POST)
+        form = DevicesAPP.forms.DeviceGraphs(request.POST)
         
         #logger.debug(str(request.POST))
         if form.is_valid():
@@ -412,21 +275,21 @@ def device_report(request):
             fromDate=form.cleaned_data['fromDate']
             toDate=form.cleaned_data['toDate']
             
-            form_clean = Devices.forms.DeviceGraphs({'DeviceName':form['DeviceName'].value(),'fromDate':fromDate,'toDate':toDate})
+            form_clean = DevicesAPP.forms.DeviceGraphs({'DeviceName':form['DeviceName'].value(),'fromDate':fromDate,'toDate':toDate})
             
             fromDate=fromDate-fromDate.utcoffset() 
             toDate=toDate-toDate.utcoffset()                 
 
             try:
-                DV=Devices.models.DeviceModel.objects.get(DeviceName=devicename)
-            except Devices.models.DeviceModel.DoesNotExist: 
+                DV=DevicesAPP.models.Devices.objects.get(DeviceName=devicename)
+            except DevicesAPP.models.Devices.DoesNotExist: 
                 DV='MainUnit'
             
             charts=[]
             if DV!='MainUnit':  # a device is selected
                 #logger.info('The device is a '+str(DV.Type))
                 #sampletime=DV.Sampletime
-                DGs=Devices.models.DatagramModel.objects.filter(DeviceType=DV.Type)
+                DGs=DevicesAPP.models.DatagramModel.objects.filter(DeviceType=DV.Type)
                 
                 if len(DGs)>0:
                     i=0
@@ -441,7 +304,7 @@ def device_report(request):
                                 Labeliterable.append(labels[name])
                         else:
                             for name in datagram_info['names']:
-                                IT=Devices.models.DatagramItemModel.objects.get(pk=int(name.split('_')[0]))
+                                IT=DevicesAPP.models.DatagramItemModel.objects.get(pk=int(name.split('_')[0]))
                                 Labeliterable.append(IT.getHumanName())
                     
                         table=str(DV.pk)+'_'+str(datagram_info['pk'])
@@ -518,12 +381,11 @@ def device_report(request):
         else:
             return render(request, 'DeviceGraph.html',{'Form': form})
     else:
-        form=Devices.forms.DeviceGraphs()
+        form=DevicesAPP.forms.DeviceGraphs()
         return render(request, 'DeviceGraph.html',{'Form': form})
 
 def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime):
-    applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH) 
+    applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
     
     chart={}
     chart['title']=table
@@ -634,7 +496,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
 @user_passes_test(lambda u: u.has_perm('Devices.view_plots'))
 def AdvancedDevicepage(request,pk):
     import json
-    DV=Devices.models.DeviceModel.objects.get(pk=pk)
+    DV=DevicesAPP.models.Devices.objects.get(pk=pk)
     LatestData=DV.getLatestData()
     return render(request, DV.Type.Code+'.html',
         {'Device':DV,'Latest':LatestData})
@@ -664,8 +526,7 @@ def handleLocation(request,user):
                 #print('Found user : ' + str(usr))
                 if usr.profile.tracking:
                     timestamp=timezone.now()
-                    applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
+                    applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH)
                     applicationDBs.insert_track(TimeStamp=timestamp,User=str(usr.email),Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
                     usr.profile.updateLocationData(Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
                     # usr.profile.Latitude=data['lat']
@@ -681,40 +542,6 @@ def handleLocation(request,user):
         # conn: connection type, m for mobile, w for wifi, o for offline
         return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
                 
-@csrf_exempt
-def asynchronous_datagram(request):
-    
-    if request.method == 'POST':
-        #logger.info('Async Request: POST ' + str(request.body))
-        applicationDBs=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                      configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH)
-        
-        xmltext=str(request.body)[1:].replace("'","")
-        #logger.info('XmlTEXT ' + xmltext)
-#XmlTEXT <X>\n\t<DEV>4</DEV>\t\t<!-- DEVICE CODE-->\n\t<DId>0</DId>\t\t\t\t<!-- DATAGRAM CODE -->\n\t<VAR>0</VAR>\t\t\t\t<!-- STATUS -->\n\t<AV>191,132,122,23</AV>\t\t<!-- T -->\n\t<AV>190,130,122,23</AV>\t\t<!-- RH -->\n</X>
-        root = ET.fromstring(xmltext)
-        xmlparser=Devices.XML_parser.XMLParser(xmlroot=root)
-        (result,datagram)=xmlparser.parseDatagram()
-        logger.info('Async Request: Datagram ' + str(datagram))
-        if result==0:
-            timestamp=timezone.now()  
-            deviceCode=datagram[0]
-            datagramCode=datagram[1]
-            device=Devices.models.DeviceModel.objects.get(DeviceCode=deviceCode)
-            datagramModel=Devices.models.DatagramModel.objects.filter(DeviceType=device.Type).filter(Code=int(datagramCode))[0]
-            del datagram[0:2]
-            if device!=None and datagramModel!=None:
-                applicationDBs.insert_device_register(TimeStamp=timestamp, DeviceCode=deviceCode, DeviceName=device.DeviceName, DatagramId=datagramModel.Identifier, 
-                                              year=timestamp.year, values=datagram)
-
-        else:
-            print('The datagram received was not properly formatted: ' + datagram)
-        
-    else: #GET
-        logger.info('Asynchronous Request with GET format. No longer supported.')
-
-    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
-
 @user_passes_test(lambda u: u.is_superuser)
 def arduinoCode(request):
     import Devices.Arduino_generator
@@ -755,7 +582,7 @@ def SoftReset(request):
 @user_passes_test(lambda u: u.is_superuser)
 def GitUpdate(request):
     from os import walk
-    for root, dirs, n in walk(Devices.GlobalVars.GIT_PATH):
+    for root, dirs, n in walk(GIT_PATH):
         if ".git" in dirs:
             #print("\"%s\" has git dir: \"%s\"" % (root, dirs))
             #dirs.remove('.git')

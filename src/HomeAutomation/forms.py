@@ -10,8 +10,8 @@ from django.views import generic
 from django.forms import ModelForm
 
 import json
-import Master_GPIOs.models
-import Devices.models
+import DevicesAPP.models
+from DevicesAPP.constants import REMOTE_TCP_CONNECTION as DevicesAPP_REMOTE_TCP_CONNECTION,GPIO_OUTPUT
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
@@ -154,12 +154,15 @@ class AutomationRuleForm(ModelForm):
         ('c',_('Send an email')),
         ('z',_('None')),
     )
-    
     ActionType = forms.ChoiceField(choices=ACTION_CHOICES,label=_('Select the action'))
-    IO=forms.ModelChoiceField(queryset=Master_GPIOs.models.IOmodel.objects.filter(direction='OUT'),label=_('Select the output'),required = False)
-    IOValue=forms.ChoiceField(choices=Master_GPIOs.models.IOmodel.VALUE_CHOICES,label=_('Select the output value when the rule is True'),required = False,initial=0)
-    Device=forms.ModelChoiceField(queryset=Devices.models.DeviceModel.objects.filter(Type__Connection='REMOTE'),label=_('Select the device to send the order to'),required = False)
-    Order=forms.ModelChoiceField(queryset=Devices.models.CommandModel.objects.all(),label=_('Select the order to send'),required = False)
+    IO=forms.ModelChoiceField(queryset=DevicesAPP.models.MasterGPIOs.objects.filter(Direction=GPIO_OUTPUT),
+                              label=_('Select the output'),required = False)
+    IOValue=forms.ChoiceField(choices=DevicesAPP.constants.GPIOVALUE_CHOICES,
+                              label=_('Select the output value when the rule is True'),required = False,initial=0)
+    Device=forms.ModelChoiceField(queryset=DevicesAPP.models.Devices.objects.filter(DVT__Connection=DevicesAPP_REMOTE_TCP_CONNECTION),
+                                  label=_('Select the device to send the order to'),required = False)
+    Order=forms.ModelChoiceField(queryset=DevicesAPP.models.DeviceCommands.objects.all(),
+                                 label=_('Select the order to send'),required = False)
     
     def __init__(self, *args, **kwargs):
         initial_arguments = kwargs.get('initial', None)

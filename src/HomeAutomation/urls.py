@@ -20,8 +20,8 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-import Master_GPIOs.views
-import Devices.GlobalVars
+import DevicesAPP.urls
+from DevicesAPP.constants import APP_TEMPLATE_NAMESPACE as DEVICESAPP_TEMPLATE_NAMESPACE
 import accounts.urls
 import profiles.urls
 
@@ -32,25 +32,19 @@ import logging
 logger = logging.getLogger("project")      
 
 urlpatterns = [
-    url(r'^$', views.HomePageDevice.as_view(), name='home'),
+    url(r'^$', views.Home.as_view(), name='home'),
     url(r'^i18n/', include('django.conf.urls.i18n')),
-    #url(r'^$', views.HomePage.as_view(), name='home'),
     url(r'^about/$', views.AboutPage.as_view(), name='about'),
-    url(r'^adddevice/$', login_required(views.AddDevice.as_view()), name='adddevice'),
-    url(r'^reqconf/(\d{1,3})/$', views.ConfDevice, name='reqconf'),
-    url(r'^showdevlist/$', views.ShowDeviceList, name='devlist'),
-    url(r'^togglestate/(?P<devicename>.+)/$', views.ToggleDevice, name='togglestate'),
-    url(r'^deletedev/(?P<devicename>.+)/$', views.DeleteDevice, name='delDevice'),
+    url(r'^'+DEVICESAPP_TEMPLATE_NAMESPACE+'/', include(DevicesAPP.urls, namespace=DEVICESAPP_TEMPLATE_NAMESPACE)),
+
     url(r'^repbuilder/(?P<number>.+)/$', views.reportbuilder, name='repbuilder'),
-    url(r'^ajax_get_orders_for_device/(?P<devicePK>.+)/$', views.ajax_get_orders_for_device, name='ajax_get_orders_for_device'),
-    url(r'^ajax_get_data_for_devicetype/(?P<devicetypePK>.+)/$', views.ajax_get_data_for_devicetype, name='ajax_get_data_for_devicetype'),
-    url(r'^async_post/$', views.asynchronous_datagram, name='asynchronous_datagram'),
-    url(r'^devicepage/(?P<pk>.+)/$', views.AdvancedDevicepage, name='devicepage'),
+    
+    
+
     url(r'^charts/$', views.device_report,name='devicecharts'),
     url(r'^settimezone/$', views.settimezone,name='settimezone'),
     url(r'^advancedDevice/$', views.AdvancedDevice.as_view(),name='advancedDevice'),
     url(r'^advancedDevice/arduinoCode/$', views.arduinoCode,name='arduinoCode'),
-    url(r'^master_gpios/$', Master_GPIOs.views.master_gpios,name='master_gpios'),
     url(r'^reports/$', views.viewReports,name='viewReports'),
     url(r'^reports/(?P<pk>.+)/$', views.viewReports,name='viewReports'),
     url(r'^deletereports/(?P<pk>.+)/$', views.deleteReport,name='deleteReport'),

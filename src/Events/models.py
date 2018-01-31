@@ -16,10 +16,11 @@ class EventModel(models.Model):
         except:
             EVT=None
         if EVT==None:
-            super(EventModel, self).save(*args, **kwargs)
+            pass
+            #super(EventModel, self).save(*args, **kwargs)
         else:
             EVT.Timestamp=self.Timestamp
-            EVT.save()
+            #EVT.save()
         
     def __str__(self):
         return self.Text

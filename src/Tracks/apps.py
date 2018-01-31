@@ -10,7 +10,7 @@ logger = logging.getLogger("processes")
 # with this initialization we guarantee that only one process will have the input change detection configured.
 # this avoids the multiple callbacks when an input changes its value as only one process will be aware of it.
 
-from Devices.GlobalVars import BOOTING_MSG
+from .constants import BOOTING_MSG
                 
 class TracksConfig(AppConfig):
     name = 'Tracks'

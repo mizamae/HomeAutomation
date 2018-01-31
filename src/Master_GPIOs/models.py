@@ -9,8 +9,9 @@ import datetime
 import HomeAutomation.models
 import RPi.GPIO as GPIO
 import Master_GPIOs.signals
-import Devices.BBDD
-import Devices.GlobalVars
+import utils.BBDD
+from HomeAutomation.constants import REGISTERS_DB_PATH
+
 from time import sleep
 import os
 from Events.consumers import PublishEvent
@@ -82,8 +83,7 @@ class IOmodel(models.Model):
         if newValue!=self.value or force:
             if writeDB:
                 now=timezone.now()
-                registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                                            configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
+                registerDB=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH,year='')
                 registerDB.check_IOsTables()
                 if timestamp==None:
                     registerDB.insert_IOs_register(TimeStamp=now-datetime.timedelta(seconds=1),direction=self.direction)
@@ -111,20 +111,10 @@ class IOmodel(models.Model):
             
         
     def InputChangeEvent(self,*args):
-        #sleep(0.1) # to avoid reading the input during the debounce time
-        # if GPIO.gpio_function(self.pin)!=GPIO.IN:
-            # GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
         val=GPIO.input(self.pin)
-        #logger.info('Value Input: ' + str(val))
-        self.value=int(val)
         newValue=int(val)
-        #logger.info('newValue Input: ' + str(newValue))
-        #self.update_value(newValue=newValue,timestamp=None,writeDB=True)
-        #self.value=int(val)
-        #self.save(update_fields=['value'])
-        #Master_GPIOs.signals.IN_change_notification.send(sender=None, number=self.pin, value=val)
-        text='Enters InputChangeEvent'
-        PublishEvent(Severity=0,Text=text)
+        self.update_value(newValue=newValue,timestamp=None,writeDB=True)
+
     
     def updateAutomationVars(self):
         if self.direction=='IN':
@@ -169,8 +159,6 @@ class IOmodel(models.Model):
 
 @receiver(post_save, sender=IOmodel, dispatch_uid="update_IOmodel")
 def update_IOmodel(sender, instance, update_fields,**kwargs):
-    registerDB=Devices.BBDD.DIY4dot0_Databases(devicesDBPath=Devices.GlobalVars.DEVICES_DB_PATH,registerDBPath=Devices.GlobalVars.REGISTERS_DB_PATH,
-                                           configXMLPath=Devices.GlobalVars.XML_CONFFILE_PATH,year='')
     if kwargs['created']:   # new instance is created  
         logger.info('The IO ' + str(instance) + ' has been registered on the process ' + str(os.getpid()))
         if instance.direction=='OUT':
@@ -185,13 +173,6 @@ def update_IOmodel(sender, instance, update_fields,**kwargs):
             logger.info("Initialized Input on pin " + str(instance.pin))
     else:
         pass
-        # if instance.direction=='OUT':
-            # #logger.info("Instance.value= " + str(instance.value))
-            # GPIO.setup(int(instance.pin), GPIO.OUT)
-            # if instance.value==1:
-                # GPIO.output(int(instance.pin),GPIO.HIGH)
-            # elif instance.value==0:
-                # GPIO.output(int(instance.pin),GPIO.LOW)
 
 @receiver(post_delete, sender=IOmodel, dispatch_uid="delete_IOmodel")
 def delete_IOmodel(sender, instance,**kwargs):

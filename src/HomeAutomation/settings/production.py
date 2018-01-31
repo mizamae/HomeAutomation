@@ -35,8 +35,8 @@ TEMPLATES[0].update({"APP_DIRS": False})
 STATIC_ROOT = join(BASE_DIR, '..', 'site', 'static')
 
 #CHANNELS CONFIGURATION
-redis_host = os.environ.get('REDIS_HOST', 'localhost')
-
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_PORT=6379
 # Channel layer definitions
 # http://channels.readthedocs.org/en/latest/deploying.html#setting-up-a-channel-backend
 CHANNEL_LAYERS = {
@@ -44,7 +44,7 @@ CHANNEL_LAYERS = {
         # This example app uses the Redis channel layer implementation asgi_redis
         "BACKEND": "asgi_redis.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(redis_host, 6379)],
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
         "ROUTING": "HomeAutomation.routing.channel_routing",
     },
@@ -53,12 +53,12 @@ CHANNEL_LAYERS = {
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/home/pi/run/django-cache',
+        'LOCATION': join(BASE_DIR, '..', '..', 'run','django-cache')#'/home/pi/run/django-cache',
     }
 }
 
 # Log everything to the logs directory at the top
-LOGFILE_ROOT = '/home/pi/HomeAutomation/logs'
+LOGFILE_ROOT = join(BASE_DIR, '..', 'logs') #'/home/pi/HomeAutomation/logs'
 
 # Reset logging
 LOGGING_CONFIG = None

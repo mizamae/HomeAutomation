@@ -94,10 +94,10 @@ INSTALLED_APPS = (
     'profiles',
     'accounts',
     'HomeAutomation',
-    'Devices',
-    'Master_GPIOs',
+    'DevicesAPP',
+    #'Master_GPIOs',
     'Events',
-    'Tracks',
+    #'Tracks',
 )
 
 
@@ -130,6 +130,10 @@ DATABASES = {
         'NAME': join(BASE_DIR,'db.sqlite3'),
     }
 }
+
+FIXTURE_DIRS = (
+   join(BASE_DIR,'fixtures'),
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
