@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime
 from utils.BBDD import getRegistersDBInstance
+from .constants import DTYPE_DIGITAL
 
 def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime):
     
@@ -17,13 +18,12 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
         #logger.info(str(name))
         if DB.checkIfColumnExist(table=table,column=name):
             vars+='"'+str(name)+'"'+','
-            if type=='analog':
+            if type!=DTYPE_DIGITAL:
                 tempname.append({'label':label,'type':type,'plottype':plottype})
-            elif type=='digital':
+            else:
                 labels=label.split('$')
                 tempname.append({'label':labels,'type':type,'plottype':plottype})
-            else:
-                tempname.append({'label':label,'type':type,'plottype':plottype})
+
     if vars!='':
         vars=vars[:-1]
         chart['cols'].append(tempname)    
@@ -60,7 +60,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                 values=np.concatenate([df.values,df.values])
             else:
                 values=[]
-                for col in chart['cols']:
+                for col in chart['cols'][1:]:
                     values.append([None,None])
             # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
             ts_ini = pd.to_datetime(fromDate.replace(tzinfo=None))
@@ -71,7 +71,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
         tempStats={'number':5,'num_rows':df.count(numeric_only=True).tolist(),'mean':[],'max':df.max(numeric_only=True).tolist(),'min':df.min(numeric_only=True).tolist(),'on_time':[],'off_time':[]}
         
         for name,type in zip(names,types):
-            if type=='digital':
+            if type==DTYPE_DIGITAL:
                 from utils.dataMangling import dec2bin
                         
                 try:
@@ -87,7 +87,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                 
     
                 tempStats['mean'].append(None)
-            elif type=='analog':
+            else:
                 try:
                     # AN ERROR CAN OCCUR IF THE VARIABLE HAS NO VALUE ALONG THE TIMESPAN
                     tempStats['mean'].append(df_int[str(name)].mean())

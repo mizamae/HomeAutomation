@@ -74,9 +74,9 @@ DATAGRAMTYPE_CHOICES=(
         (DG_ASYNCHRONOUS,'Asynchronous')
     )
 
-DTYPE_INTEGER='INTEGER'
-DTYPE_FLOAT='FLOAT'
-DTYPE_DIGITAL='DIGITAL'
+DTYPE_INTEGER='integer'
+DTYPE_FLOAT='float'
+DTYPE_DIGITAL='digital'
 DATATYPE_CHOICES=(
         (DTYPE_INTEGER,_('Analog Integer')),
         (DTYPE_FLOAT,_('Analog Float')),

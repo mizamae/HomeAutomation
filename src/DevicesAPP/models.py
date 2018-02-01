@@ -73,9 +73,8 @@ class MasterGPIOs(models.Model):
         '''
         self.full_clean()
         super().save()
-        from utils.BBDD import getRegistersDBInstance
-        DB=getRegistersDBInstance(year=None)
-        self.checkRegistersDB(Database=DB)
+        now=timezone.now()
+        self.update_value(newValue=self.Value,timestamp=now,writeDB=True,force=True)
         
     def setHigh(self):
         if self.Direction==GPIO_OUTPUT:
@@ -172,7 +171,7 @@ class MasterGPIOs(models.Model):
                 values.append(IO.Value)
                 names.append(IO.getRegistersDBTag())
                 types.append(DTYPE_INTEGER)
-                datatypes.append('INTEGER')
+                datatypes.append(DTYPE_INTEGER)
                 plottypes.append(LINE_PLOT)
         return {'pk':pks,'names':names,'values':values,'types':types,'datatypes':datatypes,'plottypes':plottypes}
         
@@ -1137,7 +1136,7 @@ class Devices(models.Model):
                     self.setCustomLabels()
                 
                 CustomLabels=json.loads(self.CustomLabels)
-                labels=CustomLabels[DG.Identifier]
+                labels=CustomLabels[str(DG.pk)]
                 for name in datagram_info['names']:
                     Labeliterable.append(labels[name])
             
@@ -1251,10 +1250,7 @@ class Datagrams(models.Model):
     def getDBTypes(self):
         types=[]
         for item in self.itemordering_set.all():
-            if item.ITM.DataType!= DTYPE_DIGITAL:
-                types.insert(item.Order-1,'analog')
-            else:
-                types.insert(item.Order-1,'digital')
+            types.insert(item.Order-1,item.ITM.DataType)
         types.insert(0,'datetime')
         return types
     
@@ -1297,7 +1293,7 @@ class Datagrams(models.Model):
                 datatypes.insert(ITO.Order-1,ITO.ITM.DataType)
             else:
                 types.insert(ITO.Order-1,ITO.ITM.DataType)
-                datatypes.insert(ITO.Order-1,'INTEGER')
+                datatypes.insert(ITO.Order-1,DTYPE_INTEGER)
         if self.isSynchronous():
             sample=1
         else:
