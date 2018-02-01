@@ -95,9 +95,7 @@ INSTALLED_APPS = (
     'accounts',
     'HomeAutomation',
     'DevicesAPP',
-    #'Master_GPIOs',
     'Events',
-    #'Tracks',
 )
 
 

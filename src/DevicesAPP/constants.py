@@ -46,6 +46,8 @@ GPIOVALUE_CHOICES=(
                 (GPIO_LOW,_('LOW')),
                 (GPIO_HIGH,_('HIGH')),
             )
+GPIO_IN_DBTABLE='inputs'
+GPIO_OUT_DBTABLE='outputs'
 
 POLLING_SCHEDULER_URL='sqlite:///'+DEVICESAPP_ROOT+'/DevicesScheduler.sqlite'
 

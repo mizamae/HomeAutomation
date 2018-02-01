@@ -1,0 +1,17 @@
+{% load i18n %}
+{% load staticfiles %}
+<hr>
+<div class="row">
+	<div class="col-md-2 col-xs-3">
+		<h2 style="text-align: center;font-weight: bold;">{% trans "BACK" %}</h2>
+	      <p style="text-align: center;">
+	      {% if back_params %}
+	       <a class="btn btn-primary-outline" href="{% url back_to back_params %}" role="button">
+	       {% else %}
+	       <a class="btn btn-primary-outline" href="{% url back_to %}" role="button">
+	       {% endif %}
+	       	<img src="{% static 'site/img/back.png' %}" alt="back" height="100%" width="100%">
+	       </a>
+       	</p>
+	</div>
+</div>

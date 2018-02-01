@@ -29,50 +29,13 @@
 {% endblock extrahead %}
 {% block container %}     
     <div class="container">
-		<h1>{{ Header1 }}</h1>
-	    <h3><b>{% trans "REMOTE DEVICES" %}</b></h3>
-	    <div id="list" class="table-responsive">
-	    <table id="Table" class="table table-striped table-bordered table-responsive ">
-            <colgroup>
-              <col class="col-md-1 col-xs-1"></col>
-              <col class="col-md-4 col-xs-11"></col>
-              <col class="col-md-2 col-xs-1"></col>
-              <col class="col-md-1 col-xs-3"></col>
-              <col class="col-md-4 col-xs-8"></col>
-            </colgroup>
-	    	<thead class="thead-inverse">
-			    <tr>
-			        <th>{% trans "Device Code" %}</th>
-			        <th>{% trans "Device Description" %}</th>
-			        <th>{% trans "Device minimum sample time" %}</th>
-			        <th>{% trans "Device Connection" %}</th>
-			        <th>{% trans "Picture" %}</th>
-			    </tr>
-			 </thead>
-			 <tbody>
-                {% if numrows == 0 %}
-                <tr id="TableNoDevices" ><td colspan=8>{{ message_norows }}</td></tr>
-                {% endif %} 
-                {% for row in rows %}
-                <tr> 
-                    <td>{{ row.Code }}</td>
-                    <td>{{ row.Description }}</td>
-                    <td>{{ row.MinSampletime }}</td>
-                    <td>{{ row.get_Connection_display }}</td>
-                    <td>
-                    {% if row.Picture %}
-	                	<img class="img-responsive" src="{{ row.Picture.url }}" alt="not found">
-                	{% else %}
-                		{% trans "No picture" %}
-	                {% endif %}
-	                </td>
-                </tr>
-                {% endfor %} 
-            </tbody>
-	    </table>
-	    </div>
+		<h1>{% trans "Device Types List" %}</h1>
         
-	    <a class="btn btn-primary" href="{% url 'Devices:home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a>
+        {% trans "Outputs" as header %}
+        {% include "Devices/_devicetypetable.html" with header='' tableId="devicetypes" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows1 %}
+        
+        
+	    {% include "_back.html" with back_to='Devices:home' %}
     </div><!-- /.container -->
           
 {% endblock container %} 

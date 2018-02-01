@@ -2,7 +2,11 @@
 <tr> 
     <td>{{ row.Pin }}</td>
     <td>{{ row.Label }}</td>
+    {% if tableId != "SENSORs" %}
     <td>{{ row.Value }}</td>
+    {% else %}
+    <td>{{ row.pin2device.Name }}</td>
+	{% endif %}
 	
         {% if perms.DevicesAPP.change_state_mastergpios and row.Direction == 0 %}
         <td>

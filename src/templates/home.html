@@ -40,23 +40,14 @@
 {% if user.is_authenticated %}
 <div class="container home-container">
 <!-- Benefits of the Django application -->
-	<h1>{% include "_brandname.html"  %}{% trans "APPLICATION SERVER DASHBOARD" %}</h1>
-	<div class="col-xs-6 col-md-3">
-		<h2 style="text-align: center;">{% trans "DEVICES APP" %}</h2>
-		<p>{% trans "Here you can add a new device to your installation. Additionally you can edit/modify any already existing device."  %}</p>
-		<p></p>
-		<p>
-		{% if perms.Devices.add %}
-			<a class="btn btn-primary" href="{% url 'Devices:home' %}" role="button">
-				<img src="{% static 'site/img/DevicesAPP_icon.jpg' %}" alt="SC" height="100%" width="100%">
-			</a>
-		{% else %}
-			<a class="btn btn-primary disabled" href="" role="button">
-				<img src="{% static 'site/img/DevicesAPP_icon.jpg' %}" alt="SC" height="100%" width="100%">
-			</a>
-		{% endif %}
-		</p>
-	</div>
+	<h1 style="text-align: center;">{% include "_brandname.html"  %}{% trans "APPLICATION SERVER DASHBOARD" %}</h1>
+		{% trans "DEVICES APP" as app_name %}
+		{% trans "Here you can add a new device to your installation. Additionally you can edit/modify any already existing device." as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.DevicesAPP.view app_name=app_name app_description=app_description app_url="Devices:home" app_icon='site/img/DevicesAPP_icon.png' %}
+		
+		{% trans "REPORTING APP" as app_name %}
+		{% trans "Here you can configure custom reports that can help you when analizing what is going on in your installation." as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.ReportingAPP.view app_name=app_name app_description=app_description app_url="Devices:home" app_icon='site/img/ReportingAPP_icon.png' %}
 </div>
 {% else %}
 	<div class="container home-container">

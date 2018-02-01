@@ -33,19 +33,20 @@
 	    {% trans "REMOTE DEVICES" as header %}
        	{% trans "IP" as second_col_header %}
        	{% trans "There are no registered remote devices in the installation." as nodevices_label %}
-        {% include "Devices/_devicetable.html" with header=header second_col_header=second_col_header tableId="RemoteDevices" numrows=numrows_remote devicelist=RemotedeviceList nodevices_label=nodevices_label %}
+        {% include "Devices/_devicetable.html" with header=header second_col_header=second_col_header tableId="RemoteDevices" numrows=numrows_table1 rows=rows_table1 nodevices_label=nodevices_label %}
         
         
         {% trans "LOCAL DEVICES" as header %}
        	{% trans "Pin" as second_col_header %}
        	{% trans "There are no registered local devices in the installation." as nodevices_label %}
-        {% include "Devices/_devicetable.html" with header=header second_col_header=second_col_header tableId="LocalDevices" numrows=numrows_local devicelist=LocaldeviceList nodevices_label=nodevices_label %}
+        {% include "Devices/_devicetable.html" with header=header second_col_header=second_col_header tableId="LocalDevices" numrows=numrows_table2 rows=rows_table2 nodevices_label=nodevices_label %}
         
         {% trans "ON MEMORY DEVICES" as header %}
        	{% trans "PK" as second_col_header %}
        	{% trans "There are no registered on memory devices in the installation." as nodevices_label %}
-        {% include "Devices/_devicetable.html" with header=header second_col_header=second_col_header tableId="MemoryDevices" numrows=numrows_memory devicelist=MemorydeviceList nodevices_label=nodevices_label %}
-	    <a class="btn btn-primary" href="{% url 'Devices:home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a>
+        {% include "Devices/_devicetable.html" with header=header second_col_header=second_col_header tableId="MemoryDevices" numrows=numrows_table3 rows=rows_table3 nodevices_label=nodevices_label %}
+	    
+	    {% include "_back.html" with back_to='Devices:home' %}
     </div><!-- /.container -->
           
 {% endblock container %} 

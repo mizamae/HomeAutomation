@@ -31,14 +31,19 @@
     <div class="container">
 		<h1>{% trans "Master GPIOs List" %}</h1>
 	    {% trans "Outputs" as header %}
-       	{% trans "There are no registered outputs in the installation." as nodevices_label %}
-        {% include "Devices/_iotable.html" with header=header tableId="OUTs" colnumber=4 numrows=numrows_out rows=outList nodevices_label=nodevices_label %}
+       	{% trans "There are no registered outputs in the installation." as message_norows %}
+        {% include "Devices/_iotable.html" with header=header tableId="OUTs" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows %}
         
         {% trans "Inputs" as header %}
-       	{% trans "There are no registered inputs in the installation." as nodevices_label %}
-        {% include "Devices/_iotable.html" with header=header tableId="INs" colnumber=3 numrows=numrows_in rows=inList nodevices_label=nodevices_label %}
+       	{% trans "There are no registered inputs in the installation." as message_norows %}
+        {% include "Devices/_iotable.html" with header=header tableId="INs" colnumber=cols_table2 numrows=numrows_table2 rows=rows_table2 message_norows=message_norows %}
         
-	    <a class="btn btn-primary" href="{% url 'Devices:home' %}"  role="button">{% trans "Return to Main" %} &raquo;</a>
+        {% trans "Sensors" as header %}
+       	{% trans "There are no registered sensor pins in the installation." as message_norows %}
+        {% include "Devices/_iotable.html" with header=header tableId="SENSORs" colnumber=cols_table3 numrows=numrows_table3 rows=rows_table3 message_norows=message_norows %}
+        
+        
+	    {% include "_back.html" with back_to='Devices:home' %}
     </div><!-- /.container -->
           
 {% endblock container %} 

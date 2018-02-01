@@ -16,19 +16,25 @@ from DevicesAPP.forms import DeviceTypesForm, ItemOrderingForm,DevicesForm,Beaco
 
 class MasterGPIOsAdmin(admin.ModelAdmin):
     list_display = ('Pin','Label','Direction','Value')
-    #form=MasterGPIOsForm
+    form=MasterGPIOsForm
+    
+    def save_model(self, request, obj, form, change):
+        if not change: # the object is being created
+            obj.store2DB()
+        else:
+            super().save_model(request, obj, form, change)
 
 class DeviceTypeAdmin(admin.ModelAdmin):
     list_display = ('Code','Description','Connection')
-    #form=DeviceTypesForm
+    form=DeviceTypesForm
     pass
     
 class DevicesAdmin(admin.ModelAdmin):
     def Connection(self,instance):
-        return str(instance.Type.Connection)
+        return str(instance.DVT.get_Connection_display())
     
     list_display = ('pk','Name','DVT','Connection','State','Sampletime')
-    #form=DevicesForm
+    form=DevicesForm
     actions=['defineCustomLabels']
     
     def defineCustomLabels(self,request, queryset):

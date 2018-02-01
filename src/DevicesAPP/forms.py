@@ -22,20 +22,24 @@ from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fi
 
 import logging
 logger = logging.getLogger("project")
+FORMS_LABEL_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
+FORMS_FIELD_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
 
 class MasterGPIOsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         instance=kwargs.get('instance',None)
-
-        action=kwargs.pop('action')
+        try:
+            action=kwargs.pop('action')
+        except:
+            action='add'
 
         super(MasterGPIOsForm, self).__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance
         # It builds a default layout with all its fields
         self.helper = FormHelper(self)
         self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
 #         self.helper.form_id = 'id-DeviceForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
@@ -44,13 +48,13 @@ class MasterGPIOsForm(ModelForm):
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':add',args=['mastergpios'])
             buttons=FormActions(
                     Submit('save', _('Save')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
                 )
         elif action=='edit':
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':edit',args=['mastergpios',instance.pk])
             buttons=FormActions(
                     Submit('edit', _('Save changes')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
                 )
         else:
             raise DevicesAppException(_('The action parameter passed to the form MasterGPIOsForm is not accepted. Action= ') + str(action))
@@ -83,14 +87,17 @@ class MasterGPIOsForm(ModelForm):
 class DeviceTypesForm(ModelForm):
     def __init__(self, *args, **kwargs):
         instance=kwargs.get('instance',None)
-        action=kwargs.pop('action')
+        try:
+            action=kwargs.pop('action')
+        except:
+            action='add'
         super(DeviceTypesForm, self).__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance
         # It builds a default layout with all its fields
         self.helper = FormHelper(self)
         self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
 #         self.helper.form_id = 'id-DeviceForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
@@ -99,13 +106,13 @@ class DeviceTypesForm(ModelForm):
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':add',args=['devicetypes'])
             buttons=FormActions(
                     Submit('save', _('Save')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
                 )
         elif action=='edit':
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':edit',args=['devicetypes',instance.pk])
             buttons=FormActions(
                     Submit('edit', _('Save changes')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
                 )
         else:
             raise DevicesAppException(_('The action parameter passed to the form DevicetypesForm is not accepted. Action= ') + str(action))
@@ -143,12 +150,15 @@ class DevicesForm(ModelForm):
         initial_arguments = kwargs.get('initial', None)
         updated_initial = {}
         instance=kwargs.get('instance',None)
-        action=kwargs.pop('action')
+        try:
+            action=kwargs.pop('action')
+        except:
+            action='add'
         super(DevicesForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-6'
-        self.helper.field_class = 'col-sm-4'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
         fieldtype=''
@@ -157,26 +167,26 @@ class DevicesForm(ModelForm):
             buttons=FormActions(
                     Submit('save', _('Save')),
                     HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':scan" "devices" %}" class="btn btn-warning">'+str(_('Scan'))+'</a>'),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
                 )
         elif action=='add':
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':add',args=['devices'])
             buttons=FormActions(
                     Submit('save', _('Save')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
                 )
         elif action=='edit':
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':edit',args=['devices',instance.pk])
             buttons=FormActions(
                     Submit('edit', _('Save changes')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
                 )
         elif action=='scan':
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':scan',args=['devices'])
             fieldtype='hidden'
             buttons=FormActions(
                     Submit('scan', _('Scan'),formnovalidate='formnovalidate'),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
                 )
         elif action=='getLabels':
             self.helper.form_method = 'get'
@@ -185,7 +195,7 @@ class DevicesForm(ModelForm):
             self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':setCustomLabels',args=[instance.pk])
             buttons=FormActions(
                     Submit('labels', _('Set labels for the data')),
-                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
+                    #HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-danger">'+str(_('Cancel'))+'</a>')
                 )
         else:
             raise DevicesAppException(_('The action parameter passed to the form DevicesForm is not accepted. Action= ') + str(action))
@@ -258,8 +268,8 @@ class DatagramCustomLabelsForm(forms.Form):
         # It builds a default layout with all its fields
         self.helper = FormHelper(self)
         self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
         self.helper.form_id = 'DatagramCustomLabelsForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
@@ -394,10 +404,10 @@ class DeviceGraphs(forms.Form):
         #self.helper.form_id = 'id-DeviceGraphs'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
         
-        DVs=DevicesAPP.models.Devices.objects.all()
+        DVs=models.Devices.objects.all()
         device_list=[(1,_('Main Unit'))]
         i=2
         try:
@@ -446,8 +456,8 @@ class BeaconsForm(ModelForm):
         # It builds a default layout with all its fields
         self.helper = FormHelper()
         self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
 #         self.helper.form_id = 'id-DeviceForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'

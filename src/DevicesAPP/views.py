@@ -29,7 +29,7 @@ from . import models
 
 from .constants import APP_TEMPLATE_NAMESPACE,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION, \
                         FORM_FIRST_RENDER_MSG,FORM_ISVALID_MSG,FORM_ISNOTVALID_MSG,SCAN_DEVICENOFOUND,SCAN_DEVICEFOUND,TESTS_USER_AGENT,\
-                        GPIO_INPUT,GPIO_OUTPUT
+                        GPIO_INPUT,GPIO_OUTPUT,GPIO_SENSOR
 
 def home(request):
     if request.method == 'POST': # the form has been submited
@@ -211,6 +211,67 @@ def scan(request,model):
                                                                    'Form': form}) 
                 
 
+def viewGraphs(request,model):
+    if not checkUserPermissions(request=request,action='view',model=model):
+        return HttpResponseRedirect(reverse('accounts:login'))
+    if request.method == 'POST': # the form has been submited
+        form = forms.DeviceGraphs(request.POST)
+        
+        logger.debug(str(request.POST))
+        if form.is_valid():
+            devicename=form.cleaned_data['DeviceName']
+            fromDate=form.cleaned_data['fromDate']
+            toDate=form.cleaned_data['toDate']
+            
+            form_clean = forms.DeviceGraphs({'DeviceName':form['DeviceName'].value(),'fromDate':fromDate,'toDate':toDate})
+            
+            fromDate=fromDate-fromDate.utcoffset() 
+            toDate=toDate-toDate.utcoffset()                 
+
+            try:
+                DV=models.Devices.objects.get(Name=devicename)
+            except models.Devices.DoesNotExist: 
+                DV='MainUnit'
+            
+            charts=[]
+            if DV!='MainUnit':  # a device is selected
+                logger.info('The device is a '+str(DV.DVT))
+                charts=DV.getCharts(fromDate=fromDate,toDate=toDate)
+            else:
+                logger.info('The device is the Main Unit')
+                charts=models.MasterGPIOs.getCharts(fromDate=fromDate,toDate=toDate)
+#                 MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
+#                          
+#                 if len(MainVars)>0:
+#                     table='MainVariables'
+#                     names=[]
+#                     types=[]
+#                     labels=[]
+#                     plottypes=[]
+#                     for Var in MainVars:
+#                         names.append(Var.pk)
+#                         types.append('analog')
+#                         labels.append(Var.Label)
+#                         plottypes.append(Var.PlotType)
+#                     
+#                     names.insert(0,'timestamp')
+#                     types.insert(0,'datetime')
+#                     labels.insert(0,'timestamp')
+#                     plottypes.insert(0,'timestamp')
+#                      
+#                     chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+#                                         labels=labels,plottypes=plottypes,sampletime=0)
+#                      
+#                     logger.debug(json.dumps(chart))    
+#                      
+#                     charts.append(chart) 
+            return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html', {'devicename':devicename.replace('_',' '),'chart': json.dumps(charts),'Form':form_clean})
+        else:
+            return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html',{'Form': form})
+    else:
+        form=forms.DeviceGraphs()
+        return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html',{'Form': form})
+    
 def viewList(request,model):
     if not checkUserPermissions(request=request,action='view',model=model):
         return HttpResponseRedirect(reverse('accounts:login'))
@@ -236,17 +297,17 @@ def viewList(request,model):
             numrows_local=local_DVs.count()
             memory_DVs=DVs.filter(DVT__Connection=MEMORY_CONNECTION)
             numrows_memory=memory_DVs.count()
-            return render(request, APP_TEMPLATE_NAMESPACE+'/showDevicesList.html',{'numrows_remote':numrows_remote,'RemotedeviceList':remote_DVs,
-                                                                            'numrows_local':numrows_local,'LocaldeviceList':local_DVs,
-                                                                            'numrows_memory':numrows_memory,'MemorydeviceList':memory_DVs,})
+            return render(request, APP_TEMPLATE_NAMESPACE+'/showDevicesTables.html',{'numrows_table1':numrows_remote,'rows_table1':remote_DVs,
+                                                                            'numrows_table2':numrows_local,'rows_table2':local_DVs,
+                                                                            'numrows_table3':numrows_memory,'rows_table3':memory_DVs,})
         elif Model == models.DeviceTypes:
             RWs=Model.objects.all()
             numrows=RWs.count()
             message_norows=str(_('There are no ')) + data['Header1'] +str(_(' registered.'))
             return render(request, APP_TEMPLATE_NAMESPACE+'/showList.html',{'Header1':Header1,
-                                                                            'numrows':numrows,
-                                                                            'message_norows':message_norows,
-                                                                            'rows':RWs
+                                                                            'numrows_table1':numrows,
+                                                                            'message_norows1':message_norows,
+                                                                            'rows_table1':RWs
                                                                             })
         elif Model == models.MasterGPIOs:
             IOs=Model.objects.all()
@@ -254,8 +315,11 @@ def viewList(request,model):
             numrows_out=OUTs.count()
             INs=IOs.filter(Direction=GPIO_INPUT)
             numrows_in=INs.count()
-            return render(request, APP_TEMPLATE_NAMESPACE+'/showIOsList.html',{'numrows_out':numrows_out,'outList':OUTs,
-                                                                                    'numrows_in':numrows_in,'inList':INs,
+            SENSORs=IOs.filter(Direction=GPIO_SENSOR)
+            numrows_sensor=SENSORs.count()
+            return render(request, APP_TEMPLATE_NAMESPACE+'/showGPIOsTables.html',{'numrows_table1':numrows_out,'rows_table1':OUTs,'cols_table1':4,
+                                                                               'numrows_table2':numrows_in,'rows_table2':INs,'cols_table2':3,
+                                                                               'numrows_table3':numrows_sensor,'rows_table3':SENSORs,'cols_table3':3,
                                                                                     })
         else:
             return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 

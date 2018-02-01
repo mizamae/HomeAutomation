@@ -33,10 +33,10 @@
 <!-- Benefits of the Django application -->
 
 <div class="container">
-		<h1>{{ Device.DeviceName }}</h1>
+		<h1>{{ Device.Name }}</h1>
 		<p></p>
 		<div class="row">
-	    	<div class="col-md-4">
+	    	<div class="col-md-6 col-xs-8">
 			    <div id="devicedata" class="table-responsive">
 				    <table id="devicedata_table" class="table table-striped table-bordered table-responsive ">
 							<thead class="thead-inverse">
@@ -48,80 +48,51 @@
 							 <tbody>
                                 <tr> 
                                     <td>{{ Device.IO.pin }}</td>
-                                    <td>{{ Device.Type.Code }}</td>
+                                    <td>{{ Device.DVT.Code }}</td>
                                 </tr>
                             </tbody>
 				    </table>
 			    </div>
 			</div>
-            <div class="col-md-4">
+            <div class="col-md-3 col-xs-4">
                 <div class="caption">
-                  <p>{{ Device.Type.Description }}</p>
+                  <p>{{ Device.DVT.Description }}</p>
                 </div>
-                {% if Device.Type.Picture %}
-                <img class="img-responsive" src="{{ Device.Type.Picture.url }}" alt="not found">
+                {% if Device.DVT.Picture %}
+                <img class="img-responsive" src="{{ Device.DVT.Picture.url }}" alt="not found">
                 {% endif %}
             </div>
 		</div>
         <p></p>
         <div class="row">
-            <!-- #DF5353  red -->
-             <!-- #55BF3B // green -->
-            <div class="col-md-4">
-                <canvas id="temp_gauge" 
-                    data-title="Temperature"
-                    data-major-ticks="10 15 20 25 30 35" 
-                    data-minor-ticks= "1"
-                    data-type="canv-gauge" 
-                    data-min-value="10" 
-                    data-max-value="35" 
-                    data-units="deg C"
-                    data-stroke-ticks="true"
-                    data-value-format="1.1"
-                    data-onready=""
-                    data-highlights="10 18 #0000FF, 18 20 #58ACFA,20 24 #55BF3B, 24 30 #FE9A2E,30 35 #DF5353"
-                    width="300" 
-                    height="300">
-                </canvas>
-            </div>
-             
-            <div class="col-md-4">
-                <canvas id="humidity_gauge" 
-                    data-title="Relative humidity"
-                    data-major-ticks="15 20 25 30 35 40 45 50 55 60"  
-                    data-minor-ticks= "1"
-                    data-type="canv-gauge" 
-                    data-min-value="15" 
-                    data-max-value="60" 
-                    data-units="%"
-                    data-stroke-ticks="true"
-                    data-value-format="1.1"
-                    data-onready=""
-                    data-highlights="15 25 #DF5353, 25 35 #FE9A2E,35 50 #55BF3B, 50 60 #0000FF"
-                    width="300" 
-                    height="300">
-                </canvas>
-            </div>
-            <div class="col-md-4">
-                <canvas id="dewpoint_gauge" 
-                    data-title="Dewpoint"
-                    data-major-ticks="-5 0 5 10 15 20"  
-                    data-minor-ticks= "1"
-                    data-type="canv-gauge" 
-                    data-min-value="-5" 
-                    data-max-value="20" 
-                    data-units="deg C"
-                    data-stroke-ticks="true"
-                    data-value-format="1.1"
-                    data-onready=""
-                    data-highlights="-5 15 #55BF3B, 15 20 #DF5353"
-                    width="300" 
-                    height="300">
-                </canvas>
-            </div>
+            
+            {% with div_class="col-md-4 col-xs-12" canvas_id="temp_gauge" title="Temperature" %}
+            {% with major_ticks="10 15 20 25 30 35" min_value="10" max_value="35" units="degC"  %}
+            {% with data_highlights="10 18 #0000FF, 18 20 #58ACFA,20 24 #55BF3B, 24 30 #FE9A2E,30 35 #DF5353" %}
+            {% include "Devices/_analoggauge.html" %}
+			{% endwith %}
+			{% endwith %}
+			{% endwith %}
+			
+			{% with div_class="col-md-4 col-xs-12" canvas_id="humidity_gauge" title="Relative humidity" %}
+            {% with major_ticks="15 20 25 30 35 40 45 50 55 60" min_value="15" max_value="60" units="%"  %}
+            {% with data_highlights="15 25 #DF5353, 25 35 #FE9A2E,35 50 #55BF3B, 50 60 #0000FF" %}
+            {% include "Devices/_analoggauge.html" %}
+			{% endwith %}
+			{% endwith %}
+			{% endwith %}
+			
+            {% with div_class="col-md-4 col-xs-12" canvas_id="dewpoint_gauge" title="Dewpoint" %}
+            {% with major_ticks="-5 0 5 10 15 20" min_value="-5" max_value="20" units="degC" %}
+            {% with data_highlights="-5 15 #55BF3B, 15 20 #DF5353" %}
+            {% include "Devices/_analoggauge.html" %}
+			{% endwith %}
+			{% endwith %}
+			{% endwith %}
         </div>
 		<p></p>
-	    <a class="btn btn-primary" href="{% url 'devlist' %}"  role="button">{% trans "Return" %} &raquo;</a></p>
+	    
+	    {% include "_back.html" with back_to='Devices:view_all' back_params='devices' %}
 </div><!-- /.container -->
 
 
@@ -190,7 +161,7 @@
                         "data": {}
                     });
             }
-        window.setInterval(function(){query();}, {{ Device.Type.MinSampletime }}*1000);
+        window.setInterval(function(){query();}, {{ Device.DVT.MinSampletime }}*1000);
     </script>
 	
 {% endblock scripts %}

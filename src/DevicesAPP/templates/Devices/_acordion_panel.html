@@ -1,0 +1,16 @@
+{% load i18n %}
+{% load staticfiles %}
+<div id={{collapseID}} class="col-xs-4 col-md-3">
+	<h2 style="text-align: center;font-weight: bold;">{{ header }}</h2>
+	<p style="text-align: center;">
+	{% if permission_OK %}
+		<a class="btn btn-primary-outline " href="{% url link_to var_model  %}" role="button">
+			<img src="{% static icon %}" alt="add" height="100%" width="100%">
+		</a>
+	{% else %}
+		<a class="btn btn-primary-outline disabled" href="" role="button">
+		<img src="{% static icon %}" alt="add" height="100%" width="100%">
+		</a>
+	{% endif %}
+	</p>
+</div>

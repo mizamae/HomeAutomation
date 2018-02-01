@@ -12,34 +12,24 @@
 		</div>
 		<div id={{collapseID}} class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2">
 			<div class="panel-body">
-				<div id={{collapseID}} class="col-xs-4 col-md-3">
-					<h2 style="text-align: center;">{% trans "Add a " %}{{ var_model|slice:":-1" }}</h2>
-					<p>
-					{% if var_permission_add %}
-						<a class="btn btn-primary" href="{% url 'Devices:add' var_model  %}" role="button">
-							<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
-						</a>
-					{% else %}
-						<a class="btn btn-primary disabled" href="" role="button">
-						<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
-						</a>
-					{% endif %}
-					</p>
-				</div>
-				<div id={{collapseID}} class="col-xs-4 col-md-3">
-					<h2 style="text-align: center;">{% trans "View " %}{{ var_model }}</h2>
-					<p>
-					{% if var_permission_view %}
-						<a class="btn btn-primary" href="{% url 'Devices:view_all' var_model %}" role="button">
-						<img src="{% static 'site/img/view.png' %}" alt="SC" height="100%" width="100%">
-						</a>
-					{% else %}
-						<a class="btn btn-primary disabled" href="" role="button">
-						<img src="{% static 'site/img/no_view.png' %}" alt="SC" height="100%" width="100%">
-						</a>
-					{% endif %}
-					</p>
-				</div>
+				{% if show_add_col == 1 %}
+					{% trans "ADD" as header %}
+					{% with permission_OK=var_permission_add link_to="Devices:add" icon='site/img/add.png' %}
+					{% include "Devices/_acordion_panel.html" %}
+					{% endwith %}
+				{% endif %}
+				{% if show_view_col == 1 %}
+					{% trans "VIEW" as header %}
+					{% with permission_OK=var_permission_view link_to="Devices:view_all" icon='site/img/view.png' %}
+					{% include "Devices/_acordion_panel.html" %}
+					{% endwith %}
+				{% endif %}
+				{% if show_graph_col == 1 %}
+					{% trans "GRAPHS" as header %}
+					{% with permission_OK=var_permission_graph link_to="Devices:graph" icon='site/img/graphs.png' %}
+					{% include "Devices/_acordion_panel.html" %}
+					{% endwith %}
+				{% endif %}
 			</div>
 		</div>
 	</div>

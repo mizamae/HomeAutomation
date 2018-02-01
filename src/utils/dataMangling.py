@@ -24,4 +24,13 @@ def checkBit(number,position):
         return True
     else:
         return False
-        
+
+def dec2bin(x):
+    data=[]
+    for i in range(0,8):
+        try:
+            x=int(x)
+            data.append(1 if (x & (1<<int(i)))>0 else 0)
+        except:
+            data.append(None)
+    return data        

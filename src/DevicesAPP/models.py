@@ -27,7 +27,8 @@ from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION
                         STOPPED_STATE,RUNNING_STATE,\
                         DATAGRAMTYPE_CHOICES,DATATYPE_CHOICES,PLOTTYPE_CHOICES,LINE_PLOT,SPLINE_PLOT,DG_SYNCHRONOUS,\
                         DTYPE_DIGITAL,DTYPE_INTEGER,\
-                        GPIO_DIRECTION_CHOICES,GPIO_OUTPUT,GPIO_INPUT,GPIO_SENSOR,GPIOVALUE_CHOICES,GPIO_HIGH,GPIO_LOW
+                        GPIO_DIRECTION_CHOICES,GPIO_OUTPUT,GPIO_INPUT,GPIO_SENSOR,GPIOVALUE_CHOICES,GPIO_HIGH,GPIO_LOW,\
+                        GPIO_IN_DBTABLE,GPIO_OUT_DBTABLE
                         
 from .apps import DevicesAppException
 
@@ -68,8 +69,13 @@ class MasterGPIOs(models.Model):
         super(MasterGPIOs, self).__init__(*args, **kwargs)
     
     def store2DB(self):
+        '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
+        '''
         self.full_clean()
-        super().save() 
+        super().save()
+        from utils.BBDD import getRegistersDBInstance
+        DB=getRegistersDBInstance(year=None)
+        self.checkRegistersDB(Database=DB)
         
     def setHigh(self):
         if self.Direction==GPIO_OUTPUT:
@@ -142,9 +148,9 @@ class MasterGPIOs(models.Model):
     
     def getRegistersDBTableName(self):
         if self.Direction==GPIO_INPUT:
-            table='inputs'
+            table=GPIO_IN_DBTABLE
         elif self.Direction==GPIO_OUTPUT:
-            table='outputs'
+            table=GPIO_OUT_DBTABLE
         else:
             raise ValueError(_('Only GPIOs defined as Input or Output can be registered to the DB'))
         return table
@@ -271,6 +277,35 @@ class MasterGPIOs(models.Model):
         
         avar.executeAutomationRules()
     
+    @classmethod
+    def getCharts(cls,fromDate,toDate):
+        charts=[]
+        for Direction in (GPIO_INPUT,GPIO_OUTPUT):
+            IOs=cls.objects.filter(Direction=Direction)
+            if IOs.count()>0:
+                names=[]
+                types=[]
+                labels=[]
+                plottypes=[]
+                for IO in IOs:
+                    names.append(IO.getRegistersDBTag())
+                    types.append('digital')
+                    labels.append(IO.Label)
+                    plottypes.append('line')
+                    table=IO.getRegistersDBTableName()
+                
+                names.insert(0,'timestamp')
+                types.insert(0,'datetime')
+                labels.insert(0,'timestamp')
+                plottypes.insert(0,'timestamp')
+                
+                from .charting import generateChart
+                
+                chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+                                    labels=labels,plottypes=plottypes,sampletime=0)
+                charts.append(chart)
+        return charts
+        
     def deleteAutomationVars(self):
         table=self.getRegistersDBTableName()
         try:
@@ -1089,6 +1124,39 @@ class Devices(models.Model):
                 time.sleep(1)
         return out
     
+    def getCharts(self,fromDate,toDate):
+        DGs=Datagrams.objects.filter(DVT=self.DVT)
+        charts=[]
+        if DGs.count()>0:
+            i=0
+            for DG in DGs:
+                datagram_info=DG.getStructure()
+                sampletime=datagram_info['sample']*self.Sampletime
+                Labeliterable=[]
+                if self.CustomLabels=='':
+                    self.setCustomLabels()
+                
+                CustomLabels=json.loads(self.CustomLabels)
+                labels=CustomLabels[DG.Identifier]
+                for name in datagram_info['names']:
+                    Labeliterable.append(labels[name])
+            
+                table=self.getRegistersDBTableName(DG=DG)
+                names=datagram_info['names'][:]
+                names.insert(0,'timestamp')
+                types=datagram_info['types']
+                types.insert(0,'datetime')
+                labels=Labeliterable
+                labels.insert(0,'timestamp')
+                plottypes=datagram_info['plottypes']
+                plottypes.insert(0,'timestamp')
+                from .charting import generateChart
+                chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+                                    labels=labels,plottypes=plottypes,sampletime=sampletime)  
+                 
+                charts.append(chart)
+        return charts
+        
     def deleteRegistersTables(self):
         from utils.BBDD import getRegistersDBInstance
         DGs=Datagrams.objects.filter(DVT=self.DVT)
@@ -1097,6 +1165,7 @@ class Devices(models.Model):
             table=self.getRegistersDBTableName(DG=DG)
             DB.dropTable(table=table)
 
+    
         
 @receiver(post_save, sender=Devices, dispatch_uid="update_Devices")
 def update_Devices(sender, instance, update_fields,**kwargs):

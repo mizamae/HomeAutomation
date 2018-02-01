@@ -1,0 +1,33 @@
+{% load i18n %}
+<h3><b>{{ header }}</b></h3>
+<div id="{{ tableId }}list" class="table-responsive">
+	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
+	    <colgroup>
+      		<col class="col-md-1 col-xs-1"></col>
+            <col class="col-md-4 col-xs-11"></col>
+            <col class="col-md-2 col-xs-1"></col>
+            <col class="col-md-1 col-xs-3"></col>
+            <col class="col-md-4 col-xs-8"></col>
+	    </colgroup>
+	    <thead class="thead-inverse">
+	        <tr>
+	            <th>{% trans "Device Code" %}</th>
+		        <th>{% trans "Device Description" %}</th>
+		        <th>{% trans "Device minimum sample time" %}</th>
+		        <th>{% trans "Device Connection" %}</th>
+		        <th style="text-align: center;">{% trans "Picture" %}</th>
+	        </tr>
+	     </thead>
+	     <tbody>
+	        {% if numrows %}
+	        <tr id="{{ tableId }}TableNoRows" class="hidden"><td colspan=8>{{ message_norows }}</td></tr>
+	        {% else %}
+	        <tr id="{{ tableId }}TableNoRows" ><td colspan=8>{{ message_norows }}</td></tr>
+	        {% endif %} 
+	        
+	        {% for row in rows %}
+                {% include "Devices/_devicetype.html" with row=row  %}
+            {% endfor %} 
+		</tbody>
+	</table>
+</div>

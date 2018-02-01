@@ -52,6 +52,9 @@ class Database(object):
             self.conn= None
             print ("Incorrect argument, missing location: ", sys.exc_info()[1])            
     
+    def getConn(self):
+        return self.conn
+    
     def _execute(self,SQLstatement,arg):
         ''' THIS FUNCTION IS REQUIERED TO AVOID INTEGRITY ERROR WHEN TEO GPIOs ARE CHANGED AT THE SAME TIME
         '''
@@ -152,6 +155,13 @@ class Database(object):
         sql='DROP TABLE IF EXISTS %s' % table
         return self.executeTransactionWithCommit(SQLstatement=sql,arg=[])
     
+    def checkIfColumnExist(self,table,column):
+        if self.checkIfTableExist(table):
+            names,types =self.retrieve_cols_nametype(table)
+            if column in names:
+                return True
+        return False
+        
     def checkIfTableExist(self,table):
         table='"'+table+'"'
         sql="SELECT name FROM sqlite_master WHERE type='table' AND name="+table

@@ -14,7 +14,11 @@
 	        <tr>
 	            <th>{% trans "Pin" %}</th>
 	            <th>{% trans "Label" %}</th>
+	            {% if tableId != "SENSORs" %}
 	            <th>{% trans "Value" %}</th>
+	            {% else %}
+	            <th>{% trans "Device" %}</th>
+	            {% endif %}
 	            {% if tableId == "OUTs" %}
 	            <th>{% trans "Change state" %}</th>
 	            {% endif %}

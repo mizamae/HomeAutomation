@@ -25,18 +25,18 @@
 	     </thead>
 	     <tbody>
 	        {% if numrows %}
-	        <tr id="{{ tableId }}TableNoDevices" class="hidden"><td colspan=8>{{ nodevices_label }}</td></tr>
+	        <tr id="{{ tableId }}TableNoDevices" class="hidden"><td colspan=8>{{ message_norows }}</td></tr>
 	        {% else %}
-	        <tr id="{{ tableId }}TableNoDevices" ><td colspan=8>{{ nodevices_label }}</td></tr>
+	        <tr id="{{ tableId }}TableNoDevices" ><td colspan=8>{{ message_norows }}</td></tr>
 	        {% endif %} 
 	        
-	        {% for device in devicelist %}
+	        {% for row in rows %}
 	        	{% if tableId == "RemoteDevices" %}
-		        	{% include "Devices/_device.html" with device=device second_col=device.IP %}
+		        	{% include "Devices/_device.html" with device=row second_col=row.IP %}
 	        	{% elif tableId == "LocalDevices" %}
-	        		{% include "Devices/_device.html" with device=device second_col=device.IO.pin %}
+	        		{% include "Devices/_device.html" with device=row second_col=row.IO.pin %}
         		{% else %}
-        			{% include "Devices/_device.html" with device=device second_col=device.pk %}
+        			{% include "Devices/_device.html" with device=row second_col=row.pk %}
 		        {% endif %}
 	        	
 	        {% endfor %}

@@ -38,8 +38,8 @@
 	    	{% crispy Form %}
 		{% else %}
 			<p class="lead">{{ Nothing_message }}</p>
-		    <p><a class="btn btn-primary" href="{% url 'Devices:home' %}" id="Nothingbutton" role="button">{% trans "Back" %} &raquo;</a></p>
 		{% endif %}
+		{% include "_back.html" with back_to='Devices:home' %}
 	</div>
 	<div class="hidden">{{ TestMsg }}</div>
 {% endblock container %}
