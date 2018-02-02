@@ -10,6 +10,11 @@
  	<img class="img-responsive" src="{{ row.Picture.url }}" alt="not found">
 	{% else %}
 		{% trans "No picture" %}
- {% endif %}
- </td>
+	{% endif %}
+	</td>
+	<td>
+		<a class="btn btn-primary-outline" href="{% url 'Devices:edit' 'devicetypes' row.pk %}" role="button">
+			<img src="{% static 'site/img/view.png' %}" alt="Edit" height="100%" width="100%">
+		</a>
+	</td>
 </tr>

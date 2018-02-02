@@ -3,36 +3,34 @@
 <div id="{{ tableId }}list" class="table-responsive">
 	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
 	    <colgroup>
-	      <col class="col-xs-2"></col>
-	      <col class="col-xs-5"></col>
-	      <col class="col-xs-2"></col>
-	      {% if tableId == "OUTs" %}
-	      <col class="col-xs-3"></col>
-	      {% endif %}
+	      <col class="col-lg-1 col-md-1"></col>
+	      <col class="col-lg-1 col-md-1"></col>
+	      <col class="col-lg-1 col-md-1"></col>
+	      <col class="col-lg-1 col-md-1"></col>
+	      <col class="col-lg-1 col-md-1"></col>
 	    </colgroup>
 	    <thead class="thead-inverse">
 	        <tr>
-	            <th>{% trans "Pin" %}</th>
+	            <th style="text-align: center;">{% trans "Pin" %}</th>
 	            <th>{% trans "Label" %}</th>
 	            {% if tableId != "SENSORs" %}
 	            <th>{% trans "Value" %}</th>
 	            {% else %}
 	            <th>{% trans "Device" %}</th>
 	            {% endif %}
-	            {% if tableId == "OUTs" %}
-	            <th>{% trans "Change state" %}</th>
-	            {% endif %}
+	            <th style="text-align: center;">{% trans "Change state" %}</th>
+	            <th style="text-align: center;">{% trans "Edit" %}</th>
 	        </tr>
 	     </thead>
 	     <tbody>
 	        {% if numrows %}
-	        <tr id="{{ tableId }}TableNoDevices" class="hidden"><td colspan={{colnumber}}>{{ nodevices_label }}</td></tr>
+	        <tr id="{{ tableId }}TableNoDevices" class="hidden"><td colspan=5>{{ nodevices_label }}</td></tr>
 	        {% else %}
-	        <tr id="{{ tableId }}TableNoDevices" ><td colspan={{colnumber}}>{{ nodevices_label }}</td></tr>
+	        <tr id="{{ tableId }}TableNoDevices" ><td colspan=5>{{ nodevices_label }}</td></tr>
 	        {% endif %} 
 	        
 	        {% for row in rows %}
-		        {% include "Devices/_io.html" with row=row %}
+		        {% include "Devices/_mastergpios.html" %}
 	        {% endfor %}
 		</tbody>
 	</table>

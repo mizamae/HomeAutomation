@@ -29,27 +29,19 @@
 {% endblock extrahead %}
 {% block container %}     
     <div class="container">
-		<h1>{% trans "Device Types List" %}</h1>
+		<h1>{% trans "Reports List" %}</h1>
         
-        {% trans "Outputs" as header %}
-        {% include "Devices/_devicetypes_table.html" with header='' tableId="devicetypes" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows1 %}
+        {% include "Reports/_reports_table.html" with header='' tableId="reports" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows1 %}
         
         <div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
-	    {% include "_back.html" with back_to='Devices:home' %}
+	    {% include "_back.html" with back_to='Reports:home' %}
 	    </div>
     </div><!-- /.container -->
           
 {% endblock container %} 
 
 {% block scripts %}
-<script>
-		var ws_path =  "/stream/DevicesAPP/";
-		console.log("Connecting to " + ws_path);
-		var webSocketBridge = new channels.WebSocketBridge();
-		webSocketBridge.connect(ws_path);
-		webSocketBridge.listen();
-		
-</script>
+
 	
 {% endblock scripts %}
 	

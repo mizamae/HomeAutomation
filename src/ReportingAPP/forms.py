@@ -10,26 +10,30 @@ from django.views import generic
 from django.forms import ModelForm
 from django.urls import reverse
 
-class ReportForm(ModelForm):  
+from . import models
+
+FORMS_LABEL_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
+FORMS_FIELD_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
+
+class ReportsForm(ModelForm):  
     
     def __init__(self, *args, **kwargs):
-        super(ReportForm, self).__init__(*args, **kwargs)
-        # If you pass FormHelper constructor a form instance
-        # It builds a default layout with all its fields
+        super(ReportsForm, self).__init__(*args, **kwargs)
+
         self.helper = FormHelper(self)
-        self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
-#         self.helper.form_id = 'id-DeviceForm'
+        #self.helper.labels_uppercase = True
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
+
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
         
-        self.fields['ReportTitle'].label = _('Title of the report')
-        self.fields['Periodicity'].label = _('Setup the periodicity')
-        self.fields['DataAggregation'].label = _('Setup the aggregation of the data')
+        self.fields['Title'].label = _('Title of the report')
+        self.fields['Periodicity'].label = _('Set the periodicity')
+        self.fields['DataAggregation'].label = _('Set the aggregation of the data')
         
         self.helper.layout = Layout(
-            Field('ReportTitle', css_class='input-sm'),
+            Field('Title', css_class='input-sm'),
             Field('Periodicity', css_class='input-sm'),
             Field('DataAggregation', css_class='input-sm'),
             )
@@ -44,5 +48,6 @@ class ReportForm(ModelForm):
         return cleaned_data
         
     class Meta:
-        model = models.ReportModel
-        fields=['ReportTitle','Periodicity','DataAggregation']
+        model = models.Reports
+        fields=['Title','Periodicity','DataAggregation']
+        

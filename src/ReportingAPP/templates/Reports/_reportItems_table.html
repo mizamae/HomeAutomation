@@ -1,0 +1,35 @@
+{% load i18n %}
+{% load staticfiles %}
+<div class="row ">
+	<div class="col-md-8">
+		<h2>{% trans "Report " %} {{title}}</h2>
+	</div>
+	<div class="col-md-4">
+		<a class="btn btn-primary" href="{% url 'Reports:preview' title %}" id="" role="button">{% trans "Preview next report" %}  &raquo;</a>
+	</div>
+</div>
+<div id="{{title}}List" class="table-responsive">
+	<table id="{{title}}Table" class="table table-striped table-bordered table-responsive ">
+		<colgroup>
+			<col class="col-xs-3"></col>
+			<col class="col-xs-3"></col>
+			<col class="col-xs-2"></col>
+			<col class="col-xs-1"></col>
+		</colgroup>
+		<thead class="thead-inverse">
+			<tr>
+				<th>{% trans "From" %}</th>
+				<th>{% trans "To" %}</th>
+				<th>{% trans "View" %}</th>
+				<th>{% trans "Delete" %}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for item in items %}
+			{% if item.Report.Title == title %}
+				{% include "Reports/_reportItem.html" %}
+			{% endif %}
+		{% endfor %}
+		</tbody>
+	</table>
+</div>

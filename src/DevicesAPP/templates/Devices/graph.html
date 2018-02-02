@@ -13,14 +13,9 @@
     	width: 100%;
     	height: 50%;
     }
-    .row-graph{
+    .row{
     	position:relative;
     	top:2em;
-    	margin-left: 5px;
-    	max-height:100%;
-    }
-    .col-lg-3{
-    	border:1px solid black;
     }
     .btn {
     	font-size: 10px;
@@ -31,6 +26,9 @@
     list-style:none;
     
 	color: #369;
+	}
+	.bordered{
+	border:1px solid black;
 	}
 	.treeview ul {
 	    margin-left:1em;
@@ -89,27 +87,41 @@
 	    padding:0px 0px 0px 0px;
 	    outline: 0;
 	}
-    .container {
-        width: 100%;
-    }
+
     </style>
     <script type="text/javascript" src="{% static 'site/js/moment-with-locales.min.js'%}" ></script>
     <script type="text/javascript" src="{% static 'site/js/bootstrap-datetimepicker.min.js'%}" charset="UTF-8"></script>
     <link href="{% static 'site/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
   {% endblock extrahead %}
   {% block container %}
-  <div class="container">
-	  <div id="row1" class="row row-graph">
+  <div class="container-fluid">
+	  <div id="row1" class="row">
 	  {% if devicename %}
 	  <h1>{% trans "Graphs for the device " %} {{ devicename }}</h1>
 	  {% else %}
 	  <h1>{% trans "Graphs from a device" %}</h1>
 	  {% endif %}
+	  
 	  </div>
-	  <div id="row2" class="row row-graph">
-		 {% crispy Form %}
+	  <div id="row2" class="row">
+	  	<div class="col-md-10 col-md-offset-2 col-sm-12">
+		  	<div class="col-md-6 col-sm-12">
+			 	{% crispy Form %}
+		 	</div>
+			<div class="col-md-4 col-sm-8">
+		  		{% include "_back.html" with back_to='Devices:home' %}
+	  	  	</div>
+	  	  	<hr>
+  	  	</div>
 	  </div>  
-	  <div id="base" class="row row-graph" >  	
+	  <div id="base" class="row" >  	
+	  </div>
+	  
+	  <div class="row col-md-6 col-md-offset-3 ">
+	  <hr>
+	  {% if message != '' %}
+	  <p class=" lead bg-info">{{ message }}</p>
+	  {% endif %}
 	  </div>
   </div>
   {% endblock container %}
@@ -121,8 +133,8 @@
     <script type="text/javascript">
     var language,datesFormat,decimalSeparator,thousandsSeparator;
 	var djangoData;
-	var graphic_class="col-sm-8 col-lg-9";
-	var statistics_class="col-sm-4 col-lg-3";
+	var graphic_class="col-lg-9 col-md-8 col-sm-8 col-xs-12";
+	var statistics_class="col-lg-3 col-md-4 col-sm-4 col-xs-12 bordered";
 	var ChartsHeight=500,ChartsHeightStep=50;
     var analog_Cols=[];
 	var digital_Cols=[];
@@ -157,6 +169,8 @@
     	try
     	{
 	    	djangoData = JSON.parse('{{ chart|safe }}');
+	    	if (djangoData.length!=0)
+	    	{
 	    	var i;
             var totalTime={{ Form.toDate.value|date:'U' }}-{{ Form.fromDate.value|date:'U' }};
 	    	var base=document.getElementById('base');
@@ -352,10 +366,11 @@
 		    				}
 			    		}
 			    		
-			    	}			    	
-				}	    	 
-	    	}
-	    	convert_treeviews();
+				    	}			    	
+					}	    	 
+		    	}
+		    	convert_treeviews();
+    		}
     	}
     	catch(err)
     	{console.log('Error: ' + err.toString())}

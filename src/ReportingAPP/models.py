@@ -12,19 +12,13 @@ from .constants import DAILY_PERIODICITY,WEEKLY_PERIODICITY,MONTHLY_PERIODICITY,
                         NO_AGGREGATION,HOURLY_AGGREGATION,DAILY_AGGREGATION,MONTHLY_AGGREGATION,AGGREGATION_CHOICES
 
 
-class ReportModelManager(models.Manager):
-    def create_Report(self, ReportTitle,Periodicity,DataAggregation,ReportContentJSON):
-        Rep = self.create(ReportTitle=ReportTitle,Periodicity=Periodicity,DataAggregation=DataAggregation,ReportContentJSON=ReportContentJSON)
-        Rep.save()
         
-class ReportModel(models.Model):
+class Reports(models.Model):
     
-    ReportTitle = models.CharField(max_length=50,unique=True,error_messages={'unique':_("Invalid report title - This title already exists in the DB.")})
+    Title = models.CharField(max_length=50,unique=True,error_messages={'unique':_("Invalid report title - This title already exists in the DB.")})
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the report will be generated'),choices=PERIODICITY_CHOICES)
     DataAggregation= models.PositiveSmallIntegerField(help_text=_('Data directly from the DB or averaged over a period'),choices=AGGREGATION_CHOICES)
-    ReportContentJSON=models.CharField(help_text='Content of the report in JSON format', max_length=20000)
-    
-    objects = ReportModelManager()
+    ContentJSON=models.CharField(help_text='Content of the report in JSON format', max_length=20000)
     
     def checkTrigger(self):
         import datetime
@@ -72,21 +66,13 @@ class ReportModel(models.Model):
         
     class Meta:
         permissions = (
-            ("add_report", "Can configure and add reports"),
-            ("view_report", "Can view reports configured"),
-            ("view_plots", "Can see the historic plots from any device")
+            ("view_reports", "Can view reports configured"),
         )
         verbose_name = _('Report')
         verbose_name_plural = _('Reports')
 
-def path_reportfile_name(instance, filename):
-    import os
-    from django.conf import settings
-    filename, file_extension = os.path.splitext(filename)
-    return os.path.join(settings.MEDIA_ROOT,'Reports',instance.Report.ReportTitle+'_'+str(instance.fromDate).split('+')[0].split('.')[0]+'-'+str(instance.toDate).split('+')[0].split('.')[0] +file_extension)
-
 class ReportItems(models.Model):
-    Report = models.ForeignKey(ReportModel, on_delete=models.CASCADE)
+    Report = models.ForeignKey(Reports, on_delete=models.CASCADE)
     fromDate = models.DateTimeField(blank = True,editable=False,null=True)
     toDate = models.DateTimeField(blank = True,editable=False,null=True)
     data = models.CharField(help_text='Data of the report in JSON format', max_length=20000,null=True,blank=True)

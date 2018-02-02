@@ -229,39 +229,6 @@ def deleteReport(request,pk):
         
 @login_required
 @user_passes_test(lambda u: u.has_perm('Devices.add_report'))
-def reportbuilder(request,number=0):
-    
-    applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
-    form_data={'ReportTitle':'','Periodicity':2,'DataAggregation':0}
-    form=DevicesAPP.forms.ReportForm(form_data)  
-    if request.method == 'POST':
-        json_data=request.body.decode('utf-8')
-        #logger.info('Received the post! - '+ json_data)
-        data = json.loads(json_data)
-        #logger.info('JSON loaded OK')
-        ReportTitle=str(data[0]['report_title'])
-        Periodicity=data[0]['Periodicity']
-        DataAggregation=data[0]['DataAggregation']
-        ReportContentJSON=json_data
-        #logger.debug('Report content: ' + ReportContentJSON)             
-        form_data={'ReportTitle':ReportTitle,'Periodicity':Periodicity,'DataAggregation':DataAggregation,'ReportContentJSON':ReportContentJSON}
-        form=DevicesAPP.forms.ReportForm(form_data)
-        #logger.info('Trying to create a report with the title ' + ReportTitle) 
-        if form.is_valid(): 
-            #logger.info('Form is valid!')
-            REP=DevicesAPP.models.ReportModel.objects.create_Report(ReportTitle=ReportTitle,Periodicity=Periodicity,DataAggregation=DataAggregation,ReportContentJSON=ReportContentJSON)
-            
-            #applicationDBs.devicesDB.insert_row(SQL_statement=applicationDBs.devicesDB.SQLinsertReport_statement,row_values=(ReportTitle,ReportCode,ReportContentJSON))
-            return HttpResponse(json.dumps({'Confirmation': 'OK'})) 
-        else:
-            logger.error('Form error ' + str(form.errors))
-            return HttpResponse(json.dumps({'Error': form.errors})) 
-    else:
-        info=DevicesAPP.models.getAllVariables()
-        #logger.debug(info)       
-        return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps(info)})    
-    
-    return render(request, 'reportconfigurator.html', {'Form':form,'data': json.dumps({'Error':'Database is not reachable'})})    
 
 @login_required    
 def device_report(request):

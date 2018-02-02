@@ -1,0 +1,15 @@
+{% load staticfiles %}
+<tr> 
+	<td>{{ item.fromDate }}</td>
+	<td>{{ item.toDate }}</td>
+	<td>
+		<a class="btn btn-default btn-xs" href="{% url 'Reports:view' 'reportitems' item.pk %}" id="" role="button">
+			<img src="{% static 'site/img/Advanced_device_icon.png' %}" alt="view" height="100%" width="100%">
+		</a>
+	</td>
+	<td>
+		<a class="btn btn-default btn-xs" href="{% url 'Reports:delete' 'reportitems' item.pk %}" id="" role="button">
+			<img src="{% static 'site/img/delete.png' %}" alt="Delete" height="100%" width="100%">
+		</a>
+	</td>
+</tr>

@@ -1,0 +1,16 @@
+{% load staticfiles %}
+<tr> 
+	<td>{{ item.Title }}</td>
+	<td>{{ item.Periodicity }}</td>
+	<td>{{ item.Aggregation }}</td>
+	<td>
+		<a class="btn btn-primary-outline" href="{% url 'Reports:edit' 'reports' item.pk %}" id="" role="button">
+			<img src="{% static 'site/img/view.png' %}" alt="view" height="100%" width="100%">
+		</a>
+	</td>
+	<td>
+		<a class="btn btn-primary-outline" href="{% url 'Reports:delete' 'reports' item.pk %}" id="" role="button">
+			<img src="{% static 'site/img/delete.png' %}" alt="Delete" height="100%" width="100%">
+		</a>
+	</td>
+</tr>

@@ -14,20 +14,20 @@
 			<div class="panel-body">
 				{% if show_add_col == 1 %}
 					{% trans "ADD" as header %}
-					{% with permission_OK=var_permission_add link_to="Devices:add" icon='site/img/add.png' %}
-					{% include "Devices/_acordion_panel.html" %}
+					{% with permission_OK=var_permission_add link_to=link_add icon='site/img/add.png' %}
+					{% include "_acordion_panel.html" %}
 					{% endwith %}
 				{% endif %}
 				{% if show_view_col == 1 %}
 					{% trans "VIEW" as header %}
-					{% with permission_OK=var_permission_view link_to="Devices:view_all" icon='site/img/view.png' %}
-					{% include "Devices/_acordion_panel.html" %}
+					{% with permission_OK=var_permission_view link_to=link_view icon='site/img/view.png' %}
+					{% include "_acordion_panel.html" %}
 					{% endwith %}
 				{% endif %}
 				{% if show_graph_col == 1 %}
 					{% trans "GRAPHS" as header %}
-					{% with permission_OK=var_permission_graph link_to="Devices:graph" icon='site/img/graphs.png' %}
-					{% include "Devices/_acordion_panel.html" %}
+					{% with permission_OK=var_permission_graph link_to=link_graph icon='site/img/graphs.png' %}
+					{% include "_acordion_panel.html" %}
 					{% endwith %}
 				{% endif %}
 			</div>

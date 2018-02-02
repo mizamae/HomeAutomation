@@ -265,7 +265,16 @@ def viewGraphs(request,model):
 #                     logger.debug(json.dumps(chart))    
 #                      
 #                     charts.append(chart) 
-            return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html', {'devicename':devicename.replace('_',' '),'chart': json.dumps(charts),'Form':form_clean})
+            if charts==[]:
+                message=_('The device ') + DV.Name + _(' does not have any datagram defined.')+'\n' + \
+                        _('Please define a datagram for the device type ') + DV.DVT.Code + _(' and start polling to ') + \
+                        _('gather some data to be plotted.')
+            else:
+                message=''
+            return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html', {'devicename':devicename.replace('_',' '),
+                                                                          'chart': json.dumps(charts),
+                                                                          'message':message,
+                                                                          'Form':form_clean})
         else:
             return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html',{'Form': form})
     else:
@@ -342,16 +351,47 @@ def edit(request,model,pk):
     
     if request.method == 'POST': # the form has been submited
         form=FormModel(request.POST,action='edit',instance=Instance)
-        #form.setUser(user=request.user)
         if form.is_valid():
             form.save()
-            return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Message':' saved OK','Form':None}) 
+            return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Header1':Header1+' ' + str(Instance),
+                                                                       'GreenHead':message,
+                                                                       'RedMessages':[],
+                                                                       'ShowForm':False,
+                                                                       'TestMsg':FORM_ISVALID_MSG,
+                                                                       'Form': form
+                                                                       }) 
         else:
-            return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Form':form}) 
+            return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Header1':Header1+' ' + str(Instance),
+                                                                       'GreenMessages':[],
+                                                                       'RedMessages':[_('Something is wrong with the data provided'),],
+                                                                       'ShowForm':True,
+                                                                       'TestMsg':FORM_ISNOTVALID_MSG,
+                                                                       'Form': form
+                                                                       }) 
     else:
         form=FormModel(action='edit',instance=Instance)
-        return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Status':'Initial','Form': form}) 
 
+        return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Header1':Header1+' ' + str(Instance),
+                                                                   'GreenMessages':[],
+                                                                   'RedMessages':[],
+                                                                   'ShowForm':True,
+                                                                   'TestMsg':FORM_FIRST_RENDER_MSG,
+                                                                   'Form': form
+                                                                   })  
+
+def toggle(request,model,pk):
+    if not checkUserPermissions(request=request,action='toggle',model=model):
+        return HttpResponseRedirect(reverse('accounts:login'))
+    
+    data=modelSplitter(model=model)
+    Model=data['Model']
+    Instance = get_object_or_404(Model, pk=pk)
+    
+    if request.method == 'GET': 
+        Instance.toggle()
+        
+    return redirect(request.META['HTTP_REFERER'])
+    
 @login_required
 @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
 def AdvancedDevicePage(request,pk):

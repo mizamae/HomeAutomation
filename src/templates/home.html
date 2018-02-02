@@ -47,7 +47,7 @@
 		
 		{% trans "REPORTING APP" as app_name %}
 		{% trans "Here you can configure custom reports that can help you when analizing what is going on in your installation." as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.ReportingAPP.view app_name=app_name app_description=app_description app_url="Devices:home" app_icon='site/img/ReportingAPP_icon.png' %}
+		{% include "_appDashboard.html" with app_permission=perms.ReportingAPP.view app_name=app_name app_description=app_description app_url="Reports:home" app_icon='site/img/ReportingAPP_icon.png' %}
 </div>
 {% else %}
 	<div class="container home-container">

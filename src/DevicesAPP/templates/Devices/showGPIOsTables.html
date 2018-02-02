@@ -32,18 +32,19 @@
 		<h1>{% trans "Master GPIOs List" %}</h1>
 	    {% trans "Outputs" as header %}
        	{% trans "There are no registered outputs in the installation." as message_norows %}
-        {% include "Devices/_iotable.html" with header=header tableId="OUTs" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows %}
+        {% include "Devices/_mastergpios_table.html" with header=header tableId="OUTs" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows %}
         
         {% trans "Inputs" as header %}
        	{% trans "There are no registered inputs in the installation." as message_norows %}
-        {% include "Devices/_iotable.html" with header=header tableId="INs" colnumber=cols_table2 numrows=numrows_table2 rows=rows_table2 message_norows=message_norows %}
+        {% include "Devices/_mastergpios_table.html" with header=header tableId="INs" colnumber=cols_table2 numrows=numrows_table2 rows=rows_table2 message_norows=message_norows %}
         
         {% trans "Sensors" as header %}
        	{% trans "There are no registered sensor pins in the installation." as message_norows %}
-        {% include "Devices/_iotable.html" with header=header tableId="SENSORs" colnumber=cols_table3 numrows=numrows_table3 rows=rows_table3 message_norows=message_norows %}
+        {% include "Devices/_mastergpios_table.html" with header=header tableId="SENSORs" colnumber=cols_table3 numrows=numrows_table3 rows=rows_table3 message_norows=message_norows %}
         
-        
+        <div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
 	    {% include "_back.html" with back_to='Devices:home' %}
+	    </div>
     </div><!-- /.container -->
           
 {% endblock container %} 

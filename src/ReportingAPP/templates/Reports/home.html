@@ -20,109 +20,33 @@
 
 {% block container %}
 {% if user.is_authenticated %}
-<div class="container container-fluid home-container">
+<div class="container home-container">
+	<h1 style="text-align: center;">{% include "_brandname.html"  %}{% trans "REPORTING APP DASHBOARD" %}</h1>
+	{% with panelID="accordion1" collapseID="collapse1" %}
+	{% with show_add_col=1 show_view_col=1 link_add='Reports:add' link_view='Reports:view_all' %}
+	{% with var_permission_main=perms.ReportingAPP.view_reports var_permission_add=perms.ReportingAPP.add_reports var_permission_view=perms.ReportingAPP.view_reports %}
+	{% with var_header="REPORTS MANAGEMENT DASHBOARD" var_model='reports' %}
+	{% include "_appsmodel_acordion.html" %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
 	
-	{% if perms.DeviceTypes.view %}
-	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-		<div class="panel panel-default">
-			<div class="panel-heading" role="tab" id="heading1">
-				<h1 class="panel-title">
-					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse1" aria-expanded="true" aria-controls="collapse1">
-					{% trans "DEVICE TYPES MANAGEMENT DASHBOARD" %}
-					</a>
-				</h1>
-			</div>
-			<div id="collapse1" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading1">
-				<div class="panel-body">
-					<div id="collapse1" class="col-xs-4 col-md-3">
-						<h2 style="text-align: center;">{% trans "Add a Device type" %}</h2>
-						<p>
-						{% if perms.DeviceTypes.add %}
-							<a class="btn btn-primary" href="{% url 'Devices:add' 'devicetypes' %}" role="button">
-								<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
-							</a>
-						{% else %}
-							<a class="btn btn-primary disabled" href="" role="button">
-							<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
-							</a>
-						{% endif %}
-						</p>
-					</div>
-					<!-- <div id="collapse1" class="col-xs-4 col-md-3">
-						<h2 style="text-align: center;">{% trans "Edit a Device type" %}</h2>
-						<p>
-						{% if perms.DeviceTypes.view %}
-							<a class="btn btn-primary" href="{% url 'Devices:view_all' 'devicetypes' %}" role="button">
-							<img src="{% static 'site/img/modify.jpg' %}" alt="SC" height="100%" width="100%">
-							</a>
-						{% else %}
-							<a class="btn btn-primary disabled" href="" role="button">
-							<img src="{% static 'site/img/modify.jpg' %}" alt="SC" height="100%" width="100%">
-							</a>
-						{% endif %}
-						</p>
-					</div> -->
-				</div>
-			</div>
-		</div>
-	</div>
-	{% endif %}
+	{% with panelID="accordion2" collapseID="collapse2" %}
+	{% with var_permission_main=perms.ReportingAPP.view_devices var_permission_add=perms.ReportingAPP.add_devices %}
+	{% with var_permission_view=perms.ReportingAPP.view_devices var_permission_graph=perms.ReportingAPP.view_graphs %}
+	{% with var_header="REPORT ITEMs MANAGEMENT DASHBOARD" var_model='reportitems' %}
+	{% with  show_view_col=1 link_view='Reports:view_all' %}
+	{% include "_appsmodel_acordion.html"  %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
 	
-	{% if perms.Devices.view %}
-	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-		<div class="panel panel-default">
-			<div class="panel-heading" role="tab" id="heading2">
-				<h1 class="panel-title">
-					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse2" aria-expanded="true" aria-controls="collapse2">
-					{% trans "DEVICES MANAGEMENT DASHBOARD" %}
-					</a>
-				</h1>
-			</div>
-			<div id="collapse2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2">
-				<div class="panel-body">
-					<div id="collapse2" class="col-xs-4 col-md-3">
-						<h2 style="text-align: center;">{% trans "Add a Device" %}</h2>
-						<p>
-						{% if perms.Devices.add %}
-							<a class="btn btn-primary" href="{% url 'Devices:add' 'devices' %}" role="button">
-								<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
-							</a>
-						{% else %}
-							<a class="btn btn-primary disabled" href="" role="button">
-							<img src="{% static 'site/img/add.jpg' %}" alt="add" height="100%" width="100%">
-							</a>
-						{% endif %}
-						</p>
-					</div>
-					<div id="collapse2" class="col-xs-4 col-md-3">
-						<h2 style="text-align: center;">{% trans "View Devices" %}</h2>
-						<p>
-						{% if perms.Devices.view %}
-							<a class="btn btn-primary" href="{% url 'Devices:view_all' 'devices' %}" role="button">
-							<img src="{% static 'site/img/view.png' %}" alt="SC" height="100%" width="100%">
-							</a>
-						{% else %}
-							<a class="btn btn-primary disabled" href="" role="button">
-							<img src="{% static 'site/img/no_view.png' %}" alt="SC" height="100%" width="100%">
-							</a>
-						{% endif %}
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	{% endif %}
-	<hr>
-	<div class="row">
-		<div class="col-xs-6 col-md-3">
-			<h2>{% trans "Back" %}</h2>
-		      <p>
-		       <a class="btn btn-primary" href="{% url 'home' %}" role="button">
-		       	<img src="{% static 'site/img/back.jpg' %}" alt="back" height="100%" width="100%">
-		       </a>
-	       	</p>
-       	</div>
+	
+	<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+	{% include "_back.html" with back_to='home' %}
 	</div>
 </div>
     

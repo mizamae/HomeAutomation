@@ -95,6 +95,7 @@ INSTALLED_APPS = (
     'accounts',
     'HomeAutomation',
     'DevicesAPP',
+    'ReportingAPP',
     'Events',
 )
 

@@ -13,18 +13,26 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
     chart['cols']=[]
     i=0
     tempname=[]
+    tempnameEmpty=[]
     vars=''
+    tempStats={'number':5,'num_rows':[],'mean':[],'max':[],'min':[],'on_time':[],'off_time':[]}
     for name,type,label,plottype in zip(names,types,labels,plottypes):
-        #logger.info(str(name))
         if DB.checkIfColumnExist(table=table,column=name):
             vars+='"'+str(name)+'"'+','
             if type!=DTYPE_DIGITAL:
-                tempname.append({'label':label,'type':type,'plottype':plottype})
+                tempname.append({'name':name,'label':label,'type':type,'plottype':plottype})
             else:
                 labels=label.split('$')
-                tempname.append({'label':labels,'type':type,'plottype':plottype})
+                tempname.append({'name':name,'label':labels,'type':type,'plottype':plottype})
+            
+        else:
+            if type!=DTYPE_DIGITAL:
+                tempnameEmpty.append({'name':name,'label':label,'type':type,'plottype':plottype})
+            else:
+                labels=label.split('$')
+                tempnameEmpty.append({'name':name,'label':labels,'type':type,'plottype':plottype})
 
-    if vars!='':
+    if vars!='' and vars!='"timestamp",':
         vars=vars[:-1]
         chart['cols'].append(tempname)    
         
@@ -70,27 +78,25 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                 
         tempStats={'number':5,'num_rows':df.count(numeric_only=True).tolist(),'mean':[],'max':df.max(numeric_only=True).tolist(),'min':df.min(numeric_only=True).tolist(),'on_time':[],'off_time':[]}
         
-        for name,type in zip(names,types):
-            if type==DTYPE_DIGITAL:
+        for col in chart['cols'][0][1:]:
+            if col['type']==DTYPE_DIGITAL:
                 from utils.dataMangling import dec2bin
                         
                 try:
-                    df[name]=df[name].apply(func=dec2bin)
+                    df[col['name']]=df[col['name']].apply(func=dec2bin)
                     from HomeAutomation.models import AdditionalCalculationsModel
-                    kk=pd.DataFrame(df[name])
-                    CALC=AdditionalCalculationsModel(df=kk,key=name)
+                    kk=pd.DataFrame(df[col['name']])
+                    CALC=AdditionalCalculationsModel(df=kk,key=col['name'])
                     tempStats['on_time'].append(CALC.duty(level=True,absoluteValue=True))
                     tempStats['off_time'].append(CALC.duty(level=False,absoluteValue=True))
                 except KeyError:
                     tempStats['on_time'].append(None)
                     tempStats['off_time'].append(None)
-                
-    
                 tempStats['mean'].append(None)
             else:
                 try:
                     # AN ERROR CAN OCCUR IF THE VARIABLE HAS NO VALUE ALONG THE TIMESPAN
-                    tempStats['mean'].append(df_int[str(name)].mean())
+                    tempStats['mean'].append(df_int[str(col['name'])].mean())
                 except KeyError:
                     tempStats['mean'].append(None)
                 tempStats['on_time'].append(None)
@@ -105,5 +111,26 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
              
         chart['rows']=tempData
         chart['statistics']=tempStats
-        #print (str(chart))
+    else:
+        chart['cols'].append(tempnameEmpty)
+        chart['rows']=[]
+        row=[]
+        for timestamp in (fromDate,toDate):
+            row.append(timestamp.timestamp())
+            for col in chart['cols'][0][1:]:
+                if col['type']==DTYPE_DIGITAL:
+                    row.append([None,None,None,None,None,None,None,None])
+                    tempStats['on_time'].append([None,None,None,None,None,None,None,None])
+                    tempStats['off_time'].append([None,None,None,None,None,None,None,None])
+                else:
+                    row.append(None)
+                    tempStats['on_time'].append(None)
+                    tempStats['off_time'].append(None)
+                tempStats['mean'].append(None)
+                tempStats['max'].append(None)
+                tempStats['min'].append(None)
+                tempStats['num_rows'].append(2)
+            chart['rows'].append(row)
+            chart['statistics']=tempStats
+            row=[]
     return chart

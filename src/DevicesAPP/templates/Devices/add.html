@@ -39,7 +39,10 @@
 		{% else %}
 			<p class="lead">{{ Nothing_message }}</p>
 		{% endif %}
+		<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
 		{% include "_back.html" with back_to='Devices:home' %}
+		</div>
+		
 	</div>
 	<div class="hidden">{{ TestMsg }}</div>
 {% endblock container %}

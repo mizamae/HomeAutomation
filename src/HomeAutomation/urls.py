@@ -22,6 +22,8 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 import DevicesAPP.urls
 from DevicesAPP.constants import APP_TEMPLATE_NAMESPACE as DEVICESAPP_TEMPLATE_NAMESPACE
+import ReportingAPP.urls
+from ReportingAPP.constants import APP_TEMPLATE_NAMESPACE as REPORTINGAPP_TEMPLATE_NAMESPACE
 import accounts.urls
 import profiles.urls
 
@@ -36,8 +38,8 @@ urlpatterns = [
     url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^about/$', views.AboutPage.as_view(), name='about'),
     url(r'^'+DEVICESAPP_TEMPLATE_NAMESPACE+'/', include(DevicesAPP.urls, namespace=DEVICESAPP_TEMPLATE_NAMESPACE)),
+    url(r'^'+REPORTINGAPP_TEMPLATE_NAMESPACE+'/', include(ReportingAPP.urls, namespace=REPORTINGAPP_TEMPLATE_NAMESPACE)),
 
-    url(r'^repbuilder/(?P<number>.+)/$', views.reportbuilder, name='repbuilder'),
     
     
 

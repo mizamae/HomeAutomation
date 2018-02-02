@@ -1,1 +1,1 @@
-default_app_config = 'DevicesAPP.apps.DevicesAppConfig'
+default_app_config = 'ReportingAPP.apps.ReportingAppConfig'
