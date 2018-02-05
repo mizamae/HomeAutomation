@@ -16,11 +16,12 @@ from channels.binding.websockets import WebsocketBinding,WebsocketBindingWithMem
 
 from Events.consumers import PublishEvent
 
-import HomeAutomation.models
 import json
 import itertools
 import utils.BBDD
-from HomeAutomation.constants import REGISTERS_DB_PATH
+from MainAPP.constants import REGISTERS_DB_PATH
+import MainAPP.models
+
 from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
                         DEVICES_CONFIG_FILE,IP_OFFSET,POLLING_SCHEDULER_URL,\
@@ -38,7 +39,256 @@ from blaze.tests.test_sql import sql
 logger = logging.getLogger("project")
 
 
+class MainDeviceVars(models.Model):
+    
+    class Meta:
+        verbose_name = _('Main device var')
+        verbose_name_plural = _('Main device vars')  
+    
+    SQLcreateRegisterTable = ''' 
+                                CREATE TABLE IF NOT EXISTS $ (
+                                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    *
+                                    UNIQUE (timestamp)                    
+                                ); 
+                                '''  # the * will be replaced by the column names and $ by inputs or outputs
+    SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
+    
+    Label = models.CharField(max_length=50,unique=True,help_text=str(_('Unique identifier for the variable.')))
+    Value = models.DecimalField(max_digits=6, decimal_places=2,null=True,help_text=str(_('Value of the variable.')))
+    DataType= models.CharField(max_length=20,choices=DATATYPE_CHOICES,help_text=str(_('Type of data of the variable.')))
+    PlotType= models.PositiveSmallIntegerField(choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
+    Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')))
+    UserEditable = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.Label
+    
+    def __init__(self, *args, **kwargs):
+        super(MainDeviceVars, self).__init__(*args, **kwargs)
+    
+    def clean(self):
+        if self.DataType==DTYPE_DIGITAL:
+            self.DataType=DTYPE_INTEGER
+        
+    def store2DB(self):
+        '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
+        '''
+        self.full_clean()
+        super().save()
+        now=timezone.now()
+        self.update_value(newValue=self.Value,timestamp=now,writeDB=True,force=True)
+        
+    def update_value(self,newValue,timestamp=None,writeDB=True,force=False):
+        if newValue!=self.Value or force:
+            if writeDB:
+                now=timezone.now()
+                if timestamp==None:
+                    self.insertRegister(TimeStamp=now-datetime.timedelta(seconds=1))
+                
+            if newValue!=self.Value:
+                text=str(_('The value of the MainDeviceVar "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
+                PublishEvent(Severity=0,Text=text)
+                self.Value=newValue
+                self.save(update_fields=['Value'])
+            
+            if writeDB :
+                if timestamp==None:
+                    self.insertRegister(TimeStamp=now)
+                else:
+                    self.insertRegister(TimeStamp=timestamp)
+                
+            self.updateAutomationVars()
+            
+    def getInsertRegisterSQL(self):
+        sql=self.SQLinsertRegister
+        #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
+        struct=self.getStructure()
+        names=struct['names']
+        values=[]
+        valuesHolder='?,'
+        columns='timestamp,'
+        if len(names)>0:
+            for i,name in enumerate(names):
+                values.append(struct['values'][i])
+                columns+='"'+name+'",'
+                valuesHolder+='?,'
+        columns=columns[:-1]
+        valuesHolder=valuesHolder[:-1]
+        sql=sql.replace('%s','"'+self.getRegistersDBTableName()+'"').replace('*',columns).replace('?',valuesHolder)
+        return {'query':sql,'num_args':len(names),'values':values}
+    
+    def checkRegistersDB(self,Database):
+        
+        rows=Database.retrieve_DB_structure(fields='*')   #('table', 'devices', 'devices', 4, "CREATE TABLE devices...)
+        
+        required_DGs=[]
+        found=False
+        table_to_find=self.getRegistersDBTableName()
+        for row in rows:
+            if (row[1]==table_to_find):   # found the table in the DB
+                found=True
+                struct=self.getStructure()
+                Database.checkTableColumns(table=table_to_find,desiredColumns={'names':struct['names'],'datatypes':struct['datatypes']})
+                break
+        if found is not True:
+            self._createRegistersTable(Database=Database)
+            logger.info('The table '+table_to_find+' was not created.')
+    
+    def _createRegistersTable(self,Database):
+        """
+        Creates the table corresponding to the GPIO Direction
+        """
+        TableName=self.getRegistersDBTableName()
+
+        try:
+            struct=self.getStructure()
+            temp_string=''
+            for i in range(0,len(struct['names'])):
+                temp_string+='"'+struct['names'][i] + '" ' + struct['datatypes'][i] + ','
+            sql=self.SQLcreateRegisterTable.replace('*',temp_string).replace('$','"'+TableName+'"')
+            result=Database.executeTransactionWithCommit(SQLstatement=sql, arg=[])
+            if result==0:
+                logger.info('Succeded in creating the table "'+TableName+'"') 
+        except:
+            text = str(_("Error in create_MainVars_table: ")) + str(sys.exc_info()[1]) 
+            raise DevicesAppException(text)
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            
+    def insertRegister(self,TimeStamp,NULL=False):
+        """
+        INSERTS A REGISTER IN THE registersDB INTO THE APPROPIATE TABLE.
+        """
+        try:                              
+            TimeStamp=TimeStamp.replace(microsecond=0)
+            query=self.getInsertRegisterSQL()
+            sql=query['query']
+            num_args=query['num_args']
+            values=query['values']
+            if NULL==True:
+                logger.info('Inserted NULL values on MainVars ' + self.Label)
+                values=[]
+                for i in range(0,num_args):  
+                    values.append(None)
+            values.insert(0,TimeStamp)
+            from utils.BBDD import getRegistersDBInstance
+            DB=getRegistersDBInstance(year=TimeStamp.year)
+            self.checkRegistersDB(Database=DB)
+            DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
+        except:
+            raise DevicesAppException("Unexpected error in insert_MainVars_register:" + str(sys.exc_info()[1]))
+        
+    def updateAutomationVars(self):
+        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='Main')
+        
+        dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'Main','Table':self.getRegistersDBTableName(),'BitPos':None,'Sample':0}
+        try:
+            avar=AutomationVars.get(**dvar)
+        except:
+            avar=None
+            
+        if avar==None:
+            avar=MainAPP.models.AutomationVariables()
+            
+            avar.create(**dvar)
+        
+        avar.executeAutomationRules()
+    
+    def getRegistersDBTag(self):
+        return str(self.pk)
+    
+    def getLatestData(self,localized=True):
+        Data={}
+        name=self.getRegistersDBTag()
+        Data[name]={}
+        table=self.getRegistersDBTableName()
+        vars='"timestamp","'+name+'"'
+        sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+        from utils.BBDD import getRegistersDBInstance
+        DB=getRegistersDBInstance()
+        row=DB.executeTransaction(SQLstatement=sql)
+        if row != []:
+            row=row[0]
+            timestamp=row[0]
+            row=row[1]
+        else:
+            timestamp=None
+            row=None
+        if localized and timestamp!=None:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            timestamp = local_tz.localize(timestamp)
+            timestamp=timestamp+timestamp.utcoffset() 
+            
+        Data[name]['timestamp']=timestamp
+        Data[name]['value']=row
+        return Data
+    
+    @staticmethod
+    def getRegistersDBTableName():
+        return 'MainVariables'
+        
+    @classmethod
+    def getStructure(cls):
+        VARs=cls.objects.all()
+        values=[]
+        names=[]
+        types=[]
+        datatypes=[]
+        plottypes=[]
+        pks=[]
+        if VARs.count():
+            for instance in VARs:
+                pks.append(instance.pk)
+                values.append(instance.Value)
+                names.append(instance.getRegistersDBTag())
+                types.append(instance.DataType)
+                datatypes.append(instance.DataType)
+                plottypes.append(instance.PlotType)
+        return {'pk':pks,'names':names,'values':values,'types':types,'datatypes':datatypes,'plottypes':plottypes} 
+        
+    @classmethod
+    def getCharts(cls,fromDate,toDate):
+        charts=[]
+        VARs=cls.objects.all()
+        if VARs.count()>0:
+            names=[]
+            types=[]
+            labels=[]
+            plottypes=[]
+            for instance in VARs:
+                names.append(instance.getRegistersDBTag())
+                types.append(instance.DataType)
+                labels.append(instance.Label)
+                plottypes.append(instance.PlotType)
+                table=instance.getRegistersDBTableName()
+            
+            names.insert(0,'timestamp')
+            types.insert(0,'datetime')
+            labels.insert(0,'timestamp')
+            plottypes.insert(0,'timestamp')
+            
+            from .charting import generateChart
+            
+            chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
+                                labels=labels,plottypes=plottypes,sampletime=0)
+            charts.append(chart)
+        return charts
+    
+@receiver(post_save, sender=MainDeviceVars, dispatch_uid="update_MainDeviceVars")
+def update_MainDeviceVars(sender, instance, update_fields=[],**kwargs):
+    
+    if not kwargs['created']:   # an instance has been modified
+        #logger.info('Se ha modificado la variable local ' + str(instance) + ' al valor ' + str(instance.Value))
+        pass
+    else:
+        logger.info('Se ha creado la variable local ' + str(instance))
+    timestamp=timezone.now() #para hora con info UTC
+    #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
+    
 #set up GPIO using BCM numbering
+
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
     
@@ -68,12 +318,19 @@ class MasterGPIOs(models.Model):
     def __init__(self, *args, **kwargs):
         super(MasterGPIOs, self).__init__(*args, **kwargs)
     
+    def InputChangeEvent(self,*args):
+        newValue=int(GPIO.input(self.Pin))
+        self.update_value(newValue=newValue,timestamp=None,writeDB=True)
+        
     def store2DB(self):
         '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
         '''
         self.full_clean()
         super().save()
         now=timezone.now()
+        if self.Direction==GPIO_INPUT:
+            GPIO.setup(int(self.Pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+            self.Value=GPIO.input(int(self.Pin))
         self.update_value(newValue=self.Value,timestamp=now,writeDB=True,force=True)
         
     def setHigh(self):
@@ -96,7 +353,7 @@ class MasterGPIOs(models.Model):
         else:
             self.setHigh()
     
-    def getLatestData(self):
+    def getLatestData(self,localized=True):
         Data={}
         name=self.getRegistersDBTag()
         Data[name]={}
@@ -113,6 +370,12 @@ class MasterGPIOs(models.Model):
         else:
             timestamp=None
             row=None
+        if localized and timestamp!=None:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            timestamp = local_tz.localize(timestamp)
+            timestamp=timestamp+timestamp.utcoffset() 
+            
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
         return Data
@@ -254,15 +517,10 @@ class MasterGPIOs(models.Model):
             DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
         except:
             raise DevicesAppException("Unexpected error in insert_GPIO_register:" + str(sys.exc_info()[1]))
-        
-    def InputChangeEvent(self,*args):
-        val=GPIO.input(self.Pin)
-        newValue=int(val)
-        self.update_value(newValue=newValue,timestamp=None,writeDB=True)
     
     def updateAutomationVars(self):
         table=self.getRegistersDBTableName()
-        AutomationVars=HomeAutomation.models.AutomationVariablesModel.objects.filter(Device='Main')
+        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='Main')
         
         dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'Main','Table':table,'BitPos':None,'Sample':0}
         try:
@@ -271,7 +529,7 @@ class MasterGPIOs(models.Model):
             avar=None
             
         if avar==None:
-            avar=HomeAutomation.models.AutomationVariablesModel()
+            avar=MainAPP.models.AutomationVariables()
             avar.create(Label=dvar['Label'],Tag=dvar['Tag'],Device=dvar['Device'],Table=dvar['Table'],BitPos=dvar['BitPos'],Sample=dvar['Sample'])
         
         avar.executeAutomationRules()
@@ -308,7 +566,7 @@ class MasterGPIOs(models.Model):
     def deleteAutomationVars(self):
         table=self.getRegistersDBTableName()
         try:
-            avar=HomeAutomation.models.AutomationVariablesModel.objects.get(Device='Main',Tag=str(self.pk),Table=table)
+            avar=MainAPP.models.AutomationVariables.objects.get(Device='Main',Tag=str(self.pk),Table=table)
             avar.delete()
         except:
             pass
@@ -430,6 +688,7 @@ class DeviceTypes(models.Model):
 def delete_DeviceType(sender, instance,**kwargs):
     instance.Picture.delete(False)
         
+
 def initialize_polling_devices():
     from .tools import PollingScheduler
     scheduler=PollingScheduler(jobstoreUrl=POLLING_SCHEDULER_URL)
@@ -438,7 +697,7 @@ def initialize_polling_devices():
     if DVs.count()>0:
         for DV in DVs:
             DV.update_requests()
-            
+                        
 def request_callback(DV,DG,jobID,**kwargs): 
     if (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
         import DevicesAPP.callbacks
@@ -472,7 +731,7 @@ class Devices(models.Model):
     Name = models.CharField(help_text=str(_('Unique identifier of the device. Limited to 50 characters.')),
                             max_length=50,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
     IO = models.OneToOneField(MasterGPIOs,help_text=str(_('The pin of the Master unit to which the device is connected. Only applies to locally connected devices.')),
-                            on_delete=models.CASCADE,related_name='pin2device',unique=True,null=True,blank=True)
+                            on_delete=models.CASCADE,related_name='pin2device',unique=True,null=True,blank=True,limit_choices_to={'Direction': GPIO_SENSOR})
     Code = models.PositiveSmallIntegerField(help_text=str(_('Unique byte-type identifier of the device. It is used to identify the device within the communication frames.')),
                             unique=True,blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
     IP = models.GenericIPAddressField(protocol='IPv4', unique=True,blank=True,null=True,error_messages={'unique':_("Invalid IP - This IP already exists in the DB.")})
@@ -505,8 +764,12 @@ class Devices(models.Model):
     def __init__(self, *args, **kwargs):
         super(Devices, self).__init__(*args, **kwargs)
         
-    def save(self, *args, **kwargs):
-        super(Devices, self).save(*args, **kwargs)
+    def store2DB(self):
+        self.full_clean()
+        super().save() 
+        from utils.BBDD import getRegistersDBInstance
+        DB=getRegistersDBInstance(year=None)
+        self.createRegistersTables(Database=DB)
     
     @staticmethod
     def getScheduler():
@@ -684,7 +947,7 @@ class Devices(models.Model):
             tables=self.getRegistersDBTableName(DG=DG)
         return tables
     
-    def getLatestData(self):
+    def getLatestData(self,localized=True):
         DGs=Datagrams.objects.filter(DVT=self.DVT)
         if self.CustomLabels=='':
             self.setCustomLabels()
@@ -706,6 +969,11 @@ class Devices(models.Model):
                     row=row[0]
                     timestamp=row[0]
                     row=row[1:]
+                    if localized and timestamp!=None:
+                        from tzlocal import get_localzone
+                        local_tz=get_localzone()
+                        timestamp = local_tz.localize(timestamp)
+                        timestamp=timestamp+timestamp.utcoffset()
                 else:
                     timestamp=None
                     row=None
@@ -759,15 +1027,15 @@ class Devices(models.Model):
                     BitLabels=CustomVars[name].split('$')
                     if len(BitLabels)==8:
                         for i,bitLabel in enumerate(BitLabels):
-                            DeviceVars.append({'label':bitLabel,'name':name,'device':self.pk,'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime})
+                            DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime})
                     else:
                         raise DevicesAppException(str(_('The variable named '))+ name + str(_(' is registered as digital but does not have 8 bit labels chained by character "$" ')))
                 else:
-                    DeviceVars.append({'label':CustomVars[name],'name':name,'device':self.pk,'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime})
+                    DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime})
         return DeviceVars
     
     def updateAutomationVars(self):
-        AutomationVars=HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.pk)
+        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device=self.pk)
         DeviceVars=self.getDeviceVariables()
         for dvar in DeviceVars:
             try:
@@ -776,13 +1044,13 @@ class Devices(models.Model):
                 avar=None
                 
             if avar==None:
-                avar=HomeAutomation.models.AutomationVariablesModel()
+                avar=MainAPP.models.AutomationVariables()
                 avar.create(Label=dvar['label'],Tag=dvar['name'],Device=dvar['device'],Table=dvar['table'],BitPos=dvar['bit'],Sample=dvar['sample'])
             
             avar.executeAutomationRules()
             
     def deleteAutomationVars(self):
-        HomeAutomation.models.AutomationVariablesModel.objects.filter(Device=self.pk).delete()
+        MainAPP.models.AutomationVariables.objects.filter(Device=self.pk).delete()
             
     @staticmethod
     def parseDeviceConfFile(xmlroot):
@@ -1169,9 +1437,6 @@ class Devices(models.Model):
 @receiver(post_save, sender=Devices, dispatch_uid="update_Devices")
 def update_Devices(sender, instance, update_fields,**kwargs):
     if kwargs['created']:   # new instance is created
-        from utils.BBDD import getRegistersDBInstance
-        DB=getRegistersDBInstance(year=None)
-        instance.createRegistersTables(Database=DB)
         instance.update_requests()
                
 @receiver(post_delete, sender=Devices, dispatch_uid="delete_Devices")
@@ -1304,21 +1569,23 @@ class Datagrams(models.Model):
 
 @receiver(post_save, sender=Datagrams, dispatch_uid="update_Datagrams")
 def update_Datagrams(sender, instance, update_fields,**kwargs):
+    DVs=Devices.objects.filter(DVT=instance.DVT)
+    
     if not kwargs['created']:   # an instance has been modified
-        logger.info('Se ha modificado el datagram ' + str(instance.DeviceType)+"_"+str(instance))
-        DVs=Devices.objects.filter(Type=instance.DeviceType)
-        if DVs.count()>0:
-            for DV in DVs:
-                DV.updateAutomationVars()
-                from utils.BBDD import getRegistersDBInstance
-                DB=getRegistersDBInstance()
-                DV.checkRegistersDB(Database=DB)
-                DV.updateCustomLabels()
+        logger.info('Se ha modificado el datagram ' + str(instance.DVT)+"_"+str(instance))
+        
     else:
         logger.info('Se ha creado el datagram ' + str(instance.DVT)+"_"+str(instance))
         logger.info('Tiene ' + str(instance.ITMs.count())+' ' + (DatagramItems._meta.verbose_name.title() if (instance.ITMs.count()==1) else DatagramItems._meta.verbose_name_plural.title()))
         for item in instance.ITMs.all():
             logger.info('   - ' + str(item.Tag))
+    
+    if DVs.count()>0:
+        for DV in DVs:
+            DV.updateAutomationVars()
+            from utils.BBDD import getRegistersDBInstance
+            DB=getRegistersDBInstance()
+            DV.checkRegistersDB(Database=DB)
 
     
 class ItemOrdering(models.Model):
@@ -1327,7 +1594,7 @@ class ItemOrdering(models.Model):
     Order = models.PositiveSmallIntegerField(help_text='Position in the dataframe 1-based')
     
     def __str__(self):
-        return str(self.datagram) + ':' +str(self.order)
+        return str(self.DG) + ':' +str(self.Order)
         
     class Meta:
         verbose_name = _('Item')

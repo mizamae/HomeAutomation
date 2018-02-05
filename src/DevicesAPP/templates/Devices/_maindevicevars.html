@@ -1,0 +1,13 @@
+{% load i18n %}
+{% load staticfiles %}
+<tr> 
+    <td>{{ row.Label }}</td>
+    <td style="text-align: center;">{{ row.Value }} {{ row.Units }}</td>
+    <td style="text-align: center;">
+		{% if row.UserEditable and perms.DevicesAPP.change_maindevicevars %}
+		<a class="btn btn-primary-outline" href="{% url 'Devices:edit' 'maindevicevars' row.pk %}" role="button">
+			<img src="{% static 'site/img/view.png' %}" alt="Edit" height="50%" width="50%">
+		</a>
+		{% endif %}
+	</td>
+</tr>

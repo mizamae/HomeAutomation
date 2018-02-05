@@ -116,7 +116,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
         chart['rows']=[]
         row=[]
         for timestamp in (fromDate,toDate):
-            row.append(timestamp.timestamp())
+            row.append(timestamp.timestamp()*1000)  # this is to equalize the timestamp output to ms as above by pandas
             for col in chart['cols'][0][1:]:
                 if col['type']==DTYPE_DIGITAL:
                     row.append([None,None,None,None,None,None,None,None])

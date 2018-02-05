@@ -31,7 +31,6 @@ def PublishEvent(Severity,Text,Persistent=False):
                                             
 class EventModel_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
-        #logger.info("EventModel_updater original_message" + ":"+ str(content))
         EVT=EventModel.objects.get(pk=int(content['pk']))
         EVT.delete()
         

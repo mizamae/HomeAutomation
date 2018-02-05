@@ -2,9 +2,8 @@
 {% load staticfiles %}
 <div class="col-xs-6 col-md-4">
 	<h2 style="text-align: center;font-weight: bold;">{{app_name}}</h2>
-	<p>{{app_description}}</p>
-	<p></p>
-	<p style="text-align: center;">
+	<p class="lead">{{app_description}}</p>
+	<div class="col-xs-12" style="text-align: center;vertical-align:bottom;">
 	{% if app_permission %}
 		<a class="btn btn-primary-outline" href="{% url app_url %}" role="button">
 			<img src="{% static app_icon %}" alt="Not found" height="100%" width="100%">
@@ -14,5 +13,5 @@
 			<img src="{% static app_icon %}" alt="Not found" height="100%" width="100%">
 		</a>
 	{% endif %}
-	</p>
+	</div>
 </div>

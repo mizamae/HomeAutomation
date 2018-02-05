@@ -18,7 +18,7 @@ import redis_lock
 import multiprocessing
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 
-from HomeAutomation.constants import REGISTERS_DB_PATH
+from MainAPP.constants import REGISTERS_DB_PATH
 
 import logging
 logger = logging.getLogger("project")
@@ -56,7 +56,7 @@ class Database(object):
         return self.conn
     
     def _execute(self,SQLstatement,arg):
-        ''' THIS FUNCTION IS REQUIERED TO AVOID INTEGRITY ERROR WHEN TEO GPIOs ARE CHANGED AT THE SAME TIME
+        ''' THIS FUNCTION IS REQUIERED TO AVOID INTEGRITY ERROR WHEN TWO GPIOs ARE CHANGED AT THE SAME TIME
         '''
         try:
             cur=self.conn.cursor()
@@ -174,7 +174,32 @@ def getRegistersDBInstance(year=None):
         DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(year))
     DB=Database(location=DBPath)
     return DB
+
+def backupRegistersDB(year=None):
+    if year==None:
+        DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))
+    else:
+        DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(year))
+    from shutil import copyfile
+    try:
+        copyfile(src=DBPath, dst=DBPath+'.bkp')
+    except:
+        pass
+
+def restoreRegistersDB(src=None,year=None):
+    if src==None:
+        if year==None:
+            src=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))+'.bkp'
+        else:
+            src=REGISTERS_DB_PATH.replace("_XYEARX_",str(year))+'.bkp'
+    if year==None:
+        dst=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))
+    else:
+        dst=REGISTERS_DB_PATH.replace("_XYEARX_",str(year))
             
+    from shutil import copyfile
+    copyfile(src=src, dst=dst)
+                
 def compactRegistersDB(year=None):
     if year==None:
         DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))
@@ -188,5 +213,16 @@ def compactRegistersDB(year=None):
         DB.compact_table(table=table_name)
     size = os.path.getsize(DBPath)
     return {'initial_size':sizep,'final_size':size}
-                
-                        
+
+def createTSTDB():
+    '''THIS IS VALID FOR DevicesAPP.json fixture
+    '''
+    sql='CREATE TABLE IF NOT EXISTS "1_1" ( timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "1_1_1" integer, "2_1_1" float, "3_1_1" float, "4_1_1" float, UNIQUE (timestamp) )'
+    DB=getRegistersDBInstance()
+    DB.executeTransactionWithCommit(SQLstatement=sql)
+    sqlIns='INSERT INTO "1_1"(timestamp,"1_1_1","2_1_1","3_1_1","4_1_1") VALUES(?,?,?,?,?)'
+    DB.executeTransactionWithCommit(SQLstatement=sqlIns,arg=[datetime.datetime(2018, 2, 4, 20, 58, 31), 7, 3.25, 0.5, 3.5])
+    sql='CREATE TABLE IF NOT EXISTS "1_2" ( timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "5_1_2" float, UNIQUE (timestamp) )'
+    DB.executeTransactionWithCommit(SQLstatement=sql)
+    sqlIns='INSERT INTO "1_2"(timestamp,"5_1_2") VALUES(?,?)'
+    DB.executeTransactionWithCommit(SQLstatement=sqlIns,arg=[datetime.datetime(2018, 2, 4, 20, 58, 31), 230.3])

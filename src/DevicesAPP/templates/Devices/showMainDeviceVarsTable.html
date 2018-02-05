@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ block.super }}Power2U{% endblock %}
+    
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="home" %}
+{% endblock %}
+
+{% block navbar-right %}
+  {% if not user.is_authenticated %}
+<a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
+<!--<a class="btn btn-primary" href="{% url 'accounts:signup' %}" role="button">Sign up</a> -->
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block splash %}
+<br>
+{% endblock splash %}
+{% block extrahead %}
+    <style>
+    .btn {
+    	font-size: 10px;
+    }
+    
+    </style>
+{% endblock extrahead %}
+{% block container %}     
+    <div class="container">
+		<h1>{% trans "Main Device Vars List" %}</h1>
+        
+        {% include "Devices/_maindevicevars_table.html" with header='' tableId="mainvars" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows1 %}
+        
+        <div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+	    {% include "_back.html" with back_to='Devices:home' %}
+	    </div>
+    </div><!-- /.container -->
+          
+{% endblock container %} 
+
+{% block scripts %}
+<script>
+		var ws_path =  "/stream/DevicesAPP/";
+		console.log("Connecting to " + ws_path);
+		var webSocketBridge = new channels.WebSocketBridge();
+		webSocketBridge.connect(ws_path);
+		webSocketBridge.listen();
+		
+</script>
+	
+{% endblock scripts %}
+	

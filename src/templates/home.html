@@ -2,9 +2,6 @@
 {% load i18n %}
 {% load staticfiles %}
 
-
-
-
 {% block title %}{{ block.super }}Power2U{% endblock %}
 
 {% block navbar-left %}
@@ -41,13 +38,19 @@
 <div class="container home-container">
 <!-- Benefits of the Django application -->
 	<h1 style="text-align: center;">{% include "_brandname.html"  %}{% trans "APPLICATION SERVER DASHBOARD" %}</h1>
+	<div class="apps-row">
 		{% trans "DEVICES APP" as app_name %}
-		{% trans "Here you can add a new device to your installation. Additionally you can edit/modify any already existing device." as app_description %}
+		{% trans "" as app_description %}
 		{% include "_appDashboard.html" with app_permission=perms.DevicesAPP.view app_name=app_name app_description=app_description app_url="Devices:home" app_icon='site/img/DevicesAPP_icon.png' %}
 		
 		{% trans "REPORTING APP" as app_name %}
-		{% trans "Here you can configure custom reports that can help you when analizing what is going on in your installation." as app_description %}
+		{% trans "" as app_description %}
 		{% include "_appDashboard.html" with app_permission=perms.ReportingAPP.view app_name=app_name app_description=app_description app_url="Reports:home" app_icon='site/img/ReportingAPP_icon.png' %}
+
+		{% trans "CONFIGURATION" as app_name %}
+		{% trans "" as app_description %} 
+		{% include "_appDashboard.html" with app_permission=perms.HomeAutomation.view app_name=app_name app_description=app_description app_url="home" app_icon='site/img/configuration.png' %}
+	</div>
 </div>
 {% else %}
 	<div class="container home-container">

@@ -25,6 +25,67 @@ logger = logging.getLogger("project")
 FORMS_LABEL_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
 FORMS_FIELD_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
 
+class MainDeviceVarsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        instance=kwargs.get('instance',None)
+        try:
+            action=kwargs.pop('action')
+        except:
+            action='add'
+            
+        super().__init__(*args, **kwargs)
+        # If you pass FormHelper constructor a form instance
+        # It builds a default layout with all its fields
+        self.helper = FormHelper(self)
+        self.helper.labels_uppercase = True
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
+#         self.helper.form_id = 'id-DeviceForm'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method = 'post'
+        
+        if action=='add':
+            self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':add',args=['maindevicevars'])
+            buttons=FormActions(
+                    Submit('save', _('Save')),
+                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                )
+        elif action=='edit':
+            self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':edit',args=['maindevicevars',instance.pk])
+            buttons=FormActions(
+                    Submit('edit', _('Save changes')),
+                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                )
+        else:
+            raise DevicesAppException(_('The action parameter passed to the form MainDeviceVarsForm is not accepted. Action= ') + str(action))
+        
+        self.fields['Label'].label = _("Enter the label for the variable")
+        self.fields['DataType'].label = _("Set the datatype of the variable")
+        self.fields['Value'].label = _("Enter the value for the variable")
+        self.fields['Units'].label = _("Set the units of the variable")
+        self.fields['PlotType'].label = _("Set the type of plot for the variable")
+        
+        for field in self.fields:
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
+            else:
+                self.fields[field].widget.attrs.update({'class':'input-sm '})
+                
+        self.helper.layout = Layout(
+            Field('Label'),
+            Field('DataType'),
+            Field('Value'),
+            Field('Units'),
+            Field('PlotType'),
+            buttons
+            )
+        
+    class Meta:
+        model = models.MainDeviceVars
+        fields=['Label','DataType','Value','Units','PlotType']
+        
 class MasterGPIOsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         instance=kwargs.get('instance',None)

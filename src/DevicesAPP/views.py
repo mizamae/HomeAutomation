@@ -59,6 +59,13 @@ def modelSplitter(model):
         FormKwargs={'action':'add'}
         message=models.MasterGPIOs._meta.verbose_name.title()+ str(_(' saved OK'))
         lastAction='add'
+    elif model=='maindevicevars':
+        Header1 = models.MainDeviceVars._meta.verbose_name.title()
+        Model=models.MainDeviceVars
+        FormModel=forms.MainDeviceVarsForm
+        FormKwargs={'action':'add'}
+        message=models.MainDeviceVars._meta.verbose_name.title()+ str(_(' saved OK'))
+        lastAction='add'
     else:
         return None
     return {'Header1':Header1,'Model':Model,'FormModel':FormModel,'FormKwargs':FormKwargs,'message':message,'lastAction':lastAction}
@@ -240,31 +247,7 @@ def viewGraphs(request,model):
             else:
                 logger.info('The device is the Main Unit')
                 charts=models.MasterGPIOs.getCharts(fromDate=fromDate,toDate=toDate)
-#                 MainVars=HomeAutomation.models.MainDeviceVarModel.objects.all()
-#                          
-#                 if len(MainVars)>0:
-#                     table='MainVariables'
-#                     names=[]
-#                     types=[]
-#                     labels=[]
-#                     plottypes=[]
-#                     for Var in MainVars:
-#                         names.append(Var.pk)
-#                         types.append('analog')
-#                         labels.append(Var.Label)
-#                         plottypes.append(Var.PlotType)
-#                     
-#                     names.insert(0,'timestamp')
-#                     types.insert(0,'datetime')
-#                     labels.insert(0,'timestamp')
-#                     plottypes.insert(0,'timestamp')
-#                      
-#                     chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
-#                                         labels=labels,plottypes=plottypes,sampletime=0)
-#                      
-#                     logger.debug(json.dumps(chart))    
-#                      
-#                     charts.append(chart) 
+                charts.append(models.MainDeviceVars.getCharts(fromDate=fromDate,toDate=toDate))
             if charts==[]:
                 message=_('The device ') + DV.Name + _(' does not have any datagram defined.')+'\n' + \
                         _('Please define a datagram for the device type ') + DV.DVT.Code + _(' and start polling to ') + \
@@ -313,7 +296,7 @@ def viewList(request,model):
             RWs=Model.objects.all()
             numrows=RWs.count()
             message_norows=str(_('There are no ')) + data['Header1'] +str(_(' registered.'))
-            return render(request, APP_TEMPLATE_NAMESPACE+'/showList.html',{'Header1':Header1,
+            return render(request, APP_TEMPLATE_NAMESPACE+'/showDeviceTypeTable.html',{'Header1':Header1,
                                                                             'numrows_table1':numrows,
                                                                             'message_norows1':message_norows,
                                                                             'rows_table1':RWs
@@ -330,6 +313,15 @@ def viewList(request,model):
                                                                                'numrows_table2':numrows_in,'rows_table2':INs,'cols_table2':3,
                                                                                'numrows_table3':numrows_sensor,'rows_table3':SENSORs,'cols_table3':3,
                                                                                     })
+        elif Model == models.MainDeviceVars:
+            RWs=Model.objects.all()
+            numrows=RWs.count()
+            message_norows=str(_('There are no ')) + data['Header1'] +str(_(' registered.'))
+            return render(request, APP_TEMPLATE_NAMESPACE+'/showMainDeviceVarsTable.html',{'Header1':Header1,
+                                                                            'numrows_table1':numrows,
+                                                                            'message_norows1':message_norows,
+                                                                            'rows_table1':RWs
+                                                                            })
         else:
             return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
 
@@ -388,7 +380,7 @@ def toggle(request,model,pk):
     Instance = get_object_or_404(Model, pk=pk)
     
     if request.method == 'GET': 
-        Instance.toggle()
+        Instance.togglePolling()
         
     return redirect(request.META['HTTP_REFERER'])
     

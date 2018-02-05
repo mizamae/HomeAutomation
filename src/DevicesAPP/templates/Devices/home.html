@@ -54,6 +54,16 @@
 	{% endwith %}
 	{% endwith %}
 	
+	{% with panelID="accordion4" collapseID="collapse4" %}
+	{% with var_permission_main=perms.DevicesAPP.view_maindevicevars var_permission_add=perms.DevicesAPP.add_maindevicevars var_permission_view=perms.DevicesAPP.view_maindevicevars %}
+	{% with var_header="MAIN DEVICE VARS MANAGEMENT DASHBOARD" var_model='maindevicevars' %}
+	{% with show_add_col=1 show_view_col=1 link_add='Devices:add' link_view='Devices:view_all' %}
+	{% include "_appsmodel_acordion.html" %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+	
 	<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
 	{% include "_back.html" with back_to='home' %}
 	</div>

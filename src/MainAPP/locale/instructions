@@ -1,0 +1,15 @@
+# coding: utf-8
+
+in HomeAutomation\
+python c:\anaconda3\scripts\django-admin.py makemessages -l es ( eu para euskera. repetirlo en cada carpeta donde haya 'locale')
+python c:\anaconda3\scripts\django-admin.py compilemessages (repetirlo en cada carpeta donde haya 'locale')
+
+
+ñ --> &ntilde;
+¡ --> &iexcl;
+¿ --> &iquest;
+á --> &aacute;
+é --> &eacute; 
+í --> &iacute;
+ó --> &oacute;
+ú --> &uacute;

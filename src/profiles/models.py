@@ -53,16 +53,16 @@ class BaseProfile(models.Model):
 @receiver(post_save)
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
     if issubclass(sender, BaseProfile):
-        from DevicesAPP.models import Beacons
+        from DevicesAPP.models import Beacons,MainDeviceVars
         beacons=Beacons.objects.all()
-        from HomeAutomation.models import MainDeviceVarModel
+
         for beacon in beacons:
             label='Distance from ' + instance.user.name + ' to ' + str(beacon) 
             timestamp=timezone.now()
             try:
-                mainVar=MainDeviceVarModel.objects.get(Label=label)
+                mainVar=MainDeviceVars.objects.get(Label=label)
             except:
-                mainVar=MainDeviceVarModel(Label=label,Value='',Datatype=0,Units='km',UserEditable=False)
+                mainVar=MainDeviceVars(Label=label,Value='',Datatype=0,Units='km',UserEditable=False)
                 logger.info('Creating main Var ' + label)
 
             if instance.Latitude!=None and instance.Longitude!=None:

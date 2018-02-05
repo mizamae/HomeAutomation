@@ -4,12 +4,23 @@
     <td>{{ row.Name }}</td>
     <td>{{ second_col }}</td>
     <td>{{ row.DVT.Code }}</td>
-    {% if row.State == 0 %}
-        <td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>		        	
+    	{% if row.State == 0 %}
+       	<td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>
+        {% else %}
+	        {% if row.Error == '' %}
+        	<td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+	        {% else %}
+        	<td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ row.Error }}</font></b></td>
+	        {% endif %}
+        {% endif %}
         <td>
         {% if perms.DevicesAPP.change_state_devices %}
-            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ row.Name }}','Device_update','{{ tableId }}Table')" class="btn btn-primary-outline" id="" role="button">
-            	<img src="{% static 'site/img/power.png' %}" alt="Toggle state" height="100%" width="100%">
+            <a class="btn btn-primary-outline" href="{% url 'Devices:toggle' 'devices' row.pk %}" role="button">
+            	{% if row.State == 0 %}
+            	<img src="{% static 'site/img/play.png' %}" alt="Toggle state" height="100%" width="100%">
+            	{% else %}
+            	<img src="{% static 'site/img/stop.png' %}" alt="Toggle state" height="100%" width="100%">
+            	{% endif %}
             </a>
         {% else %}
         
@@ -17,30 +28,11 @@
         </td>
         <td>
         {% if perms.DevicesAPP.add_devices %}
-            <a id="Rdelete{{ forloop.counter }}" style="visibility:visible;" onclick="delete_Device('{{ row.Name }}')" class="btn btn-primary-outline" id="" role="button">
+            <a style="visibility:visible;" class="btn btn-primary-outline" role="button">
             	<img src="{% static 'site/img/delete.png' %}" alt="Delete" height="100%" width="100%">
             </a>	
         {% endif %}
         </td>
-    {% elif row.State == 1 %} 
-        {% if row.Error == '' %}
-        <td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
-        {% else %}
-        <td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ row.Error }}</font></b></td>
-        {% endif %}
-        <td>
-        {% if perms.DevicesAPP.change_state_devices %}
-            <a id="Rtoggle{{ forloop.counter }}" onclick="toggle_Device('{{ row.Name }}','Device_update','{{ tableId }}Table')" class="btn btn-primary-outline" id="" role="button">
-				<img src="{% static 'site/img/power.png' %}" alt="Toggle state" height="100%" width="100%">
-			</a>		        	
-        {% endif %}
-        </td>
-        <td>
-        {% if perms.DevicesAPP.add_devices %}
-            <a id="Rdelete{{ forloop.counter }}" style="visibility:hidden;" onclick="delete_Device('{{ row.Name }}')" class="btn btn-primary-outline" id="" role="button"><span class="glyphicon glyphicon-remove-circle"></span></a>	
-        {% endif %}
-        </td>
-    {% endif %} 
         <td>{{ row.LastUpdated }}</td>
         <td>
         {% if perms.DevicesAPP.view_devices %}

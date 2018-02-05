@@ -2,7 +2,7 @@ from channels import route_class
 from channels.routing import route
 from .consumers import ws_message
 from DevicesAPP.consumers import DevicesAPP_consumers 
-from HomeAutomation.consumers import System_consumers
+from MainAPP.consumers import System_consumers
 from profiles.consumers import userTracks_consumers,ws_add,ws_disconnect
 from Events.consumers import Event_consumers,ws_add,ws_disconnect
 
