@@ -33,7 +33,16 @@ PLOTTYPE_CHOICES=(
                     ('column',_('Bars')),
                     ('area',_('Area')),
                 )
-    
+
+SUBSYSTEM_HEATING=0
+SUBSYSTEM_GARDEN=1
+SUBSYSTEM_ALARM=2
+SUBSYSTEMS_CHOICES=(
+                    (SUBSYSTEM_HEATING,_('Heating/Cooling')),
+                    (SUBSYSTEM_GARDEN,_('Garden')),
+                    (SUBSYSTEM_ALARM,_('Alarm')),
+                )
+
 BOOTING_MSG=   '''
                 
                 

@@ -1,0 +1,34 @@
+{% load i18n %}
+<h3><b>{{ header }}</b></h3>
+<div id="{{ tableId }}list" class="table-responsive">
+	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
+	    <colgroup>
+	      <col class="col-lg-2"></col>
+	      <col class="col-lg-1"></col>
+	      <col class="col-lg-1"></col>
+	      <col class="col-lg-2"></col>
+	    </colgroup>
+	    <thead class="thead-inverse">
+	        <tr>
+	            <th>{% trans "Device name" %}</th>
+	            <th>{% trans "Device type" %}</th>
+	            <th>{% trans "Device state" %}</th>
+	            <th>{% trans "Last updated" %}</th>
+	        </tr>
+	     </thead>
+	     <tbody>
+	        
+	        {% for row in rows %}
+	        	{% if row.IP %}
+					{% include "Subsystems/_devices.html" %}
+				{% endif %}
+				{% if row.IO.Pin %}
+					{% include "Subsystems/_devices.html" %}
+				{% else %}
+        			{% include "Subsystems/_devices.html" %}
+		        {% endif %}
+	        	
+	        {% endfor %}
+		</tbody>
+	</table>
+</div>

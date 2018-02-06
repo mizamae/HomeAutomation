@@ -62,7 +62,7 @@ def checkReportAvailability():
 
 def updateWeekDay():
     import datetime
-    from HomeAutomation.models import MainDeviceVarModel
+    from MainAPP.models import MainDeviceVarModel
     timestamp=datetime.datetime.now()
     weekDay=timestamp.weekday()
     try:
@@ -89,7 +89,7 @@ def start_DailyTask():
 def checkCustomCalculations():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
-    from HomeAutomation.models import AdditionalCalculationsModel
+    from MainAPP.models import AdditionalCalculationsModel
     aCALCs=AdditionalCalculationsModel.objects.all()
     for aCALC in aCALCs:
         if aCALC.checkTrigger():
@@ -98,16 +98,16 @@ def checkCustomCalculations():
             
 def HourlyTask():
     import datetime
-    from HomeAutomation.models import MainDeviceVarModel
-    HomeAutomation.models.checkHourlySchedules(init=True)    
+    from MainAPP.models import MainDeviceVars
+    MainAPP.models.checkHourlySchedules(init=True)    
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
     try:
-        HourDay=MainDeviceVarModel.objects.get(Label='Hour of the day')
+        HourDay=MainDeviceVars.objects.get(Label='Hour of the day')
         HourDay.update_value(newValue=hourDay,writeDB=True)
         #HourDay.UserEditable=False
     except:
-        HourDay=MainDeviceVarModel(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H',UserEditable=False)
+        HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H',UserEditable=False)
         HourDay.save()
     #updateWeekDay()
     checkCustomCalculations()
@@ -116,7 +116,7 @@ def start_HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
     #HourlyTask()
-    #HomeAutomation.models.init_Rules()
+    #MainAPP.models.init_Rules()
     id='HourlyTask'
     scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
@@ -127,7 +127,7 @@ def start_HourlyTask():
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    #HomeAutomation.models.init_Rules()
+    #MainAPP.models.init_Rules()
     #HourlyTask()
     #updateWeekDay()
     from DevicesAPP.models import initialize_polling_devices

@@ -11,8 +11,9 @@ from Events.consumers import PublishEvent
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
+from django.contrib.contenttypes.fields import GenericRelation
 
-from MainAPP.constants import REGISTERS_DB_PATH
+from MainAPP.constants import REGISTERS_DB_PATH,SUBSYSTEMS_CHOICES
 import utils.BBDD
 
 import pandas as pd
@@ -23,6 +24,21 @@ import logging
 logger = logging.getLogger("project")
                                            
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+class Subsystems(models.Model):
+    class Meta:
+        verbose_name = _('Subsystem')
+        verbose_name_plural = _('Subsystems') 
+
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.CharField(max_length=50)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    Name = models.PositiveSmallIntegerField(choices=SUBSYSTEMS_CHOICES)
+
+    def __str__(self):
+        return self.get_Name_display()
     
 
 # class AdditionalCalculationsModel(models.Model):
@@ -376,20 +392,40 @@ class AutomationVariables(models.Model):
     Table = models.CharField(max_length=50)
     BitPos = models.PositiveSmallIntegerField(null=True,blank=True)
     Sample = models.PositiveSmallIntegerField(default=0)
+    Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
+    Subsystem = GenericRelation(Subsystems,related_query_name='automationvariables')
     
     def __str__(self):
         return self.Label
     
-    def create(self,Label,Tag,Device,Table,BitPos,Sample):
+    def store2DB(self):
+        self.full_clean()
+        super().save() 
+        
+    def create(self,Label,Tag,Device,Table,BitPos,Sample,Units):
         self.Label=Label
         self.Device=Device
         self.Tag=Tag
         self.Table=Table
         self.BitPos=BitPos
         self.Sample=Sample
-        self.full_clean()
-        super().save()
-    
+        self.Units=Units
+        self.store2DB()
+        
+    def checkSubsystem(self,Name):
+        SSYTMs=Subsystems.objects.filter(automationvariables=self)
+        exist=False
+        if SSYTMs.count():
+            for SSYTM in SSYTMs:
+                if SSYTM.Name==Name:
+                    exist=True
+                    break
+        return exist
+        
+    def createSubsystem(self,Name):
+        subsystem=Subsystems(Name=Name,content_object=self)
+        subsystem.save()
+        
     def getLatestData(self,localized=True):
         Data={}
         name=self.Tag
@@ -436,7 +472,7 @@ class AutomationVariables(models.Model):
         return {'conn':AppDB.registersDB.conn,'sql':sql}
         
     def executeAutomationRules(self):
-        rules=RuleItem.objects.filter((Q(Var1=self)) | (Q(Var2=self)))
+        rules=RuleItems.objects.filter((Q(Var1=self)) | (Q(Var2=self)))
         if len(rules)>0:
             for rule in rules:
                 if not '"ActionType": "z"' in rule.Rule.Action:
@@ -448,7 +484,7 @@ class AutomationVariables(models.Model):
 def update_AutomationVariables(sender, instance, update_fields,**kwargs):   
     pass
                 
-class RuleItem(models.Model):
+class RuleItems(models.Model):
     PREFIX_CHOICES=(
         ('',_('None')),
         ('not ',_('NOT'))
@@ -465,7 +501,7 @@ class RuleItem(models.Model):
         ('&',_('AND')),
         ('|',_('OR')),
     )
-    Rule = models.ForeignKey('MainAPP.AutomationRuleModel', on_delete=models.CASCADE)
+    Rule = models.ForeignKey('MainAPP.AutomationRules', on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(help_text=_('Order of execution'))
     PreVar1 = models.CharField(choices=PREFIX_CHOICES,default='',max_length=3,blank=True)
     Var1= models.ForeignKey(AutomationVariables,related_name='var1')
@@ -533,7 +569,7 @@ class RuleItem(models.Model):
         verbose_name = _('Automation expression')
         verbose_name_plural = _('Automation expressions')
                 
-class AutomationRuleModel(models.Model):
+class AutomationRules(models.Model):
     BOOL_OPERATOR_CHOICES=(
         ('&',_('AND')),
         ('|',_('OR')),
@@ -545,9 +581,9 @@ class AutomationRuleModel(models.Model):
     Identifier = models.CharField(max_length=50,unique=True)
     Active = models.BooleanField(default=False)
     OnError = models.PositiveSmallIntegerField(choices=ONERROR_CHOICES,default=0)
-    PreviousRule= models.ForeignKey('AutomationRuleModel',related_name='previous_rule',blank=True,null=True)
+    PreviousRule= models.ForeignKey('AutomationRules',related_name='previous_rule',blank=True,null=True)
     OperatorPrev = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
-    RuleItems = models.ManyToManyField(RuleItem)
+    RuleItems = models.ManyToManyField(RuleItems)
     Action = models.CharField(max_length=500,blank=True) # receives a json object describind the action desired
     
     _timestamp1=None
@@ -578,7 +614,7 @@ class AutomationRuleModel(models.Model):
                 result=self.PreviousRule.evaluate()
                 evaluableTRUE+=str(result['TRUE']) + ' ' + self.OperatorPrev
                 evaluableFALSE+=str(result['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
-            RuleItems=RuleItem.objects.filter(Rule=self.pk).order_by('order')
+            RuleItems=RuleItems.objects.filter(Rule=self.pk).order_by('order')
             if len(RuleItems):
                 errors=[]
                 for item in RuleItems:
@@ -661,7 +697,7 @@ class AutomationRuleModel(models.Model):
             ("edit_rules", "Can create and edit a rule")
         )
         
-@receiver(post_save, sender=AutomationRuleModel, dispatch_uid="update_AutomationRuleModel")
+@receiver(post_save, sender=AutomationRules, dispatch_uid="update_AutomationRuleModel")
 def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):    
     if not kwargs['created']:   # an instance has been modified
         logger.info('Se ha modificado la regla de automatizacion ' + str(instance.Identifier))
@@ -671,7 +707,7 @@ def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):
         instance.execute(error=True)
         
 def init_Rules():
-    RULs=AutomationRuleModel.objects.filter(Active=True)
+    RULs=AutomationRules.objects.filter(Active=True)
     if len(RULs)>0:
         for RUL in RULs:
             if not '"ActionType": "z"' in RUL.Action:

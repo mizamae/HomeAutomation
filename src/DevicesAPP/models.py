@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 from django.db.models.signals import m2m_changed
+from django.contrib.contenttypes.fields import GenericRelation
 
 import datetime
 
@@ -60,6 +61,8 @@ class MainDeviceVars(models.Model):
     PlotType= models.PositiveSmallIntegerField(choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')))
     UserEditable = models.BooleanField(default=True)
+    
+    Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='mainvars')
     
     def __str__(self):
         return self.Label
@@ -180,18 +183,26 @@ class MainDeviceVars(models.Model):
         
     def updateAutomationVars(self):
         AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='Main')
-        
-        dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'Main','Table':self.getRegistersDBTableName(),'BitPos':None,'Sample':0}
+        SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(mainvars=self)
+        dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'MainVars','Table':self.getRegistersDBTableName(),'BitPos':None,'Sample':0,'Units':self.Units}
         try:
-            avar=AutomationVars.get(**dvar)
+            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],Device=dvar['Device'],BitPos=dvar['BitPos'])
+            avar.Label=dvar['label']
+            avar.Units=dvar['units']
+            avar.store2DB()
         except:
             avar=None
             
         if avar==None:
             avar=MainAPP.models.AutomationVariables()
-            
             avar.create(**dvar)
         
+        if SUBSYSTEMs.count():
+            for SUBS in SUBSYSTEMs:
+                found=avar.checkSubsystem(Name=SUBS.Name)
+                if found==False:
+                    avar.createSubsystem(Name=SUBS.Name)
+                        
         avar.executeAutomationRules()
     
     def getRegistersDBTag(self):
@@ -314,6 +325,8 @@ class MasterGPIOs(models.Model):
     Label = models.CharField(max_length=50,unique=True,help_text=str(_('Label describing the GPIO functional meaning.')))
     Direction = models.PositiveSmallIntegerField(choices=GPIO_DIRECTION_CHOICES,help_text=str(_('Choose wether the GPIO is to be an output, an input or a sensor interface.')))
     Value = models.PositiveSmallIntegerField(default=0,choices=GPIOVALUE_CHOICES,help_text=str(_('Set the value of the GPIO (only applies to outputs)')))
+    
+    Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='gpios')
     
     def __init__(self, *args, **kwargs):
         super(MasterGPIOs, self).__init__(*args, **kwargs)
@@ -520,18 +533,26 @@ class MasterGPIOs(models.Model):
     
     def updateAutomationVars(self):
         table=self.getRegistersDBTableName()
-        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='Main')
-        
-        dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'Main','Table':table,'BitPos':None,'Sample':0}
+        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='MainGPIOs')
+        SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(gpios=self)
+        dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'MainGPIOs','Table':table,'BitPos':None,'Sample':0}
         try:
             avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
+            avar.Label=dvar['label']
+            avar.store2DB()
         except:
             avar=None
-            
+        
         if avar==None:
             avar=MainAPP.models.AutomationVariables()
             avar.create(Label=dvar['Label'],Tag=dvar['Tag'],Device=dvar['Device'],Table=dvar['Table'],BitPos=dvar['BitPos'],Sample=dvar['Sample'])
-        
+            
+        if SUBSYSTEMs.count():
+            for SUBS in SUBSYSTEMs:
+                found=avar.checkSubsystem(Name=SUBS.Name)
+                if found==False:
+                    avar.createSubsystem(Name=SUBS.Name)
+
         avar.executeAutomationRules()
     
     @classmethod
@@ -638,12 +659,12 @@ def delete_MasterGPIOs(sender, instance,**kwargs):
 class MasterGPIOsBinding(WebsocketBinding):
 
     model = MasterGPIOs
-    stream = "GPIO_values"
+    stream = "GPIO_params"
     fields = ["Pin","Label","Direction","Value"]
 
     @classmethod
     def group_names(cls, *args, **kwargs):
-        return ["GPIO-values",]
+        return ["GPIO-models",]
 
     def has_permission(self, user, action, pk):
         return True
@@ -745,6 +766,8 @@ class Devices(models.Model):
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
     CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     Error= models.CharField(max_length=100,default='',blank=True)
+    
+    Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='devices')
     
     def _deviceType2Binding(self):
         '''THIS IS TO SEND ON THE DTATABINDING SOCKET THE CODE OF THE DEVICE TYPE. ON DEFAULT, IT SENDS THE pk '''
@@ -1008,6 +1031,7 @@ class Devices(models.Model):
             datagram=DG.getStructure()
             names=datagram['names']
             types=datagram['types']
+            units=datagram['units']
             table=self.getRegistersTables(DG=DG)
             if CustomLabels!=None:
                 CustomVars=CustomLabels[str(DG.pk)]
@@ -1022,31 +1046,42 @@ class Devices(models.Model):
                     else:
                         CustomVars[name]=name
                 
-            for name,type in zip(names,types):
+            for name,type,unit in zip(names,types,units):
                 if type==DTYPE_DIGITAL:
                     BitLabels=CustomVars[name].split('$')
                     if len(BitLabels)==8:
                         for i,bitLabel in enumerate(BitLabels):
-                            DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime})
+                            DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
                     else:
                         raise DevicesAppException(str(_('The variable named '))+ name + str(_(' is registered as digital but does not have 8 bit labels chained by character "$" ')))
                 else:
-                    DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime})
+                    DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime,'units':unit})
         return DeviceVars
     
     def updateAutomationVars(self):
         AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device=self.pk)
         DeviceVars=self.getDeviceVariables()
+        SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(devices=self)
         for dvar in DeviceVars:
             try:
                 avar=AutomationVars.get(Tag=dvar['name'],Table=dvar['table'],Device=dvar['device'],BitPos=dvar['bit'])
+                avar.Label=dvar['label']
+                avar.Units=dvar['units']
+                avar.store2DB()
             except:
                 avar=None
                 
             if avar==None:
                 avar=MainAPP.models.AutomationVariables()
-                avar.create(Label=dvar['label'],Tag=dvar['name'],Device=dvar['device'],Table=dvar['table'],BitPos=dvar['bit'],Sample=dvar['sample'])
+                avar.create(Label=dvar['label'],Tag=dvar['name'],Device=dvar['device'],
+                                Table=dvar['table'],BitPos=dvar['bit'],Sample=dvar['sample'],Units=dvar['units'])
             
+            if SUBSYSTEMs.count():
+                for SUBS in SUBSYSTEMs:
+                    found=avar.checkSubsystem(Name=SUBS.Name)
+                    if found==False:
+                        avar.createSubsystem(Name=SUBS.Name)
+                        
             avar.executeAutomationRules()
             
     def deleteAutomationVars(self):
@@ -1448,7 +1483,7 @@ class DevicesBinding(WebsocketBindingWithMembers):
 
     model = Devices
     stream = "Device_params"
-    fields = ["Name","IO","Code","IP","Type","Sampletime","State","LastUpdated","Error","devicetype2str"]
+    fields = ["Name","IO","Code","IP","Type","Sampletime","State","LastUpdated","Error"]
 
     @classmethod
     def group_names(cls, *args, **kwargs):

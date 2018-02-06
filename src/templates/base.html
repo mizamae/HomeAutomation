@@ -58,6 +58,7 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% block navbar-right %}
+            	{% if user.is_authenticated %}
             	<div class="btn-group nav navbar-nav language menu">
 				  <button class="btn btn-outline-secondary dropdown-toggle btn-link" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				    {% get_language_info for LANGUAGE_CODE as lang %}
@@ -82,8 +83,7 @@
 				              {% endfor %}
 				      </form>
 				  </div>
-				</div>
-              {% if user.is_authenticated %}   
+				</div>  
                 <li><a id="RT_status"></a></li>
               	{% get_current_timezone as TIME_ZONE %}
                 <li><a>TZ: {{ TIME_ZONE }}</a></li>
@@ -102,6 +102,8 @@
 	                    <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
 	                  </ul>
                 </li>
+               {% else %}
+               <a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
               {% endif %}
             {% endblock %}
           </ul>
@@ -142,10 +144,13 @@
       <div class="container">
             <div class="footer">
         <div class="row">
-          <div class="col-lg-6">
+          <div class="col-lg-4 col-md-4">
               <p>&copy; {% include "_brandname.html" %} {% now 'Y' %}</p>
           </div>
-          <div class="col-lg-6 text-right">
+          <div class="col-lg-4 col-md-4">
+              <p id="systemTime"></p>
+          </div>
+          <div class="col-lg-4 col-md-4 text-right">
             Connect with us on
             <a href="#"><i class="fa fa-facebook"></i> Facebook</a> or
             <a href="#"><i class="fa fa-twitter"></i> Twitter</a>
@@ -168,4 +173,59 @@
   </body>
 </html>
 
+{% block system_scripts %}
 
+<script>
+		var ws_path =  "/stream/System/";
+		console.log("Connecting to " + ws_path);
+		var webSocketSystemBridge = new channels.WebSocketBridge();
+		webSocketSystemBridge.connect(ws_path);
+		webSocketSystemBridge.listen();
+			
+		$(function () {
+            
+			webSocketSystemBridge.demultiplex('datetime_query', function(payload, streamName) {
+                // Handle different actions
+                if (payload.action == "query_datetime") {
+                	console.log("System UTC datetime is " + payload.date + " " + payload.time);
+                	label=document.getElementById('systemTime');
+                    system_hours=payload.time.split(":")[0];
+                    system_minutes=payload.time.split(":")[1];
+                    var currentdate = new Date();
+                    if ((currentdate.getUTCHours()!=system_hours)||(currentdate.getUTCMinutes()!=system_minutes))
+                    {	label.style.color="Red";
+                    	label.innerHTML= payload.date + " " + payload.time;
+                    	restart_NTP();
+                    }
+                    else{label.innerHTML="";}
+                } else {
+                    console.log("Unknown action " + payload.action);
+                }
+            });
+         // Helpful debugging
+            webSocketSystemBridge.socket.addEventListener('open', 
+                function() { 
+                    console.log("Connected to system socket"); 
+                    query_system_datetime();
+            });
+            webSocketSystemBridge.socket.addEventListener('close', 
+                function() { 
+                    console.log("Disconnected to system socket"); 
+            });
+            
+        });
+		function query_system_datetime() {
+			webSocketSystemBridge.stream('datetime_query').send({
+	                        "action": "query_datetime",
+	                        "data": {}
+	                    });
+				}
+		function restart_NTP() {
+			webSocketSystemBridge.stream('datetime_reset').send({
+		                    "action": "reset_datetime",
+		                    "data": {}
+		                });
+		}
+		window.setInterval(function(){query_system_datetime();}, 60*1000);
+</script>
+{% endblock system_scripts %}

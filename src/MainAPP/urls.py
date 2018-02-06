@@ -24,6 +24,8 @@ import DevicesAPP.urls
 from DevicesAPP.constants import APP_TEMPLATE_NAMESPACE as DEVICESAPP_TEMPLATE_NAMESPACE
 import ReportingAPP.urls
 from ReportingAPP.constants import APP_TEMPLATE_NAMESPACE as REPORTINGAPP_TEMPLATE_NAMESPACE
+import Subsystems.urls
+from Subsystems.constants import APP_TEMPLATE_NAMESPACE as SUBSYSTEMAPP_TEMPLATE_NAMESPACE
 import accounts.urls
 import profiles.urls
 
@@ -39,7 +41,7 @@ urlpatterns = [
     url(r'^about/$', views.AboutPage.as_view(), name='about'),
     url(r'^'+DEVICESAPP_TEMPLATE_NAMESPACE+'/', include(DevicesAPP.urls, namespace=DEVICESAPP_TEMPLATE_NAMESPACE)),
     url(r'^'+REPORTINGAPP_TEMPLATE_NAMESPACE+'/', include(ReportingAPP.urls, namespace=REPORTINGAPP_TEMPLATE_NAMESPACE)),
-
+    url(r'^'+SUBSYSTEMAPP_TEMPLATE_NAMESPACE+'/', include(Subsystems.urls, namespace=SUBSYSTEMAPP_TEMPLATE_NAMESPACE)),
     
     
 

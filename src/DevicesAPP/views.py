@@ -31,6 +31,7 @@ from .constants import APP_TEMPLATE_NAMESPACE,LOCAL_CONNECTION,REMOTE_TCP_CONNEC
                         FORM_FIRST_RENDER_MSG,FORM_ISVALID_MSG,FORM_ISNOTVALID_MSG,SCAN_DEVICENOFOUND,SCAN_DEVICEFOUND,TESTS_USER_AGENT,\
                         GPIO_INPUT,GPIO_OUTPUT,GPIO_SENSOR
 
+LOGIN_PAGE='accounts:login'
 def home(request):
     if request.method == 'POST': # the form has been submited
         return render(request, APP_TEMPLATE_NAMESPACE+'/home.html') 
@@ -81,7 +82,7 @@ def checkUserPermissions(request,action,model):
 def add(request,model):
     
     if not checkUserPermissions(request=request,action='add',model=model):
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
         
     data=modelSplitter(model=model)
     if data==None:
@@ -220,7 +221,7 @@ def scan(request,model):
 
 def viewGraphs(request,model):
     if not checkUserPermissions(request=request,action='view',model=model):
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
     if request.method == 'POST': # the form has been submited
         form = forms.DeviceGraphs(request.POST)
         
@@ -266,7 +267,7 @@ def viewGraphs(request,model):
     
 def viewList(request,model):
     if not checkUserPermissions(request=request,action='view',model=model):
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
     
     data=modelSplitter(model=model)
     if data==None:
@@ -327,7 +328,7 @@ def viewList(request,model):
 
 def edit(request,model,pk):
     if not checkUserPermissions(request=request,action='change',model=model):
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
     
     data=modelSplitter(model=model)
     if data==None:
@@ -336,6 +337,7 @@ def edit(request,model,pk):
         Header1=str(_('Editing a ')) +data['Header1']
         Model=data['Model']
         FormModel=data['FormModel']
+        FormKwargs=data['FormKwargs']
         message=data['message']
         lastAction=data['lastAction']
     
@@ -344,11 +346,17 @@ def edit(request,model,pk):
     if request.method == 'POST': # the form has been submited
         form=FormModel(request.POST,action='edit',instance=Instance)
         if form.is_valid():
-            form.save()
+            instance=form.save()
+            if lastAction!='add':
+                FormKwargs['action']=lastAction
+                ShowForm=True
+            else:
+                ShowForm=False
+            form=FormModel(instance=instance,**FormKwargs)
             return render(request, APP_TEMPLATE_NAMESPACE+'/add.html',{'Header1':Header1+' ' + str(Instance),
                                                                        'GreenHead':message,
                                                                        'RedMessages':[],
-                                                                       'ShowForm':False,
+                                                                       'ShowForm':ShowForm,
                                                                        'TestMsg':FORM_ISVALID_MSG,
                                                                        'Form': form
                                                                        }) 
@@ -373,14 +381,19 @@ def edit(request,model,pk):
 
 def toggle(request,model,pk):
     if not checkUserPermissions(request=request,action='toggle',model=model):
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
     
     data=modelSplitter(model=model)
     Model=data['Model']
     Instance = get_object_or_404(Model, pk=pk)
     
-    if request.method == 'GET': 
-        Instance.togglePolling()
+    if request.method == 'GET':
+        if model=='devices':
+            Instance.togglePolling()
+        elif model=='mastergpios':
+            Instance.toggle()
+        else:
+            return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
         
     return redirect(request.META['HTTP_REFERER'])
     

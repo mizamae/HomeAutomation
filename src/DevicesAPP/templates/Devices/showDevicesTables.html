@@ -62,13 +62,13 @@
 <script>
 		var ws_path =  "/stream/DevicesAPP/";
 		console.log("Connecting to " + ws_path);
-		var webSocketBridge = new channels.WebSocketBridge();
-		webSocketBridge.connect(ws_path);
-		webSocketBridge.listen();
+		var webSocketDevicesBridge = new channels.WebSocketBridge();
+		webSocketDevicesBridge.connect(ws_path);
+		webSocketDevicesBridge.listen();
 			
         $(function () {
             
-            webSocketBridge.demultiplex('Device_params', function(payload, streamName) {
+        	webSocketDevicesBridge.demultiplex('Device_params', function(payload, streamName) {
                 // Handle different actions
                 if (payload.action == "create") {
                     // Create the new GPIO model
@@ -115,14 +115,14 @@
             
             
             // Helpful debugging
-            webSocketBridge.socket.addEventListener('open', 
+            webSocketDevicesBridge.socket.addEventListener('open', 
                 function() { 
                     console.log("Connected to notification socket"); 
                     label=document.getElementById('RT_status');
                     label.style.color="LimeGreen";
                     label.innerHTML="Connected to RT engine"
             });
-            webSocketBridge.socket.addEventListener('close', 
+            webSocketDevicesBridge.socket.addEventListener('close', 
                 function() { 
                     console.log("Disconnected to notification socket"); 
                     label=document.getElementById('RT_status');
@@ -187,7 +187,7 @@
 		
 		function toggle_Device(DeviceName,stream,table) {
 			var table=document.getElementById(table);
-			webSocketBridge.stream(stream).send({
+			webSocketDevicesBridge.stream(stream).send({
                     "pk": 0,
                     "action": "update",
                     "data": {
@@ -260,7 +260,7 @@
 		}
         
         function delete_Device(DeviceName) {
-			webSocketBridge.stream('Device_delete').send({
+        	webSocketDevicesBridge.stream('Device_delete').send({
                     "pk": 0,
                     "action": "delete",
                     "data": {

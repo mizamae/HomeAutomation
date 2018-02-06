@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+{% block title %}{{ block.super }}Profile{% endblock %}
+
+<!-- Benefits of the Django application -->
+
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+{% if user.is_authenticated %}
+<div class="container home-container">
+	<h1 style="text-align: center;">{% include "_brandname.html"  %}{% trans "SUBSYSTEMS" %}</h1>
+	{% if DVs %}
+		{% with panelID="accordion1" collapseID="collapse1" %}
+		{% with var_permission_main=perms.DevicesAPP.view_devices var_permission_add=perms.DevicesAPP.add_devices var_permission_view=perms.DevicesAPP.view_devices %}
+		{% with var_header="DEVICES LINKED TO HEATING" rows=DVs model='devices' %}
+		{% include "Subsystems/_subsystems_acordion.html" %}
+		{% endwith %}
+		{% endwith %}
+		{% endwith %}
+	{% endif %}
+	
+	{% if VARs %}
+		{% with panelID="accordion2" collapseID="collapse2" %}
+		{% with var_permission_main=perms.MainAPP.view_automationvars var_permission_view=perms.DevicesAPP.view_automationvars %}
+		{% with var_header="VARIABLES LINKED TO HEATING" rows=VARs model='automationvars' %}
+		{% include "Subsystems/_subsystems_acordion.html" %}
+		{% endwith %}
+		{% endwith %}
+		{% endwith %}
+	{% endif %}
+	
+	<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+	{% include "_back.html" with back_to='Subsystems:home' %}
+	</div>
+</div>
+    
+{% else %}
+<div class="container container-fluid home-container">
+	<h2>{% trans "Please log in if you want to do something else..." %}</h2>
+</div>
+{% endif %}
+{% endblock container %}

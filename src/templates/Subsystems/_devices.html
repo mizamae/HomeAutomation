@@ -1,0 +1,16 @@
+{% load i18n %}
+{% load staticfiles %}
+<tr> 
+    <td>{{ row.Name }}</td>
+    <td>{{ row.DVT.Code }}</td>
+    	{% if row.State == 0 %}
+       	<td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>
+        {% else %}
+	        {% if row.Error == '' %}
+        	<td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+	        {% else %}
+        	<td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ row.Error }}</font></b></td>
+	        {% endif %}
+        {% endif %}
+      <td>{{ row.LastUpdated }}</td>
+</tr>

@@ -48,8 +48,6 @@ class GPIO_updater(JsonWebsocketConsumer):
         # toggle gpio number
         IO=MasterGPIOs.objects.get(Pin=content["pk"])
         IO.toggle()
-
-
     
 class DevicesAPP_consumers(WebsocketDemultiplexer):
     consumers = {
@@ -57,12 +55,12 @@ class DevicesAPP_consumers(WebsocketDemultiplexer):
         "Device_update": Devices_updater,
         "Device_delete": Devices_delete,
         "Device_query": Devices_query,
-        "GPIO_values": MasterGPIOsBinding.consumer,
+        "GPIO_params": MasterGPIOsBinding.consumer,
         "GPIO_update": GPIO_updater,
     }
 
     def connection_groups(self):
-        return ["Device-models",]
+        return ["Device-models","GPIO-models"]
 
 
 

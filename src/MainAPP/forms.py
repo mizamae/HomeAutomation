@@ -16,7 +16,7 @@ from DevicesAPP.constants import REMOTE_TCP_CONNECTION as DevicesAPP_REMOTE_TCP_
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
 
-import HomeAutomation.models
+from . import  models
 
 import logging
 logger = logging.getLogger("project")
@@ -58,7 +58,7 @@ class AdditionalCalculationsForm(ModelForm):
         return cleaned_data
     
     class Meta:
-        model = HomeAutomation.models.AdditionalCalculationsModel
+        model = models.AdditionalCalculationsModel
         fields=['AutomationVar','Periodicity','Calculation']
         
 class inlineDailyForm(ModelForm):  
@@ -73,7 +73,7 @@ class inlineDailyForm(ModelForm):
         return cleaned_data
     
     class Meta:
-        model = HomeAutomation.models.inlineDaily
+        model = models.inlineDaily
         fields=['Day','Hour0','Hour1','Hour2','Hour3','Hour4','Hour5','Hour6','Hour7','Hour8','Hour9','Hour10'
                 ,'Hour11','Hour12','Hour13','Hour14','Hour15','Hour16','Hour17','Hour18','Hour19','Hour20','Hour21','Hour22','Hour23']
         
@@ -113,7 +113,7 @@ class RuleItemForm(ModelForm):
          return cleaned_data
          
     class Meta:
-        model = HomeAutomation.models.RuleItem
+        model = models.RuleItem
         fields=['order','PreVar1','Var1','Operator12','PreVar2','Var2','IsConstant','Constant','Var2Hyst','Operator3']
         
     
@@ -219,7 +219,7 @@ class AutomationRuleForm(ModelForm):
     class Meta:
         fields=['Identifier','Active','OnError','PreviousRule','OperatorPrev','Action']
         widgets = {'Action': forms.HiddenInput()}
-        model = HomeAutomation.models.AutomationRuleModel
+        model = models.AutomationRuleModel
         
     class Media:
         js = ('AutomationRuleFormAnimations.js',)

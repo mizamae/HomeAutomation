@@ -9,7 +9,9 @@ import json
 
 from django.utils.translation import ugettext_lazy as _
 
-from .constants import APP_TEMPLATE_NAMESPACE
+from MainAPP.admin import SubsystemsInline
+
+from .constants import APP_TEMPLATE_NAMESPACE,GPIO_SENSOR
 from DevicesAPP.models import DeviceTypes,DatagramItems,Datagrams,ItemOrdering,DeviceCommands,Devices,Beacons,MasterGPIOs,MainDeviceVars
 from DevicesAPP.forms import DeviceTypesForm, ItemOrderingForm,DevicesForm,BeaconsForm,MasterGPIOsForm,MainDeviceVarsForm
 
@@ -21,14 +23,20 @@ class MainDeviceVarsAdmin(admin.ModelAdmin):
     
     list_display = ('pk','Label','printValue')
     form = MainDeviceVarsForm
-    pass      
+    
+    inlines = [
+        SubsystemsInline,
+    ]      
 
 class MasterGPIOsAdmin(admin.ModelAdmin):
     list_display = ('Pin','Label','Direction','Value')
     form=MasterGPIOsForm
     
+    inlines = [
+        SubsystemsInline,
+    ]
     def save_model(self, request, obj, form, change):
-        if not change: # the object is being created
+        if not change and obj.Direction!=GPIO_SENSOR: # the object is being created
             obj.store2DB()
         else:
             super().save_model(request, obj, form, change)
@@ -46,6 +54,10 @@ class DevicesAdmin(admin.ModelAdmin):
     form=DevicesForm
     actions=['defineCustomLabels']
     
+    inlines = [
+        SubsystemsInline,
+    ]
+    
     def defineCustomLabels(self,request, queryset):
         devices_selected=queryset.count()
         if devices_selected>1:
@@ -55,8 +67,6 @@ class DevicesAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(reverse(APP_TEMPLATE_NAMESPACE+':setCustomLabels',args=[selected_pk]))#'/admin/Devices/setcustomlabels/' + str(selected_pk))
         
     def save_model(self, request, obj, form, change):
-        if 'Name' in form.changed_data:
-            messages.add_message(request, messages.INFO, 'DeviceName has been changed')
         if 'Sampletime' in form.changed_data or 'State' in form.changed_data:
             obj.update_requests()
         super(DevicesAdmin, self).save_model(request, obj, form, change)

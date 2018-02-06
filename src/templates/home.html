@@ -7,15 +7,6 @@
 {% block navbar-left %}
   {% include "_navbar.html" with active_link="home" %}
 {% endblock %}
-
-{% block navbar-right %}
-  {% if not user.is_authenticated %}
-<a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
-<!--<a class="btn btn-primary" href="{% url 'accounts:signup' %}" role="button">Sign up</a>-->
-  {% else %}
-    {{ block.super }}
-  {% endif %}
-{% endblock %}
   
 {% block splash %}
 
@@ -49,7 +40,14 @@
 
 		{% trans "CONFIGURATION" as app_name %}
 		{% trans "" as app_description %} 
-		{% include "_appDashboard.html" with app_permission=perms.HomeAutomation.view app_name=app_name app_description=app_description app_url="home" app_icon='site/img/configuration.png' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="home" app_icon='site/img/configuration.png' %}
+	</div>
+	<div class="apps-row">
+		{% trans "SUBSYSTEMS APP" as app_name %}
+		{% trans "" as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="Subsystems:home" app_icon='site/img/SubsystemsAPP_icon.png' %}
+		
+		
 	</div>
 </div>
 {% else %}
@@ -59,7 +57,3 @@
 {% endif %}
 {% endblock container %}
 
-{% block scripts %}
-<script src="{% static 'site/js/site.js' %}"></script>	
-
-{% endblock scripts %}

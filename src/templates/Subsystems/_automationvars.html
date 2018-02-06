@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load staticfiles %}
+{% load get_at_index %}
+<tr> 
+    <td>{{ row.Label }}</td>
+    <td>{{ VARs_values|get_at_index:index|get_at_index:0 }}</td>
+    <td>{{ VARs_values|get_at_index:index|get_at_index:1 }} {{ row.Units }}</td>
+</tr>

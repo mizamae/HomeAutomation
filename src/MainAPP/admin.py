@@ -1,3 +1,11 @@
+from django.contrib.contenttypes.admin import GenericStackedInline
+from .models import Subsystems
+
+
+class SubsystemsInline(GenericStackedInline):
+    extra = 1
+    model = Subsystems
+    
 # from django.contrib import admin
 # from django.contrib import messages
 # from django.http import HttpResponseRedirect
