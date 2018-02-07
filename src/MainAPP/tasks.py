@@ -98,7 +98,7 @@ def checkCustomCalculations():
             
 def HourlyTask():
     import datetime
-    from MainAPP.models import MainDeviceVars
+    from DevicesAPP.models import MainDeviceVars
     MainAPP.models.checkHourlySchedules(init=True)    
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour

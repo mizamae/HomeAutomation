@@ -11,13 +11,20 @@
 			</h2>
 		</div>
 		<!-- add "in" to the class to show the accordions initially opened -->
+		{% if displayed %}
+		<div id={{collapseID}} class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2">
+		{% else %}
 		<div id={{collapseID}} class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading2">
+		{% endif %}
 			<div class="panel-body">
 				{% if model == 'devices' %}
 					{% include "Subsystems/_devices_table.html" %}
 				{% endif %}
 				{% if model == 'automationvars' %}
 					{% include "Subsystems/_automationvars_table.html" with tableId=model %}
+				{% endif %}
+				{% if model == 'maindevicevarweeklyschedules' %}
+					{% include "Subsystems/_maindevicevarweeklyschedules_table.html" with tableId=model %}
 				{% endif %}
 			</div>
 		</div>

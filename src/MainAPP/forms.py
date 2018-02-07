@@ -61,21 +61,6 @@ class AdditionalCalculationsForm(ModelForm):
         model = models.AdditionalCalculationsModel
         fields=['AutomationVar','Periodicity','Calculation']
         
-class inlineDailyForm(ModelForm):  
-    def __init__(self, *args, **kwargs):
-        super(inlineDailyForm, self).__init__(*args, **kwargs)
-        for field in self.fields:
-            if field.find('Hour')>=0:
-                self.fields[field].label=field.replace('Hour','') + ' H'
-        
-    def clean(self):
-        cleaned_data=super().clean() # to use the validation of the fields from the model
-        return cleaned_data
-    
-    class Meta:
-        model = models.inlineDaily
-        fields=['Day','Hour0','Hour1','Hour2','Hour3','Hour4','Hour5','Hour6','Hour7','Hour8','Hour9','Hour10'
-                ,'Hour11','Hour12','Hour13','Hour14','Hour15','Hour16','Hour17','Hour18','Hour19','Hour20','Hour21','Hour22','Hour23']
         
 class RuleItemForm(ModelForm):  
     def __init__(self, *args, **kwargs):

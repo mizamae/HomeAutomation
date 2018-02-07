@@ -11,6 +11,7 @@ from tzlocal import get_localzone
 import itertools
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth import login
 from django.core.urlresolvers import reverse
@@ -404,6 +405,33 @@ def AdvancedDevicePage(request,pk):
     LatestData=DV.getLatestData()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
                                                         {'Device':DV,'Latest':LatestData})
+
+def activateSchedule(request,pk):
+    if not checkUserPermissions(request=request,action='activate',model='schedule'):
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
+    
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        
+        SCHD=models.MainDeviceVarWeeklySchedules.objects.get(pk=pk)
+        SCHD.setActive(value=not SCHD.Active)
+        messages.info(request, 'accordion3')
+        return redirect(request.META['HTTP_REFERER'])
+
+def modifySchedule(request,pk,value,sense):
+    import decimal
+    if not checkUserPermissions(request=request,action='change',model='schedule'):
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
+    
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        SCHD=models.MainDeviceVarWeeklySchedules.objects.get(pk=pk)
+        SCHD.modify(value=value,sense=sense)
+        messages.info(request, 'accordion3')
+        return redirect(request.META['HTTP_REFERER'])
+    
 # END
 
 @csrf_exempt

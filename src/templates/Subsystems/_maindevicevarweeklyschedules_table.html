@@ -1,0 +1,32 @@
+{% load i18n %}
+<h3><b>{{ header }}</b></h3>
+<div id="{{ tableId }}list" class="table-responsive">
+	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
+		<colgroup>
+			<col class="col-xs-3"></col>
+			<col class="col-xs-1"></col>
+			<col class="col-xs-1"></col>
+			<col class="col-xs-2"></col>
+			<col class="col-xs-2"></col>
+			<col class="col-xs-2"></col>
+	    </colgroup>
+	    <thead class="thead-inverse">
+	        <tr>
+				<th>{% trans "Description" %}</th>
+				<th class="text-center">{% trans "Status" %}</th>
+				<th class="text-center">{% trans "Activate" %}</th>
+				<th class="text-center">{% trans "Current value" %}</th>
+				<th class="text-center">{% trans "LOW value" %}</th>
+				<th class="text-center">{% trans "HIGH value" %}</th>
+			</tr>
+	     </thead>
+	     <tbody>
+	        
+	        {% for row in rows %}
+	        	{% with index=forloop.counter0 %}
+				{% include "Subsystems/_maindevicevarweeklyschedules.html" %}
+				{% endwith %}
+	        {% endfor %}
+		</tbody>
+	</table>
+</div>

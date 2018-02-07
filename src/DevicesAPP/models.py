@@ -182,7 +182,7 @@ class MainDeviceVars(models.Model):
             raise DevicesAppException("Unexpected error in insert_MainVars_register:" + str(sys.exc_info()[1]))
         
     def updateAutomationVars(self):
-        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='Main')
+        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars')
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(mainvars=self)
         dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'MainVars','Table':self.getRegistersDBTableName(),'BitPos':None,'Sample':0,'Units':self.Units}
         try:
@@ -297,6 +297,167 @@ def update_MainDeviceVars(sender, instance, update_fields=[],**kwargs):
     timestamp=timezone.now() #para hora con info UTC
     #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
     
+
+class MainDeviceVarWeeklySchedules(models.Model):
+    class Meta:
+        verbose_name = _('Main device var weekly schedule')
+        verbose_name_plural = _('Main device var weekly schedules') 
+        unique_together = (('Label', 'Var'))
+        permissions = (
+            ("view_schedules", "Can see available automation schedules"),
+            ("activate_schedule", "Can change the state of the schedules"),
+            ("edit_schedule", "Can create and edit a schedule")
+        )
+        
+    Label = models.CharField(max_length=50,unique=True)
+    Active = models.BooleanField(default=False)
+    Var = models.ForeignKey(MainDeviceVars,on_delete=models.CASCADE)
+    LValue = models.DecimalField(max_digits=6, decimal_places=2)
+    HValue = models.DecimalField(max_digits=6, decimal_places=2)
+     
+    Days = models.ManyToManyField('inlineDaily',blank=True)
+ 
+    Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='weeklyschedules')
+    
+    def setActive(self,value=True):
+        self.Active=value
+        self.save()
+         
+        if self.Active:
+            logger.info('Se ha activado la planificacion semanal ' + str(self.Label) + ' para la variable ' + str(self.Var))
+            schedules=MainDeviceVarWeeklySchedules.objects.filter(Var=self.Var)
+            for schedule in schedules:
+                if schedule.Label!=self.Label:
+                    schedule.set_Active(value=False)
+            self.checkHourlySchedules()
+         
+    def getTodaysPattern(self):
+        import datetime
+        timestamp=datetime.datetime.now()
+        weekDay=timestamp.weekday()
+        hour=timestamp.hour
+        dailySchedules=self.inlinedaily_set.all()
+        pattern=[]
+        for daily in dailySchedules:
+            if daily.Day==weekDay:
+                for i in range(0,24):
+                    Setpoint=getattr(daily,'Hour'+str(i))
+                    pattern.append(Setpoint)
+                return pattern
+        return None
+         
+    def modify(self,value,sense='+'):
+        import decimal
+        if value=='LValue':
+            if sense=='-':
+                self.LValue-=decimal.Decimal.from_float(0.5)
+            else:
+                self.LValue+=decimal.Decimal.from_float(0.5)
+            self.save(update_fields=['LValue'])
+            self.checkHourlySchedules()
+        elif value=='HValue':
+            if sense=='-':
+                self.HValue-=decimal.Decimal.from_float(0.5)
+            else:
+                self.HValue+=decimal.Decimal.from_float(0.5)
+            self.save(update_fields=['HValue'])
+            self.checkHourlySchedules()
+        elif value=='REFValue':
+            if self.Var.Value==self.HValue:
+                Value=self.LValue
+            else:
+                Value=self.HValue
+            self.Var.update_value(newValue=Value,writeDB=True)
+             
+    def getFormset(self):
+        from django.forms import inlineformset_factory
+        MainDeviceVarWeeklySchedulesFormset = inlineformset_factory (MainDeviceVarWeeklySchedules,MainDeviceVarWeeklySchedules,fk_name)
+    
+    @classmethod
+    def checkHourlySchedules(cls,init=False):
+        schedules=cls.objects.filter(Active=True)
+        timestamp=datetime.datetime.now()
+        weekDay=timestamp.weekday()        
+        hour=timestamp.hour
+        for schedule in schedules:
+            if schedule.Active:
+                dailySchedules=schedule.inlinedaily_set.all()
+                for daily in dailySchedules:
+                    if daily.Day==weekDay:
+                        Setpoint=getattr(daily,'Hour'+str(hour))
+                        if Setpoint==0:
+                            Value=schedule.LValue
+                        elif Setpoint==1:
+                            Value=schedule.HValue
+                        else:
+                            text='The schedule ' + schedule.Label + ' returned a non-understandable setpoint (0=LOW,1=HIGH). It returned ' + str(Setpoint)
+                            PublishEvent(Severity=2,Text=text,Persistent=True)
+                            break
+                        if schedule.Var.Value!=Value or init:
+                            schedule.Var.update_value(newValue=Value,writeDB=True)
+                        break
+
+@receiver(post_save, sender=MainDeviceVarWeeklySchedules, dispatch_uid="update_MainDeviceVarWeeklySchedules")
+def update_MainDeviceVarWeeklySchedules(sender, instance, update_fields,**kwargs):
+    timestamp=timezone.now() #para hora con info UTC
+    if not kwargs['created']:   # an instance has been modified
+        pass
+    else:
+        logger.info('Se ha creado la planificacion semanal ' + str(instance.Label))
+
+
+class inlineDaily(models.Model):
+    class Meta:
+        unique_together = ('Day', 'Weekly')
+        verbose_name = _('Main device var hourly schedule')
+        verbose_name_plural = _('Main device var hourly schedules')
+        
+    WEEKDAYS = (
+      (0, _("Monday")),
+      (1, _("Tuesday")),
+      (2, _("Wednesday")),
+      (3, _("Thursday")),
+      (4, _("Friday")),
+      (5, _("Saturday")),
+      (6, _("Sunday")),
+    )
+    STATE_CHOICES=(
+        (0,_('LOW')),
+        (1,_('HIGH'))
+    )
+    Day = models.PositiveSmallIntegerField(choices=WEEKDAYS)
+    Weekly = models.ForeignKey(MainDeviceVarWeeklySchedules, on_delete=models.CASCADE)
+    Hour0 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour1 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour2 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour3 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour4 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour5 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour6 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour7 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour8 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour9 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour10 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour11 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour12 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour13 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour14 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour15 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour16 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour17 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour18 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour19 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour20 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour21 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour22 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour23 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+     
+    def __str__(self):
+        return self.get_Day_display()
+     
+    
+
+
 #set up GPIO using BCM numbering
 
 

@@ -43,6 +43,16 @@
 		{% endwith %}
 	{% endif %}
 	
+	{% if SCHs %}
+		{% with panelID="accordion3" collapseID="collapse3" displayed=accordion3 %}
+		{% with var_permission_main=perms.DevicesAPP.view_maindevicevarweeklyschedules var_permission_view=perms.DevicesAPP.view_maindevicevarweeklyschedules %}
+		{% with var_header="SCHEDULES LINKED TO HEATING" rows=SCHs model='maindevicevarweeklyschedules' %}
+		{% include "Subsystems/_subsystems_acordion.html" %}
+		{% endwith %}
+		{% endwith %}
+		{% endwith %}
+	{% endif %}
+	
 	<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
 	{% include "_back.html" with back_to='Subsystems:home' %}
 	</div>
@@ -53,4 +63,12 @@
 	<h2>{% trans "Please log in if you want to do something else..." %}</h2>
 </div>
 {% endif %}
+
+<script>
+$(function () {
+	console.log("Accordion3: {{ accordion3 }}");
+
+});
+</script>
 {% endblock container %}
+

@@ -25,7 +25,9 @@ literals=[]
 #--natural-foreign for permissions dumping           
 if sys.argv[1]=='dump':
     command = command_args[sys.argv[1]]
-    if len(sys.argv) >= 3: 
+    if len(sys.argv) == 3: 
+        target_app = sys.argv[2]
+    elif len(sys.argv)>3:
         target_app = sys.argv[2]
         for arg in sys.argv[2:]:    
             literals.append(arg)
@@ -47,7 +49,7 @@ else:
     
 
 # Build paths inside the project like this: join(BASE_DIR, "directory")
-BASE_DIR = join(dirname(__file__),'..')
+BASE_DIR = join(dirname(__file__),'..',)
 
 project_root = BASE_DIR
 print(project_root)

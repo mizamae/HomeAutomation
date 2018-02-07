@@ -1,0 +1,357 @@
+[
+{
+    "model": "MainAPP.subsystems",
+    "pk": 2,
+    "fields": {
+        "content_type": 19,
+        "object_id": "2",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 3,
+    "fields": {
+        "content_type": 19,
+        "object_id": "4",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 4,
+    "fields": {
+        "content_type": 19,
+        "object_id": "4",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 8,
+    "fields": {
+        "content_type": 12,
+        "object_id": "4",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 10,
+    "fields": {
+        "content_type": 12,
+        "object_id": "5",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 13,
+    "fields": {
+        "content_type": 12,
+        "object_id": "10",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 14,
+    "fields": {
+        "content_type": 12,
+        "object_id": "11",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 15,
+    "fields": {
+        "content_type": 12,
+        "object_id": "12",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 16,
+    "fields": {
+        "content_type": 12,
+        "object_id": "12",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 17,
+    "fields": {
+        "content_type": 12,
+        "object_id": "13",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 18,
+    "fields": {
+        "content_type": 12,
+        "object_id": "13",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 19,
+    "fields": {
+        "content_type": 12,
+        "object_id": "14",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 20,
+    "fields": {
+        "content_type": 12,
+        "object_id": "14",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 21,
+    "fields": {
+        "content_type": 12,
+        "object_id": "15",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 22,
+    "fields": {
+        "content_type": 12,
+        "object_id": "15",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 23,
+    "fields": {
+        "content_type": 12,
+        "object_id": "4",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 24,
+    "fields": {
+        "content_type": 12,
+        "object_id": "5",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 25,
+    "fields": {
+        "content_type": 22,
+        "object_id": "1",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 26,
+    "fields": {
+        "content_type": 23,
+        "object_id": "25",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 27,
+    "fields": {
+        "content_type": 12,
+        "object_id": "16",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 28,
+    "fields": {
+        "content_type": 12,
+        "object_id": "16",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 29,
+    "fields": {
+        "content_type": 12,
+        "object_id": "17",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 30,
+    "fields": {
+        "content_type": 12,
+        "object_id": "17",
+        "Name": 1
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 31,
+    "fields": {
+        "content_type": 12,
+        "object_id": "18",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.subsystems",
+    "pk": 32,
+    "fields": {
+        "content_type": 12,
+        "object_id": "19",
+        "Name": 0
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 1,
+    "fields": {
+        "Label": "Input test",
+        "Tag": "17",
+        "Device": "MainGPIOs",
+        "Table": "inputs",
+        "BitPos": null,
+        "Sample": 0,
+        "Units": null
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 3,
+    "fields": {
+        "Label": "Output test",
+        "Tag": "25",
+        "Device": "MainGPIOs",
+        "Table": "outputs",
+        "BitPos": null,
+        "Sample": 0,
+        "Units": null
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 6,
+    "fields": {
+        "Label": "Temperatura sala 1",
+        "Tag": "1_1_1",
+        "Device": "3",
+        "Table": "3_1",
+        "BitPos": null,
+        "Sample": 600,
+        "Units": null
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 7,
+    "fields": {
+        "Label": "Humedad sala 1",
+        "Tag": "2_1_1",
+        "Device": "3",
+        "Table": "3_1",
+        "BitPos": null,
+        "Sample": 600,
+        "Units": null
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 12,
+    "fields": {
+        "Label": "Temperatura en Mutilva",
+        "Tag": "1_1_2",
+        "Device": "4",
+        "Table": "4_2",
+        "BitPos": null,
+        "Sample": 1800,
+        "Units": "\u00baC"
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 13,
+    "fields": {
+        "Label": "Humedad en Mutilva",
+        "Tag": "2_1_2",
+        "Device": "4",
+        "Table": "4_2",
+        "BitPos": null,
+        "Sample": 1800,
+        "Units": "%"
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 14,
+    "fields": {
+        "Label": "Precipitaciones en Mutilva",
+        "Tag": "3_1_2",
+        "Device": "4",
+        "Table": "4_2",
+        "BitPos": null,
+        "Sample": 1800,
+        "Units": "mm"
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 15,
+    "fields": {
+        "Label": "Nubosidad en Mutilva",
+        "Tag": "4_1_2",
+        "Device": "4",
+        "Table": "4_2",
+        "BitPos": null,
+        "Sample": 1800,
+        "Units": "%"
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 18,
+    "fields": {
+        "Label": "1_1_1",
+        "Tag": "1_1_1",
+        "Device": "2",
+        "Table": "2_1",
+        "BitPos": null,
+        "Sample": 600,
+        "Units": "\u00baC"
+    }
+},
+{
+    "model": "MainAPP.automationvariables",
+    "pk": 19,
+    "fields": {
+        "Label": "2_1_1",
+        "Tag": "2_1_1",
+        "Device": "2",
+        "Table": "2_1",
+        "BitPos": null,
+        "Sample": 600,
+        "Units": "%"
+    }
+}
+]

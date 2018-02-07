@@ -85,6 +85,74 @@ class MainDeviceVarsForm(ModelForm):
     class Meta:
         model = models.MainDeviceVars
         fields=['Label','DataType','Value','Units','PlotType']
+
+class inlineDailyForm(ModelForm):  
+    def __init__(self, *args, **kwargs):
+        instance=kwargs.get('instance',None)
+        super(inlineDailyForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        for field in self.fields:
+            if field.find('Hour')>=0:
+                self.fields[field].label=field.replace('Hour','') + ' H'
+                #self.fields[field].widget.attrs['size']=8
+                    
+        if instance!=None:
+            self.fields['Day'].widget.attrs['hidden'] = True
+                    
+        CSS_CLASS_DAY='col-md-2 col-xs-3'
+        CSS_CLASS_HOUR='col-md-2 col-xs-3'
+        self.helper.layout = Layout(
+                Div(
+                    Div(Field('Day'), css_class=CSS_CLASS_DAY),
+                    Div(Field('Hour0'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour1'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour2'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour3'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour4'), css_class=CSS_CLASS_HOUR),
+                    css_class='row-fluid'  # here you can add some custom class, for example 'row-fluid margin-top-15'
+                ),
+                Div(
+                    Div(Field('Hour5'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour6'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour7'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour8'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour9'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour10'), css_class=CSS_CLASS_HOUR),
+                    css_class='row-fluid'  # here you can add some custom class, for example 'row-fluid margin-top-15'
+                ),
+                Div(
+                    Div(Field('Hour11'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour12'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour13'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour14'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour15'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour16'), css_class=CSS_CLASS_HOUR),
+                    css_class='row-fluid'  # here you can add some custom class, for example 'row-fluid margin-top-15'
+                ),
+                Div(
+                    Div(Field('Hour17'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour18'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour19'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour20'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour21'), css_class=CSS_CLASS_HOUR),
+                    Div(Field('Hour22'), css_class=CSS_CLASS_HOUR),
+                    css_class='row-fluid'  # here you can add some custom class, for example 'row-fluid margin-top-15'
+                ),
+                Div(
+                    Div(Field('Hour23'), css_class=CSS_CLASS_HOUR),
+                    css_class='row-fluid'  # here you can add some custom class, for example 'row-fluid margin-top-15'
+                ),
+            )
+        
+        
+    def clean(self):
+        cleaned_data=super().clean() # to use the validation of the fields from the model
+        return cleaned_data
+    
+    class Meta:
+        model = models.inlineDaily
+        fields=['Day','Hour0','Hour1','Hour2','Hour3','Hour4','Hour5','Hour6','Hour7','Hour8','Hour9','Hour10'
+                ,'Hour11','Hour12','Hour13','Hour14','Hour15','Hour16','Hour17','Hour18','Hour19','Hour20','Hour21','Hour22','Hour23']
         
 class MasterGPIOsForm(ModelForm):
     def __init__(self, *args, **kwargs):
