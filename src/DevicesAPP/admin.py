@@ -169,9 +169,9 @@ class DatagramsAdmin(admin.ModelAdmin):
         super(DatagramsAdmin, self).save_related(request, form, formsets, change)
         if change:
             DVT=form.cleaned_data['DVT']
-            DVs=Devices.objects.filter(Type=DVT)
+            DVs=Devices.objects.filter(DVT=DVT)
             for DV in DVs:
-                DV.updateCustomLabels()
+                DV.setCustomLabels()
             
 
     

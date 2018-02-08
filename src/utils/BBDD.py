@@ -186,6 +186,13 @@ def backupRegistersDB(year=None):
     except:
         pass
 
+def deleteRegistersDB(year):
+    DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(year))
+    try:
+        os.remove(DBPath)
+    except OSError:
+        pass
+
 def restoreRegistersDB(src=None,year=None):
     if src==None:
         if year==None:

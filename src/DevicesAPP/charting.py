@@ -84,11 +84,11 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                         
                 try:
                     df[col['name']]=df[col['name']].apply(func=dec2bin)
-                    from HomeAutomation.models import AdditionalCalculationsModel
-                    kk=pd.DataFrame(df[col['name']])
-                    CALC=AdditionalCalculationsModel(df=kk,key=col['name'])
-                    tempStats['on_time'].append(CALC.duty(level=True,absoluteValue=True))
-                    tempStats['off_time'].append(CALC.duty(level=False,absoluteValue=True))
+#                     from MainAPP.models import AdditionalCalculations
+#                     kk=pd.DataFrame(df[col['name']])
+#                     CALC=AdditionalCalculations(df=kk,key=col['name'])
+#                     tempStats['on_time'].append(CALC.duty(level=True,absoluteValue=True))
+#                     tempStats['off_time'].append(CALC.duty(level=False,absoluteValue=True))
                 except KeyError:
                     tempStats['on_time'].append(None)
                     tempStats['off_time'].append(None)

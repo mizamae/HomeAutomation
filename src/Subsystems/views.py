@@ -68,7 +68,7 @@ def heating(request):
         accordion3=False
         for message in storage:
             if 'accordion3' == message.message:
-                accordion3=True
+                accordion3=True # defines if the accordion 3 is initially displayed or collapsed
             
         return render(request, APP_TEMPLATE_NAMESPACE+'/heating.html',{'DVs':DVs,
                                                                        'VARs':VARs,

@@ -580,7 +580,7 @@ class DeviceGraphs(forms.Form):
 
 class BeaconsForm(ModelForm):
     def __init__(self, *args, **kwargs):
-        super(BeaconsForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance
         # It builds a default layout with all its fields
         self.helper = FormHelper()

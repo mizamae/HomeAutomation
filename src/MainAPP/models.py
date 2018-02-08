@@ -14,6 +14,7 @@ from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
 from django.contrib.contenttypes.fields import GenericRelation
 
 from MainAPP.constants import REGISTERS_DB_PATH,SUBSYSTEMS_CHOICES
+
 import utils.BBDD
 
 import pandas as pd
@@ -41,7 +42,7 @@ class Subsystems(models.Model):
         return self.get_Name_display()
     
 
-# class AdditionalCalculationsModel(models.Model):
+# class AdditionalCalculations(models.Model):
 #     PERIODICITY_CHOICES=(
 #         (0,_('With every new value')),
 #         (1,_('Every hour')),
@@ -73,7 +74,7 @@ class Subsystems(models.Model):
 #             self.df=pd.DataFrame()
 #             self.key=''
 # 
-#         super(AdditionalCalculationsModel, self).__init__(*args, **kwargs)
+#         super(AdditionalCalculations, self).__init__(*args, **kwargs)
 #         
 #     def __str__(self):
 #         try:
@@ -196,8 +197,8 @@ class Subsystems(models.Model):
 #         else:
 #             return None
 # 
-# @receiver(post_save, sender=AdditionalCalculationsModel, dispatch_uid="update_AdditionalCalculationsModel")
-# def update_AdditionalCalculationsModel(sender, instance, update_fields,**kwargs):
+# @receiver(post_save, sender=AdditionalCalculations, dispatch_uid="update_AdditionalCalculations")
+# def update_AdditionalCalculations(sender, instance, update_fields,**kwargs):
 #     if kwargs['created']:   # an instance has been created
 #         logger.info('Se ha creado el calculo ' + str(instance))
 #         label= str(instance)
@@ -234,16 +235,6 @@ class AutomationVariables(models.Model):
     def store2DB(self):
         self.full_clean()
         super().save() 
-        
-    def create(self,Label,Tag,Device,Table,BitPos,Sample,Units):
-        self.Label=Label
-        self.Device=Device
-        self.Tag=Tag
-        self.Table=Table
-        self.BitPos=BitPos
-        self.Sample=Sample
-        self.Units=Units
-        self.store2DB()
         
     def checkSubsystem(self,Name):
         SSYTMs=Subsystems.objects.filter(automationvariables=self)
@@ -307,12 +298,11 @@ class AutomationVariables(models.Model):
     def executeAutomationRules(self):
         rules=RuleItems.objects.filter((Q(Var1=self)) | (Q(Var2=self)))
         if len(rules)>0:
+            now=timezone.now()
             for rule in rules:
                 if not '"ActionType": "z"' in rule.Rule.Action:
-                    rule.Rule.execute() 
+                    rule.Rule.execute()
                     
-    
-
 @receiver(post_save, sender=AutomationVariables, dispatch_uid="update_AutomationVariables")
 def update_AutomationVariables(sender, instance, update_fields,**kwargs):   
     pass
@@ -418,6 +408,7 @@ class AutomationRules(models.Model):
     OperatorPrev = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
     RuleItems = models.ManyToManyField(RuleItems)
     Action = models.CharField(max_length=500,blank=True) # receives a json object describind the action desired
+    LastEval = models.BooleanField(default=False)
     
     _timestamp1=None
     _timestamp2=None
@@ -438,7 +429,11 @@ class AutomationRules(models.Model):
             return '&'
         else:
             return None
-            
+    
+    def setLastEval(self,value):
+        self.LastEval=value
+        self.save()
+        
     def evaluate(self):
         if self.Active:
             evaluableTRUE=''
@@ -488,7 +483,6 @@ class AutomationRules(models.Model):
             return {'TRUE':'','FALSE':'','ERROR':'Inactive Rule'}
     
     def execute(self,error=None):
-        
         if error!=None:
             resultTRUE=eval(self.get_OnError_display())
             resultFALSE=eval('not ' + self.get_OnError_display())
@@ -503,23 +497,25 @@ class AutomationRules(models.Model):
         except:
             resultTRUE=eval(self.get_OnError_display())
             resultFALSE=eval('not ' + self.get_OnError_display())
-            
+        
         if resultTRUE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 newValue=int(Action['IOValue'])
-                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
+                IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
+            self.setLastEval(value=True)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
                 newValue=int(not int(Action['IOValue']))
-                IO.update_value(newValue=newValue,timestamp=None,writeDB=True)
+                IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
+            self.setLastEval(value=False)
             
     class Meta:
         verbose_name = _('Automation rule')
@@ -527,7 +523,6 @@ class AutomationRules(models.Model):
         permissions = (
             ("view_rules", "Can see available automation rules"),
             ("activate_rules", "Can change the state of the rules"),
-            ("edit_rules", "Can create and edit a rule")
         )
         
 @receiver(post_save, sender=AutomationRules, dispatch_uid="update_AutomationRuleModel")

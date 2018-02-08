@@ -22,6 +22,7 @@ import itertools
 import utils.BBDD
 from MainAPP.constants import REGISTERS_DB_PATH
 import MainAPP.models
+import MainAPP.signals
 
 from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
@@ -73,36 +74,51 @@ class MainDeviceVars(models.Model):
     def clean(self):
         if self.DataType==DTYPE_DIGITAL:
             self.DataType=DTYPE_INTEGER
-        
+            
     def store2DB(self):
         '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
         '''
         self.full_clean()
         super().save()
-        now=timezone.now()
-        self.update_value(newValue=self.Value,timestamp=now,writeDB=True,force=True)
+        self.updateValue(newValue=self.Value,timestamp=timezone.now(),writeDB=True,force=True)
+        self.updateAutomationVars()
+    
+    def updateLabel(self,newLabel):
+        self.Label=newLabel
+        self.save(update_fields=['Label'])
+        self.updateAutomationVars()
+    
+    def updateUnits(self,newUnits):
+        self.Label=newLabel
+        self.save(update_fields=['Units'])
+        self.updateAutomationVars()
         
-    def update_value(self,newValue,timestamp=None,writeDB=True,force=False):
+    def updateValue(self,newValue,timestamp=None,writeDB=True,force=False):
         if newValue!=self.Value or force:
-            if writeDB:
+            if timestamp==None:
                 now=timezone.now()
+            else:
+                now=timestamp
+                
+            if writeDB:
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now-datetime.timedelta(seconds=1))
                 
-            if newValue!=self.Value:
+            if newValue!=self.Value or force:
                 text=str(_('The value of the MainDeviceVar "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
                 PublishEvent(Severity=0,Text=text)
                 self.Value=newValue
                 self.save(update_fields=['Value'])
+                MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=now,
+                                                                                        Tags=[self.getRegistersDBTag(),],
+                                                                                        Values=[newValue,])
             
             if writeDB :
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now)
                 else:
                     self.insertRegister(TimeStamp=timestamp)
-                
-            self.updateAutomationVars()
-            
+
     def getInsertRegisterSQL(self):
         sql=self.SQLinsertRegister
         #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
@@ -186,24 +202,22 @@ class MainDeviceVars(models.Model):
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(mainvars=self)
         dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'MainVars','Table':self.getRegistersDBTableName(),'BitPos':None,'Sample':0,'Units':self.Units}
         try:
-            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],Device=dvar['Device'],BitPos=dvar['BitPos'])
-            avar.Label=dvar['label']
-            avar.Units=dvar['units']
-            avar.store2DB()
+            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],Device=dvar['Device'])
+            avar.Label=dvar['Label']
+            avar.Units=dvar['Units']
         except:
             avar=None
             
         if avar==None:
-            avar=MainAPP.models.AutomationVariables()
-            avar.create(**dvar)
+            avar=MainAPP.models.AutomationVariables(**dvar)
+        
+        avar.store2DB()
         
         if SUBSYSTEMs.count():
             for SUBS in SUBSYSTEMs:
                 found=avar.checkSubsystem(Name=SUBS.Name)
                 if found==False:
                     avar.createSubsystem(Name=SUBS.Name)
-                        
-        avar.executeAutomationRules()
     
     def getRegistersDBTag(self):
         return str(self.pk)
@@ -305,8 +319,7 @@ class MainDeviceVarWeeklySchedules(models.Model):
         unique_together = (('Label', 'Var'))
         permissions = (
             ("view_schedules", "Can see available automation schedules"),
-            ("activate_schedule", "Can change the state of the schedules"),
-            ("edit_schedule", "Can create and edit a schedule")
+            ("activate_schedules", "Can change the state of the schedules"),
         )
         
     Label = models.CharField(max_length=50,unique=True)
@@ -319,17 +332,23 @@ class MainDeviceVarWeeklySchedules(models.Model):
  
     Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='weeklyschedules')
     
+    def store2DB(self): 
+        self.full_clean() 
+        super().save() 
+        if self.Active:
+            self.checkThis()
+            
     def setActive(self,value=True):
         self.Active=value
         self.save()
          
         if self.Active:
             logger.info('Se ha activado la planificacion semanal ' + str(self.Label) + ' para la variable ' + str(self.Var))
-            schedules=MainDeviceVarWeeklySchedules.objects.filter(Var=self.Var)
-            for schedule in schedules:
-                if schedule.Label!=self.Label:
-                    schedule.set_Active(value=False)
-            self.checkHourlySchedules()
+            SCHDs=MainDeviceVarWeeklySchedules.objects.filter(Var=self.Var)
+            for SCHD in SCHDs:
+                if SCHD.Label!=self.Label:
+                    SCHD.setActive(value=False)
+            self.checkThis()
          
     def getTodaysPattern(self):
         import datetime
@@ -354,48 +373,51 @@ class MainDeviceVarWeeklySchedules(models.Model):
             else:
                 self.LValue+=decimal.Decimal.from_float(0.5)
             self.save(update_fields=['LValue'])
-            self.checkHourlySchedules()
+            self.checkThis()
         elif value=='HValue':
             if sense=='-':
                 self.HValue-=decimal.Decimal.from_float(0.5)
             else:
                 self.HValue+=decimal.Decimal.from_float(0.5)
             self.save(update_fields=['HValue'])
-            self.checkHourlySchedules()
+            self.checkThis()
         elif value=='REFValue':
             if self.Var.Value==self.HValue:
                 Value=self.LValue
             else:
                 Value=self.HValue
-            self.Var.update_value(newValue=Value,writeDB=True)
+            self.Var.updateValue(newValue=Value,writeDB=True)
              
     def getFormset(self):
         from django.forms import inlineformset_factory
         MainDeviceVarWeeklySchedulesFormset = inlineformset_factory (MainDeviceVarWeeklySchedules,MainDeviceVarWeeklySchedules,fk_name)
     
-    @classmethod
-    def checkHourlySchedules(cls,init=False):
-        schedules=cls.objects.filter(Active=True)
+    def checkThis(self,init=False):
         timestamp=datetime.datetime.now()
         weekDay=timestamp.weekday()        
         hour=timestamp.hour
-        for schedule in schedules:
-            if schedule.Active:
-                dailySchedules=schedule.inlinedaily_set.all()
-                for daily in dailySchedules:
-                    if daily.Day==weekDay:
-                        Setpoint=getattr(daily,'Hour'+str(hour))
-                        if Setpoint==0:
-                            Value=schedule.LValue
-                        elif Setpoint==1:
-                            Value=schedule.HValue
-                        else:
-                            text='The schedule ' + schedule.Label + ' returned a non-understandable setpoint (0=LOW,1=HIGH). It returned ' + str(Setpoint)
-                            PublishEvent(Severity=2,Text=text,Persistent=True)
-                            break
-                        if schedule.Var.Value!=Value or init:
-                            schedule.Var.update_value(newValue=Value,writeDB=True)
+        if self.Active:
+            dailySchedules=self.inlinedaily_set.all()
+            for daily in dailySchedules:
+                if daily.Day==weekDay:
+                    Setpoint=getattr(daily,'Hour'+str(hour))
+                    if Setpoint==0:
+                        Value=self.LValue
+                    elif Setpoint==1:
+                        Value=self.HValue
+                    else:
+                        text='The schedule ' + self.Label + ' returned a non-understandable setpoint (0=LOW,1=HIGH). It returned ' + str(Setpoint)
+                        PublishEvent(Severity=2,Text=text,Persistent=True)
                         break
+                    if self.Var.Value!=Value or init:
+                        self.Var.updateValue(newValue=Value,writeDB=True)
+                    break
+                    
+    @classmethod
+    def checkAll(cls,init=False):
+        schedules=cls.objects.filter(Active=True)
+        for schedule in schedules:
+            schedule.checkThis(init=False)
 
 @receiver(post_save, sender=MainDeviceVarWeeklySchedules, dispatch_uid="update_MainDeviceVarWeeklySchedules")
 def update_MainDeviceVarWeeklySchedules(sender, instance, update_fields,**kwargs):
@@ -455,12 +477,18 @@ class inlineDaily(models.Model):
     def __str__(self):
         return self.get_Day_display()
      
-    
-
-
+    def setInlineHours(self,hours):
+        if len(hours)!=24:
+            text = "Error in setting an inline. The string passed " +hours + " does not have 24 elements" 
+            raise DevicesAppException(text)
+        else:
+            for i,hour in enumerate(hours):
+                if int(hour)>0:
+                    setattr(self,'Hour'+str(i),1)
+                else:
+                    setattr(self,'Hour'+str(i),0)
+                    
 #set up GPIO using BCM numbering
-
-
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
     
@@ -494,8 +522,13 @@ class MasterGPIOs(models.Model):
     
     def InputChangeEvent(self,*args):
         newValue=int(GPIO.input(self.Pin))
-        self.update_value(newValue=newValue,timestamp=None,writeDB=True)
-        
+        self.updateValue(newValue=newValue,timestamp=None,writeDB=True)
+    
+    def updateLabel(self,newLabel):
+        self.Label=newLabel
+        self.save(update_fields=['Label'])
+        self.updateAutomationVars()
+         
     def store2DB(self):
         '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
         '''
@@ -505,21 +538,21 @@ class MasterGPIOs(models.Model):
         if self.Direction==GPIO_INPUT:
             GPIO.setup(int(self.Pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
             self.Value=GPIO.input(int(self.Pin))
-        self.update_value(newValue=self.Value,timestamp=now,writeDB=True,force=True)
+        self.updateValue(newValue=self.Value,timestamp=now,writeDB=True,force=True)
         
     def setHigh(self):
         if self.Direction==GPIO_OUTPUT:
             GPIO.setup(int(self.Pin), GPIO.OUT)
             GPIO.output(int(self.Pin),GPIO.HIGH)
             newValue=GPIO.HIGH
-            self.update_value(newValue=newValue,timestamp=None,writeDB=True,force=False)
+            self.updateValue(newValue=newValue,timestamp=None,writeDB=True,force=False)
             
     def setLow(self):
         if self.Direction==GPIO_OUTPUT:
             GPIO.setup(int(self.Pin), GPIO.OUT)
             GPIO.output(int(self.Pin),GPIO.LOW)
             newValue=GPIO.LOW
-            self.update_value(newValue=newValue,timestamp=None,writeDB=True,force=False)
+            self.updateValue(newValue=newValue,timestamp=None,writeDB=True,force=False)
             
     def toggle(self):
         if self.Value==GPIO.HIGH:
@@ -554,18 +587,25 @@ class MasterGPIOs(models.Model):
         Data[name]['value']=row
         return Data
     
-    def update_value(self,newValue,timestamp=None,writeDB=True,force=False):
+    def updateValue(self,newValue,timestamp=None,writeDB=True,force=False):
         if newValue!=self.Value or force:
-            if writeDB:
+            if timestamp==None:
                 now=timezone.now()
+            else:
+                now=timestamp
+                
+            if writeDB:
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now-datetime.timedelta(seconds=1))
                 
-            if newValue!=self.Value:
+            if newValue!=self.Value or force:
                 text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
                 PublishEvent(Severity=0,Text=text)
                 self.Value=newValue
                 self.save(update_fields=['Value'])
+                MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=now,
+                                                                                        Tags=[self.getRegistersDBTag(),],
+                                                                                        Values=[newValue,])
             
             if writeDB :
                 if timestamp==None:
@@ -580,8 +620,6 @@ class MasterGPIOs(models.Model):
                 elif self.Value==0:
                     GPIO.output(int(self.Pin),GPIO.LOW)
                 
-            self.updateAutomationVars()
-    
     def getRegistersDBTableName(self):
         if self.Direction==GPIO_INPUT:
             table=GPIO_IN_DBTABLE
@@ -699,23 +737,22 @@ class MasterGPIOs(models.Model):
         dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'MainGPIOs','Table':table,'BitPos':None,'Sample':0}
         try:
             avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
-            avar.Label=dvar['label']
-            avar.store2DB()
+            avar.Label=dvar['Label']
+            avar.Units=dvar['Units']
         except:
             avar=None
-        
-        if avar==None:
-            avar=MainAPP.models.AutomationVariables()
-            avar.create(Label=dvar['Label'],Tag=dvar['Tag'],Device=dvar['Device'],Table=dvar['Table'],BitPos=dvar['BitPos'],Sample=dvar['Sample'])
             
+        if avar==None:
+            avar=MainAPP.models.AutomationVariables(**dvar)
+        
+        avar.store2DB()
+        
         if SUBSYSTEMs.count():
             for SUBS in SUBSYSTEMs:
                 found=avar.checkSubsystem(Name=SUBS.Name)
                 if found==False:
                     avar.createSubsystem(Name=SUBS.Name)
 
-        avar.executeAutomationRules()
-    
     @classmethod
     def getCharts(cls,fromDate,toDate):
         charts=[]
@@ -746,12 +783,13 @@ class MasterGPIOs(models.Model):
         return charts
         
     def deleteAutomationVars(self):
-        table=self.getRegistersDBTableName()
-        try:
-            avar=MainAPP.models.AutomationVariables.objects.get(Device='Main',Tag=str(self.pk),Table=table)
-            avar.delete()
-        except:
-            pass
+        if self.Direction!=GPIO_SENSOR:
+            table=self.getRegistersDBTableName()
+            try:
+                avar=MainAPP.models.AutomationVariables.objects.get(Device='MainGPIOs',Tag=str(self.pk),Table=table)
+                avar.delete()
+            except:
+                pass
         
     @staticmethod
     def getIOVariables(self):
@@ -772,7 +810,7 @@ class MasterGPIOs(models.Model):
                     GPIO.setup(int(IO.Pin), GPIO.OUT)
                     GPIO.output(int(IO.Pin),IO.Value)
                     newValue=IO.Value
-                    IO.update_value(newValue=newValue,timestamp=None,writeDB=True,force=True)
+                    IO.updateValue(newValue=newValue,timestamp=None,writeDB=True,force=True)
                     print("   - Initialized Output on pin " + str(IO.Pin))
                 elif IO.Direction==GPIO_INPUT:
                     if declareInputEvent:
@@ -781,7 +819,7 @@ class MasterGPIOs(models.Model):
                         GPIO.add_event_detect(int(IO.Pin), GPIO.BOTH, callback=IO.InputChangeEvent, bouncetime=200)
                         IO.Value=GPIO.input(int(IO.Pin))
                         newValue=IO.Value
-                        IO.update_value(newValue=newValue,timestamp=None,writeDB=True,force=True)
+                        IO.updateValue(newValue=newValue,timestamp=None,writeDB=True,force=True)
                     else:
                         GPIO.setup(int(IO.Pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
                         #GPIO.remove_event_detect(int(IO.Pin))
@@ -878,7 +916,7 @@ def initialize_polling_devices():
     DVs=Devices.objects.all()
     if DVs.count()>0:
         for DV in DVs:
-            DV.update_requests()
+            DV.updateRequests()
                         
 def request_callback(DV,DG,jobID,**kwargs): 
     if (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
@@ -887,7 +925,7 @@ def request_callback(DV,DG,jobID,**kwargs):
         instance=class_(DV)
         status=instance(**kwargs)
     elif DV.DVT.Connection==REMOTE_TCP_CONNECTION:
-        status=DV.request_datagram(DatagramId=DG.Identifier) 
+        status=DV.requestDatagram(DatagramId=DG.Identifier) 
     NextUpdate=DV.getNextUpdate(jobID=jobID) 
     DV.updatePollingStatus(LastUpdated=status['LastUpdated'],Error=status['Error'],NextUpdate=NextUpdate)
 
@@ -965,13 +1003,13 @@ class Devices(models.Model):
         if self.State==RUNNING_STATE:
             self.State=STOPPED_STATE
             self.save()
-        self.update_requests()
+        self.updateRequests()
     
     def startPolling(self):
         if self.State==STOPPED_STATE:
             self.State=RUNNING_STATE
             self.save()
-        self.update_requests()
+        self.updateRequests()
     
     def togglePolling(self):
         if self.State==STOPPED_STATE:
@@ -988,12 +1026,12 @@ class Devices(models.Model):
                     jobIDs.append({'id':self.Name + '-' + DG.Identifier,'DG':DG})
         return jobIDs
     
-    def update_requests(self):
+    def updateRequests(self):
         
         scheduler=Devices.getScheduler()
         jobIDs=self.getPollingJobIDs()
         process=os.getpid()
-        #logger.info("Enters update_requests on process " + str(process))
+        #logger.info("Enters updateRequests on process " + str(process))
         
         if self.State==RUNNING_STATE:
             if jobIDs != []:
@@ -1053,7 +1091,7 @@ class Devices(models.Model):
                         text=str(_('Job ')) + str(id) + str(_(' did not exist. The device ') + self.Name + str(_(' was already stopped.'))) 
                         severity=5  
             else:
-                text='Unhandled error on update_requests for device ' + str(self.Name) 
+                text='Unhandled error on updateRequests for device ' + str(self.Name) 
                 severity=5  
                 
             PublishEvent(Severity=severity,Text=text,Persistent=True)
@@ -1214,13 +1252,14 @@ class Devices(models.Model):
                         for i,bitLabel in enumerate(BitLabels):
                             DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
                     else:
-                        raise DevicesAppException(str(_('The variable named '))+ name + str(_(' is registered as digital but does not have 8 bit labels chained by character "$" ')))
+                        for i in range(0,8):
+                            DeviceVars.append({'label':CustomVars[name]+'_bit'+str(i),'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
                 else:
                     DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime,'units':unit})
         return DeviceVars
     
     def updateAutomationVars(self):
-        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device=self.pk)
+        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device=str(self.pk))
         DeviceVars=self.getDeviceVariables()
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(devices=self)
         for dvar in DeviceVars:
@@ -1228,23 +1267,22 @@ class Devices(models.Model):
                 avar=AutomationVars.get(Tag=dvar['name'],Table=dvar['table'],Device=dvar['device'],BitPos=dvar['bit'])
                 avar.Label=dvar['label']
                 avar.Units=dvar['units']
-                avar.store2DB()
             except:
                 avar=None
                 
             if avar==None:
-                avar=MainAPP.models.AutomationVariables()
-                avar.create(Label=dvar['label'],Tag=dvar['name'],Device=dvar['device'],
-                                Table=dvar['table'],BitPos=dvar['bit'],Sample=dvar['sample'],Units=dvar['units'])
+                avar=MainAPP.models.AutomationVariables(Label=dvar['label'],Tag=dvar['name'],Device=dvar['device'],
+                                                        Table=dvar['table'],BitPos=dvar['bit'],Sample=dvar['sample'],
+                                                        Units=dvar['units'])
+            
+            avar.store2DB()
             
             if SUBSYSTEMs.count():
                 for SUBS in SUBSYSTEMs:
                     found=avar.checkSubsystem(Name=SUBS.Name)
                     if found==False:
                         avar.createSubsystem(Name=SUBS.Name)
-                        
-            avar.executeAutomationRules()
-            
+                    
     def deleteAutomationVars(self):
         MainAPP.models.AutomationVariables.objects.filter(Device=self.pk).delete()
             
@@ -1303,7 +1341,7 @@ class Devices(models.Model):
             IP=DEVICES_SUBNET+DEVICES_SCAN_IP4BYTE
         server=DEVICES_PROTOCOL + IP
         #server='http://127.0.0.1'
-        (status,root)=cls.request_confXML(server=server,xmlfile=DEVICES_CONFIG_FILE)
+        (status,root)=cls.requestConfXML(server=server,xmlfile=DEVICES_CONFIG_FILE)
         errors=[]
         
         if status==200:
@@ -1320,7 +1358,7 @@ class Devices(models.Model):
             DEVICE_CODE=lastRow+1+IP_OFFSET
             DeviceIP=DEVICES_SUBNET+str(DEVICE_CODE)
             payload={'DEVC':str(DEVICE_CODE)}
-            (status,r)=cls.request_orders(server=server,order='SetConf.htm',payload=payload)
+            (status,r)=cls.requestOrders(server=server,order='SetConf.htm',payload=payload)
             if status==200 and Type!=None:
                 form=FormModel(action='add',initial={'Name':DeviceName,'DVT':Type,'Code':DEVICE_CODE,'IP':DeviceIP})
                 state='ConfigOK'
@@ -1338,7 +1376,7 @@ class Devices(models.Model):
         return {'devicetype':DEVICE_TYPE,'Form':form,'errors':errors}
     
     @staticmethod
-    def request_orders(server,order,payload,timeout=1):
+    def requestOrders(server,order,payload,timeout=1):
         """
         :callback       payload = {'key1': 'value1', 'key2': 'value2'}   
                         self.orders_request(server, 'orders', payload) 
@@ -1356,7 +1394,7 @@ class Devices(models.Model):
             return (100,None)
         
     @staticmethod
-    def request_confXML(server,xmlfile,timeout=1):
+    def requestConfXML(server,xmlfile,timeout=1):
         """
         Requests a xml file from a server
         :param server: 
@@ -1506,10 +1544,18 @@ class Devices(models.Model):
             DB=getRegistersDBInstance(year=TimeStamp.year)
             self.checkRegistersDB(Database=DB)
             DB.executeTransactionWithCommit(SQLstatement=sql, arg=roundvalues)
+            self.sendUpdateSignals(DG_id=DatagramId,values=roundvalues)
         except:
             raise DevicesAppException("Unexpected error in insert_device_register:" + str(sys.exc_info()[1]))
             
-    def request_datagram(self,DatagramId,timeout=1,writeToDB=True,resetOrder=True,retries=1):
+    def sendUpdateSignals(self,DG_id,values):
+        DG=Datagrams.objects.get(Identifier=DG_id)
+        datagram=DG.getStructure()
+        MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=values[0],
+                                                                                Tags=datagram['names'],
+                                                                                Values=values[1:])
+        
+    def requestDatagram(self,DatagramId,timeout=1,writeToDB=True,resetOrder=True,retries=1):
         """
         Requests a xml file from a server
         :param Name
@@ -1545,7 +1591,7 @@ class Devices(models.Model):
                                 self.insertRegister(TimeStamp=timestamp, DatagramId=DatagramId, 
                                                                   year=timestamp.year, values=datagram,NULL=False)
                                 if resetOrder:
-                                    (code,x) = self.request_orders(server=server,order='resetStatics',payload={})
+                                    (code,x) = self.requestOrders(server=server,order='resetStatics',payload={})
                                     if code==200:
                                         Error=''
                                     else:
@@ -1633,7 +1679,7 @@ class Devices(models.Model):
 @receiver(post_save, sender=Devices, dispatch_uid="update_Devices")
 def update_Devices(sender, instance, update_fields,**kwargs):
     if kwargs['created']:   # new instance is created
-        instance.update_requests()
+        instance.updateRequests()
                
 @receiver(post_delete, sender=Devices, dispatch_uid="delete_Devices")
 def delete_Devices(sender, instance,**kwargs):
@@ -1816,7 +1862,7 @@ class Beacons(models.Model):
     Latitude = models.FloatField()
     Longitude = models.FloatField()
     WeatherObserver=models.OneToOneField(Devices,on_delete=models.CASCADE,related_name='device2beacon',
-                                         null=True,blank=True,limit_choices_to={'Type__Code': 'OpenWeatherMap'})
+                                         null=True,blank=True,limit_choices_to={'DVT__Code': 'OpenWeatherMap'})
     
     @staticmethod
     def distance_to(other):

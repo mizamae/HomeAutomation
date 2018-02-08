@@ -54,6 +54,7 @@ class BaseProfile(models.Model):
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
     if issubclass(sender, BaseProfile):
         from DevicesAPP.models import Beacons,MainDeviceVars
+        from DevicesAPP.constants import DTYPE_FLOAT
         beacons=Beacons.objects.all()
 
         for beacon in beacons:
@@ -62,7 +63,9 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             try:
                 mainVar=MainDeviceVars.objects.get(Label=label)
             except:
-                mainVar=MainDeviceVars(Label=label,Value='',Datatype=0,Units='km',UserEditable=False)
+                
+                mainVar=MainDeviceVars(Label=label,Value=-1,DataType=DTYPE_FLOAT,Units='km',UserEditable=False)
+                mainVar.store2DB()
                 logger.info('Creating main Var ' + label)
 
             if instance.Latitude!=None and instance.Longitude!=None:
