@@ -112,7 +112,6 @@ class MainDeviceVars(models.Model):
                 MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=now,
                                                                                         Tags=[self.getRegistersDBTag(),],
                                                                                         Values=[newValue,])
-            
             if writeDB :
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now)
@@ -134,7 +133,7 @@ class MainDeviceVars(models.Model):
                 valuesHolder+='?,'
         columns=columns[:-1]
         valuesHolder=valuesHolder[:-1]
-        sql=sql.replace('%s','"'+self.getRegistersDBTableName()+'"').replace('*',columns).replace('?',valuesHolder)
+        sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*',columns).replace('?',valuesHolder)
         return {'query':sql,'num_args':len(names),'values':values}
     
     def checkRegistersDB(self,Database):
@@ -143,7 +142,7 @@ class MainDeviceVars(models.Model):
         
         required_DGs=[]
         found=False
-        table_to_find=self.getRegistersDBTableName()
+        table_to_find=self.getRegistersDBTable()
         for row in rows:
             if (row[1]==table_to_find):   # found the table in the DB
                 found=True
@@ -158,7 +157,7 @@ class MainDeviceVars(models.Model):
         """
         Creates the table corresponding to the GPIO Direction
         """
-        TableName=self.getRegistersDBTableName()
+        TableName=self.getRegistersDBTable()
 
         try:
             struct=self.getStructure()
@@ -200,7 +199,7 @@ class MainDeviceVars(models.Model):
     def updateAutomationVars(self):
         AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars')
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(mainvars=self)
-        dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'MainVars','Table':self.getRegistersDBTableName(),'BitPos':None,'Sample':0,'Units':self.Units}
+        dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'MainVars','Table':self.getRegistersDBTable(),'BitPos':None,'Sample':0,'Units':self.Units}
         try:
             avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],Device=dvar['Device'])
             avar.Label=dvar['Label']
@@ -226,7 +225,7 @@ class MainDeviceVars(models.Model):
         Data={}
         name=self.getRegistersDBTag()
         Data[name]={}
-        table=self.getRegistersDBTableName()
+        table=self.getRegistersDBTable()
         vars='"timestamp","'+name+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
         from utils.BBDD import getRegistersDBInstance
@@ -250,7 +249,7 @@ class MainDeviceVars(models.Model):
         return Data
     
     @staticmethod
-    def getRegistersDBTableName():
+    def getRegistersDBTable():
         return 'MainVariables'
         
     @classmethod
@@ -271,7 +270,7 @@ class MainDeviceVars(models.Model):
                 datatypes.append(instance.DataType)
                 plottypes.append(instance.PlotType)
         return {'pk':pks,'names':names,'values':values,'types':types,'datatypes':datatypes,'plottypes':plottypes} 
-        
+    
     @classmethod
     def getCharts(cls,fromDate,toDate):
         charts=[]
@@ -286,7 +285,7 @@ class MainDeviceVars(models.Model):
                 types.append(instance.DataType)
                 labels.append(instance.Label)
                 plottypes.append(instance.PlotType)
-                table=instance.getRegistersDBTableName()
+                table=instance.getRegistersDBTable()
             
             names.insert(0,'timestamp')
             types.insert(0,'datetime')
@@ -410,7 +409,7 @@ class MainDeviceVarWeeklySchedules(models.Model):
                         PublishEvent(Severity=2,Text=text,Persistent=True)
                         break
                     if self.Var.Value!=Value or init:
-                        self.Var.updateValue(newValue=Value,writeDB=True)
+                        self.Var.updateValue(newValue=Value,writeDB=True,force=init)
                     break
                     
     @classmethod
@@ -564,7 +563,7 @@ class MasterGPIOs(models.Model):
         Data={}
         name=self.getRegistersDBTag()
         Data[name]={}
-        table=self.getRegistersDBTableName()
+        table=self.getRegistersDBTable()
         vars='"timestamp","'+name+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
         from utils.BBDD import getRegistersDBInstance
@@ -620,7 +619,7 @@ class MasterGPIOs(models.Model):
                 elif self.Value==0:
                     GPIO.output(int(self.Pin),GPIO.LOW)
                 
-    def getRegistersDBTableName(self):
+    def getRegistersDBTable(self):
         if self.Direction==GPIO_INPUT:
             table=GPIO_IN_DBTABLE
         elif self.Direction==GPIO_OUTPUT:
@@ -654,7 +653,7 @@ class MasterGPIOs(models.Model):
         """
         Creates the table corresponding to the GPIO Direction
         """
-        TableName=self.getRegistersDBTableName()
+        TableName=self.getRegistersDBTable()
 
         try:
             struct=self.getStructure()
@@ -686,7 +685,7 @@ class MasterGPIOs(models.Model):
                 valuesHolder+='?,'
         columns=columns[:-1]
         valuesHolder=valuesHolder[:-1]
-        sql=sql.replace('%s','"'+self.getRegistersDBTableName()+'"').replace('*',columns).replace('?',valuesHolder)
+        sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*',columns).replace('?',valuesHolder)
         return {'query':sql,'num_args':len(names),'values':values}
     
     def checkRegistersDB(self,Database):
@@ -696,7 +695,7 @@ class MasterGPIOs(models.Model):
         required_DGs=[]
 
         found=False
-        table_to_find=self.getRegistersDBTableName()
+        table_to_find=self.getRegistersDBTable()
         for row in rows:
             if (row[1]==table_to_find):   # found the table in the DB
                 found=True
@@ -731,7 +730,7 @@ class MasterGPIOs(models.Model):
             raise DevicesAppException("Unexpected error in insert_GPIO_register:" + str(sys.exc_info()[1]))
     
     def updateAutomationVars(self):
-        table=self.getRegistersDBTableName()
+        table=self.getRegistersDBTable()
         AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='MainGPIOs')
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(gpios=self)
         dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'MainGPIOs','Table':table,'BitPos':None,'Sample':0}
@@ -768,7 +767,7 @@ class MasterGPIOs(models.Model):
                     types.append('digital')
                     labels.append(IO.Label)
                     plottypes.append('line')
-                    table=IO.getRegistersDBTableName()
+                    table=IO.getRegistersDBTable()
                 
                 names.insert(0,'timestamp')
                 types.insert(0,'datetime')
@@ -784,7 +783,7 @@ class MasterGPIOs(models.Model):
         
     def deleteAutomationVars(self):
         if self.Direction!=GPIO_SENSOR:
-            table=self.getRegistersDBTableName()
+            table=self.getRegistersDBTable()
             try:
                 avar=MainAPP.models.AutomationVariables.objects.get(Device='MainGPIOs',Tag=str(self.pk),Table=table)
                 avar.delete()
@@ -796,7 +795,7 @@ class MasterGPIOs(models.Model):
         DeviceVars=[]
         IOs=MasterGPIOs.objects.filter(Q(Direction=GPIO_INPUT) | Q(Direction=GPIO_OUTPUT))
         for IO in IOs:
-            DeviceVars.append({'Label':IO.Label,'Tag':IO.getRegistersDBTag(),'Device':'Main','Table':IO.getRegistersDBTableName(),'BitPos':None})
+            DeviceVars.append({'Label':IO.Label,'Tag':IO.getRegistersDBTag(),'Device':'Main','Table':IO.getRegistersDBTable(),'BitPos':None})
         return DeviceVars        
     
     @staticmethod
@@ -1164,9 +1163,9 @@ class Devices(models.Model):
             tables=[]
             if DGs.count()>0:
                 for DG in DGs:
-                    tables.append(self.getRegistersDBTableName(DG=DG))
+                    tables.append(self.getRegistersDBTable(DG=DG))
         else:
-            tables=self.getRegistersDBTableName(DG=DG)
+            tables=self.getRegistersDBTable(DG=DG)
         return tables
     
     def getLatestData(self,localized=True):
@@ -1417,14 +1416,14 @@ class Devices(models.Model):
             logger.error("Unexpected error in xml_data_request:"+ str(sys.exc_info()[1])) 
             return (100,None)
         
-    def getRegistersDBTableName(self,DG):
+    def getRegistersDBTable(self,DG):
         return str(self.pk)+'_'+str(DG.pk)
     
     def _createRegistersTable(self,DG,Database):
         """
         Creates the table corresponding to the DV and Datagram DG
         """
-        TableName=self.getRegistersDBTableName(DG=DG)
+        TableName=self.getRegistersDBTable(DG=DG)
         datagram=DG.getStructure()
         names=datagram['names']
         datatypes=datagram['datatypes']        
@@ -1504,7 +1503,7 @@ class Devices(models.Model):
         DGs=Datagrams.objects.filter(DVT=self.DVT)
         for DG in DGs:
             found=False
-            table_to_find=self.getRegistersDBTableName(DG=DG)
+            table_to_find=self.getRegistersDBTable(DG=DG)
             for row in rows:
                 if (row[1]==table_to_find):   # found the table in the DB
                     found=True
@@ -1650,7 +1649,7 @@ class Devices(models.Model):
                 for name in datagram_info['names']:
                     Labeliterable.append(labels[name])
             
-                table=self.getRegistersDBTableName(DG=DG)
+                table=self.getRegistersDBTable(DG=DG)
                 names=datagram_info['names'][:]
                 names.insert(0,'timestamp')
                 types=datagram_info['types']
@@ -1671,7 +1670,7 @@ class Devices(models.Model):
         DGs=Datagrams.objects.filter(DVT=self.DVT)
         DB=getRegistersDBInstance()
         for DG in DGs:
-            table=self.getRegistersDBTableName(DG=DG)
+            table=self.getRegistersDBTable(DG=DG)
             DB.dropTable(table=table)
 
     

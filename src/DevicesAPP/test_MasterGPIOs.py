@@ -31,11 +31,11 @@ class MasterGPIOsModelTests(TestCase):
         instance.store2DB()
         # checks that store2DB creates the corresponding table in the registers DB and introduces a first record with the current value
         self.assertEqual(instance.Value,GPIO_HIGH)
-        self.assertTrue(self.DB.checkIfTableExist(table=instance.getRegistersDBTableName()))
+        self.assertTrue(self.DB.checkIfTableExist(table=instance.getRegistersDBTable()))
         latest=instance.getLatestData(localized=False)
         self.assertAlmostEqual(latest[instance.getRegistersDBTag()]['timestamp'],now,delta=datetime.timedelta(seconds=1))# latest value is dated now
         self.assertEqual(latest[instance.getRegistersDBTag()]['value'],GPIO_HIGH)# latest value is high
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
           
     def test_updateValue(self):
         '''
@@ -53,7 +53,7 @@ class MasterGPIOsModelTests(TestCase):
         print('    -> Tested standard path')
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
         instance.updateValue(newValue=GPIO_LOW,timestamp=None,writeDB=True,force=False)
-        table=instance.getRegistersDBTableName()
+        table=instance.getRegistersDBTable()
         vars='"timestamp","'+instance.getRegistersDBTag()+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 2'
         rows=self.DB.executeTransaction(SQLstatement=sql)
@@ -69,7 +69,7 @@ class MasterGPIOsModelTests(TestCase):
         self.assertEqual(latest[instance.getRegistersDBTag()]['timestamp'],now)# latest value is dated now
         self.assertEqual(latest[instance.getRegistersDBTag()]['value'],GPIO_HIGH)# latest value is dated now
           
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
      
     def test_setHigh(self):
         '''
@@ -83,7 +83,7 @@ class MasterGPIOsModelTests(TestCase):
         self.assertEqual(instance.Value,GPIO_HIGH)# current value equals High
         latest=instance.getLatestData(localized=False)
         self.assertEqual(latest[instance.getRegistersDBTag()]['value'],GPIO_HIGH)# last value on DB equals High
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
       
     def test_setLow(self):
         '''
@@ -97,7 +97,7 @@ class MasterGPIOsModelTests(TestCase):
         self.assertEqual(instance.Value,GPIO_LOW)# current value equals Low
         latest=instance.getLatestData(localized=False)
         self.assertEqual(latest[instance.getRegistersDBTag()]['value'],GPIO_LOW)# last value on DB equals Low
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
          
     def test_IntegrityError(self):
         '''
@@ -115,7 +115,7 @@ class MasterGPIOsModelTests(TestCase):
           
         instance.setLow()
         instance2.setLow()
-        table=instance.getRegistersDBTableName()
+        table=instance.getRegistersDBTable()
         vars='"timestamp","'+instance.getRegistersDBTag()+'"'+ ',"'+instance2.getRegistersDBTag()+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp ASC'
         rows=self.DB.executeTransaction(SQLstatement=sql)
@@ -137,15 +137,15 @@ class MasterGPIOsModelTests(TestCase):
         for i in range(2,4):
             self.assertEqual(rows[i+1][0]-rows[i][0],datetime.timedelta(seconds=1))# checks that it inserts two rows with 1 second difference
  
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
           
     def test_str(self):        
         print('## TESTING THE OPERATION OF THE str METHOD ##')
         instance=MasterGPIOs(**MasterGPIODict)
         instance.store2DB()
         self.assertEqual(str(instance),instance.Label + ' on pin ' + str(instance.Pin) )
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
       
     def test_initializeIOs(self):
         print('## TESTING THE OPERATION OF THE initializeIOs METHOD ##')
@@ -160,8 +160,8 @@ class MasterGPIOsModelTests(TestCase):
         print('    -> Tested declareInputEvent=False')
         MasterGPIOs.initializeIOs(declareInputEvent=False)
          
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
           
     def test_getCharts(self):
         '''
@@ -237,8 +237,8 @@ class MasterGPIOsModelTests(TestCase):
             self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][0][0]/1000,tz=local_tz),dateIni,delta=datetime.timedelta(seconds=1))# checks that the first row is dated as dateIni
             self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][1][0]/1000,tz=local_tz),dateEnd,delta=datetime.timedelta(seconds=1))# checks that the second row is dated as dateEnd
               
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
         print('    -> Tested with no table in the DB')
         instance.delete()
         instance2.delete()
@@ -260,8 +260,8 @@ class MasterGPIOsModelTests(TestCase):
         print('    -> Tested with empty table in the DB')
         instance.checkRegistersDB(Database=self.DB)
         instance2.checkRegistersDB(Database=self.DB)
-        self.assertTrue(self.DB.checkIfTableExist(instance.getRegistersDBTableName()))
-        self.assertTrue(self.DB.checkIfTableExist(instance2.getRegistersDBTableName()))
+        self.assertTrue(self.DB.checkIfTableExist(instance.getRegistersDBTable()))
+        self.assertTrue(self.DB.checkIfTableExist(instance2.getRegistersDBTable()))
         charts=MasterGPIOs.getCharts(fromDate=dateIni,toDate=dateEnd)
         for chart in charts:
             title=chart['title']
@@ -274,6 +274,6 @@ class MasterGPIOsModelTests(TestCase):
                 elif col['type']!='datetime':
                     self.assertEqual(chart['rows'][0][i],None) # all None values
               
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
          

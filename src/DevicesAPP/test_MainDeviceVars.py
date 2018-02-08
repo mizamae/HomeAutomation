@@ -48,11 +48,11 @@ class MainDeviceVarsModelTests(TestCase):
         self.assertEqual(self.signalTag,str(instance.pk))
         # checks that store2DB creates the corresponding table in the registers DB and introduces a first record with the current value         
         self.assertEqual(instance.Value,MainDeviceVarDict['Value'])
-        self.assertTrue(self.DB.checkIfTableExist(table=instance.getRegistersDBTableName()))
+        self.assertTrue(self.DB.checkIfTableExist(table=instance.getRegistersDBTable()))
         latest=instance.getLatestData(localized=False)
         self.assertAlmostEqual(latest[instance.getRegistersDBTag()]['timestamp'],now,delta=datetime.timedelta(seconds=1))# latest value is dated now
         self.assertEqual(latest[instance.getRegistersDBTag()]['value'],MainDeviceVarDict['Value'])# latest value is the same as in the dict
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
          
     def test_updateValue(self):
         '''
@@ -78,7 +78,7 @@ class MainDeviceVarsModelTests(TestCase):
         self.assertEqual(self.signalValue,instance.Value)
         self.assertEqual(self.signalTag,str(instance.pk))
         
-        table=instance.getRegistersDBTableName()
+        table=instance.getRegistersDBTable()
         vars='"timestamp","'+instance.getRegistersDBTag()+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 2'
         rows=self.DB.executeTransaction(SQLstatement=sql)
@@ -101,7 +101,7 @@ class MainDeviceVarsModelTests(TestCase):
         self.assertEqual(latest[instance.getRegistersDBTag()]['timestamp'],now.replace(tzinfo=None))# latest value is dated now
         self.assertEqual(latest[instance.getRegistersDBTag()]['value'],21)# latest value is dated now
           
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
      
     def test_IntegrityError(self):
         '''
@@ -123,7 +123,7 @@ class MainDeviceVarsModelTests(TestCase):
         instance.updateValue(newValue=newValue1,timestamp=now,writeDB=True,force=False)
         instance2.updateValue(newValue=newValue2,timestamp=now,writeDB=True,force=False)
         
-        table=instance.getRegistersDBTableName()
+        table=instance.getRegistersDBTable()
         vars='"timestamp","'+instance.getRegistersDBTag()+'"'+ ',"'+instance2.getRegistersDBTag()+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp ASC'
         rows=self.DB.executeTransaction(SQLstatement=sql)
@@ -141,15 +141,15 @@ class MainDeviceVarsModelTests(TestCase):
         for i in range(0,2):
             self.assertEqual(rows[i+1][0]-rows[i][0],datetime.timedelta(seconds=1))# checks that it inserts two rows with 1 second difference
  
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
           
     def test_str(self):        
         print('## TESTING THE OPERATION OF THE str METHOD ##')
         instance=MainDeviceVars(**MainDeviceVarDict)
         instance.store2DB()
         self.assertEqual(str(instance),instance.Label)
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
  
     def test_getCharts(self):
         '''
@@ -227,8 +227,8 @@ class MainDeviceVarsModelTests(TestCase):
             self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][0][0]/1000,tz=local_tz),dateIni,delta=datetime.timedelta(seconds=1))# checks that the first row is dated as dateIni
             self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][1][0]/1000,tz=local_tz),dateEnd,delta=datetime.timedelta(seconds=1))# checks that the second row is dated as dateEnd
                
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
         
         print('    -> Tested with no table in the DB')
         instance.delete()
@@ -252,8 +252,8 @@ class MainDeviceVarsModelTests(TestCase):
         print('    -> Tested with empty table in the DB')
         instance.checkRegistersDB(Database=self.DB)
         instance2.checkRegistersDB(Database=self.DB)
-        self.assertTrue(self.DB.checkIfTableExist(instance.getRegistersDBTableName()))
-        self.assertTrue(self.DB.checkIfTableExist(instance2.getRegistersDBTableName()))
+        self.assertTrue(self.DB.checkIfTableExist(instance.getRegistersDBTable()))
+        self.assertTrue(self.DB.checkIfTableExist(instance2.getRegistersDBTable()))
         charts=MasterGPIOs.getCharts(fromDate=dateIni,toDate=dateEnd)
         for chart in charts:
             title=chart['title']
@@ -266,8 +266,8 @@ class MainDeviceVarsModelTests(TestCase):
                 elif col['type']!='datetime':
                     self.assertEqual(chart['rows'][0][i],None) # all None values
               
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
-        self.DB.dropTable(table=instance2.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+        self.DB.dropTable(table=instance2.getRegistersDBTable())
     
     def testAssignSubsystem(self):
         print('## TESTING THE ASSIGNMENET OF A SUBSYSTEM ##')
@@ -279,7 +279,11 @@ class MainDeviceVarsModelTests(TestCase):
         subsystem.save()
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(mainvars=instance)
         self.assertEqual(list(SUBSYSTEMs),[subsystem,]) # a subsystem returned
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        newLabel='New label for you'
+        instance.updateLabel(newLabel=newLabel)
+        AVAR=MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Tag=instance.getRegistersDBTag())
+        self.assertEqual(AVAR.Label,newLabel) # an AVAR is now created
+        self.DB.dropTable(table=instance.getRegistersDBTable())
     
     def testAutomationVarsManagement(self):
         print('## TESTING THE MANAGEMENT OF THE AUTOMATION VARS ##')
@@ -294,5 +298,5 @@ class MainDeviceVarsModelTests(TestCase):
         AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars').filter(Tag=instance.getRegistersDBTag())
         self.assertEqual(1,AVARs.count()) # only one automationvar is still returned
         
-        self.DB.dropTable(table=instance.getRegistersDBTableName())
+        self.DB.dropTable(table=instance.getRegistersDBTable())
         

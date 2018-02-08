@@ -170,7 +170,7 @@ class DevicesModelTests(TestCase):
         DB=getRegistersDBInstance()
         DGs=Datagrams.objects.filter(DVT=instance.DVT)
         for DG in DGs:
-            table=instance.getRegistersDBTableName(DG=DG)
+            table=instance.getRegistersDBTable(DG=DG)
             row=DB.checkIfTableExist(table=table)
             self.assertNotEqual(row,[])
             self.assertEqual(DB.dropTable(table=table),0)
