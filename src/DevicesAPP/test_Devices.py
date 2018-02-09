@@ -302,9 +302,11 @@ class DevicesModelTests(TestCase):
             info=Datagrams.getInfoFromItemName(name=variable['name'])
             self.assertEqual(variable['table'].split('_')[0],str(pk))
             self.assertEqual(variable['device'],str(pk))
+            info=Datagrams.getInfoFromItemName(name=variable['name'])
+            ITM=DatagramItems.objects.get(pk=info['itempk'])
             if info['type']==DTYPE_DIGITAL:
                 self.assertIsInstance(variable['bit'], type(3))
-                self.assertEqual(variable['label'],variable['name']+' bit '+str(variable['bit']))
+                self.assertEqual(variable['label'],ITM.getHumanName().split('$')[variable['bit']])
             else:
                 self.assertEqual(variable['bit'],None)
         instance.CustomLabels=prev
@@ -338,7 +340,7 @@ class DevicesModelTests(TestCase):
      
     def test_updateRequests(self):
         print('## TESTING THE OPERATION OF THE update_requests METHOD ##')
-        print('    --> Starts/Stops polling of device and checks scheduler')
+        print('    --> Starts/Stops polling of remote device and checks scheduler')
         from .constants import RUNNING_STATE,STOPPED_STATE
         newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
         instance=Devices(**newDict)
@@ -358,6 +360,50 @@ class DevicesModelTests(TestCase):
             scheduler=Devices.getScheduler()
             JOB=scheduler.getJobInStore(jobId=job['id'])
             self.assertEqual(JOB,None)
+        instance.delete()
+        
+        print('    --> Starts/Stops polling of local device and checks scheduler')
+        newDict=editDict(keys=['DVT',],newValues=[self.localDVT,])
+        instance=Devices(**newDict)
+        instance.store2DB()
+        instance.startPolling()
+        self.assertEqual(instance.State,RUNNING_STATE)
+        jobs=instance.getPollingJobIDs()
+        for job in jobs:
+            scheduler=Devices.getScheduler()
+            JOB=scheduler.getJobInStore(jobId=job['id'])
+            self.assertIsNot(JOB,None)
+ 
+        instance.stopPolling()
+        self.assertEqual(instance.State,STOPPED_STATE)
+        jobs=instance.getPollingJobIDs()
+        for job in jobs:
+            scheduler=Devices.getScheduler()
+            JOB=scheduler.getJobInStore(jobId=job['id'])
+            self.assertEqual(JOB,None)
+        instance.delete()
+        
+        print('    --> Starts/Stops polling of memory device and checks scheduler')
+        newDict=editDict(keys=['DVT',],newValues=[self.memoryDVT,])
+        instance=Devices(**newDict)
+        instance.store2DB()
+        instance.startPolling()
+        self.assertEqual(instance.State,RUNNING_STATE)
+        jobs=instance.getPollingJobIDs()
+        for job in jobs:
+            scheduler=Devices.getScheduler()
+            JOB=scheduler.getJobInStore(jobId=job['id'])
+            self.assertIsNot(JOB,None)
+ 
+        instance.stopPolling()
+        self.assertEqual(instance.State,STOPPED_STATE)
+        jobs=instance.getPollingJobIDs()
+        for job in jobs:
+            scheduler=Devices.getScheduler()
+            JOB=scheduler.getJobInStore(jobId=job['id'])
+            self.assertEqual(JOB,None)
+        instance.delete()
+        
         instance.deleteRegistersTables()
      
     def test_setNextUpdate(self):

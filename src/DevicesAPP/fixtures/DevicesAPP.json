@@ -27,7 +27,7 @@
     "fields": {
         "Code": "OpenWeatherMap",
         "Description": "Memory device",
-        "MinSampletime": 600,
+        "MinSampletime": 60,
         "Connection": 2,
         "Picture": ""
     }

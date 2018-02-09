@@ -434,7 +434,7 @@ class DatagramCustomLabelsForm(forms.Form):
                     else:
                         fieldName='digital_variable'+'_'+name
                         for k in range(0,8):
-                            initial_values[fieldName+'_bit%s' % k]=IT.getHumanName()+'_bit%s' % k
+                            initial_values[fieldName+'_bit%s' % k]=IT.getHumanName4Digital(bit=k)
             else:
                 HumanNames=CustomLabels[str(DG.pk)]
                 for name in HumanNames:

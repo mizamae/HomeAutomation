@@ -29,9 +29,11 @@ class DatagramItemsModelTests(TestCase):
         
     def test_getHumanName(self):        
         print('## TESTING THE OPERATION OF THE getHumanName METHOD ##')
+        newDict=editDict(keys=['DataType',],newValues=[DTYPE_DIGITAL,],Dictionary=DatagramItemDict)
         instance=DatagramItems(**DatagramItemDict)
         instance.store2DB()
-        self.assertEqual(instance.getHumanName(),DatagramItemDict['Tag']+'_'+instance.Units)
+        for k in range(0,8):
+            self.assertTrue( DatagramItemDict['Tag']+' bit '+str(k) in instance.getHumanName())
     
 print('########################################')
 print('# TESTING OF Datagrams MODEL FUNCTIONS #')

@@ -538,6 +538,7 @@ class MasterGPIOs(models.Model):
             GPIO.setup(int(self.Pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
             self.Value=GPIO.input(int(self.Pin))
         self.updateValue(newValue=self.Value,timestamp=now,writeDB=True,force=True)
+        self.updateAutomationVars() 
         
     def setHigh(self):
         if self.Direction==GPIO_OUTPUT:
@@ -991,6 +992,7 @@ class Devices(models.Model):
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance(year=None)
         self.createRegistersTables(Database=DB)
+        self.updateAutomationVars()
     
     @staticmethod
     def getScheduler():
@@ -1142,16 +1144,16 @@ class Devices(models.Model):
             else:
                 CustomLabels={}
             for DG in DGs:
-                try:
-                    kk=CustomLabels[str(DG.pk)]
-                except:
+                if not str(DG.pk) in CustomLabels:
                     CustomLabels[str(DG.pk)]={}
                 datagram=DG.getStructure()
                 names=datagram['names']
-                for name in names:
+                types=datagram['types']
+                for name,type in zip(names,types):
                     if not name in CustomLabels[str(DG.pk)]:
                         info=Datagrams.getInfoFromItemName(name=name)
-                        CustomLabels[str(DG.pk)][name]=info['human']
+                        ITM=DatagramItems.objects.get(pk=info['itempk'])
+                        CustomLabels[str(DG.pk)][name]=ITM.getHumanName()
             self.CustomLabels=json.dumps(CustomLabels)
         else:
             self.CustomLabels=''
@@ -1220,41 +1222,31 @@ class Devices(models.Model):
     def getDeviceVariables(self):
         DeviceVars=[]
         DGs=Datagrams.objects.filter(DVT=self.DVT)
+        if self.CustomLabels=='' or self.CustomLabels==None:
+            self.setCustomLabels()
+        
         if self.CustomLabels!='':
             CustomLabels=json.loads(self.CustomLabels)
-        else:
-            CustomLabels=None
-            
-        for DG in DGs:
-            datagram=DG.getStructure()
-            names=datagram['names']
-            types=datagram['types']
-            units=datagram['units']
-            table=self.getRegistersTables(DG=DG)
-            if CustomLabels!=None:
-                CustomVars=CustomLabels[str(DG.pk)]
-            else:
-                CustomVars={}
-                for name,type in zip(names,types):
-                    if type==DTYPE_DIGITAL:
-                        CustomVars[name]=''
-                        for i in range(0,8):
-                            CustomVars[name]+='$'+name+' bit ' + str(i)
-                        CustomVars[name]=CustomVars[name][1:]
-                    else:
-                        CustomVars[name]=name
                 
-            for name,type,unit in zip(names,types,units):
-                if type==DTYPE_DIGITAL:
-                    BitLabels=CustomVars[name].split('$')
-                    if len(BitLabels)==8:
-                        for i,bitLabel in enumerate(BitLabels):
-                            DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
+            for DG in DGs:
+                datagram=DG.getStructure()
+                names=datagram['names']
+                types=datagram['types']
+                units=datagram['units']
+                table=self.getRegistersTables(DG=DG)
+                CustomVars=CustomLabels[str(DG.pk)]
+                for name,type,unit in zip(names,types,units):
+                    if type==DTYPE_DIGITAL:
+                        BitLabels=CustomVars[name].split('$')
+                        if len(BitLabels)==8:
+                            for i,bitLabel in enumerate(BitLabels):
+                                DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
+                        else:
+                            for i in range(0,8):
+                                DeviceVars.append({'label':CustomVars[name]+'_bit'+str(i),'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
                     else:
-                        for i in range(0,8):
-                            DeviceVars.append({'label':CustomVars[name]+'_bit'+str(i),'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
-                else:
-                    DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime,'units':unit})
+                        DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime,'units':unit})
+            
         return DeviceVars
     
     def updateAutomationVars(self):
@@ -1722,11 +1714,20 @@ class DatagramItems(models.Model):
     def __str__(self):
         return self.Tag
     
-    def getHumanName(self):
-        return self.Tag+'_'+self.Units
-    
-    
+    def getHumanName4Digital(self,bit):
+        name=self.getHumanName().split('$')[bit]
+        return name
         
+    def getHumanName(self):
+        if self.DataType!= DTYPE_DIGITAL:
+            return self.Tag+'_'+self.Units
+        else:
+            kk=''
+            for i in range(0,8): 
+                kk+='$'+self.Tag+' bit ' + str(i) 
+            kk=kk[1:]
+            return kk
+    
 class Datagrams(models.Model):
     
     class Meta:

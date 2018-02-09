@@ -25,6 +25,7 @@ from .apps import DevicesAppException
 from .forms import DevicesForm,DatagramCustomLabelsForm
 
 import MainAPP.models
+from MainAPP.signals import SignalAutomationVariablesValueUpdated
 
 # CREATES A BACKUP OF THE REGISTERS DB
 from utils.BBDD import backupRegistersDB
@@ -49,8 +50,8 @@ DeviceDict={
                 'IP' : '127.0.0.1',
                 'DVT' : 0,
                 'State': 0,
-                'Sampletime':10,
-                'RTsampletime':10,
+                'Sampletime':60,
+                'RTsampletime':60,
                 'LastUpdated': None,
                 'NextUpdate': None,
                 'Connected' : False,  

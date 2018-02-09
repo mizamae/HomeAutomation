@@ -1,5 +1,5 @@
 from .test_utils import *
-from MainAPP.signals import SignalAutomationVariablesValueUpdated
+
 
 print('#############################################')
 print('# TESTING OF MainDeviceVars MODEL FUNCTIONS #')

@@ -11,7 +11,17 @@ class MasterGPIOsModelTests(TestCase):
         self.DB=getRegistersDBInstance()
         self.DB.dropTable(table='inputs')
         self.DB.dropTable(table='outputs')
-        pass
+        self.signal_was_called = False
+        self.signaltimestamp=None
+        self.signalTag=None
+        self.signalValue=None
+        def handler(sender, **kwargs):
+            self.signal_was_called = True
+            self.signaltimestamp=kwargs['timestamp']
+            self.signalTag=kwargs['Tags'][0]
+            self.signalValue=kwargs['Values'][0]
+        
+        self.handler=handler
   
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -52,7 +62,15 @@ class MasterGPIOsModelTests(TestCase):
         instance.save() # to avoid the creation of the DB tables and insertion of the first row that function store2DB does...
         print('    -> Tested standard path')
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
+        SignalAutomationVariablesValueUpdated.connect(self.handler)
         instance.updateValue(newValue=GPIO_LOW,timestamp=None,writeDB=True,force=False)
+        SignalAutomationVariablesValueUpdated.disconnect(self.handler)
+        # checks values from the signal
+        self.assertAlmostEqual(self.signaltimestamp,timezone.now().replace(microsecond=0),delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
+        self.assertEqual(self.signalValue,instance.Value)
+        self.assertEqual(self.signalTag,str(instance.pk))
+        
+        
         table=instance.getRegistersDBTable()
         vars='"timestamp","'+instance.getRegistersDBTag()+'"'
         sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 2'
@@ -162,7 +180,45 @@ class MasterGPIOsModelTests(TestCase):
          
         self.DB.dropTable(table=instance.getRegistersDBTable())
         self.DB.dropTable(table=instance2.getRegistersDBTable())
-          
+    
+    def test_InputChangeEvent(self):
+        print('## TESTING THE OPERATION OF THE InputChangeEvent METHOD ##')
+        newDict=editDict(keys=['Pin','Label','Direction','Value'], newValues=[15,'Test Input 1',GPIO_INPUT,GPIO_HIGH], Dictionary=MasterGPIODict)
+        instance=MasterGPIOs(**newDict)
+        instance.save()
+        
+        instance.InputChangeEvent()
+        
+        table=instance.getRegistersDBTable()
+        vars='"timestamp","'+instance.getRegistersDBTag()+'"'
+        sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp ASC'
+        rows=self.DB.executeTransaction(SQLstatement=sql)
+        # initialization
+        self.assertEqual(rows[0][1],GPIO_HIGH) # initial value of instance
+        self.assertEqual(rows[1][1],GPIO_LOW) # final value of instance
+        
+        self.DB.dropTable(table=instance.getRegistersDBTable())
+    
+    def test_updateLabel(self):
+        print('## TESTING THE OPERATION OF THE updateLabel METHOD ##')
+        newDict=editDict(keys=['Pin','Label','Direction','Value'], newValues=[15,'Test Input 1',GPIO_INPUT,GPIO_HIGH], Dictionary=MasterGPIODict)
+        instance=MasterGPIOs(**newDict)
+        instance.save()
+        
+        SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(gpios=instance)
+        self.assertQuerysetEqual(SUBSYSTEMs,[]) # no subsystem assigned
+        subsystem=MainAPP.models.Subsystems(Name=0,content_object=instance)
+        subsystem.save()
+        SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(gpios=instance)
+        self.assertEqual(list(SUBSYSTEMs),[subsystem,]) # a subsystem returned
+        
+        newLabel='New label for you'
+        instance.updateLabel(newLabel=newLabel)
+        AVAR=MainAPP.models.AutomationVariables.objects.get(Device='MainGPIOs',Tag=instance.getRegistersDBTag())
+        self.assertEqual(AVAR.Label,newLabel) # an AVAR is now created
+        avar_subsystem=MainAPP.models.Subsystems.objects.filter(automationvariables=AVAR)
+        self.assertEqual(avar_subsystem[0].Name,subsystem.Name) # the same subsystem is assigned to corresponding AVAR
+        
     def test_getCharts(self):
         '''
         getCharts: method that retrieves the chart structured in a dictionary with the following keys:
