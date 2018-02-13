@@ -84,8 +84,11 @@ class Database(object):
             
     def executeTransaction(self,SQLstatement,arg=[]):
         cur=self.conn.cursor()
-        cur.execute(SQLstatement,arg)
-        rows = cur.fetchall()
+        try:
+            cur.execute(SQLstatement,arg)
+            rows = cur.fetchall()
+        except:
+            rows=[]
         cur.close()
         return rows
     

@@ -15,7 +15,7 @@ class DevicesAppConfig(AppConfig):
     
     def ready(self):
         process=os.getpid()
-        import DevicesAPP.signals
+        import DevicesAPP.signal_handlers
         if cache.get(self.name)==None:
             cache.set(self.name, process, 40)
             # signals are imported, so that they are defined and can be used

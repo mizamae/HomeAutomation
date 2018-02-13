@@ -48,7 +48,7 @@ def home(request):
 
 def heating(request):
     if request.method == 'POST': # the form has been submited
-        return render(request, APP_TEMPLATE_NAMESPACE+'/heating.html') 
+        return render(request, APP_TEMPLATE_NAMESPACE+'/subsystem.html') 
     else:
         DVs=DevicesAPP.models.Devices.objects.filter(Subsystem__Name=SUBSYSTEM_HEATING)
         for DV in DVs:
@@ -70,35 +70,11 @@ def heating(request):
             if 'accordion3' == message.message:
                 accordion3=True # defines if the accordion 3 is initially displayed or collapsed
             
-        return render(request, APP_TEMPLATE_NAMESPACE+'/heating.html',{'DVs':DVs,
+        return render(request, APP_TEMPLATE_NAMESPACE+'/subsystem.html',{'title':MainAPP.models.Subsystems.getName2Display(Name=SUBSYSTEM_HEATING),
+                                                                        'DVs':DVs,
                                                                        'VARs':VARs,
                                                                        'VARs_values':VARs_values,
                                                                        'SCHs':SCHs,
                                                                        'DJNGO_HOUR':now.hour,
                                                                        'accordion3':accordion3,
                                                                        }) 
-
-def activateSchedule(request,pk):
-    if not checkUserPermissions(request=request,action='activate',model='schedule'):
-        return HttpResponseRedirect(reverse(LOGIN_PAGE))
-    
-    if request.method == 'POST':
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        SCHD=DevicesAPP.models.MainDeviceVarWeeklySchedules.objects.get(pk=pk)
-        SCHD.setActive(value=not SCHD.Active)
-        messages.info(request, 'accordion3')
-        return redirect(request.META['HTTP_REFERER'])
-
-def modifySchedule(request,pk,value,sense):
-    import decimal
-    if not checkUserPermissions(request=request,action='change',model='schedule'):
-        return HttpResponseRedirect(reverse(LOGIN_PAGE))
-    
-    if request.method == 'POST':
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        SCHD=DevicesAPP.models.MainDeviceVarWeeklySchedules.objects.get(pk=pk)
-        SCHD.modify(value=value,sense=sense)
-        messages.info(request, 'accordion3')
-        return redirect(request.META['HTTP_REFERER'])

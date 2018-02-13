@@ -1,5 +1,5 @@
 from .test_utils import *
-from MainAPP.signals import SignalAutomationVariablesValueUpdated
+from .signals import SignalVariableValueUpdated
 
 print('######################################')
 print('# TESTING OF Devices MODEL FUNCTIONS #')
@@ -59,7 +59,7 @@ class DevicesModelTests(TestCase):
           
         dateIni=(timezone.now()-datetime.timedelta(hours=1)).replace(microsecond=0)
   
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.save()
           
@@ -140,18 +140,18 @@ class DevicesModelTests(TestCase):
         sampletimes=[600,6,6]
         RTsampletimes=[6,60,6]
         print('    --> Test_errors_on_clean test 0.1: Validation error due to too low Sampletime')
-        newDict=editDict(keys=['Sampletime','DVT'],newValues=[6,self.remoteDVT])
+        newDict=editDict(keys=['Sampletime','DVT'],newValues=[6,self.remoteDVT],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         self.assertRaises(ValidationError,instance.clean)
              
         print('    --> Test_errors_on_clean test 0.2: Validation error due to too low RTSampletime')
-        newDict=editDict(keys=['RTsampletime','DVT'],newValues=[6,self.remoteDVT])
+        newDict=editDict(keys=['RTsampletime','DVT'],newValues=[6,self.remoteDVT],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         self.assertRaises(ValidationError,instance.clean)
              
         print('    --> Test_errors_on_clean test 0.3: Validation error due to wrong IO')
         IOfake=MasterGPIOs(Pin=17,Label='Test IO',Direction=GPIO_OUTPUT)
-        newDict=editDict(keys=['IO','DVT'],newValues=[IOfake,self.localDVT])
+        newDict=editDict(keys=['IO','DVT'],newValues=[IOfake,self.localDVT],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         self.assertRaises(ValidationError,instance.clean)
      
@@ -162,7 +162,7 @@ class DevicesModelTests(TestCase):
         '''            
         print('## TESTING THE OPERATION OF THE store2DB METHOD ##')
         print('    --> Test_OK_on_save test 1.0: With datagrams defined for devicetype')
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         # CHECKED WITH DATAGRAMS DEFINED
         instance.store2DB() # creates the registers tables
@@ -180,7 +180,7 @@ class DevicesModelTests(TestCase):
         print('    --> Test_OK_on_save test 1.1: Without datagrams defined for devicetype')
         #CHECKED WITHOUT DATAGRAMS DEFINED
         Datagrams.objects.filter(DVT=self.localDVT).delete()
-        newDict=editDict(keys=['DVT','Sampletime','RTsampletime'],newValues=[self.localDVT,600,60])
+        newDict=editDict(keys=['DVT','Sampletime','RTsampletime'],newValues=[self.localDVT,600,60],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB() # save creates the registers tables
         DGs=Datagrams.objects.filter(DVT=instance.DVT)
@@ -192,29 +192,42 @@ class DevicesModelTests(TestCase):
         '''
         import psutil
         print('## TESTING THE OPERATION OF THE requestDatagram METHOD ##')
-        print('    --> Test_requestDatagram test 2.0: Reception with writeDB=False')
+        print('    --> Test_requestDatagram test 2.0: Comm. timeout handling')
               
         stopApache()
         instance=Devices.objects.get(pk=1)
              
-        datagram=instance.requestDatagram(DatagramId='powers',timeout=1,writeToDB=False,resetOrder=True,retries=1)
+        datagram=instance.requestDatagram(DatagramId='powers',timeout=1,writeToDB=True,resetOrder=True,retries=1)
               
         if not "httpd.exe" in (p.name() for p in psutil.process_iter()):
             print('        Tested comm timeout and retrying')
             self.assertIn('Finished retrying',datagram['Error'])
-              
+        
+        print('    --> Test_requestDatagram test 2.1: Comm. OK handling')
         startApache()
         instance.IP='127.0.0.1'
         instance.save()
         setupPowersXML(code=1,datagramId=0,status=7,p='64,80,0,0',q='64,79,99,0',s='64,80,128,0')
-        datagram=instance.requestDatagram(DatagramId='powers',timeout=1,writeToDB=False,resetOrder=True,retries=1)
+        datagram=instance.requestDatagram(DatagramId='powers',timeout=1,writeToDB=True,resetOrder=True,retries=1)
         resetPowersXML()
                  
         if "httpd.exe" in (p.name() for p in psutil.process_iter()):
             print('        Tested comm OK')
             self.assertEqual(datagram['values'], [7,3.25,3.24,3.258])
+        
+        print('    --> Test_requestDatagram test 2.2: Wrong DeviceCode handling')
+        setupPowersXML(code=3,datagramId=0,status=7,p='64,80,0,0',q='64,79,99,0',s='64,80,128,0')
+        datagram=instance.requestDatagram(DatagramId='powers',timeout=1,writeToDB=True,resetOrder=True,retries=1)
+        resetPowersXML()
+                 
+        if "httpd.exe" in (p.name() for p in psutil.process_iter()):
+            print('        Tested comm OK')
+            self.assertEqual(datagram['values'], None)
+            self.assertTrue('The device responded with a different DeviceCode ' in datagram['Error'])
+            
         stopApache()
         
+        #instance.deleteRegistersTables()
  
     def test_getLatestData(self):
         '''
@@ -225,9 +238,22 @@ class DevicesModelTests(TestCase):
         pk=1
         # run with CustomLabels defined
         instance=Devices.objects.get(pk=pk)
+        vars=instance.getDeviceVariables()
+        now=timezone.now()
+        newValues=[now,7,3.25,3.24,3.258]
+        tags=['timestamp',]
+        table=vars[0]['table']
+        for var in vars:
+            if var['table']==table:
+                if var['bit']==None:
+                    tags.append(var['name'])
+                else:
+                    if not var['name'] in tags:
+                        tags.append(var['name'])
+                
+        InsertRegister2DB(DB=self.DB,table=table,tags=tags,values=newValues)
         latest=instance.getLatestData(localized=False)
         #print(str(latest))
-        self.assertEqual(latest['1']['2_1_1'], 3.25)
         for datagram in latest:
             for name in latest[datagram]:
                 if name!='timestamp':
@@ -256,7 +282,7 @@ class DevicesModelTests(TestCase):
                     elif info['type']==DTYPE_INTEGER:
                         self.assertIsInstance(latest[datagram][name], type(3))
         print('    --> Test_getLatestData test 3.2: Retrieval of latest data from registers DB with CustomLabels undefined and no registers')
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
         latest=instance.getLatestData(localized=False)
@@ -342,7 +368,7 @@ class DevicesModelTests(TestCase):
         print('## TESTING THE OPERATION OF THE update_requests METHOD ##')
         print('    --> Starts/Stops polling of remote device and checks scheduler')
         from .constants import RUNNING_STATE,STOPPED_STATE
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
         instance.startPolling()
@@ -363,7 +389,7 @@ class DevicesModelTests(TestCase):
         instance.delete()
         
         print('    --> Starts/Stops polling of local device and checks scheduler')
-        newDict=editDict(keys=['DVT',],newValues=[self.localDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.localDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
         instance.startPolling()
@@ -384,7 +410,7 @@ class DevicesModelTests(TestCase):
         instance.delete()
         
         print('    --> Starts/Stops polling of memory device and checks scheduler')
-        newDict=editDict(keys=['DVT',],newValues=[self.memoryDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.memoryDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
         instance.startPolling()
@@ -410,7 +436,7 @@ class DevicesModelTests(TestCase):
         print('## TESTING THE OPERATION OF THE setNextUpdate METHOD ##')
         print('    --> Sets the next update time for a device')
         import datetime
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.save()
         instance.startPolling()
@@ -430,7 +456,7 @@ class DevicesModelTests(TestCase):
         from utils.dataMangling import checkBit
         from utils.BBDD import getRegistersDBInstance
         print('    --> On a remote device')
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
             
@@ -442,7 +468,7 @@ class DevicesModelTests(TestCase):
         DGs=Datagrams.objects.filter(DVT=instance.DVT)
         jobs=instance.getPollingJobIDs()
         
-        SignalAutomationVariablesValueUpdated.connect(self.handler)
+        SignalVariableValueUpdated.connect(self.handler)
         
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
         for job in jobs:
@@ -472,11 +498,12 @@ class DevicesModelTests(TestCase):
                     else:
                         self.assertAlmostEqual(latest[datagram][name],now,delta=datetime.timedelta(seconds=5))
         stopApache()
-        SignalAutomationVariablesValueUpdated.disconnect(self.handler)
+        SignalVariableValueUpdated.disconnect(self.handler)
         instance.deleteRegistersTables()
             
         print('    --> On a local device')
-        newDict=editDict(keys=['DVT','IP','Code','Name','IO','Sampletime','RTsampletime'],newValues=[self.localDVT,None,3,'Test Device 3',self.sensIO,600,60])
+        newDict=editDict(keys=['DVT','IP','Code','Name','IO','Sampletime','RTsampletime'],\
+                         newValues=[self.localDVT,None,3,'Test Device 3',self.sensIO,600,60],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
             
@@ -507,7 +534,8 @@ class DevicesModelTests(TestCase):
         instance.deleteRegistersTables()
             
         print('    --> On a memory device')
-        newDict=editDict(keys=['DVT','IP','Code','Name','Sampletime','RTsampletime'],newValues=[self.memoryDVT,None,4,'Test Device 4',600,600])
+        newDict=editDict(keys=['DVT','IP','Code','Name','Sampletime','RTsampletime'],\
+                         newValues=[self.memoryDVT,None,4,'Test Device 4',600,600],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
             
@@ -578,7 +606,7 @@ class DevicesFormTests(TestCase):
                   
     def test_valid_data(self):
         print('--> test_valid_data test 1.0: The form is valid with good data')
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT.pk,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT.pk,],Dictionary=DeviceDict)
         form = DevicesForm(newDict, action='add')
           
         self.assertTrue(form.is_valid())

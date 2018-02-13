@@ -5,28 +5,28 @@
 	{% if row.Active %}
 	<td class="text-center" bgcolor="#00FF00">{% trans "Active" %}</td>
 	<td class="text-center">
-		<a class="btn btn-default" href="{% url 'Subsystems:activateSchedule' row.pk %}" id="" role="button"><i class="fa fa-stop fa-2x" aria-hidden="true"></i></a>
+		<a class="btn btn-default" href="{% url 'Devices:activateSchedule' row.pk %}" id="" role="button"><i class="fa fa-stop fa-2x" aria-hidden="true"></i></a>
 	</td>
 	<td class="text-center"><p class="col-xs-12"><strong>{{ row.Var.Value }} {{ row.Var.Units }}</strong></p></td>
 	{% else %}
 	<td class="text-center" bgcolor="#FF0000">{% trans "Inactive" %}</td>
 	<td class="text-center">
-		<a class="btn btn-default" href="{% url 'Subsystems:activateSchedule' row.pk %}" id="" role="button"><i class="fa fa-play-circle-o fa-3x" aria-hidden="true"></i></a>
+		<a class="btn btn-default" href="{% url 'Devices:activateSchedule' row.pk %}" id="" role="button"><i class="fa fa-play-circle-o fa-3x" aria-hidden="true"></i></a>
 	</td>
 	<td class="text-center">---</td>
 	{% endif %}
 	<td>
 		<div class=" row text-center">{{ row.LValue }}{{ row.Var.Units }}</div>
 		<div class="row text-center">
-			<a class="btn btn-default" href="{% url 'Subsystems:modifySchedule' row.pk 'LValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
-			<a class="btn btn-default" href="{% url 'Subsystems:modifySchedule' row.pk 'LValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
+			<a class="btn btn-default" href="{% url 'Devices:modifySchedule' row.pk 'LValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
+			<a class="btn btn-default" href="{% url 'Devices:modifySchedule' row.pk 'LValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
 		</div>
 	</td>
 	<td>
 		<div class="row text-center">{{ row.HValue }}{{ row.Var.Units }}</div>
 		<div class="row text-center">
-			<a class="btn btn-default" href="{% url 'Subsystems:modifySchedule' row.pk 'HValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
-			<a class="btn btn-default" href="{% url 'Subsystems:modifySchedule' row.pk 'HValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
+			<a class="btn btn-default" href="{% url 'Devices:modifySchedule' row.pk 'HValue' '-' %}" id="" role="button"><i class="fa fa-arrow-circle-down fa-2x" aria-hidden="true"></i></a>
+			<a class="btn btn-default" href="{% url 'Devices:modifySchedule' row.pk 'HValue' '+' %}" id="" role="button"><i class="fa fa-arrow-circle-up fa-2x" aria-hidden="true"></i></a>
 		</div>
 	</td>
 </tr>
@@ -38,9 +38,9 @@
 				{% if forloop.counter0 == DJNGO_HOUR and row.Active %}
 					{% with border="border-style: double" %}
 					{% if row.Var.Value == row.HValue %}
-					<a class="btn btn-default" href="{% url 'Subsystems:modifySchedule' row.pk 'REFValue' '-' %}" style="font-size: 16px;background-color:green; {{ border }} ">{{ hourValue }}</a>
+					<a class="btn btn-default" href="{% url 'Devices:modifySchedule' row.pk 'REFValue' '-' %}" style="font-size: 16px;background-color:green; {{ border }} ">{{ hourValue }}</a>
 					{% else %}
-					<a class="btn btn-default" href="{% url 'Subsystems:modifySchedule' row.pk 'REFValue' '+' %}" style="font-size: 16px;background-color:red; {{ border }}">{{ hourValue }}</a>
+					<a class="btn btn-default" href="{% url 'Devices:modifySchedule' row.pk 'REFValue' '+' %}" style="font-size: 16px;background-color:red; {{ border }}">{{ hourValue }}</a>
 					{% endif %}
 					{% endwith %}
 				{% else %}

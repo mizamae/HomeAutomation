@@ -88,7 +88,7 @@ class MainDeviceVarWeeklySchedulesAdmin(admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         if change:
-            form.instance.checkHourlySchedules()
+            form.instance.checkThis()
       
     def setAsActive(self,request, queryset):
         devices_selected=queryset.count()
@@ -143,9 +143,13 @@ class DevicesAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(reverse(APP_TEMPLATE_NAMESPACE+':setCustomLabels',args=[selected_pk]))#'/admin/Devices/setcustomlabels/' + str(selected_pk))
         
     def save_model(self, request, obj, form, change):
-        if 'Sampletime' in form.changed_data or 'State' in form.changed_data:
-            obj.update_requests()
-        super(DevicesAdmin, self).save_model(request, obj, form, change)
+        if not change: # the object is being created
+            obj.store2DB()
+        else:
+            if 'Sampletime' in form.changed_data or 'State' in form.changed_data:
+                obj.updateAutomationVars()
+                obj.updateRequests()
+            super().save_model(request, obj, form, change)
 
     defineCustomLabels.short_description = _("Define custom labels for the variables")
     

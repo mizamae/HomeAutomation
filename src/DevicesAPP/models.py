@@ -22,8 +22,8 @@ import itertools
 import utils.BBDD
 from MainAPP.constants import REGISTERS_DB_PATH
 import MainAPP.models
-import MainAPP.signals
 
+from .signals import SignalVariableValueUpdated
 from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
                         DEVICES_CONFIG_FILE,IP_OFFSET,POLLING_SCHEDULER_URL,\
@@ -109,7 +109,7 @@ class MainDeviceVars(models.Model):
                 PublishEvent(Severity=0,Text=text)
                 self.Value=newValue
                 self.save(update_fields=['Value'])
-                MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=now,
+                SignalVariableValueUpdated.send(sender=None, timestamp=now,
                                                                                         Tags=[self.getRegistersDBTag(),],
                                                                                         Values=[newValue,])
             if writeDB :
@@ -218,6 +218,9 @@ class MainDeviceVars(models.Model):
                 if found==False:
                     avar.createSubsystem(Name=SUBS.Name)
     
+    def deleteAutomationVars(self):
+        MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Tag=str(self.pk),Table=self.getRegistersDBTable()).delete()
+        
     def getRegistersDBTag(self):
         return str(self.pk)
     
@@ -247,7 +250,7 @@ class MainDeviceVars(models.Model):
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
         return Data
-    
+        
     @staticmethod
     def getRegistersDBTable():
         return 'MainVariables'
@@ -310,7 +313,11 @@ def update_MainDeviceVars(sender, instance, update_fields=[],**kwargs):
     timestamp=timezone.now() #para hora con info UTC
     #registerDB.insert_VARs_register(TimeStamp=timestamp,VARs=instance)
     
-
+@receiver(post_delete, sender=MainDeviceVars, dispatch_uid="delete_MainDeviceVars")
+def delete_MainDeviceVars(sender, instance,**kwargs):
+    instance.deleteAutomationVars()
+    logger.info('Se ha eliminado la variable ' + str(instance))
+    
 class MainDeviceVarWeeklySchedules(models.Model):
     class Meta:
         verbose_name = _('Main device var weekly schedule')
@@ -603,7 +610,7 @@ class MasterGPIOs(models.Model):
                 PublishEvent(Severity=0,Text=text)
                 self.Value=newValue
                 self.save(update_fields=['Value'])
-                MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=now,
+                SignalVariableValueUpdated.send(sender=None, timestamp=now,
                                                                                         Tags=[self.getRegistersDBTag(),],
                                                                                         Values=[newValue,])
             
@@ -1112,9 +1119,6 @@ class Devices(models.Model):
             
         self.save(update_fields=updateFields)
         
-        if 'LastUpdated' in updateFields:
-            self.updateAutomationVars()
-        
     def setLastUpdated(self,newValue):
         self.LastUpdated=newValue
         self.save(update_fields=['LastUpdated','Error','NextUpdate'])
@@ -1213,7 +1217,10 @@ class Devices(models.Model):
                                 from utils.dataMangling import checkBit
                                 values={}
                                 for k in range(0,8):
-                                    values['bit' + str(k)]=int(checkBit(number=row[i],position=k))
+                                    if row[i]!=None:
+                                        values['bit' + str(k)]=int(checkBit(number=row[i],position=k))
+                                    else:
+                                        values['bit' + str(k)]=None
                                 Data[str(DG.pk)][name]=values
         else:
             Data=None
@@ -1240,12 +1247,12 @@ class Devices(models.Model):
                         BitLabels=CustomVars[name].split('$')
                         if len(BitLabels)==8:
                             for i,bitLabel in enumerate(BitLabels):
-                                DeviceVars.append({'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
+                                DeviceVars.append({'DG':DG,'label':bitLabel,'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
                         else:
                             for i in range(0,8):
-                                DeviceVars.append({'label':CustomVars[name]+'_bit'+str(i),'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
+                                DeviceVars.append({'DG':DG,'label':CustomVars[name]+'_bit'+str(i),'name':name,'device':str(self.pk),'table':table,'bit':i,'sample':datagram['sample']*self.Sampletime,'units':None})
                     else:
-                        DeviceVars.append({'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime,'units':unit})
+                        DeviceVars.append({'DG':DG,'label':CustomVars[name],'name':name,'device':str(self.pk),'table':table,'bit':None,'sample':datagram['sample']*self.Sampletime,'units':unit})
             
         return DeviceVars
     
@@ -1542,7 +1549,7 @@ class Devices(models.Model):
     def sendUpdateSignals(self,DG_id,values):
         DG=Datagrams.objects.get(Identifier=DG_id)
         datagram=DG.getStructure()
-        MainAPP.signals.SignalAutomationVariablesValueUpdated.send(sender=None, timestamp=values[0],
+        SignalVariableValueUpdated.send(sender=None, timestamp=values[0],
                                                                                 Tags=datagram['names'],
                                                                                 Values=values[1:])
         
@@ -1670,7 +1677,7 @@ class Devices(models.Model):
 @receiver(post_save, sender=Devices, dispatch_uid="update_Devices")
 def update_Devices(sender, instance, update_fields,**kwargs):
     if kwargs['created']:   # new instance is created
-        instance.updateRequests()
+        pass
                
 @receiver(post_delete, sender=Devices, dispatch_uid="delete_Devices")
 def delete_Devices(sender, instance,**kwargs):

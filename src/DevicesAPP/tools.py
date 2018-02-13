@@ -1,5 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events as events
+import logging
+logger = logging.getLogger("project")
 
 class PollingScheduler(BackgroundScheduler):
     def __init__(self,jobstoreUrl,*args,**kwargs):

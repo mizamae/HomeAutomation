@@ -1,4 +1,4 @@
-import logging
+
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events as events
@@ -7,6 +7,7 @@ from MainAPP.constants import REGISTERS_DB_PATH,MANAGEMENT_TASKS_SCHEDULER_URL
 
 from Events.consumers import PublishEvent
 
+import logging
 logger = logging.getLogger("project")
 
 scheduler = BackgroundScheduler()   
@@ -98,8 +99,8 @@ def checkCustomCalculations():
             
 def HourlyTask():
     import datetime
-    from DevicesAPP.models import MainDeviceVars
-    MainAPP.models.checkHourlySchedules(init=True)    
+    from DevicesAPP.models import MainDeviceVars,MainDeviceVarWeeklySchedules
+    MainDeviceVarWeeklySchedules.checkAll(init=True)
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
     try:

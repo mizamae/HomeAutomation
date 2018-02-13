@@ -15,6 +15,8 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 from MainAPP.constants import REGISTERS_DB_PATH,SUBSYSTEMS_CHOICES
 
+import MainAPP.signals
+
 import utils.BBDD
 
 import pandas as pd
@@ -38,6 +40,13 @@ class Subsystems(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
     Name = models.PositiveSmallIntegerField(choices=SUBSYSTEMS_CHOICES)
 
+    @staticmethod
+    def getName2Display(Name):
+        for name in SUBSYSTEMS_CHOICES:
+            if name[0]==Name:
+                return name[1]
+        return None
+    
     def __str__(self):
         return self.get_Name_display()
     
@@ -256,7 +265,7 @@ class AutomationVariables(models.Model):
         Data[name]={}
         table=self.Table
         vars='"timestamp","'+name+'"'
-        sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
+        sql='SELECT '+vars+' FROM "'+ table +'" WHERE "'+name +'" not null ORDER BY timestamp DESC LIMIT 1'
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance()
         row=DB.executeTransaction(SQLstatement=sql)
@@ -291,9 +300,10 @@ class AutomationVariables(models.Model):
         return data_rows
     
     def getQuery(self,fromDate,toDate):
-        AppDB=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
+        from utils.BBDD import getRegistersDBInstance
+        DB=getRegistersDBInstance()
         sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
-        return {'conn':AppDB.registersDB.conn,'sql':sql}
+        return {'conn':DB.getConn(),'sql':sql}
         
     def executeAutomationRules(self):
         rules=RuleItems.objects.filter((Q(Var1=self)) | (Q(Var2=self)))
@@ -325,31 +335,37 @@ class RuleItems(models.Model):
         ('|',_('OR')),
     )
     Rule = models.ForeignKey('MainAPP.AutomationRules', on_delete=models.CASCADE)
-    order = models.PositiveSmallIntegerField(help_text=_('Order of execution'))
+    Order = models.PositiveSmallIntegerField(help_text=_('Order of execution'))
     PreVar1 = models.CharField(choices=PREFIX_CHOICES,default='',max_length=3,blank=True)
     Var1= models.ForeignKey(AutomationVariables,related_name='var1')
     Operator12 = models.CharField(choices=OPERATOR_CHOICES+BOOL_OPERATOR_CHOICES,max_length=2)
     PreVar2 = models.CharField(choices=PREFIX_CHOICES,default='',max_length=3,blank=True)
     Var2= models.ForeignKey(AutomationVariables,related_name='var2',blank=True,null=True)
-    Var2Hyst= models.DecimalField(max_digits=6, decimal_places=2,default=0.5)
+    Var2Hyst= models.FloatField(default=0.5)
     IsConstant = models.BooleanField(default = False)
     Constant = models.FloatField(blank=True,null=True)
     Operator3 = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
     
     def __str__(self):
-        return str(self.Rule) + '.' + str(self.order)
+        return str(self.Rule) + '.' + str(self.Order)
     
+    def store2DB(self):
+        self.full_clean()
+        super().save()
+        
     def evaluate(self):
         import datetime
         
         now = timezone.now()
         evaluableTRUE=''
         evaluableFALSE=''
-        timestamp1,value1=self.Var1.getValue(localized=True)
+        data=self.Var1.getLatestData(localized=True)[self.Var1.Tag]
+        timestamp1=data['timestamp']
+        value1=data['value']
         
         if self.Var1.Sample>0:
-            if (now-timestamp1>datetime.timedelta(seconds=2.5*self.Var1.Sample)):
-                logger.warning('The rule ' + str(self) + ' was evaluated with data older than expected')
+            if value1==None or (now-timestamp1>datetime.timedelta(seconds=int(2.5*self.Var1.Sample))):
+                logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
                 logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' is ' + str(timestamp1))
                 return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var1)}
         
@@ -358,10 +374,12 @@ class RuleItems(models.Model):
          
         
         if self.Var2!= None:
-            timestamp2,value2=self.Var2.getValue(localized=True)
+            data=self.Var2.getLatestData(localized=True)[self.Var2.Tag]
+            timestamp2=data['timestamp']
+            value2=data['value']
             if self.Var2.Sample>0:
-                if (now-timestamp2>datetime.timedelta(seconds=2.5*self.Var2.Sample)):
-                    logger.warning('The rule ' + self.Identifier + ' was evaluated with data older than expected')
+                if value2==None or (now-timestamp2>datetime.timedelta(seconds=int(2.5*self.Var2.Sample))):
+                    logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
                     logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' is ' + str(timestamp2))
                     return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var2)}
                     
@@ -384,7 +402,7 @@ class RuleItems(models.Model):
         evaluableFALSE+='not ('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisFALSE + ')'
         
         try:
-            return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE)}
+            return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE),'ERROR':''}
         except:
             return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Unknown'}
             
@@ -393,6 +411,14 @@ class RuleItems(models.Model):
         verbose_name_plural = _('Automation expressions')
                 
 class AutomationRules(models.Model):
+    class Meta:
+        verbose_name = _('Automation rule')
+        verbose_name_plural = _('Automation rules')
+        permissions = (
+            ("view_rules", "Can see available automation rules"),
+            ("activate_rules", "Can change the state of the rules"),
+        )
+        
     BOOL_OPERATOR_CHOICES=(
         ('&',_('AND')),
         ('|',_('OR')),
@@ -416,6 +442,10 @@ class AutomationRules(models.Model):
     def __str__(self):
         return self.Identifier
     
+    def store2DB(self):
+        self.full_clean()
+        super().save()
+        
     def printEvaluation(self):
         result=self.evaluate()
         if result['ERROR']==[]:
@@ -442,7 +472,7 @@ class AutomationRules(models.Model):
                 result=self.PreviousRule.evaluate()
                 evaluableTRUE+=str(result['TRUE']) + ' ' + self.OperatorPrev
                 evaluableFALSE+=str(result['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
-            RuleItems=RuleItems.objects.filter(Rule=self.pk).order_by('order')
+            RuleItems=RuleItems.objects.filter(Rule=self.pk).order_by('Order')
             if len(RuleItems):
                 errors=[]
                 for item in RuleItems:
@@ -456,7 +486,7 @@ class AutomationRules(models.Model):
                         evaluableTRUE+=' ' + str(resultTRUE)
                         evaluableFALSE+=' ' + str(resultFALSE)
                             
-                    if 'ERROR' in result:
+                    if result['ERROR']!='':
                         text='The evaluation of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)+'. Error: ' + str(result['ERROR'])
                         PublishEvent(Severity=3,Text=text,Persistent=True)
                         errors.append(result['ERROR'])
@@ -501,38 +531,32 @@ class AutomationRules(models.Model):
         if resultTRUE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
-                IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                newValue=int(Action['IOValue'])
-                IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
+                MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
+                #IO=DevicesAPP.models.MasterGPIOs.objects.get(pk=Action['IO'])
+                #newValue=int(Action['IOValue'])
+                #IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
             self.setLastEval(value=True)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
-                IO=Master_GPIOs.models.IOmodel.objects.get(pk=Action['IO'])
-                newValue=int(not int(Action['IOValue']))
-                IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
+                MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
+                #IO=DevicesAPP.models.MasterGPIOs.objects.get(pk=Action['IO'])
+                #newValue=int(not int(Action['IOValue']))
+                #IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
             self.setLastEval(value=False)
             
-    class Meta:
-        verbose_name = _('Automation rule')
-        verbose_name_plural = _('Automation rules')
-        permissions = (
-            ("view_rules", "Can see available automation rules"),
-            ("activate_rules", "Can change the state of the rules"),
-        )
-        
 @receiver(post_save, sender=AutomationRules, dispatch_uid="update_AutomationRuleModel")
 def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):    
     if not kwargs['created']:   # an instance has been modified
         logger.info('Se ha modificado la regla de automatizacion ' + str(instance.Identifier))
     else:
         logger.info('Se ha creado la regla de automatizacion ' + str(instance.Identifier))
-    if instance.Active==False:
-        instance.execute(error=True)
+    #if instance.Active==False:
+    #    instance.execute(error=True)
         
 def init_Rules():
     RULs=AutomationRules.objects.filter(Active=True)
