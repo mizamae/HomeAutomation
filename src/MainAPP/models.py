@@ -355,7 +355,7 @@ class RuleItems(models.Model):
         
     def evaluate(self):
         import datetime
-        
+        from utils.dataMangling import checkBit
         now = timezone.now()
         evaluableTRUE=''
         evaluableFALSE=''
@@ -370,9 +370,8 @@ class RuleItems(models.Model):
                 return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var1)}
         
         if self.Var1.BitPos!=None:
-            value1=value1 & (1<<self.Var1.BitPos) 
+            value1=checkBit(number=int(value1),position=self.Var1.BitPos)
          
-        
         if self.Var2!= None:
             data=self.Var2.getLatestData(localized=True)[self.Var2.Tag]
             timestamp2=data['timestamp']
@@ -384,7 +383,7 @@ class RuleItems(models.Model):
                     return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var2)}
                     
             if self.Var2.BitPos!=None:
-                value2=value2 & (1<<self.Var2.BitPos)
+                value2=checkBit(number=int(value2),position=self.Var2.BitPos)
         else:
             value2=self.Constant
                 
@@ -398,6 +397,10 @@ class RuleItems(models.Model):
             histeresisTRUE=''
             histeresisFALSE=''
         
+        if self.Operator12.find('&')>=0 or self.Operator12.find('|')>=0:
+            value1=int(value1)
+            value2=int(value2)
+            
         evaluableTRUE+='('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisTRUE + ')'
         evaluableFALSE+='not ('+ self.PreVar1 +' '+str(value1) + ' ' + self.Operator12 + ' ' + self.PreVar2 + str(value2) + histeresisFALSE + ')'
         
@@ -442,6 +445,13 @@ class AutomationRules(models.Model):
     def __str__(self):
         return self.Identifier
     
+    def setActive(self,value):
+        if value:
+            self.Active=True
+        else:
+            self.Active=False
+        self.save()
+        
     def store2DB(self):
         self.full_clean()
         super().save()
@@ -450,7 +460,7 @@ class AutomationRules(models.Model):
         result=self.evaluate()
         if result['ERROR']==[]:
             result.pop('ERROR', None)
-        return str(result)
+        return result
         
     def switchBOOLOperator(self,operator):
         if operator=='&':
@@ -458,7 +468,7 @@ class AutomationRules(models.Model):
         elif operator=='|':
             return '&'
         else:
-            return None
+            return operator
     
     def setLastEval(self,value):
         self.LastEval=value
@@ -472,10 +482,10 @@ class AutomationRules(models.Model):
                 result=self.PreviousRule.evaluate()
                 evaluableTRUE+=str(result['TRUE']) + ' ' + self.OperatorPrev
                 evaluableFALSE+=str(result['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
-            RuleItems=RuleItems.objects.filter(Rule=self.pk).order_by('Order')
-            if len(RuleItems):
+            Items=RuleItems.objects.filter(Rule=self.pk).order_by('Order')
+            if len(Items):
                 errors=[]
-                for item in RuleItems:
+                for item in Items:
                     result=item.evaluate()
                     resultTRUE=result['TRUE']
                     resultFALSE=result['FALSE']
@@ -504,11 +514,11 @@ class AutomationRules(models.Model):
                     if evaluableFALSE[0]=='&' or evaluableFALSE[0]=='|':
                         evaluableFALSE=evaluableFALSE[1:]
                 try:
-                    return {'TRUE':evaluableTRUE,'FALSE':evaluableFALSE,'ERROR':errors}
+                    return {'TRUE':evaluableTRUE.strip(),'FALSE':evaluableFALSE.strip(),'ERROR':errors}
                 except:
                     return {'TRUE':None,'FALSE':None,'ERROR':'Unknown'}
             else:
-                return {'TRUE':None,'FALSE':None,'ERROR':'Unknown'}
+                return {'TRUE':'','FALSE':'','ERROR':'The rule has no items associated. Cannot be evaluated'}
         else:
             return {'TRUE':'','FALSE':'','ERROR':'Inactive Rule'}
     
@@ -532,9 +542,6 @@ class AutomationRules(models.Model):
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
-                #IO=DevicesAPP.models.MasterGPIOs.objects.get(pk=Action['IO'])
-                #newValue=int(Action['IOValue'])
-                #IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             PublishEvent(Severity=0,Text=text)
             self.setLastEval(value=True)
@@ -542,9 +549,6 @@ class AutomationRules(models.Model):
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
-                #IO=DevicesAPP.models.MasterGPIOs.objects.get(pk=Action['IO'])
-                #newValue=int(not int(Action['IOValue']))
-                #IO.updateValue(newValue=newValue,timestamp=None,writeDB=True)
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
             self.setLastEval(value=False)

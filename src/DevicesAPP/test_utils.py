@@ -25,7 +25,7 @@ from .apps import DevicesAppException
 from .forms import DevicesForm,DatagramCustomLabelsForm
 
 import MainAPP.models
-from MainAPP.signals import SignalAutomationVariablesValueUpdated
+from .signals import SignalVariableValueUpdated
 
 from utils.test_utils import *
 
@@ -36,7 +36,7 @@ backupRegistersDB()
 P1=None
 P2=None
 
-ApacheHTTPpath=r'C:\xampp\htdocs'
+
 
 VARWeeklyScheduleDict={'Label':'Weekly schedule test','Var':'','LValue':20,'HValue':25}
 MainDeviceVarDict={'Label':'Test Main Var','Value':23,'DataType':DTYPE_DIGITAL,'PlotType':LINE_PLOT,'Units':'H','UserEditable':True}

@@ -1,5 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events as events
+from Events.consumers import PublishEvent
+
 import logging
 logger = logging.getLogger("project")
 

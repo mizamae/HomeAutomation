@@ -62,9 +62,9 @@ class MasterGPIOsModelTests(TestCase):
         instance.save() # to avoid the creation of the DB tables and insertion of the first row that function store2DB does...
         print('    -> Tested standard path')
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
-        SignalAutomationVariablesValueUpdated.connect(self.handler)
+        SignalVariableValueUpdated.connect(self.handler)
         instance.updateValue(newValue=GPIO_LOW,timestamp=None,writeDB=True,force=False)
-        SignalAutomationVariablesValueUpdated.disconnect(self.handler)
+        SignalVariableValueUpdated.disconnect(self.handler)
         # checks values from the signal
         self.assertAlmostEqual(self.signaltimestamp,timezone.now().replace(microsecond=0),delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
         self.assertEqual(self.signalValue,instance.Value)

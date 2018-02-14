@@ -218,7 +218,7 @@ class ViewsTests(TestCase):
     def test_async_post(self):
         url='/'+APP_TEMPLATE_NAMESPACE+'/async_post/'
         print('--> Test to reach DevicesAPP async_post page')
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
             
@@ -254,7 +254,7 @@ class ViewsTests(TestCase):
         self.testuser.save()
         logged_in = self.simpleClient.login(username='testUser@test.com', password='12345')
             
-        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT.pk,])
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT.pk,],Dictionary=DeviceDict)
             
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance()
@@ -283,7 +283,8 @@ class ViewsTests(TestCase):
             instance = Devices.objects.get(Name=newDict['Name'])# Device saved OK
             self.assertTrue(instance.CustomLabels!='')# Custom labels set OK
             instance.deleteRegistersTables()
-            newDict=editDict(keys=['DVT','Name','Code','IP'],newValues=[self.remoteDVT.pk,'Test Device 3',3,'10.10.10.3'])
+            newDict=editDict(keys=['DVT','Name','Code','IP'],
+                             newValues=[self.remoteDVT.pk,'Test Device 3',3,'10.10.10.3'],Dictionary=DeviceDict)
                 
         def test_addDevicetype(self):
             global DevicetypeDict

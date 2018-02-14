@@ -37,11 +37,11 @@ class MainDeviceVarsModelTests(TestCase):
             - Introduces a first register into the registers DB with the current value reading it for Inputs, and forcing it in Outputs
         '''
         print('## TESTING THE OPERATION OF THE store2DB METHOD ##')
-        SignalAutomationVariablesValueUpdated.connect(self.handler)
+        SignalVariableValueUpdated.connect(self.handler)
         instance=MainDeviceVars(**MainDeviceVarDict)
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
         instance.store2DB()
-        SignalAutomationVariablesValueUpdated.disconnect(self.handler)
+        SignalVariableValueUpdated.disconnect(self.handler)
         # checks values from the signal
         self.assertAlmostEqual(self.signaltimestamp,timezone.now().replace(microsecond=0),delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
         self.assertEqual(self.signalValue,MainDeviceVarDict['Value'])
@@ -70,9 +70,9 @@ class MainDeviceVarsModelTests(TestCase):
         print('    -> Tested standard path')
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
         
-        SignalAutomationVariablesValueUpdated.connect(self.handler)
+        SignalVariableValueUpdated.connect(self.handler)
         instance.updateValue(newValue=22,timestamp=None,writeDB=True,force=False)
-        SignalAutomationVariablesValueUpdated.disconnect(self.handler)
+        SignalVariableValueUpdated.disconnect(self.handler)
         # checks values from the signal
         self.assertAlmostEqual(self.signaltimestamp,timezone.now().replace(microsecond=0),delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
         self.assertEqual(self.signalValue,instance.Value)
@@ -89,9 +89,9 @@ class MainDeviceVarsModelTests(TestCase):
           
         print('    -> Tested update with timestamp')
         now=timezone.now().replace(microsecond=0)+datetime.timedelta(seconds=10)
-        SignalAutomationVariablesValueUpdated.connect(self.handler)
+        SignalVariableValueUpdated.connect(self.handler)
         instance.updateValue(newValue=21,timestamp=now,writeDB=True,force=False)
-        SignalAutomationVariablesValueUpdated.disconnect(self.handler)
+        SignalVariableValueUpdated.disconnect(self.handler)
         # checks values from the signal
         self.assertAlmostEqual(self.signaltimestamp,timezone.now()+datetime.timedelta(seconds=10),delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
         self.assertEqual(self.signalValue,instance.Value)

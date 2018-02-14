@@ -1,3 +1,6 @@
+from os.path import dirname, join, exists
+ApacheHTTPpath=r'C:\xampp\htdocs'
+
 def editDict(keys,newValues,Dictionary):
     import copy
     newDict= copy.deepcopy(Dictionary)
@@ -56,4 +59,10 @@ def InsertRegister2DB(DB,table,tags,values):
     vals=vals[:-1]
     sql=SQLInsert.replace('%s',table).replace('*',cols).replace('?',vals)
     DB.executeTransactionWithCommit(SQLstatement=sql,arg=values)
+    return sql
+
+def DeleteLastRegisterFromDB(DB,table):
+    SQLInsert=''' DELETE FROM "%s" WHERE timestamp = (SELECT MAX(timestamp) FROM "%s")'''
+    sql=SQLInsert.replace('%s',table)
+    DB.executeTransactionWithCommit(SQLstatement=sql,arg=[])
     return sql
