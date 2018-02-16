@@ -23,16 +23,12 @@ REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqli
 
 MANAGEMENT_TASKS_SCHEDULER_URL='sqlite:///TasksScheduler.sqlite'
 
-DATATYPE_CHOICES=(
-                    (0,_('Float')),
-                    (1,_('Integer'))
-                )
-PLOTTYPE_CHOICES=(
-                    ('line',_('Hard Line')),
-                    ('spline',_('Smoothed Line')),
-                    ('column',_('Bars')),
-                    ('area',_('Area')),
-                )
+AUTOMATION_ACTION_CHOICES=(
+        ('a',_('Activate output on Main')),
+        ('b',_('Send command to a device')),
+        ('c',_('Send an email')),
+        ('z',_('None')),
+    )
 
 SUBSYSTEM_HEATING=0
 SUBSYSTEM_GARDEN=1

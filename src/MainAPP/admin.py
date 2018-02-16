@@ -1,6 +1,9 @@
+from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
-from .models import Subsystems
+from django.utils.translation import ugettext_lazy as _
 
+from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules
+from .forms import RuleItemForm,AutomationRuleForm
 
 class SubsystemsInline(GenericStackedInline):
     extra = 1
@@ -109,79 +112,79 @@ class SubsystemsInline(GenericStackedInline):
 #     #extra = 1 # how many rows to show
 #     #form=ItemOrderingForm
 # 
-# class RuleItemInline(admin.TabularInline):
-#     model = RuleItem
-#     extra = 0 # how many rows to show
-#     form=RuleItemForm
-#     ordering=('order',)
-# 
-# class RuleItemAdmin(admin.ModelAdmin):
-#     pass
-# 
-# 
-# class AutomationRuleModelAdmin(admin.ModelAdmin):
-#     actions=['activate']
-#     list_display = ('Identifier','Active','Action','printEvaluation')
-#     ordering=('-Active','Identifier')
-#     form = AutomationRuleForm
-#     
-#     inlines = (RuleItemInline,)
-#     
-#     def printEvaluation(self,instance):
-#         result=instance.evaluate()
-#         if result['ERROR']==[]:
-#             result.pop('ERROR', None)
-#         return str(result)
-#     printEvaluation.short_description = _("Current value")
-#     
-#     def save_related(self, request, form, formsets, change):
-#         super(AutomationRuleModelAdmin, self).save_related(request, form, formsets, change)
-#         #if change:
-#         AR = AutomationRuleModel.objects.get(Identifier=request.POST['Identifier'])
-#         if AR.Active:
-#             AR.execute()
-#             
-#     def activate(self,request, queryset):
-#         selected_pk = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0]
-#         rule=AutomationRuleModel.objects.get(pk=selected_pk)
-#         rule.Active=True
-#         rule.save()
-#         return HttpResponseRedirect('/admin/HomeAutomation/automationrulemodel/')
-#     
-#     activate.short_description = _("Activate the rule")
-#     
-#     def save(self, *args, **kwargs):                             
-#         instance = super(AutomationRuleModelAdmin, self).save(*args, **kwargs)   
-#         if instance.pk:
-#           for item in instance.RuleItems.all():
-#             if item not in self.cleaned_data['RuleItems']:            
-#               # we remove books which have been unselected 
-#               instance.RuleItems.remove(item)
-#           for item in self.cleaned_data['RuleItems']:                  
-#             if item not in instance.RuleItems.all():                   
-#               # we add newly selected books
-#               instance.RuleItems.add(item)      
-#         return instance
-# 
-# class AutomationVariablesModelAdmin(admin.ModelAdmin):
-#     #filter_horizontal = ('AnItems','DgItems')
-#     list_display = ('Label','Device', 'Table','Tag','BitPos','Sample')
-#     ordering=('Device','Table','BitPos')
-#     def get_actions(self, request):
-#         #Disable delete
-#         actions = super(AutomationVariablesModelAdmin, self).get_actions(request)
-#         del actions['delete_selected']
-#         return actions
-#     
-#     def has_add_permission(self, request, obj=None):
-#         return False
-#     def has_delete_permission(self, request, obj=None):
-#         return False
+class RuleItemInline(admin.TabularInline):
+    model = RuleItems
+    extra = 0 # how many rows to show
+    form=RuleItemForm
+    ordering=('Order',)
+ 
+class RuleItemAdmin(admin.ModelAdmin):
+    pass
+ 
+ 
+class AutomationRuleModelAdmin(admin.ModelAdmin):
+    actions=['activate']
+    list_display = ('Identifier','Active','Action','printEvaluation')
+    ordering=('-Active','Identifier')
+    form = AutomationRuleForm
+     
+    inlines = (RuleItemInline,)
+     
+    def printEvaluation(self,instance):
+        result=instance.evaluate()
+        if result['ERROR']==[]:
+            result.pop('ERROR', None)
+        return str(result)
+    printEvaluation.short_description = _("Current value")
+     
+    def save_related(self, request, form, formsets, change):
+        super(AutomationRuleModelAdmin, self).save_related(request, form, formsets, change)
+        #if change:
+        AR = AutomationRules.objects.get(Identifier=request.POST['Identifier'])
+        if AR.Active:
+            AR.execute()
+             
+    def activate(self,request, queryset):
+        selected_pk = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0]
+        rule=AutomationRules.objects.get(pk=selected_pk)
+        rule.Active=True
+        rule.save()
+        return HttpResponseRedirect('/admin/MainAPP/automationrulemodel/')
+     
+    activate.short_description = _("Activate the rule")
+     
+    def save(self, *args, **kwargs):                             
+        instance = super(AutomationRuleModelAdmin, self).save(*args, **kwargs)   
+        if instance.pk:
+          for item in instance.RuleItems.all():
+            if item not in self.cleaned_data['RuleItems']:            
+              # we remove books which have been unselected 
+              instance.RuleItems.remove(item)
+          for item in self.cleaned_data['RuleItems']:                  
+            if item not in instance.RuleItems.all():                   
+              # we add newly selected books
+              instance.RuleItems.add(item)      
+        return instance
+ 
+class AutomationVariablesModelAdmin(admin.ModelAdmin):
+    #filter_horizontal = ('AnItems','DgItems')
+    list_display = ('Label','Device', 'Table','Tag','BitPos','Sample')
+    ordering=('Device','Table','BitPos')
+    def get_actions(self, request):
+        #Disable delete
+        actions = super(AutomationVariablesModelAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+     
+    def has_add_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
 #                 
 # 
 # 
 # admin.site.register(AdditionalCalculationsModel,AdditionalCalculationsModelAdmin)
 # admin.site.register(MainDeviceVarWeeklyScheduleModel,MainDeviceVarWeeklyScheduleModelAdmin)
-# admin.site.register(AutomationRuleModel,AutomationRuleModelAdmin)
-# admin.site.register(AutomationVariables,AutomationVariablesModelAdmin)
-# admin.site.register(RuleItem,RuleItemAdmin)
+admin.site.register(AutomationRules,AutomationRuleModelAdmin)
+admin.site.register(AutomationVariables,AutomationVariablesModelAdmin)
+#admin.site.register(RuleItems,RuleItemAdmin)

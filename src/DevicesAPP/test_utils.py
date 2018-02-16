@@ -22,7 +22,7 @@ from .constants import DTYPE_DIGITAL,DTYPE_FLOAT,DTYPE_INTEGER,APP_TEMPLATE_NAME
 from .models import Devices,DeviceTypes,Datagrams,DatagramItems,ItemOrdering,MasterGPIOs,MainDeviceVars,\
             MainDeviceVarWeeklySchedules,inlineDaily
 from .apps import DevicesAppException
-from .forms import DevicesForm,DatagramCustomLabelsForm
+from .forms import DevicesForm,DatagramCustomLabelsForm,MainDeviceVarsForm,MasterGPIOsForm
 
 import MainAPP.models
 from .signals import SignalVariableValueUpdated

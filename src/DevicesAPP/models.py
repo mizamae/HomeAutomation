@@ -80,8 +80,8 @@ class MainDeviceVars(models.Model):
         '''
         self.full_clean()
         super().save()
-        self.updateValue(newValue=self.Value,timestamp=timezone.now(),writeDB=True,force=True)
         self.updateAutomationVars()
+        self.updateValue(newValue=self.Value,timestamp=timezone.now(),writeDB=True,force=True)
     
     def updateLabel(self,newLabel):
         self.Label=newLabel
@@ -110,8 +110,8 @@ class MainDeviceVars(models.Model):
                 self.Value=newValue
                 self.save(update_fields=['Value'])
                 SignalVariableValueUpdated.send(sender=None, timestamp=now,
-                                                                                        Tags=[self.getRegistersDBTag(),],
-                                                                                        Values=[newValue,])
+                                                            Tags=[self.getRegistersDBTag(),],
+                                                            Values=[newValue,])
             if writeDB :
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now)
@@ -1232,7 +1232,7 @@ class Devices(models.Model):
         if self.CustomLabels=='' or self.CustomLabels==None:
             self.setCustomLabels()
         
-        if self.CustomLabels!='':
+        if self.CustomLabels!='' and self.CustomLabels!='{}':
             CustomLabels=json.loads(self.CustomLabels)
                 
             for DG in DGs:

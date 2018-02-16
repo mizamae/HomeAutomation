@@ -63,16 +63,16 @@ def checkReportAvailability():
 
 def updateWeekDay():
     import datetime
-    from MainAPP.models import MainDeviceVarModel
+    from DevicesAPP.models import MainDeviceVars
     timestamp=datetime.datetime.now()
     weekDay=timestamp.weekday()
     try:
-        WeekDay=MainDeviceVarModel.objects.get(Label='Day of the week')
-        WeekDay.update_value(newValue=weekDay,writeDB=True)
+        WeekDay=MainDeviceVars.objects.get(Label='Day of the week')
+        WeekDay.updateValue(newValue=weekDay,writeDB=True)
         #WeekDay.UserEditable=False
     except:
-        WeekDay=MainDeviceVarModel(Label='Day of the week',Value=weekDay,Datatype=1,Units='',UserEditable=False)
-        WeekDay.save()
+        WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,Datatype=1,Units='',UserEditable=False)
+        WeekDay.store2DB()
       
 def start_DailyTask():
     #checkReportAvailability()
@@ -105,12 +105,10 @@ def HourlyTask():
     hourDay=timestamp.hour
     try:
         HourDay=MainDeviceVars.objects.get(Label='Hour of the day')
-        HourDay.update_value(newValue=hourDay,writeDB=True)
-        #HourDay.UserEditable=False
+        HourDay.updateValue(newValue=hourDay,writeDB=True)
     except:
-        HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,Datatype=1,Units='H',UserEditable=False)
-        HourDay.save()
-    #updateWeekDay()
+        HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=1,Units='H',UserEditable=False)
+        HourDay.store2DB()
     checkCustomCalculations()
 
 def start_HourlyTask():

@@ -13,7 +13,7 @@ from .constants import BOOTING_MSG
                 
 class AutomationConfig(AppConfig):
     name = 'MainAPP'
-    verbose_name = _('Automation app')
+    verbose_name = _('Automation APP')
     
     def ready(self):
         process=os.getpid()

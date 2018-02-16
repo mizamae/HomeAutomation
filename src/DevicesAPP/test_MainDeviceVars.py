@@ -300,3 +300,27 @@ class MainDeviceVarsModelTests(TestCase):
         
         self.DB.dropTable(table=instance.getRegistersDBTable())
         
+print('###########################################')
+print('# TESTING OF MainDeviceVarsForm FUNCTIONS #')
+print('###########################################')
+
+@tag('maindevicevars')
+class DevicesFormTests(TestCase):
+    remoteDVT=None
+    localDVT=None
+    memoryDVT=None
+          
+    def setUp(self):
+        pass
+                  
+    def test_valid_data(self):
+        '''
+        Checks that the form is valid with good data and when saved, creates the instance and its associated automationvar
+        '''
+        print('## TESTING THE CREATION OF INSTANCE THROUGH FORM ##')
+        form = MainDeviceVarsForm(MainDeviceVarDict, action='add')
+          
+        self.assertTrue(form.is_valid())
+        instance = form.save()
+        AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars').filter(Tag=instance.getRegistersDBTag())
+        self.assertEqual(1,AVARs.count()) # one automationvar is returned

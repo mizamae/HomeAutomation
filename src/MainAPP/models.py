@@ -59,7 +59,7 @@ class Subsystems(models.Model):
 #         (3,_('Every week')),
 #         (4,_('Every month'))
 #     )
-#     
+#      
 #     CALCULATION_CHOICES=(
 #         (0,_('Duty cycle OFF')),
 #         (1,_('Duty cycle ON')),
@@ -69,12 +69,14 @@ class Subsystems(models.Model):
 #         (5,_('Cummulative sum')),
 #         (6,_('Integral over time')),
 #     )
-#     
-#     MainVar = models.OneToOneField(MainDeviceVarModel,on_delete=models.CASCADE,related_name='mvar',blank=True,null=True) # variable that will hold the result of the calculation
-#     AutomationVar= models.ForeignKey('HomeAutomation.AutomationVariables',on_delete=models.CASCADE,related_name='avar') # variable whose change triggers the calculation
+#      
+#     content_type = models.ForeignKey(ContentType)
+#     object_id = models.CharField(max_length=50)
+#     content_object = GenericForeignKey('content_type', 'object_id') # variable that will hold the result of the calculation
+#     SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
 #     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
 #     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
-#     
+#      
 #     def __init__(self,*args,**kwargs):
 #         try:
 #             self.df=kwargs.pop('df')
@@ -82,15 +84,28 @@ class Subsystems(models.Model):
 #         except:
 #             self.df=pd.DataFrame()
 #             self.key=''
-# 
+#  
 #         super(AdditionalCalculations, self).__init__(*args, **kwargs)
+#      
+#     def store2DB(self):
+#         label= str(self)
+#         try:
+#             mainVar=DevicesAPP.models.MainDeviceVars.objects.get(Label=label)
+#         except:
+#             if self.Calculation>1: # it is not a duty calculation
+#                 mainVar=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=0,Units=instance.SourceVar.Units,UserEditable=False)
+#             else:
+#                 mainVar=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=0,Units='%',UserEditable=False)
+#             mainVar.save()
+#         self.SinkVar=mainVar
+#         self.save()
 #         
 #     def __str__(self):
 #         try:
-#             return str(self.get_Calculation_display())+'('+self.AutomationVar.Label + ')'
+#             return str(self.get_Calculation_display())+'('+self.SourceVar.Label + ')'
 #         except:
 #             return self.key
-#     
+#      
 #     def checkTrigger(self):
 #         if self.Periodicity==0:
 #             return True
@@ -107,7 +122,7 @@ class Subsystems(models.Model):
 #                 elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
 #                     return True
 #         return False
-#     
+#      
 #     def calculate(self):
 #         import datetime
 #         import calendar
@@ -137,18 +152,18 @@ class Subsystems(models.Model):
 #                 ts = pd.to_datetime(fromDate.replace(tzinfo=None))
 #                 new_row = pd.DataFrame([[self.df[self.key].iloc[0]]], columns = [self.key], index=[ts])
 #                 self.df=pd.concat([pd.DataFrame(new_row),self.df], ignore_index=False)
-#                 
+#                  
 #             # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
 #             addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=self.df.index.values[-1])
 #             if addedtime>datetime.timedelta(minutes=1):
 #                 ts = pd.to_datetime(toDate.replace(tzinfo=None))
 #                 new_row = pd.DataFrame([[self.df[self.key].iloc[-1]]], columns = [self.key], index=[ts])
 #                 self.df=pd.concat([self.df,pd.DataFrame(new_row)], ignore_index=False)
-#             
+#              
 #             # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
 #             df_resampled=self.df.resample('1T').mean()
 #             self.df_interpolated=df_resampled.interpolate(method='zero')
-#                     
+#                      
 #             if self.Calculation==0:     # Duty cycle OFF
 #                 result= self.duty(level=False)
 #             if self.Calculation==1:     # Duty cycle ON
@@ -166,11 +181,9 @@ class Subsystems(models.Model):
 #                 result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
 #         else:
 #             result= None
-#             self.MainVar.update_value(newValue=None,timestamp=DBDate,writeDB=True)
-#         
-#         if result!=None:
-#             self.MainVar.update_value(newValue=result,timestamp=DBDate,writeDB=True)
 #             
+#         self.SinkVar.updateValue(newValue=result,timestamp=DBDate,writeDB=True)
+#              
 #     def duty(self,level=False,decimals=2,absoluteValue=False):
 #         if not self.df.empty:
 #             totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
@@ -184,7 +197,7 @@ class Subsystems(models.Model):
 #                 for data in value[0]:
 #                     time.append(0)
 #                 islist=True
-#                     
+#                      
 #             previousDate=self.df.index.values[0]
 #             for index, row in self.df.iterrows():
 #                 date=row.name
@@ -195,7 +208,7 @@ class Subsystems(models.Model):
 #                     for i,data in enumerate(row[self.key]):
 #                         time[i]+=int(data==level)*(sampletime.days*86400+sampletime.seconds)
 #                 previousDate=date
-#                     
+#                      
 #             if absoluteValue==True:
 #                 return time
 #             else:
@@ -205,22 +218,12 @@ class Subsystems(models.Model):
 #                     return [round(x/totalTime*100,decimals) for x in time]
 #         else:
 #             return None
-# 
+#  
 # @receiver(post_save, sender=AdditionalCalculations, dispatch_uid="update_AdditionalCalculations")
 # def update_AdditionalCalculations(sender, instance, update_fields,**kwargs):
 #     if kwargs['created']:   # an instance has been created
 #         logger.info('Se ha creado el calculo ' + str(instance))
-#         label= str(instance)
-#         try:
-#             mainVar=MainDeviceVarModel.objects.get(Label=label)
-#         except:
-#             if instance.Calculation>1: # it is not a duty calculation
-#                 mainVar=MainDeviceVarModel(Label=label,Value=0,Datatype=0,Units=instance.AutomationVar.Label.split('_')[-1],UserEditable=False)
-#             else:
-#                 mainVar=MainDeviceVarModel(Label=label,Value=0,Datatype=0,Units='%',UserEditable=False)
-#             mainVar.save()
-#         instance.MainVar=mainVar
-#         instance.save()
+#         
 
 
 class AutomationVariables(models.Model):

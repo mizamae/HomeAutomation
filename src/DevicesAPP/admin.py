@@ -28,7 +28,12 @@ class MainDeviceVarsAdmin(admin.ModelAdmin):
     
     inlines = [
         SubsystemsInline,
-    ]      
+    ]
+    def save_model(self, request, obj, form, change):
+        if not change: # the object is being created
+            obj.store2DB()
+        else:
+            super().save_model(request, obj, form, change)
 
 class inlineDailyFormset(forms.models.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):

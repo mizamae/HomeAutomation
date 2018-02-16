@@ -16,50 +16,51 @@ from DevicesAPP.constants import REMOTE_TCP_CONNECTION as DevicesAPP_REMOTE_TCP_
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
 
-from . import  models
+from . import models
+from .constants import AUTOMATION_ACTION_CHOICES
 
 import logging
 logger = logging.getLogger("project")
                                
 
 
-class AdditionalCalculationsForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(AdditionalCalculationsForm, self).__init__(*args, **kwargs)
-        # If you pass FormHelper constructor a form instance
-        # It builds a default layout with all its fields
-        self.helper = FormHelper(self)
-        self.helper.labels_uppercase = True
-        self.helper.label_class = 'col-sm-4'
-        self.helper.field_class = 'col-sm-6'
-#         self.helper.form_id = 'id-DeviceForm'
-        self.helper.form_class = 'form-horizontal'
-        self.helper.form_method = 'post'
-        
-        self.fields['AutomationVar'].label = _("Select the source variable")        
-        self.fields['Periodicity'].label = _("Select the calculation update frequency")
-        self.fields['Calculation'].label = _("Select the calculation")
-        
-        self.helper.layout = Layout(
-            Field('AutomationVar', css_class='input-sm'),
-            #Field('MainVar', css_class='input-sm'),
-            Field('Periodicity', css_class='input-sm'),
-            Field('Calculation', css_class='input-sm'),
-            Submit('submit', _('Submit'),css_class='btn-primary'),
-            )
-        
-    def clean(self):
-        cleaned_data=super().clean() # to use the validation of the fields from the model
-        Periodicity = cleaned_data['Periodicity']
-        AutomationVar = cleaned_data['AutomationVar']
-        Calculation = cleaned_data['Calculation']
-        
-        
-        return cleaned_data
-    
-    class Meta:
-        model = models.AdditionalCalculationsModel
-        fields=['AutomationVar','Periodicity','Calculation']
+# class AdditionalCalculationsForm(ModelForm):
+#     def __init__(self, *args, **kwargs):
+#         super(AdditionalCalculationsForm, self).__init__(*args, **kwargs)
+#         # If you pass FormHelper constructor a form instance
+#         # It builds a default layout with all its fields
+#         self.helper = FormHelper(self)
+#         self.helper.labels_uppercase = True
+#         self.helper.label_class = 'col-sm-4'
+#         self.helper.field_class = 'col-sm-6'
+# #         self.helper.form_id = 'id-DeviceForm'
+#         self.helper.form_class = 'form-horizontal'
+#         self.helper.form_method = 'post'
+#         
+#         self.fields['AutomationVar'].label = _("Select the source variable")        
+#         self.fields['Periodicity'].label = _("Select the calculation update frequency")
+#         self.fields['Calculation'].label = _("Select the calculation")
+#         
+#         self.helper.layout = Layout(
+#             Field('AutomationVar', css_class='input-sm'),
+#             #Field('MainVar', css_class='input-sm'),
+#             Field('Periodicity', css_class='input-sm'),
+#             Field('Calculation', css_class='input-sm'),
+#             Submit('submit', _('Submit'),css_class='btn-primary'),
+#             )
+#         
+#     def clean(self):
+#         cleaned_data=super().clean() # to use the validation of the fields from the model
+#         Periodicity = cleaned_data['Periodicity']
+#         AutomationVar = cleaned_data['AutomationVar']
+#         Calculation = cleaned_data['Calculation']
+#         
+#         
+#         return cleaned_data
+#     
+#     class Meta:
+#         model = models.AdditionalCalculationsModel
+#         fields=['AutomationVar','Periodicity','Calculation']
         
         
 class RuleItemForm(ModelForm):  
@@ -72,7 +73,7 @@ class RuleItemForm(ModelForm):
 #         self.helper.form_id = 'id-DeviceForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
-        self.fields['order'].label = _("Execution order")
+        self.fields['Order'].label = _("Execution order")
         self.fields['PreVar1'].label = _("Prefix for the first term")
         self.fields['Var1'].label = _("First term")
         self.fields['Operator12'].label = _("Operator")
@@ -98,18 +99,13 @@ class RuleItemForm(ModelForm):
          return cleaned_data
          
     class Meta:
-        model = models.RuleItem
-        fields=['order','PreVar1','Var1','Operator12','PreVar2','Var2','IsConstant','Constant','Var2Hyst','Operator3']
+        model = models.RuleItems
+        fields=['Order','PreVar1','Var1','Operator12','PreVar2','Var2','IsConstant','Constant','Var2Hyst','Operator3']
         
     
 class AutomationRuleForm(ModelForm):
-    ACTION_CHOICES=(
-        ('a',_('Activate output on Main')),
-        ('b',_('Send command to a device')),
-        ('c',_('Send an email')),
-        ('z',_('None')),
-    )
-    ActionType = forms.ChoiceField(choices=ACTION_CHOICES,label=_('Select the action'))
+    
+    ActionType = forms.ChoiceField(choices=AUTOMATION_ACTION_CHOICES,label=_('Select the action'))
     IO=forms.ModelChoiceField(queryset=DevicesAPP.models.MasterGPIOs.objects.filter(Direction=GPIO_OUTPUT),
                               label=_('Select the output'),required = False)
     IOValue=forms.ChoiceField(choices=DevicesAPP.constants.GPIOVALUE_CHOICES,
@@ -143,7 +139,7 @@ class AutomationRuleForm(ModelForm):
         self.fields['Active'].label = _("Activate the rule")
         self.fields['OnError'].label = _("Select the output value in case of error")
         self.fields['PreviousRule'].label = _("Select the previous rule to be chained")
-        self.fields['PreviousRule'].queryset=HomeAutomation.models.AutomationRuleModel.objects.filter(Action__contains='"ActionType": "z"')
+        self.fields['PreviousRule'].queryset=models.AutomationRules.objects.filter(Action__contains='"ActionType": "z"')
         self.fields['OperatorPrev'].label = _("Select the operator between the previous rule and this one")
         self.helper.layout = Layout(
             Field('Identifier', css_class='input-sm'),
@@ -204,7 +200,7 @@ class AutomationRuleForm(ModelForm):
     class Meta:
         fields=['Identifier','Active','OnError','PreviousRule','OperatorPrev','Action']
         widgets = {'Action': forms.HiddenInput()}
-        model = models.AutomationRuleModel
+        model = models.AutomationRules
         
     class Media:
         js = ('AutomationRuleFormAnimations.js',)

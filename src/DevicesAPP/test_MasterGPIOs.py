@@ -333,3 +333,28 @@ class MasterGPIOsModelTests(TestCase):
         self.DB.dropTable(table=instance.getRegistersDBTable())
         self.DB.dropTable(table=instance2.getRegistersDBTable())
          
+print('###########################################')
+print('# TESTING OF MasterGPIOsForm FUNCTIONS #')
+print('###########################################')
+
+@tag('mastergpios')
+class MasterGPIOsForm(TestCase):
+    remoteDVT=None
+    localDVT=None
+    memoryDVT=None
+          
+    def setUp(self):
+        pass
+                  
+    def test_valid_data(self):
+        '''
+        Checks that the form is valid with good data and when saved, creates the instance and its associated automationvar
+        '''
+        print('## TESTING THE CREATION OF INSTANCE THROUGH FORM ##')
+        
+        outDict=editDict(keys=['Value','Label'], newValues=[GPIO_LOW,'test'], Dictionary=MasterGPIODict)
+        form = MasterGPIOsForm(outDict,action='add')
+        self.assertTrue(form.is_valid())
+        instance = form.save()
+        AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainGPIOs').filter(Tag=instance.getRegistersDBTag())
+        self.assertEqual(1,AVARs.count()) # one automationvar is returned

@@ -80,9 +80,9 @@ class AutomationVariablesTests(TestCase):
         instance.store2DB()
         newValue=25
         InsertRegister2DB(DB=self.DB,table=instance.Table,tags=['timestamp',instance.Tag],values=[now,newValue,])
-        latest=instance.getLatestData(localized=False)
+        latest=instance.getLatestData(localized=True)
         DeleteLastRegisterFromDB(DB=self.DB,table=instance.Table)
-        self.assertAlmostEqual(latest[instance.Tag]['timestamp'],now.replace(tzinfo=None),datetime.timedelta(seconds=1))
+        self.assertAlmostEqual(latest[instance.Tag]['timestamp'],now,datetime.timedelta(seconds=1))
         self.assertEqual(latest[instance.Tag]['value'],newValue)
     
     def test_getValues(self):

@@ -9,9 +9,11 @@ from django.utils import timezone
 from django.views import generic
 from django.forms import ModelForm
 from django.urls import reverse
+from django.forms import inlineformset_factory
 
 import json
 import utils.BBDD
+import MainAPP.models
 from .constants import APP_TEMPLATE_NAMESPACE,DTYPE_DIGITAL
 from . import  models
 from .apps import DevicesAppException
@@ -81,11 +83,17 @@ class MainDeviceVarsForm(ModelForm):
             Field('PlotType'),
             buttons
             )
+    
+    def save(self):
+        instance=super().save()
+        instance.store2DB()
+        return instance
         
     class Meta:
         model = models.MainDeviceVars
         fields=['Label','DataType','Value','Units','PlotType']
 
+                                            
 class inlineDailyForm(ModelForm):  
     def __init__(self, *args, **kwargs):
         instance=kwargs.get('instance',None)
@@ -162,7 +170,7 @@ class MasterGPIOsForm(ModelForm):
         except:
             action='add'
 
-        super(MasterGPIOsForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance
         # It builds a default layout with all its fields
         self.helper = FormHelper(self)
@@ -208,7 +216,12 @@ class MasterGPIOsForm(ModelForm):
             Field('Value'),
             buttons
             )
-        
+    
+    def save(self):
+        instance=super().save()
+        instance.store2DB()
+        return instance
+    
     class Meta:
         model = models.MasterGPIOs
         fields=['Pin','Label','Direction','Value']
