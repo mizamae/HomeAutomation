@@ -51,179 +51,183 @@ class Subsystems(models.Model):
         return self.get_Name_display()
     
 
-# class AdditionalCalculations(models.Model):
-#     PERIODICITY_CHOICES=(
-#         (0,_('With every new value')),
-#         (1,_('Every hour')),
-#         (2,_('Every day')),
-#         (3,_('Every week')),
-#         (4,_('Every month'))
-#     )
-#      
-#     CALCULATION_CHOICES=(
-#         (0,_('Duty cycle OFF')),
-#         (1,_('Duty cycle ON')),
-#         (2,_('Mean value')),
-#         (3,_('Max value')),
-#         (4,_('Min value')),
-#         (5,_('Cummulative sum')),
-#         (6,_('Integral over time')),
-#     )
-#      
-#     content_type = models.ForeignKey(ContentType)
-#     object_id = models.CharField(max_length=50)
-#     content_object = GenericForeignKey('content_type', 'object_id') # variable that will hold the result of the calculation
-#     SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
-#     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
-#     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
-#      
-#     def __init__(self,*args,**kwargs):
-#         try:
-#             self.df=kwargs.pop('df')
-#             self.key=kwargs.pop('key')
-#         except:
-#             self.df=pd.DataFrame()
-#             self.key=''
-#  
-#         super(AdditionalCalculations, self).__init__(*args, **kwargs)
-#      
-#     def store2DB(self):
-#         label= str(self)
-#         try:
-#             mainVar=DevicesAPP.models.MainDeviceVars.objects.get(Label=label)
-#         except:
-#             if self.Calculation>1: # it is not a duty calculation
-#                 mainVar=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=0,Units=instance.SourceVar.Units,UserEditable=False)
-#             else:
-#                 mainVar=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=0,Units='%',UserEditable=False)
-#             mainVar.save()
-#         self.SinkVar=mainVar
-#         self.save()
-#         
-#     def __str__(self):
-#         try:
-#             return str(self.get_Calculation_display())+'('+self.SourceVar.Label + ')'
-#         except:
-#             return self.key
-#      
-#     def checkTrigger(self):
-#         if self.Periodicity==0:
-#             return True
-#         else:
-#             import datetime
-#             now=datetime.datetime.now()
-#             if self.Periodicity==1 and now.minute==0: # hourly calculation launched at minute XX:00
-#                 return True
-#             elif now.hour==0 and now.minute==0:
-#                 if self.Periodicity==2: # daily calculation launched on next day at 00:00
-#                     return True
-#                 elif self.Periodicity==3 and now.weekday()==0: # weekly calculation launched on Monday at 00:00
-#                     return True
-#                 elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
-#                     return True
-#         return False
-#      
-#     def calculate(self):
-#         import datetime
-#         import calendar
-#         if self.Periodicity==1: # Every hour
-#             offset=datetime.timedelta(hours=1)
-#         elif self.Periodicity==2: # Every day
-#             offset=datetime.timedelta(hours=24)
-#         elif self.Periodicity==3: # Every week
-#             offset=datetime.timedelta(weeks=1)
-#         elif self.Periodicity==4: # Every month
-#             now=datetime.datetime.now()
-#             days=calendar.monthrange(now.year, now.month)[1]
-#             offset=datetime.timedelta(hours=days*24)
-#         else:
-#             return
-#         toDate=timezone.now() 
-#         fromDate=toDate-offset
-#         DBDate=toDate-offset/2
-#         toDate=toDate-datetime.timedelta(minutes=1)
-#         query=self.AutomationVar.getQuery(fromDate=fromDate,toDate=toDate)
-#         self.df=pd.read_sql_query(sql=query['sql'],con=query['conn'],index_col='timestamp')
-#         if not self.df.empty:
-#             self.key=self.AutomationVar.Tag
-#             # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
-#             addedtime=pd.to_datetime(arg=self.df.index.values[0])-fromDate.replace(tzinfo=None)
-#             if addedtime>datetime.timedelta(minutes=1):
-#                 ts = pd.to_datetime(fromDate.replace(tzinfo=None))
-#                 new_row = pd.DataFrame([[self.df[self.key].iloc[0]]], columns = [self.key], index=[ts])
-#                 self.df=pd.concat([pd.DataFrame(new_row),self.df], ignore_index=False)
-#                  
-#             # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
-#             addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=self.df.index.values[-1])
-#             if addedtime>datetime.timedelta(minutes=1):
-#                 ts = pd.to_datetime(toDate.replace(tzinfo=None))
-#                 new_row = pd.DataFrame([[self.df[self.key].iloc[-1]]], columns = [self.key], index=[ts])
-#                 self.df=pd.concat([self.df,pd.DataFrame(new_row)], ignore_index=False)
-#              
-#             # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
-#             df_resampled=self.df.resample('1T').mean()
-#             self.df_interpolated=df_resampled.interpolate(method='zero')
-#                      
-#             if self.Calculation==0:     # Duty cycle OFF
-#                 result= self.duty(level=False)
-#             if self.Calculation==1:     # Duty cycle ON
-#                 result= self.duty(level=True)
-#             elif self.Calculation==2:   # Mean value
-#                 result= self.df_interpolated.mean()[0]
-#             elif self.Calculation==3:   # Max value
-#                 result= self.df.max()[0]
-#             elif self.Calculation==4:   # Min value
-#                 result= self.df.min()[0]
-#             elif self.Calculation==5:   # Cummulative sum
-#                 result= self.df_interpolated.cumsum()[0]
-#             elif self.Calculation==6:   # integral over time
-#                 from scipy import integrate
-#                 result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
-#         else:
-#             result= None
-#             
-#         self.SinkVar.updateValue(newValue=result,timestamp=DBDate,writeDB=True)
-#              
-#     def duty(self,level=False,decimals=2,absoluteValue=False):
-#         if not self.df.empty:
-#             totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
-#             totalTime=totalTime.days*86400+totalTime.seconds
-#             value=next(self.df.iterrows())[1]
-#             if not isinstance(value[0], list):
-#                 time=0
-#                 islist=False
-#             else:
-#                 time=[]
-#                 for data in value[0]:
-#                     time.append(0)
-#                 islist=True
-#                      
-#             previousDate=self.df.index.values[0]
-#             for index, row in self.df.iterrows():
-#                 date=row.name
-#                 sampletime=date-previousDate
-#                 if not islist:
-#                     time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
-#                 else:
-#                     for i,data in enumerate(row[self.key]):
-#                         time[i]+=int(data==level)*(sampletime.days*86400+sampletime.seconds)
-#                 previousDate=date
-#                      
-#             if absoluteValue==True:
-#                 return time
-#             else:
-#                 if not islist:
-#                     return round(time/totalTime*100,decimals)
-#                 else:
-#                     return [round(x/totalTime*100,decimals) for x in time]
-#         else:
-#             return None
-#  
-# @receiver(post_save, sender=AdditionalCalculations, dispatch_uid="update_AdditionalCalculations")
-# def update_AdditionalCalculations(sender, instance, update_fields,**kwargs):
-#     if kwargs['created']:   # an instance has been created
-#         logger.info('Se ha creado el calculo ' + str(instance))
-#         
+class AdditionalCalculations(models.Model):
+    PERIODICITY_CHOICES=(
+        (0,_('With every new value')),
+        (1,_('Every hour')),
+        (2,_('Every day')),
+        (3,_('Every week')),
+        (4,_('Every month'))
+    )
+      
+    CALCULATION_CHOICES=(
+        (0,_('Duty cycle OFF')),
+        (1,_('Duty cycle ON')),
+        (2,_('Mean value')),
+        (3,_('Max value')),
+        (4,_('Min value')),
+        (5,_('Cummulative sum')),
+        (6,_('Integral over time')),
+    )
+      
+    SinkVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sinkvar',blank=True,null=True) # variable that holds the calculation
+    SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
+    Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
+    Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
+      
+    def __init__(self,*args,**kwargs):
+        try:
+            self.df=kwargs.pop('df')
+            self.key=kwargs.pop('key')
+        except:
+            self.df=pd.DataFrame()
+            self.key=''
+  
+        super(AdditionalCalculations, self).__init__(*args, **kwargs)
+      
+    def store2DB(self):
+        from DevicesAPP.constants import DTYPE_FLOAT
+        #import DevicesAPP.models
+        label= str(self)
+        try:
+            sinkVAR=AutomationVariables.objects.get(Label=label)
+        except:
+            if self.Calculation>1: # it is not a duty calculation
+                #VAR=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=DTYPE_FLOAT,Units=self.SourceVar.Units,UserEditable=False)
+                data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':self.SourceVar.Units,'UserEditable':False}
+            else:
+                #VAR=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=DTYPE_FLOAT,Units='%',UserEditable=False)
+                data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':'%','UserEditable':False}
+            MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
+            #VAR.store2DB()
+            sinkVAR=AutomationVariables.objects.get(Label=label)
+        self.SinkVar=sinkVAR
+        self.save()
+         
+    def __str__(self):
+        try:
+            return str(self.get_Calculation_display())+'('+self.SourceVar.Label + ')'
+        except:
+            return self.pk
+      
+    def checkTrigger(self):
+        if self.Periodicity==0:
+            return True
+        else:
+            import datetime
+            now=datetime.datetime.now()
+            if self.Periodicity==1 and now.minute==0: # hourly calculation launched at minute XX:00
+                return True
+            elif now.hour==0 and now.minute==0:
+                if self.Periodicity==2: # daily calculation launched on next day at 00:00
+                    return True
+                elif self.Periodicity==3 and now.weekday()==0: # weekly calculation launched on Monday at 00:00
+                    return True
+                elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
+                    return True
+        return False
+      
+    def calculate(self):
+        import datetime
+        import calendar
+        if self.Periodicity==1: # Every hour
+            offset=datetime.timedelta(hours=1)
+        elif self.Periodicity==2: # Every day
+            offset=datetime.timedelta(hours=24)
+        elif self.Periodicity==3: # Every week
+            offset=datetime.timedelta(weeks=1)
+        elif self.Periodicity==4: # Every month
+            now=datetime.datetime.now()
+            days=calendar.monthrange(now.year, now.month)[1]
+            offset=datetime.timedelta(hours=days*24)
+        else:
+            return
+        toDate=timezone.now() 
+        fromDate=toDate-offset
+        DBDate=toDate-offset/2
+        toDate=toDate-datetime.timedelta(minutes=1)
+        query=self.AutomationVar.getQuery(fromDate=fromDate,toDate=toDate)
+        self.df=pd.read_sql_query(sql=query['sql'],con=query['conn'],index_col='timestamp')
+        if not self.df.empty:
+            self.key=self.AutomationVar.Tag
+            # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
+            addedtime=pd.to_datetime(arg=self.df.index.values[0])-fromDate.replace(tzinfo=None)
+            if addedtime>datetime.timedelta(minutes=1):
+                ts = pd.to_datetime(fromDate.replace(tzinfo=None))
+                new_row = pd.DataFrame([[self.df[self.key].iloc[0]]], columns = [self.key], index=[ts])
+                self.df=pd.concat([pd.DataFrame(new_row),self.df], ignore_index=False)
+                  
+            # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
+            addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=self.df.index.values[-1])
+            if addedtime>datetime.timedelta(minutes=1):
+                ts = pd.to_datetime(toDate.replace(tzinfo=None))
+                new_row = pd.DataFrame([[self.df[self.key].iloc[-1]]], columns = [self.key], index=[ts])
+                self.df=pd.concat([self.df,pd.DataFrame(new_row)], ignore_index=False)
+              
+            # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
+            df_resampled=self.df.resample('1T').mean()
+            self.df_interpolated=df_resampled.interpolate(method='zero')
+                      
+            if self.Calculation==0:     # Duty cycle OFF
+                result= self.duty(level=False)
+            if self.Calculation==1:     # Duty cycle ON
+                result= self.duty(level=True)
+            elif self.Calculation==2:   # Mean value
+                result= self.df_interpolated.mean()[0]
+            elif self.Calculation==3:   # Max value
+                result= self.df.max()[0]
+            elif self.Calculation==4:   # Min value
+                result= self.df.min()[0]
+            elif self.Calculation==5:   # Cummulative sum
+                result= self.df_interpolated.cumsum()[0]
+            elif self.Calculation==6:   # integral over time
+                from scipy import integrate
+                result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
+        else:
+            result= None
+             
+        self.SinkVar.updateValue(newValue=result,timestamp=DBDate,writeDB=True)
+              
+    def duty(self,level=False,decimals=2,absoluteValue=False):
+        if not self.df.empty:
+            totalTime=(self.df.iloc[-1].name-self.df.iloc[0].name)
+            totalTime=totalTime.days*86400+totalTime.seconds
+            value=next(self.df.iterrows())[1]
+            if not isinstance(value[0], list):
+                time=0
+                islist=False
+            else:
+                time=[]
+                for data in value[0]:
+                    time.append(0)
+                islist=True
+                      
+            previousDate=self.df.index.values[0]
+            for index, row in self.df.iterrows():
+                date=row.name
+                sampletime=date-previousDate
+                if not islist:
+                    time+=int(row[self.key]==level)*(sampletime.days*86400+sampletime.seconds)
+                else:
+                    for i,data in enumerate(row[self.key]):
+                        time[i]+=int(data==level)*(sampletime.days*86400+sampletime.seconds)
+                previousDate=date
+                      
+            if absoluteValue==True:
+                return time
+            else:
+                if not islist:
+                    return round(time/totalTime*100,decimals)
+                else:
+                    return [round(x/totalTime*100,decimals) for x in time]
+        else:
+            return None
+  
+@receiver(post_save, sender=AdditionalCalculations, dispatch_uid="update_AdditionalCalculations")
+def update_AdditionalCalculations(sender, instance, update_fields,**kwargs):
+    if kwargs['created']:   # an instance has been created
+        logger.info('Se ha creado el calculo ' + str(instance))
+         
 
 
 class AutomationVariables(models.Model):
@@ -264,8 +268,9 @@ class AutomationVariables(models.Model):
         return exist
         
     def createSubsystem(self,Name):
-        subsystem=Subsystems(Name=Name,content_object=self)
-        subsystem.save()
+        if not self.checkSubsystem(Name=Name):
+            subsystem=Subsystems(Name=Name,content_object=self)
+            subsystem.save()
         
     def getLatestData(self,localized=True):
         Data={}

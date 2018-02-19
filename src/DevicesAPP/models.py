@@ -222,9 +222,7 @@ class MainDeviceVars(models.Model):
         
         if SUBSYSTEMs.count():
             for SUBS in SUBSYSTEMs:
-                found=avar.checkSubsystem(Name=SUBS.Name)
-                if found==False:
-                    avar.createSubsystem(Name=SUBS.Name)
+                avar.createSubsystem(Name=SUBS.Name)
     
     def deleteAutomationVars(self):
         MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Tag=str(self.pk),Table=self.getRegistersDBTable()).delete()

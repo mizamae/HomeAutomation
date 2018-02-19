@@ -28,3 +28,9 @@ def SignalToggleAVAR_handler(sender, **kwargs):
     elif Device=='MainVars':
         Instance=MainDeviceVars.objects.get(pk=Tag)
     Instance.toggle()
+    
+@receiver(MainAPP.signals.SignalCreateMainDeviceVars, dispatch_uid="SignalCreateMainDeviceVars_DevicesAPP_receiver")
+def SignalCreateMainDeviceVars_handler(sender, **kwargs):
+    data=kwargs['Data']
+    Instance=MainDeviceVars(**data)
+    Instance.store2DB()

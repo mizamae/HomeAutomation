@@ -2,116 +2,29 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules
-from .forms import RuleItemForm,AutomationRuleForm
+from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules,AdditionalCalculations
+from .forms import RuleItemForm,AutomationRuleForm,AdditionalCalculationsForm
 
 class SubsystemsInline(GenericStackedInline):
     extra = 1
     model = Subsystems
+
+class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
+    def printCalculation(self,instance):
+        return str(instance)
+     
+    printCalculation.short_description = _("Description")
+     
+    list_display = ('printCalculation',)
+    form = AdditionalCalculationsForm
     
-# from django.contrib import admin
-# from django.contrib import messages
-# from django.http import HttpResponseRedirect
-# from django import forms
-# from django.utils.functional import curry
-# 
-# import json
-# 
-# from django.utils.translation import ugettext_lazy as _
-# 
-# 
-# 
-# from HomeAutomation.models import AdditionalCalculationsModel,AutomationRuleModel,AutomationVariables,RuleItem
-# from HomeAutomation.forms import AdditionalCalculationsForm,AutomationRuleForm,RuleItemForm
-# 
-# class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
-#     def printCalculation(self,instance):
-#         return str(instance)
-#     
-#     printCalculation.short_description = _("Description")
-#     
-#     list_display = ('printCalculation',)
-#     form = AdditionalCalculationsForm
-#     
-# class inlineDailyFormset(forms.models.BaseInlineFormSet):
-#     def __init__(self, *args, **kwargs):
-#         super(inlineDailyFormset, self).__init__(*args, **kwargs)
-#             
-# class inlineDailyAdmin(admin.TabularInline):
-#     model = inlineDaily
-#     max_num=7
-#     #readonly_fields=('Day',)
-#     fields=['Day','Hour0','Hour1','Hour2','Hour3','Hour4','Hour5','Hour6','Hour7','Hour8','Hour9','Hour10'
-#                 ,'Hour11','Hour12','Hour13','Hour14','Hour15','Hour16','Hour17','Hour18','Hour19','Hour20','Hour21','Hour22','Hour23']
-#     min_num=7
-#     formset = inlineDailyFormset
-#     form=inlineDailyForm
-#     
-#     def get_formset(self, request, obj=None, **kwargs):
-#         initial = []
-#         if request.method == "GET":
-#             initial=[
-#                         {'Day': 0},  
-#                         {'Day': 1}, 
-#                         {'Day': 2},
-#                         {'Day': 3},
-#                         {'Day': 4},
-#                         {'Day': 5},
-#                         {'Day': 6}]
-#         formset = super(inlineDailyAdmin, self).get_formset(request, obj, **kwargs)
-#         formset.__init__ = curry(formset.__init__, initial=initial)
-#         return formset
-#     
-#     #readonly_fields=('Day',)
-#     
-# class MainDeviceVarWeeklyScheduleModelAdmin(admin.ModelAdmin):
-#     #filter_horizontal = ('AnItems','DgItems')
-#     actions=['setAsActive']
-#     list_display = ('Label','Active','Var','printValue','printSetpoint')
-#     ordering=('-Active','Label')
-#     inlines = (inlineDailyAdmin,)
-#     exclude = ('Days',)
-#     
-#     def printValue(self,instance):
-#         return str(instance.Var.Value)+' '+instance.Var.Units
-#     printValue.short_description = _("Current value")
-#     
-#     def printSetpoint(self,instance):
-#         import datetime
-#         timestamp=datetime.datetime.now()
-#         weekDay=timestamp.weekday()
-#         hour=timestamp.hour
-#         dailySchedules=instance.inlinedaily_set.all()
-#         for daily in dailySchedules:
-#             if daily.Day==weekDay:
-#                 Setpoint=getattr(daily,'Hour'+str(hour))
-#                 if Setpoint==0:
-#                     return str(instance.LValue)+' '+instance.Var.Units
-#                 else:
-#                     return str(instance.HValue)+' '+instance.Var.Units
-#     printSetpoint.short_description = _("Current setpoint")
-#     
-#     def save_related(self, request, form, formsets, change):
-#         super(MainDeviceVarWeeklyScheduleModelAdmin, self).save_related(request, form, formsets, change)
-#         if change:
-#             from HomeAutomation.models import checkHourlySchedules
-#             checkHourlySchedules()
-#     
-#     def setAsActive(self,request, queryset):
-#         devices_selected=queryset.count()
-#         if devices_selected>1:
-#             self.message_user(request, "Only one schedule can be selected for this action")
-#         else:
-#             selected_pk = int(request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0])
-#             schedule=MainDeviceVarWeeklyScheduleModel.objects.get(pk=selected_pk)
-#             schedule.Active=True
-#             schedule.save()
-#             return HttpResponseRedirect('/admin/HomeAutomation/maindevicevarweeklyschedulemodel/')
-#         
-#     setAsActive.short_description = _("Set as active schedule")
-#     #extra = 1 # how many rows to show
-#     #form=ItemOrderingForm
-# 
+    def save_model(self, request, obj, form, change):
+        if not change: # the object is being created
+            obj.store2DB()
+        else:
+            super().save_model(request, obj, form, change)
+            
+
 class RuleItemInline(admin.TabularInline):
     model = RuleItems
     extra = 0 # how many rows to show
@@ -120,8 +33,7 @@ class RuleItemInline(admin.TabularInline):
  
 class RuleItemAdmin(admin.ModelAdmin):
     pass
- 
- 
+
 class AutomationRuleModelAdmin(admin.ModelAdmin):
     actions=['activate']
     list_display = ('Identifier','Active','Action','printEvaluation')
@@ -180,11 +92,7 @@ class AutomationVariablesModelAdmin(admin.ModelAdmin):
         return False
     def has_delete_permission(self, request, obj=None):
         return False
-#                 
-# 
-# 
-# admin.site.register(AdditionalCalculationsModel,AdditionalCalculationsModelAdmin)
-# admin.site.register(MainDeviceVarWeeklyScheduleModel,MainDeviceVarWeeklyScheduleModelAdmin)
+
+admin.site.register(AdditionalCalculations,AdditionalCalculationsModelAdmin)
 admin.site.register(AutomationRules,AutomationRuleModelAdmin)
 admin.site.register(AutomationVariables,AutomationVariablesModelAdmin)
-#admin.site.register(RuleItems,RuleItemAdmin)
