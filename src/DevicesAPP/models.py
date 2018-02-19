@@ -60,8 +60,8 @@ class MainDeviceVars(models.Model):
     Value = models.DecimalField(max_digits=6, decimal_places=2,null=True,help_text=str(_('Value of the variable.')))
     DataType= models.CharField(max_length=20,choices=DATATYPE_CHOICES,help_text=str(_('Type of data of the variable.')))
     PlotType= models.PositiveSmallIntegerField(choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
-    Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')))
-    UserEditable = models.BooleanField(default=True)
+    Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
+    UserEditable = models.BooleanField(default=True,help_text=str(_('Can the user modify the value??')))
     
     Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='mainvars')
     
@@ -73,8 +73,11 @@ class MainDeviceVars(models.Model):
     
     def clean(self):
         if self.DataType==DTYPE_DIGITAL:
-            self.DataType=DTYPE_INTEGER
-            
+            self.Units=None
+        else:
+            if self.Units=='':
+                self.Units=' '
+                
     def store2DB(self):
         '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
         '''
@@ -83,6 +86,10 @@ class MainDeviceVars(models.Model):
         self.updateAutomationVars()
         self.updateValue(newValue=self.Value,timestamp=timezone.now(),writeDB=True,force=True)
     
+    def toggle(self):
+        if self.DataType==DTYPE_DIGITAL:
+            self.updateValue(newValue=not (self.Value),timestamp=None,writeDB=True,force=False)
+        
     def updateLabel(self,newLabel):
         self.Label=newLabel
         self.save(update_fields=['Label'])
@@ -197,19 +204,20 @@ class MainDeviceVars(models.Model):
             raise DevicesAppException("Unexpected error in insert_MainVars_register:" + str(sys.exc_info()[1]))
         
     def updateAutomationVars(self):
-        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars')
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(mainvars=self)
         dvar={'Label':self.Label,'Tag':self.getRegistersDBTag(),'Device':'MainVars','Table':self.getRegistersDBTable(),'BitPos':None,'Sample':0,'Units':self.Units}
         try:
-            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],Device=dvar['Device'])
-            avar.Label=dvar['Label']
-            avar.Units=dvar['Units']
-        except:
+            avar=MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Tag=dvar['Tag'],Table=dvar['Table'])
+        except MainAPP.models.AutomationVariables.DoesNotExist:
             avar=None
             
         if avar==None:
             avar=MainAPP.models.AutomationVariables(**dvar)
-        
+        else:
+            avar.Label=dvar['Label']
+            avar.Units=dvar['Units']
+            
+        avar.UserEditable=self.UserEditable
         avar.store2DB()
         
         if SUBSYSTEMs.count():
@@ -270,7 +278,10 @@ class MainDeviceVars(models.Model):
                 values.append(instance.Value)
                 names.append(instance.getRegistersDBTag())
                 types.append(instance.DataType)
-                datatypes.append(instance.DataType)
+                if instance.DataType!=DTYPE_DIGITAL:
+                    datatypes.append(instance.DataType)
+                else:
+                    datatypes.append(DTYPE_INTEGER)
                 plottypes.append(instance.PlotType)
         return {'pk':pks,'names':names,'values':values,'types':types,'datatypes':datatypes,'plottypes':plottypes} 
     
@@ -328,7 +339,7 @@ class MainDeviceVarWeeklySchedules(models.Model):
             ("activate_schedules", "Can change the state of the schedules"),
         )
         
-    Label = models.CharField(max_length=50,unique=True)
+    Label = models.CharField(max_length=100)
     Active = models.BooleanField(default=False)
     Var = models.ForeignKey(MainDeviceVars,on_delete=models.CASCADE)
     LValue = models.DecimalField(max_digits=6, decimal_places=2)
@@ -611,8 +622,8 @@ class MasterGPIOs(models.Model):
                 self.Value=newValue
                 self.save(update_fields=['Value'])
                 SignalVariableValueUpdated.send(sender=None, timestamp=now,
-                                                                                        Tags=[self.getRegistersDBTag(),],
-                                                                                        Values=[newValue,])
+                                                            Tags=[self.getRegistersDBTag(),],
+                                                            Values=[newValue,])
             
             if writeDB :
                 if timestamp==None:
@@ -739,19 +750,22 @@ class MasterGPIOs(models.Model):
     
     def updateAutomationVars(self):
         table=self.getRegistersDBTable()
-        AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device='MainGPIOs')
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(gpios=self)
-        dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'MainGPIOs','Table':table,'BitPos':None,'Sample':0}
+        dvar={'Label':self.Label,'Tag':str(self.getRegistersDBTag()),'Device':'MainGPIOs','Table':table,'BitPos':None,'Sample':0,'Units':None}
         try:
-            avar=AutomationVars.get(Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'])
-            avar.Label=dvar['Label']
-            avar.Units=dvar['Units']
-        except:
+            avar=MainAPP.models.AutomationVariables.objects.get(Device='MainGPIOs',Tag=dvar['Tag'],Table=dvar['Table'],BitPos=dvar['BitPos'],Units=dvar['Units'])
+        except MainAPP.models.AutomationVariables.DoesNotExist:
             avar=None
             
         if avar==None:
             avar=MainAPP.models.AutomationVariables(**dvar)
-        
+        else:
+            avar.Label=dvar['Label']
+            avar.Units=dvar['Units']
+            
+        if self.Direction==GPIO_INPUT:
+            avar.UserEditable=False
+            
         avar.store2DB()
         
         if SUBSYSTEMs.count():
@@ -1263,8 +1277,6 @@ class Devices(models.Model):
         for dvar in DeviceVars:
             try:
                 avar=AutomationVars.get(Tag=dvar['name'],Table=dvar['table'],Device=dvar['device'],BitPos=dvar['bit'])
-                avar.Label=dvar['label']
-                avar.Units=dvar['units']
             except:
                 avar=None
                 
@@ -1272,7 +1284,11 @@ class Devices(models.Model):
                 avar=MainAPP.models.AutomationVariables(Label=dvar['label'],Tag=dvar['name'],Device=dvar['device'],
                                                         Table=dvar['table'],BitPos=dvar['bit'],Sample=dvar['sample'],
                                                         Units=dvar['units'])
-            
+            else:
+                avar.Label=dvar['label']
+                avar.Units=dvar['units']
+                
+            avar.UserEditable=False
             avar.store2DB()
             
             if SUBSYSTEMs.count():

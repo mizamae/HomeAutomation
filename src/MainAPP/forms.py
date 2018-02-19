@@ -137,7 +137,7 @@ class AutomationRuleForm(ModelForm):
         self.helper.form_method = 'post'
         self.fields['Identifier'].label = _("Set the name for the automation rule")
         self.fields['Active'].label = _("Activate the rule")
-        self.fields['OnError'].label = _("Select the output value in case of error")
+        self.fields['OnError'].label = _("Select the rule evaluation in case of error")
         self.fields['PreviousRule'].label = _("Select the previous rule to be chained")
         self.fields['PreviousRule'].queryset=models.AutomationRules.objects.filter(Action__contains='"ActionType": "z"')
         self.fields['OperatorPrev'].label = _("Select the operator between the previous rule and this one")

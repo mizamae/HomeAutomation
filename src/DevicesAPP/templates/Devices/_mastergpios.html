@@ -4,27 +4,31 @@
 	<td style="text-align: center;">{{ row.Pin }}</td>
 	<td>{{ row.Label }}</td>
 	{% if tableId != "SENSORs" %}
-	<td>{{ row.Value }}</td>
+		{% if row.Value > 0 %}
+		<td style="text-align: center;">ON</td>
+		{% else %}
+		<td style="text-align: center;">OFF</td>
+		{% endif %}
 	{% else %}
 	<td>{{ row.pin2device.Name }}</td>
 	{% endif %}
 	{% if perms.DevicesAPP.change_state_mastergpios and row.Direction == 0 %}
-	<td>
-		<a class="btn btn-primary-outline" href="{% url 'Devices:toggle' 'mastergpios' row.pk %}" role="button">
+	<td style="text-align: center;">
+		<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:toggle' 'mastergpios' row.pk %}" role="button">
 			{% if row.Value == 0 %}
-			<img src="{% static 'site/img/arrow-up.png' %}" alt="Toggle" height="50%" width="50%">
+			<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
 			{% else %}
-			<img src="{% static 'site/img/arrow-down.png' %}" alt="Toggle" height="50%" width="50%">
+			<img class="img-responsive" src="{% static 'site/img/arrow-down.png' %}" alt="Toggle">
 			{% endif %}
 		</a>
 	</td>
 	{% else %}
-	<td>n/a</td>
+	<td style="text-align: center;">n/a</td>
 	{% endif %}
-	<td>
+	<td style="text-align: center;">
 		{% if perms.DevicesAPP.change_mastergpios %}
-		<a class="btn btn-primary-outline" href="{% url 'Devices:edit' 'mastergpios' row.pk %}" role="button">
-			<img src="{% static 'site/img/view.png' %}" alt="Edit" height="50%" width="50%">
+		<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:edit' 'mastergpios' row.pk %}" role="button">
+			<img class="img-responsive" src="{% static 'site/img/view.png' %}" alt="Edit">
 		</a>		        	
 		{% endif %}
 	</td>

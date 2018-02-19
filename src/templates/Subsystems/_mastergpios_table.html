@@ -6,12 +6,10 @@
 	      <col class="col-lg-2"></col>
 	      <col class="col-lg-1"></col>
 	      <col class="col-lg-1"></col>
-	      <col class="col-lg-1"></col>
 	    </colgroup>
 	    <thead class="thead-inverse">
 	        <tr>
 	            <th>{% trans "Label" %}</th>
-	            <th class="hidden-sm hidden-xs">{% trans "Timestamp" %}</th>
 	            <th style="text-align: center;">{% trans "Value" %}</th>
 	            <th style="text-align: center;">{% trans "Action" %}</th>
 	        </tr>
@@ -19,9 +17,7 @@
 	     <tbody>
 	        
 	        {% for row in rows %}
-	        	{% with index=forloop.counter0 %}
-				{% include "Subsystems/_automationvars.html" %}
-				{% endwith %}
+				{% include "Subsystems/_mastergpios.html" %}
 	        {% endfor %}
 		</tbody>
 	</table>

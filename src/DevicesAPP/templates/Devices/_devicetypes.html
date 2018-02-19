@@ -13,8 +13,8 @@
 	{% endif %}
 	</td>
 	<td>
-		<a class="btn btn-primary-outline" href="{% url 'Devices:edit' 'devicetypes' row.pk %}" role="button">
-			<img src="{% static 'site/img/view.png' %}" alt="Edit" height="100%" width="100%">
+		<a class="btn btn-link" style="width:100%;" href="{% url 'Devices:edit' 'devicetypes' row.pk %}" role="button">
+			<img class="img-responsive" src="{% static 'site/img/view.png' %}" alt="Edit">
 		</a>
 	</td>
 </tr>

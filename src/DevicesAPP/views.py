@@ -32,6 +32,8 @@ from .constants import APP_TEMPLATE_NAMESPACE,LOCAL_CONNECTION,REMOTE_TCP_CONNEC
                         FORM_FIRST_RENDER_MSG,FORM_ISVALID_MSG,FORM_ISNOTVALID_MSG,SCAN_DEVICENOFOUND,SCAN_DEVICEFOUND,TESTS_USER_AGENT,\
                         GPIO_INPUT,GPIO_OUTPUT,GPIO_SENSOR
 
+from MainAPP.models import AutomationVariables
+
 LOGIN_PAGE='accounts:login'
 def home(request):
     if request.method == 'POST': # the form has been submited
@@ -64,6 +66,13 @@ def modelSplitter(model):
     elif model=='maindevicevars':
         Header1 = models.MainDeviceVars._meta.verbose_name.title()
         Model=models.MainDeviceVars
+        FormModel=forms.MainDeviceVarsForm
+        FormKwargs={'action':'add'}
+        message=models.MainDeviceVars._meta.verbose_name.title()+ str(_(' saved OK'))
+        lastAction='add'
+    elif model=='automationvars':
+        Header1 = AutomationVariables._meta.verbose_name.title()
+        Model=AutomationVariables
         FormModel=forms.MainDeviceVarsForm
         FormKwargs={'action':'add'}
         message=models.MainDeviceVars._meta.verbose_name.title()+ str(_(' saved OK'))
@@ -391,8 +400,13 @@ def toggle(request,model,pk):
     if request.method == 'GET':
         if model=='devices':
             Instance.togglePolling()
+            messages.info(request, 'accordion1')
         elif model=='mastergpios':
             Instance.toggle()
+            messages.info(request, 'accordion4')
+        elif model=='maindevicevars':
+            Instance.toggle()
+            messages.info(request, 'accordion2')
         else:
             return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
         

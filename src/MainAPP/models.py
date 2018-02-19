@@ -239,6 +239,8 @@ class AutomationVariables(models.Model):
     BitPos = models.PositiveSmallIntegerField(null=True,blank=True)
     Sample = models.PositiveSmallIntegerField(default=0)
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
+    UserEditable = models.BooleanField(default=True)
+    
     Subsystem = GenericRelation(Subsystems,related_query_name='automationvariables')
     
     def __str__(self):
@@ -247,6 +249,9 @@ class AutomationVariables(models.Model):
     def store2DB(self):
         self.full_clean()
         super().save() 
+    
+    def toggle(self):
+        MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device)
         
     def checkSubsystem(self,Name):
         SSYTMs=Subsystems.objects.filter(automationvariables=self)
@@ -370,7 +375,7 @@ class RuleItems(models.Model):
             if value1==None or (now-timestamp1>datetime.timedelta(seconds=int(2.5*self.Var1.Sample))):
                 logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
                 logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' is ' + str(timestamp1))
-                return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var1)}
+                return {'TRUE':eval(str(self.Rule.OnError)),'FALSE':eval('not ' + str(self.Rule.OnError)),'ERROR':'Too old data from var ' + str(self.Var1)}
         
         if self.Var1.BitPos!=None:
             value1=checkBit(number=int(value1),position=self.Var1.BitPos)
@@ -383,7 +388,7 @@ class RuleItems(models.Model):
                 if value2==None or (now-timestamp2>datetime.timedelta(seconds=int(2.5*self.Var2.Sample))):
                     logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
                     logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' is ' + str(timestamp2))
-                    return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Too old data from var ' + str(self.Var2)}
+                    return {'TRUE':eval(str(self.Rule.OnError)),'FALSE':eval('not ' + str(self.Rule.OnError)),'ERROR':'Too old data from var ' + str(self.Var2)}
                     
             if self.Var2.BitPos!=None:
                 value2=checkBit(number=int(value2),position=self.Var2.BitPos)
@@ -410,7 +415,7 @@ class RuleItems(models.Model):
         try:
             return {'TRUE':eval(evaluableTRUE),'FALSE':eval(evaluableFALSE),'ERROR':''}
         except:
-            return {'TRUE':eval(self.Rule.get_OnError_display()),'FALSE':eval('not ' + self.Rule.get_OnError_display()),'ERROR':'Unknown'}
+            return {'TRUE':eval(str(self.Rule.OnError)),'FALSE':eval('not ' + str(self.Rule.OnError)),'ERROR':'Unknown'}
             
     class Meta:
         verbose_name = _('Automation expression')
@@ -555,7 +560,15 @@ class AutomationRules(models.Model):
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             PublishEvent(Severity=0,Text=text)
             self.setLastEval(value=False)
-            
+    
+    @classmethod
+    def initAll(cls):
+        RULs=cls.objects.filter(Active=True)
+        if len(RULs)>0:
+            for RUL in RULs:
+                if not '"ActionType": "z"' in RUL.Action:
+                    RUL.execute() 
+                
 @receiver(post_save, sender=AutomationRules, dispatch_uid="update_AutomationRuleModel")
 def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):    
     if not kwargs['created']:   # an instance has been modified
@@ -565,9 +578,3 @@ def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):
     #if instance.Active==False:
     #    instance.execute(error=True)
         
-def init_Rules():
-    RULs=AutomationRules.objects.filter(Active=True)
-    if len(RULs)>0:
-        for RUL in RULs:
-            if not '"ActionType": "z"' in RUL.Action:
-                RUL.execute() 

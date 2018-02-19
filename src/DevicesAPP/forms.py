@@ -66,6 +66,7 @@ class MainDeviceVarsForm(ModelForm):
         self.fields['Value'].label = _("Enter the value for the variable")
         self.fields['Units'].label = _("Set the units of the variable")
         self.fields['PlotType'].label = _("Set the type of plot for the variable")
+        self.fields['UserEditable'].label = _("The user can alter the value of the variable")
         
         for field in self.fields:
             help_text = self.fields[field].help_text
@@ -81,17 +82,18 @@ class MainDeviceVarsForm(ModelForm):
             Field('Value'),
             Field('Units'),
             Field('PlotType'),
+            Field('UserEditable'),
             buttons
             )
     
-    def save(self):
-        instance=super().save()
+    def save(self, *args, **kwargs):
+        instance=super().save(commit=False)
         instance.store2DB()
         return instance
         
     class Meta:
         model = models.MainDeviceVars
-        fields=['Label','DataType','Value','Units','PlotType']
+        fields=['Label','DataType','Value','Units','PlotType','UserEditable']
 
                                             
 class inlineDailyForm(ModelForm):  
@@ -217,8 +219,8 @@ class MasterGPIOsForm(ModelForm):
             buttons
             )
     
-    def save(self):
-        instance=super().save()
+    def save(self, *args, **kwargs):
+        instance=super().save(commit=False)
         instance.store2DB()
         return instance
     

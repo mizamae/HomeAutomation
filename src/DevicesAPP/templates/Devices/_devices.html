@@ -15,11 +15,11 @@
         {% endif %}
         <td>
         {% if perms.DevicesAPP.change_state_devices %}
-            <a class="btn btn-primary-outline" href="{% url 'Devices:toggle' 'devices' row.pk %}" role="button">
+            <a class="btn btn-link" style="width:100%;" href="{% url 'Devices:toggle' 'devices' row.pk %}" role="button">
             	{% if row.State == 0 %}
-            	<img src="{% static 'site/img/play.png' %}" alt="Toggle state" height="100%" width="100%">
+            	<img class="img-responsive" src="{% static 'site/img/play.png' %}" alt="Toggle state">
             	{% else %}
-            	<img src="{% static 'site/img/stop.png' %}" alt="Toggle state" height="100%" width="100%">
+            	<img class="img-responsive" src="{% static 'site/img/stop.png' %}" alt="Toggle state">
             	{% endif %}
             </a>
         {% else %}
@@ -28,23 +28,23 @@
         </td>
         <td>
         {% if perms.DevicesAPP.add_devices %}
-            <a style="visibility:visible;" class="btn btn-primary-outline" role="button">
-            	<img src="{% static 'site/img/delete.png' %}" alt="Delete" height="100%" width="100%">
+            <a class="btn btn-link" style="width:100%;" style="visibility:visible;" role="button">
+            	<img class="img-responsive"src="{% static 'site/img/delete.png' %}" alt="Delete">
             </a>	
         {% endif %}
         </td>
         <td>{{ row.LastUpdated }}</td>
         <td>
         {% if perms.DevicesAPP.view_devices %}
-            <a class="btn btn-primary-outline" href="{% url 'Devices:devicepage' row.pk %}" role="button">
-            	<img src="{% static 'site/img/Advanced_device_icon.png' %}" alt="Advanced" height="100%" width="100%">
+            <a class="btn btn-link" style="width:100%;" href="{% url 'Devices:devicepage' row.pk %}" role="button">
+            	<img class="img-responsive" src="{% static 'site/img/Advanced_device_icon.png' %}" alt="Advanced">
             </a>		        	
         {% endif %}
         </td>
         <td>
         {% if perms.DevicesAPP.change_devices %}
-            <a class="btn btn-primary-outline" href="{% url 'Devices:edit' 'devices' row.pk %}" role="button">
-            	<img src="{% static 'site/img/view.png' %}" alt="Edit" height="100%" width="100%">
+            <a class="btn btn-link" style="width:100%;" href="{% url 'Devices:edit' 'devices' row.pk %}" role="button">
+            	<img class="img-responsive" src="{% static 'site/img/view.png' %}" alt="Edit">
             </a>		        	
         {% endif %}
         </td>

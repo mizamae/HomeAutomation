@@ -6,11 +6,11 @@
 		<h2 style="text-align: center;font-weight: bold;">{% trans "BACK" %}</h2>
 	      <p style="text-align: center;">
 	      {% if back_params %}
-	       <a class="btn btn-primary-outline" href="{% url back_to back_params %}" role="button">
+	       <a class="btn btn-link" style="width:100%;" href="{% url back_to back_params %}" role="button">
 	       {% else %}
-	       <a class="btn btn-primary-outline" href="{% url back_to %}" role="button">
+	       <a class="btn btn-link" style="width:100%;" href="{% url back_to %}" role="button">
 	       {% endif %}
-	       	<img src="{% static 'site/img/back.png' %}" alt="back" height="100%" width="100%">
+	       	<img class="img-responsive" src="{% static 'site/img/back.png' %}" alt="back">
 	       </a>
        	</p>
 	</div>

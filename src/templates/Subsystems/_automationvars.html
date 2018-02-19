@@ -3,6 +3,21 @@
 {% load get_at_index %}
 <tr> 
     <td>{{ row.Label }}</td>
-    <td>{{ VARs_values|get_at_index:index|get_at_index:0 }}</td>
-    <td>{{ VARs_values|get_at_index:index|get_at_index:1 }} {{ row.Units }}</td>
+    <td class="hidden-sm hidden-xs">{{ VARs_values|get_at_index:index|get_at_index:0 }}</td>
+    {% if row.Units %}
+   	<td style="text-align: center;">{{ VARs_values|get_at_index:index|get_at_index:1 }} {{ row.Units }}</td>
+   	{% else %}
+   	<td style="text-align: center;">{{ VARs_values|get_at_index:index|get_at_index:1 }}</td>
+   	{% endif %}
+   	<td style="text-align: center;">
+   	{% if not row.Units %}
+   		<a class="btn btn-link" style="width:25%;" href="{% url 'toggle' 'automationvars' row.pk %}" role="button">
+			{% if VARs_values|get_at_index:index|get_at_index:1 == 0 %}
+			<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
+			{% else %}
+			<img class="img-responsive" src="{% static 'site/img/arrow-down.png' %}" alt="Toggle">
+			{% endif %}
+		</a>
+   	{% endif %}
+   	</td>
 </tr>

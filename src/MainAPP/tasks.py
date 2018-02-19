@@ -64,14 +64,15 @@ def checkReportAvailability():
 def updateWeekDay():
     import datetime
     from DevicesAPP.models import MainDeviceVars
+    from DevicesAPP.constants import DTYPE_INTEGER
     timestamp=datetime.datetime.now()
     weekDay=timestamp.weekday()
     try:
         WeekDay=MainDeviceVars.objects.get(Label='Day of the week')
         WeekDay.updateValue(newValue=weekDay,writeDB=True)
-        #WeekDay.UserEditable=False
     except:
-        WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,Datatype=1,Units='',UserEditable=False)
+        WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,DataType=DTYPE_INTEGER,Units='',UserEditable=False)
+        WeekDay.UserEditable=False
         WeekDay.store2DB()
       
 def start_DailyTask():
@@ -90,16 +91,19 @@ def start_DailyTask():
 def checkCustomCalculations():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
-    from MainAPP.models import AdditionalCalculationsModel
-    aCALCs=AdditionalCalculationsModel.objects.all()
+    from MainAPP.models import AdditionalCalculations
+    aCALCs=AdditionalCalculations.objects.all()
     for aCALC in aCALCs:
         if aCALC.checkTrigger():
             #PublishEvent(Severity=0,Text=str(aCALC)+' evaluated to True',Persistent=True)
             aCALC.calculate()
             
 def HourlyTask():
+    '''THIS TASK IS RUN EVERY HOUR.
+    '''
     import datetime
     from DevicesAPP.models import MainDeviceVars,MainDeviceVarWeeklySchedules
+    from DevicesAPP.constants import DTYPE_INTEGER
     MainDeviceVarWeeklySchedules.checkAll(init=True)
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
@@ -107,15 +111,12 @@ def HourlyTask():
         HourDay=MainDeviceVars.objects.get(Label='Hour of the day')
         HourDay.updateValue(newValue=hourDay,writeDB=True)
     except:
-        HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=1,Units='H',UserEditable=False)
+        HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=DTYPE_INTEGER,Units='H',UserEditable=False)
+        HourDay.UserEditable=False
         HourDay.store2DB()
-    checkCustomCalculations()
+    #checkCustomCalculations()
 
 def start_HourlyTask():
-    '''THIS TASK IS RUN EVERY HOUR.
-    '''
-    #HourlyTask()
-    #MainAPP.models.init_Rules()
     id='HourlyTask'
     scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
@@ -126,8 +127,9 @@ def start_HourlyTask():
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    #MainAPP.models.init_Rules()
-    #HourlyTask()
-    #updateWeekDay()
+    from MainAPP.models import AutomationRules
+    AutomationRules.initAll()
+    HourlyTask()
+    updateWeekDay()
     from DevicesAPP.models import initialize_polling_devices
     initialize_polling_devices()

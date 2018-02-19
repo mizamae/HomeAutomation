@@ -1,5 +1,5 @@
 {% load i18n %}
-<h2><b>{{ header }}</b></h2>
+
 <div id="{{ tableId }}list" class="table-responsive">
 	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
 	    <colgroup>
@@ -10,6 +10,9 @@
 	      <col class="col-lg-1 col-md-1"></col>
 	    </colgroup>
 	    <thead class="thead-inverse">
+	    	<tr>
+	    		<th colspan="5"><b>{{ header }}</b></th>
+	    	</tr>
 	        <tr>
 	            <th style="text-align: center;">{% trans "Pin" %}</th>
 	            <th>{% trans "Label" %}</th>

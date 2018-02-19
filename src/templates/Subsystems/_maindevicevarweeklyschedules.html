@@ -1,11 +1,14 @@
 {% load i18n %}
 {% load staticfiles %}
 <tr>
+	<th class="text-center" colspan="6">{{ row.Var.Label }}</th>
+</tr>
+<tr>
 	<td rowspan="2">{{ row.Label }}</td>
 	{% if row.Active %}
 	<td class="text-center" bgcolor="#00FF00">{% trans "Active" %}</td>
 	<td class="text-center">
-		<a class="btn btn-default" href="{% url 'Devices:activateSchedule' row.pk %}" id="" role="button"><i class="fa fa-stop fa-2x" aria-hidden="true"></i></a>
+<!-- 		<a class="btn btn-default" href="{% url 'Devices:activateSchedule' row.pk %}" id="" role="button"><i class="fa fa-stop fa-2x" aria-hidden="true"></i></a> -->
 	</td>
 	<td class="text-center"><p class="col-xs-12"><strong>{{ row.Var.Value }} {{ row.Var.Units }}</strong></p></td>
 	{% else %}

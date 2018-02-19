@@ -2,11 +2,32 @@
 {% load staticfiles %}
 <tr> 
     <td>{{ row.Label }}</td>
-    <td style="text-align: center;">{{ row.Value }} {{ row.Units }}</td>
+    {% if row.DataType == 'digital' %}
+    	{% if row.Value > 0 %}
+    	<td style="text-align: center;">ON</td>
+    	{% else %}
+    	<td style="text-align: center;">OFF</td>
+    	{% endif %}
+    {% else %}
+	    {% if row.Units %}
+	    <td style="text-align: center;">{{ row.Value|floatformat }} {{ row.Units }}</td>
+	    {% else %}
+	    <td style="text-align: center;">{{ row.Value|floatformat }}</td>
+	    {% endif %}
+    {% endif %}
     <td style="text-align: center;">
 		{% if row.UserEditable and perms.DevicesAPP.change_maindevicevars %}
-		<a class="btn btn-primary-outline" href="{% url 'Devices:edit' 'maindevicevars' row.pk %}" role="button">
-			<img src="{% static 'site/img/view.png' %}" alt="Edit" height="50%" width="50%">
+			{% if row.DataType == 'digital' %}
+			<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:toggle' 'maindevicevars' row.pk %}" role="button">
+				{% if row.Value > 0 %}
+				<img class="img-responsive" src="{% static 'site/img/arrow-down.png' %}" alt="Toggle">
+				{% else %}
+				<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
+				{% endif %}
+			</a>
+			{% endif %}
+		<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:edit' 'maindevicevars' row.pk %}" role="button">
+			<img class="img-responsive" src="{% static 'site/img/view.png' %}" alt="Edit" >
 		</a>
 		{% endif %}
 	</td>

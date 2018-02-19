@@ -19,7 +19,10 @@ from DevicesAPP.forms import DeviceTypesForm, ItemOrderingForm,DevicesForm,Beaco
 
 class MainDeviceVarsAdmin(admin.ModelAdmin):
     def printValue(self,instance):
-        return str(instance.Value)+' '+instance.Units
+        if instance.Units!=None:
+            return str(instance.Value)+' '+instance.Units
+        else:
+            return str(instance.Value)
     
     printValue.short_description = _("Current value")
     
@@ -34,6 +37,10 @@ class MainDeviceVarsAdmin(admin.ModelAdmin):
             obj.store2DB()
         else:
             super().save_model(request, obj, form, change)
+    
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.updateAutomationVars()
 
 class inlineDailyFormset(forms.models.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
@@ -116,11 +123,11 @@ class MasterGPIOsAdmin(admin.ModelAdmin):
     inlines = [
         SubsystemsInline,
     ]
-    def save_model(self, request, obj, form, change):
-        if not change and obj.Direction!=GPIO_SENSOR: # the object is being created
-            obj.store2DB()
-        else:
-            super().save_model(request, obj, form, change)
+#     def save_model(self, request, obj, form, change):
+#         if not change and obj.Direction!=GPIO_SENSOR: # the object is being created
+#             obj.store2DB()
+#         else:
+#             super().save_model(request, obj, form, change)
 
 class DeviceTypeAdmin(admin.ModelAdmin):
     list_display = ('Code','Description','Connection')

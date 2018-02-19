@@ -324,3 +324,8 @@ class DevicesFormTests(TestCase):
         instance = form.save()
         AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars').filter(Tag=instance.getRegistersDBTag())
         self.assertEqual(1,AVARs.count()) # one automationvar is returned
+        
+        instance = form.save()
+        AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars').filter(Tag=instance.getRegistersDBTag())
+        self.assertEqual(1,AVARs.count()) # one automationvar is returned
+        

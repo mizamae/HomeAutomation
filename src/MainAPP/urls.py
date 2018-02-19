@@ -43,30 +43,16 @@ urlpatterns = [
     url(r'^'+REPORTINGAPP_TEMPLATE_NAMESPACE+'/', include(ReportingAPP.urls, namespace=REPORTINGAPP_TEMPLATE_NAMESPACE)),
     url(r'^'+SUBSYSTEMAPP_TEMPLATE_NAMESPACE+'/', include(Subsystems.urls, namespace=SUBSYSTEMAPP_TEMPLATE_NAMESPACE)),
     
-    
-
-    url(r'^charts/$', views.device_report,name='devicecharts'),
+    url(r'^toggle/(?P<model>.+)/(?P<pk>.+)/$',views.toggle, name='toggle'),
     url(r'^settimezone/$', views.settimezone,name='settimezone'),
-    url(r'^advancedDevice/$', views.AdvancedDevice.as_view(),name='advancedDevice'),
-    url(r'^advancedDevice/arduinoCode/$', views.arduinoCode,name='arduinoCode'),
-    url(r'^reports/$', views.viewReports,name='viewReports'),
-    url(r'^reports/(?P<pk>.+)/$', views.viewReports,name='viewReports'),
-    url(r'^deletereports/(?P<pk>.+)/$', views.deleteReport,name='deleteReport'),
-    url(r'^reportpreview/(?P<title>.+)/$', views.previewReport,name='previewReport'),
     url(r'^owntracks/(?P<user>.+)/$', views.handleLocation,name='handleLocation'),
     url(r'^userubication/$', views.viewUserUbication,name='viewUserUbication'),
-    url(r'^view_schedules/$', views.viewSchedules,name='viewSchedules'),
-    url(r'^activateSchedule/(?P<pk>.+)/$', views.activateSchedule,name='activateSchedule'),
-    url(r'^modifySchedule/(?P<pk>.+)/(?P<value>.+)/(?P<sense>.+)/$', views.modifySchedule,name='modifySchedule'),
     url(r'^view_rules/$', views.viewRules,name='viewRules'),
     url(r'^activateRule/(?P<pk>.+)/$', views.activateRule,name='activateRule'),
     url(r'^gitupdate/$', views.GitUpdate,name='gitupdate'),
     url(r'^softreset/$', views.SoftReset,name='softreset'),
     url(r'^users/', include(profiles.urls, namespace='profiles')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^admin/Devices/setcustomlabels/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
-    url(r'^admin/RemoteDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
-    url(r'^admin/LocalDevices/setcustomlabels/(?P<connection>.+)/(?P<devicePK>.+)/$',views.adminSetCustomLabels,name='adminSetCustomLabels'),
     
     url(r'^', include(accounts.urls, namespace='accounts')),
     

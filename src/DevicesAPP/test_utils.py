@@ -39,7 +39,7 @@ P2=None
 
 
 VARWeeklyScheduleDict={'Label':'Weekly schedule test','Var':'','LValue':20,'HValue':25}
-MainDeviceVarDict={'Label':'Test Main Var','Value':23,'DataType':DTYPE_DIGITAL,'PlotType':LINE_PLOT,'Units':'H','UserEditable':True}
+MainDeviceVarDict={'Label':'Test Main Var','Value':23,'DataType':DTYPE_INTEGER,'PlotType':LINE_PLOT,'Units':'H','UserEditable':True}
 MasterGPIODict={'Pin':17,'Label':'Test Output 1','Direction':GPIO_OUTPUT,'Value':GPIO_HIGH}
 DatagramItemDict={'Tag':'Digital Item 1','DataType':DTYPE_DIGITAL,'PlotType':SPLINE_PLOT,'Units':''}
 ItemOrderingDict={'DG':'','ITM':'','Order':0}
