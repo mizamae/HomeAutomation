@@ -34,3 +34,11 @@ def SignalCreateMainDeviceVars_handler(sender, **kwargs):
     data=kwargs['Data']
     Instance=MainDeviceVars(**data)
     Instance.store2DB()
+    
+@receiver(MainAPP.signals.SignalUpdateValueMainDeviceVars, dispatch_uid="SignalUpdateValueMainDeviceVars_DevicesAPP_receiver")
+def SignalUpdateValueMainDeviceVars_handler(sender, **kwargs):
+    Tag=kwargs['Tag']
+    timestamp=kwargs['timestamp']
+    newValue=kwargs['newValue']
+    Instance=MainDeviceVars.objects.get(pk=Tag)
+    Instance.updateValue(newValue=newValue,timestamp=timestamp,writeDB=True)

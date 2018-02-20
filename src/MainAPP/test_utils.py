@@ -15,7 +15,7 @@ import webtest
 
 from .constants import SUBSYSTEM_HEATING
                     
-from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules
+from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules,AdditionalCalculations
 
 from DevicesAPP.models import MasterGPIOs
 
@@ -26,6 +26,8 @@ from DevicesAPP.constants import GPIO_OUTPUT,GPIO_INPUT,GPIO_HIGH,GPIO_LOW
 from .signals import SignalSetGPIO
 
 from utils.test_utils import *
+
+AdditionalCalculationsDict={'SourceVar':None,'SinkVar':None,'Periodicity':2,'Calculation':0}
 
 AutomationVariablesDict={'Label':'Test Automation Var1','Tag':'2_1_1','Device':'MainVars','Table':'1_1',
                          'BitPos':None,'Sample':1,'Units':'kW'}

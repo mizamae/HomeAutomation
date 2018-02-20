@@ -108,7 +108,7 @@ class AdditionalCalculations(models.Model):
         try:
             return str(self.get_Calculation_display())+'('+self.SourceVar.Label + ')'
         except:
-            return self.pk
+            return self.key
       
     def checkTrigger(self):
         if self.Periodicity==0:
@@ -146,10 +146,10 @@ class AdditionalCalculations(models.Model):
         fromDate=toDate-offset
         DBDate=toDate-offset/2
         toDate=toDate-datetime.timedelta(minutes=1)
-        query=self.AutomationVar.getQuery(fromDate=fromDate,toDate=toDate)
+        query=self.SourceVar.getQuery(fromDate=fromDate,toDate=toDate)
         self.df=pd.read_sql_query(sql=query['sql'],con=query['conn'],index_col='timestamp')
         if not self.df.empty:
-            self.key=self.AutomationVar.Tag
+            self.key=self.SourceVar.Tag
             # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
             addedtime=pd.to_datetime(arg=self.df.index.values[0])-fromDate.replace(tzinfo=None)
             if addedtime>datetime.timedelta(minutes=1):
@@ -185,8 +185,11 @@ class AdditionalCalculations(models.Model):
                 result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
         else:
             result= None
-             
-        self.SinkVar.updateValue(newValue=result,timestamp=DBDate,writeDB=True)
+         
+        MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=DBDate,
+                                                             newValue=result)
+        #self.SinkVar.updateValue(newValue=result,timestamp=DBDate,writeDB=True)
+        return result
               
     def duty(self,level=False,decimals=2,absoluteValue=False):
         if not self.df.empty:

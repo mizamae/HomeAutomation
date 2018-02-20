@@ -48,7 +48,12 @@ class AdditionalCalculationsForm(ModelForm):
             Field('Calculation', css_class='input-sm'),
             Submit('submit', _('Submit'),css_class='btn-primary'),
             )
-         
+     
+    def save(self, *args, **kwargs):
+        instance=super().save(commit=False)
+        instance.store2DB()
+        return instance
+        
     def clean(self):
         cleaned_data=super().clean() # to use the validation of the fields from the model
         Periodicity = cleaned_data['Periodicity']
