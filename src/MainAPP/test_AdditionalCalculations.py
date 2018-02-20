@@ -11,7 +11,7 @@ class AdditionalCalculationsTests(TestCase):
     def setUp(self):
         from utils.BBDD import getRegistersDBInstance
         self.DB=getRegistersDBInstance()
-        self.DB.dropTable(table='MainVariables')
+        #self.DB.dropTable(table='MainVariables')
         self.signal_was_called = False
         self.signaltimestamp=None
         self.signalTag=None
@@ -99,24 +99,28 @@ class AdditionalCalculationsTests(TestCase):
         print('    -> checked with all 1s')
         self.insertDutyRegisters(duty=1)
         result=instance.calculate()
+        print('    Calculated duty: ' + str(result))
         self.assertEqual(result,0.00)
         self.deleteRegisters()
         
         print('    -> checked with all 0s')
         self.insertDutyRegisters(duty=0)
         result=instance.calculate()
+        print('    Calculated duty: ' + str(result))
         self.assertEqual(result,100.00)
         self.deleteRegisters()
         
         print('    -> checked with half 0s half 1s')
         self.insertDutyRegisters(duty=0.5)
         result=instance.calculate()
+        print('    Calculated duty: ' + str(result))
         self.assertAlmostEqual(result,50.00,delta=0.1)
         self.deleteRegisters()
         
-        print('    -> checked with 10%')
+        print('    -> checked with 10% 1s')
         self.insertDutyRegisters(duty=0.1)
         result=instance.calculate()
+        print('    Calculated duty: ' + str(result))
         self.assertAlmostEqual(result,90.00,delta=0.1)
         self.deleteRegisters()
         
@@ -131,9 +135,79 @@ class AdditionalCalculationsTests(TestCase):
         result=instance.calculate()
         self.assertEqual(result,None)
         
-        print('    -> checked with mean')
+        print('    -> checked with mean=1')
         self.insertMeanRegisters(mean=1)
         result=instance.calculate()
+        print('    Calculated mean: ' + str(result))
         self.assertAlmostEqual(result,1,delta=0.1)
-        print(str(result))
         self.deleteRegisters()
+        
+        print('    -> checked with mean=100')
+        self.insertMeanRegisters(mean=100)
+        result=instance.calculate()
+        print('    Calculated mean: ' + str(result))
+        self.assertAlmostEqual(result,100,delta=0.5)
+        self.deleteRegisters()
+        
+    def test_Max(self):
+        print('## TESTING THE OPERATION OF THE Max CALCULATION ##')
+        self.numData=10 # number of samples to perform the calculations
+        newDict=editDict(keys=['SourceVar','Calculation'], \
+                         newValues=[self.AVAR0,3], Dictionary=AdditionalCalculationsDict)
+        instance=AdditionalCalculations(**newDict)
+        instance.store2DB()
+        print('    -> checked with no data in the DB')
+        result=instance.calculate()
+        self.assertEqual(result,None)
+        
+        print('    -> checked with max=1')
+        self.insertDutyRegisters(duty=0.2)
+        result=instance.calculate()
+        print('    Calculated max: ' + str(result))
+        self.assertAlmostEqual(result,1)
+        self.deleteRegisters()
+        
+    def test_cumsum(self):
+        print('## TESTING THE OPERATION OF THE cumsum CALCULATION ##')
+        self.numData=10 # number of samples to perform the calculations
+        newDict=editDict(keys=['SourceVar','Calculation'], \
+                         newValues=[self.AVAR0,5], Dictionary=AdditionalCalculationsDict)
+        instance=AdditionalCalculations(**newDict)
+        instance.store2DB()
+        print('    -> checked with no data in the DB')
+        result=instance.calculate()
+        self.assertEqual(result,None)
+        
+        print('    -> checked with all 1s')
+        self.insertDutyRegisters(duty=1)
+        result=instance.calculate()
+        for i in range(self.numData+1,0):
+            latest=getLastRow(name=self.AVAR0.Tag,table=self.AVAR0.Table)
+            self.assertEqual(latest[self.AVAR0.Tag]['value'],i)
+            DeleteLastRegisterFromDB(DB=self.DB,table=self.AVAR0.Table)
+    
+    def test_timeintegral(self):
+        print('## TESTING THE OPERATION OF THE integral over time CALCULATION ##')
+        self.numData=10 # number of samples to perform the calculations
+        newDict=editDict(keys=['SourceVar','Calculation'], \
+                         newValues=[self.AVAR0,6], Dictionary=AdditionalCalculationsDict)
+        instance=AdditionalCalculations(**newDict)
+        instance.store2DB()
+        print('    -> checked with no data in the DB')
+        result=instance.calculate()
+        self.assertEqual(result,None)
+        
+        print('    -> checked with all 1s')
+        self.insertDutyRegisters(duty=1)
+        result=instance.calculate()
+        print('    Calculated integral: ' + str(result))
+        self.assertEqual(result,24*3600-60)
+        self.deleteRegisters()
+        
+        print('    -> checked with all 0s')
+        self.insertDutyRegisters(duty=0)
+        result=instance.calculate()
+        print('    Calculated integral: ' + str(result))
+        self.assertEqual(result,0)
+        self.deleteRegisters()
+        

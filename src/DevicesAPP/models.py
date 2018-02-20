@@ -57,7 +57,7 @@ class MainDeviceVars(models.Model):
     SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
     
     Label = models.CharField(max_length=50,unique=True,help_text=str(_('Unique identifier for the variable.')))
-    Value = models.DecimalField(max_digits=6, decimal_places=2,null=True,help_text=str(_('Value of the variable.')))
+    Value = models.FloatField(null=True,help_text=str(_('Value of the variable.')))
     DataType= models.CharField(max_length=20,choices=DATATYPE_CHOICES,help_text=str(_('Type of data of the variable.')))
     PlotType= models.PositiveSmallIntegerField(choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)

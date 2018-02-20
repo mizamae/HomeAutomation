@@ -61,6 +61,36 @@ def InsertRegister2DB(DB,table,tags,values):
     DB.executeTransactionWithCommit(SQLstatement=sql,arg=values)
     return sql
 
+def getLastRow(name,table):
+        Data={}
+        Data[name]={}
+        vars='"timestamp","'+name+'"'
+        sql='SELECT '+vars+' FROM "'+ table +'" WHERE "'+name +'" not null ORDER BY id DESC LIMIT 1'
+        from utils.BBDD import getRegistersDBInstance
+        DB=getRegistersDBInstance()
+        row=DB.executeTransaction(SQLstatement=sql)
+        if row != []:
+            row=row[0]
+            timestamp=row[0]
+            row=row[1]
+        else:
+            timestamp=None
+            row=None
+        if localized and timestamp!=None:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            timestamp = local_tz.localize(timestamp)
+            timestamp=timestamp+timestamp.utcoffset() 
+        Data[name]['timestamp']=timestamp
+        Data[name]['value']=row
+        return Data
+
+def DeleteLastRowFromDB(DB,table):
+    SQLInsert=''' DELETE FROM "%s" WHERE id = (SELECT MAX(id) FROM "%s")'''
+    sql=SQLInsert.replace('%s',table)
+    DB.executeTransactionWithCommit(SQLstatement=sql,arg=[])
+    return sql
+
 def DeleteLastRegisterFromDB(DB,table):
     SQLInsert=''' DELETE FROM "%s" WHERE timestamp = (SELECT MAX(timestamp) FROM "%s")'''
     sql=SQLInsert.replace('%s',table)

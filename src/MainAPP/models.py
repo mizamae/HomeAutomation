@@ -179,16 +179,21 @@ class AdditionalCalculations(models.Model):
             elif self.Calculation==4:   # Min value
                 result= self.df.min()[0]
             elif self.Calculation==5:   # Cummulative sum
-                result= self.df_interpolated.cumsum()[0]
+                result= self.df.cumsum()
             elif self.Calculation==6:   # integral over time
                 from scipy import integrate
                 result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
         else:
             result= None
-         
-        MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=DBDate,
-                                                             newValue=result)
-        #self.SinkVar.updateValue(newValue=result,timestamp=DBDate,writeDB=True)
+        
+        if not isinstance(result, pd.DataFrame):
+            MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=DBDate,
+                                                                 newValue=result)
+        else:
+            for index, row in result.iterrows():
+                MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=index.to_pydatetime(),
+                                                                 newValue=float(row[0]))
+                
         return result
               
     def duty(self,level=False,decimals=2,absoluteValue=False):
