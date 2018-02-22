@@ -879,7 +879,7 @@ def delete_MasterGPIOs(sender, instance,**kwargs):
 class MasterGPIOsBinding(WebsocketBinding):
 
     model = MasterGPIOs
-    stream = "GPIO_params"
+    stream = "GPIO_values"
     fields = ["Pin","Label","Direction","Value"]
 
     @classmethod

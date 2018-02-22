@@ -578,7 +578,7 @@ class AutomationRules(models.Model):
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
-            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'1')
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
             self.setLastEval(value=False)
     
     @classmethod

@@ -1,16 +1,15 @@
 {% load i18n %}
 {% load staticfiles %}
 {% load get_at_index %}
-<tr> 
-    <td>{{ row.Label }}</td>
-    
-    {% if row.Value > 0 %}
+<tr>
+	<td>{{ row.Pin }}</td>
+	<td>{{ row.Label }}</td>
+	{% if row.Value > 0 %}
 	<td style="text-align: center;">ON</td>
 	{% else %}
 	<td style="text-align: center;">OFF</td>
 	{% endif %}
-		
-    {% if perms.DevicesAPP.change_state_mastergpios and row.Direction == 0 %}
+	{% if perms.DevicesAPP.change_state_mastergpios and row.Direction == 0 %}
 	<td style="text-align: center;">
 		<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:toggle' 'mastergpios' row.pk %}" role="button">
 			{% if row.Value == 0 %}

@@ -122,8 +122,6 @@ def start_HourlyTask():
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    import DevicesAPP.signal_handlers
-    import MainAPP.signal_handlers
     HourlyTask()
     updateWeekDay()
     from MainAPP.models import AutomationRules

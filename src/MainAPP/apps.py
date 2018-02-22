@@ -17,7 +17,7 @@ class AutomationConfig(AppConfig):
     
     def ready(self):
         process=os.getpid()
-        import MainAPP.signals
+        import MainAPP.signal_handlers
         logger.debug('Process init: ' + str(os.getpid()) + '('+str(sys.argv[0])+ ')')
         import MainAPP.tasks
         logger.debug('Process '+str(process) + ' is a Gunicorn process')

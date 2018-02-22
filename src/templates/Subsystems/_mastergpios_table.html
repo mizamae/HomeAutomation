@@ -1,24 +1,28 @@
 {% load i18n %}
+{% load staticfiles %}
+
 <h3><b>{{ header }}</b></h3>
-<div id="{{ tableId }}list" class="table-responsive">
-	<table id="{{ tableId }}Table" class="table table-striped table-bordered table-responsive ">
-	    <colgroup>
-	      <col class="col-lg-2"></col>
-	      <col class="col-lg-1"></col>
-	      <col class="col-lg-1"></col>
-	    </colgroup>
-	    <thead class="thead-inverse">
-	        <tr>
-	            <th>{% trans "Label" %}</th>
-	            <th style="text-align: center;">{% trans "Value" %}</th>
-	            <th style="text-align: center;">{% trans "Action" %}</th>
-	        </tr>
-	     </thead>
-	     <tbody>
-	        
-	        {% for row in rows %}
-				{% include "Subsystems/_mastergpios.html" %}
-	        {% endfor %}
+<div id="gpiosContainer" class="table-responsive">
+	<table id="gpiosTable" class="table table-striped table-bordered table-responsive ">
+		<colgroup>
+			<col class="col-lg-1"></col>
+			<col class="col-lg-2"></col>
+			<col class="col-lg-1"></col>
+			<col class="col-lg-1"></col>
+		</colgroup>
+		<thead class="thead-inverse">
+			<tr>
+				<th>{% trans "Pin" %}</th>
+				<th>{% trans "Label" %}</th>
+				<th style="text-align: center;">{% trans "Value" %}</th>
+				<th style="text-align: center;">{% trans "Action" %}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for row in rows %}
+			{% include "Subsystems/_mastergpios.html" %}
+		{% endfor %}
 		</tbody>
 	</table>
+	<script src="{% static 'GPIOsRT.js' %}"></script>	
 </div>

@@ -43,7 +43,6 @@ class Devices_query(JsonWebsocketConsumer):
 
 class GPIO_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
-        #logger.info("GPIO_updater original_message" + ":"+ str(content))
         logger.info("Received signal to toggle output " + str(number) + " on the process " + str(os.getpid()))
         # toggle gpio number
         IO=MasterGPIOs.objects.get(Pin=content["pk"])
@@ -55,7 +54,7 @@ class DevicesAPP_consumers(WebsocketDemultiplexer):
         "Device_update": Devices_updater,
         "Device_delete": Devices_delete,
         "Device_query": Devices_query,
-        "GPIO_params": MasterGPIOsBinding.consumer,
+        "GPIO_values": MasterGPIOsBinding.consumer,
         "GPIO_update": GPIO_updater,
     }
 

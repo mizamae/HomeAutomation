@@ -89,7 +89,9 @@ function updateAvar(data)
     if (rownum>=1)
     {
     	var valueSpan=row.querySelector("#value");
-    	valueSpan.innerHTML=data.Value;
+    	if (data.Value>1 || data.Value<-1)
+    	{valueSpan.innerHTML=data.Value.toFixed(1);}
+    	else {valueSpan.innerHTML=data.Value.toFixed(3);}
     	var timeSpan=row.querySelector("#timestamp");
     	var d = new Date(data.Timestamp);
     	timeSpan.innerHTML=d.toLocaleString();

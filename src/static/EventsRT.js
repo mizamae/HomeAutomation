@@ -34,14 +34,14 @@ $(function()
     // Helpful debugging
     webSocketEventsBridge.socket.addEventListener('open', 
         function() { 
-            console.log("Connected to notification socket"); 
+            console.log("Connected to Events socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from Events engine")
             {label.innerHTML=='';}
     });
     webSocketEventsBridge.socket.addEventListener('close', 
         function() { 
-            console.log("Disconnected to notification socket"); 
+            console.log("Disconnected to Events socket"); 
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from Events engine";
