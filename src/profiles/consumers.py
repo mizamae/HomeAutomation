@@ -6,10 +6,10 @@ from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketCons
 import logging
 logger = logging.getLogger("project")
 
-def ws_add(message):
+def ws_add_profiles(message):
     Group("Profiles-values").add(message.reply_channel)
 
-def ws_disconnect(message):
+def ws_disconnect_profiles(message):
     Group("Profiles-values").discard(message.reply_channel)
     
 class track_update(JsonWebsocketConsumer):

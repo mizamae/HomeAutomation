@@ -11,7 +11,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 from channels import Group
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 import logging
 
@@ -73,7 +73,7 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             else:
                 newValue=-1
             mainVar.update_value(newValue=newValue,timestamp=timestamp,writeDB=True)
-            PublishEvent(Severity=0,Text=label+' is ' + str(mainVar.Value),Persistent=False)
+            PublishEvent(Severity=0,Text=label+' is ' + str(mainVar.Value),Persistent=False,Code='Profiles-0')
         if instance.Latitude!=None and instance.Longitude!=None:
             import json
             from tzlocal import get_localzone

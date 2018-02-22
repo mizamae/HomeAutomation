@@ -388,7 +388,12 @@ class DevicesForm(ModelForm):
     def clean(self):
         cleaned_data = super(DevicesForm, self).clean()
         return cleaned_data
-         
+     
+    def save(self, *args, **kwargs):
+        instance=super().save(commit=False)
+        instance.store2DB()
+        return instance
+    
     class Meta:
         model = models.Devices
         fields=['Name','DVT','IO','Code','IP','Sampletime','RTsampletime','State']

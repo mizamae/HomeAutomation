@@ -15,7 +15,7 @@ import RPi.GPIO as GPIO
 
 from channels.binding.websockets import WebsocketBinding,WebsocketBindingWithMembers 
 
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 import json
 import itertools
@@ -31,7 +31,7 @@ from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION
                         DATAGRAMTYPE_CHOICES,DATATYPE_CHOICES,PLOTTYPE_CHOICES,LINE_PLOT,SPLINE_PLOT,DG_SYNCHRONOUS,\
                         DTYPE_DIGITAL,DTYPE_INTEGER,\
                         GPIO_DIRECTION_CHOICES,GPIO_OUTPUT,GPIO_INPUT,GPIO_SENSOR,GPIOVALUE_CHOICES,GPIO_HIGH,GPIO_LOW,\
-                        GPIO_IN_DBTABLE,GPIO_OUT_DBTABLE
+                        GPIO_IN_DBTABLE,GPIO_OUT_DBTABLE,DECIMAL_POSITIONS
                         
 from .apps import DevicesAppException
 
@@ -59,7 +59,7 @@ class MainDeviceVars(models.Model):
     Label = models.CharField(max_length=50,unique=True,help_text=str(_('Unique identifier for the variable.')))
     Value = models.FloatField(null=True,help_text=str(_('Value of the variable.')))
     DataType= models.CharField(max_length=20,choices=DATATYPE_CHOICES,help_text=str(_('Type of data of the variable.')))
-    PlotType= models.PositiveSmallIntegerField(choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
+    PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
     UserEditable = models.BooleanField(default=True,help_text=str(_('Can the user modify the value??')))
     
@@ -112,8 +112,10 @@ class MainDeviceVars(models.Model):
                     self.insertRegister(TimeStamp=now-datetime.timedelta(seconds=1))
                 
             if newValue!=self.Value or force:
+                if newValue!=None:
+                    newValue=round(newValue,DECIMAL_POSITIONS)
                 text=str(_('The value of the MainDeviceVar "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
-                PublishEvent(Severity=0,Text=text)
+                PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0')
                 self.Value=newValue
                 self.save(update_fields=['Value'])
                 SignalVariableValueUpdated.send(sender=None, timestamp=now,
@@ -124,7 +126,10 @@ class MainDeviceVars(models.Model):
                     self.insertRegister(TimeStamp=now)
                 else:
                     self.insertRegister(TimeStamp=timestamp)
-
+    
+    def getEventsCode(self):
+        return 'VAR'+str(self.pk)+'-'
+    
     def getInsertRegisterSQL(self):
         sql=self.SQLinsertRegister
         #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
@@ -178,7 +183,7 @@ class MainDeviceVars(models.Model):
         except:
             text = str(_("Error in create_MainVars_table: ")) + str(sys.exc_info()[1]) 
             raise DevicesAppException(text)
-            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True,Code=self.getEventsCode()+'100')
             
     def insertRegister(self,TimeStamp,NULL=False):
         """
@@ -248,10 +253,8 @@ class MainDeviceVars(models.Model):
             timestamp=None
             row=None
         if localized and timestamp!=None:
-            from tzlocal import get_localzone
-            local_tz=get_localzone()
-            timestamp = local_tz.localize(timestamp)
-            timestamp=timestamp+timestamp.utcoffset() 
+            from utils.dataMangling import localizeTimestamp
+            timestamp=localizeTimestamp(timestamp) 
             
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
@@ -285,7 +288,6 @@ class MainDeviceVars(models.Model):
     
     @classmethod
     def getCharts(cls,fromDate,toDate):
-        charts=[]
         VARs=cls.objects.all()
         if VARs.count()>0:
             names=[]
@@ -308,8 +310,7 @@ class MainDeviceVars(models.Model):
             
             chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
                                 labels=labels,plottypes=plottypes,sampletime=0)
-            charts.append(chart)
-        return charts
+        return chart
     
 @receiver(post_save, sender=MainDeviceVars, dispatch_uid="update_MainDeviceVars")
 def update_MainDeviceVars(sender, instance, update_fields=[],**kwargs):
@@ -401,7 +402,7 @@ class MainDeviceVarWeeklySchedules(models.Model):
                 Value=self.LValue
             else:
                 Value=self.HValue
-            self.Var.updateValue(newValue=Value,writeDB=True)
+            self.Var.updateValue(newValue=float(Value),writeDB=True)
              
     def getFormset(self):
         from django.forms import inlineformset_factory
@@ -417,12 +418,12 @@ class MainDeviceVarWeeklySchedules(models.Model):
                 if daily.Day==weekDay:
                     Setpoint=getattr(daily,'Hour'+str(hour))
                     if Setpoint==0:
-                        Value=self.LValue
+                        Value=float(self.LValue)
                     elif Setpoint==1:
-                        Value=self.HValue
+                        Value=float(self.HValue)
                     else:
                         text='The schedule ' + self.Label + ' returned a non-understandable setpoint (0=LOW,1=HIGH). It returned ' + str(Setpoint)
-                        PublishEvent(Severity=2,Text=text,Persistent=True)
+                        PublishEvent(Severity=2,Text=text,Persistent=True,Code=self.getEventsCode()+'101')
                         break
                     if self.Var.Value!=Value or init:
                         self.Var.updateValue(newValue=Value,writeDB=True,force=init)
@@ -594,14 +595,15 @@ class MasterGPIOs(models.Model):
             timestamp=None
             row=None
         if localized and timestamp!=None:
-            from tzlocal import get_localzone
-            local_tz=get_localzone()
-            timestamp = local_tz.localize(timestamp)
-            timestamp=timestamp+timestamp.utcoffset() 
+            from utils.dataMangling import localizeTimestamp
+            timestamp=localizeTimestamp(timestamp) 
             
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
         return Data
+    
+    def getEventsCode(self):
+        return 'GPIO'+str(self.pk)+'-'
     
     def updateValue(self,newValue,timestamp=None,writeDB=True,force=False):
         if newValue!=self.Value or force:
@@ -616,7 +618,7 @@ class MasterGPIOs(models.Model):
                 
             if newValue!=self.Value or force:
                 text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
-                PublishEvent(Severity=0,Text=text)
+                PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0')
                 self.Value=newValue
                 self.save(update_fields=['Value'])
                 SignalVariableValueUpdated.send(sender=None, timestamp=now,
@@ -684,7 +686,7 @@ class MasterGPIOs(models.Model):
         except:
             text = str(_("Error in create_GPIO_table: ")) + str(sys.exc_info()[1]) 
             raise DevicesAppException(text)
-            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)        
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True,Code=self.getEventsCode()+'100')        
             
     def getInsertRegisterSQL(self):
         
@@ -946,7 +948,7 @@ def request_callback(DV,DG,jobID,**kwargs):
     elif DV.DVT.Connection==REMOTE_TCP_CONNECTION:
         status=DV.requestDatagram(DatagramId=DG.Identifier) 
     NextUpdate=DV.getNextUpdate(jobID=jobID) 
-    DV.updatePollingStatus(LastUpdated=status['LastUpdated'],Error=status['Error'],NextUpdate=NextUpdate)
+    DV.updatePollingStatus(DG=DG,LastUpdated=status['LastUpdated'],Error=status['Error'],NextUpdate=NextUpdate)
 
 class Devices(models.Model):
                                     
@@ -992,7 +994,19 @@ class Devices(models.Model):
         return self.DVT.Code
     devicetype2str=property(_deviceType2Binding)
     
+    def getEventsCode(self):
+        if self.DVT.Connection==LOCAL_CONNECTION:
+            return 'IO'+str(self.IO.pk)+'-'
+        elif self.DVT.Connection==REMOTE_TCP_CONNECTION:
+            return 'IP'+str(self.IP)+'-'
+        elif self.DVT.Connection==MEMORY_CONNECTION:
+            return self.Name+'-'
+        else:
+            return None
+        
     def clean(self):
+        if self.DVT.Connection==LOCAL_CONNECTION and self.IO==None:
+            raise ValidationError(_('A locally connected device needs to have a GPIO defined'))
         if self.IO!=None:
             if self.IO.Direction!=GPIO_SENSOR:
                 raise ValidationError(_('The GPIO selected is not configured as sensor'))
@@ -1079,18 +1093,21 @@ class Devices(models.Model):
                         JOB=scheduler.getJobInStore(jobId=id)
                         if JOB!=None: 
                             text=str(_('Polling for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
-                            PublishEvent(Severity=0,Text=text,Persistent=True)
+                            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
                         else:
-                            PublishEvent(Severity=4,Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.Name+' could not be started' ,Persistent=True)
+                            PublishEvent(Severity=4,
+                                         Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.Name+' could not be started' ,
+                                         Code=self.getEventsCode()+'100',Persistent=True)
                             self.State=STOPPED_STATE
                             self.save()
                     else:
-                        PublishEvent(Severity=0,Text='Requests '+id+ ' already was in the scheduler. ' + str(_('Next request at ') + str(JOB.next_run_time)),Persistent=True)
+                        PublishEvent(Severity=0,Text='Requests '+id+ ' already was in the scheduler. ' + str(_('Next request at ') + str(JOB.next_run_time)),
+                                     Code=self.getEventsCode()+'10',Persistent=True)
             else:        
                 self.State=STOPPED_STATE
                 self.save()
                 text=str(_('Polling for device '))+self.Name+str(_(' could not be started. It has no Datagrams defined '))
-                PublishEvent(Severity=3,Text=text,Persistent=True)
+                PublishEvent(Severity=3,Text=text,Persistent=True,Code=self.getEventsCode()+'101')
         else:
             if jobIDs != []:
                 for job in jobIDs:
@@ -1114,9 +1131,9 @@ class Devices(models.Model):
                 text='Unhandled error on updateRequests for device ' + str(self.Name) 
                 severity=5  
                 
-            PublishEvent(Severity=severity,Text=text,Persistent=True)
-    
-    def updatePollingStatus(self,LastUpdated,Error,NextUpdate):
+            PublishEvent(Severity=severity,Text=text,Persistent=True,Code=self.getEventsCode()+'102')
+        
+    def updatePollingStatus(self,LastUpdated,Error,NextUpdate,DG):
         updateFields=['Error']
         if NextUpdate != None:
             self.NextUpdate=NextUpdate
@@ -1124,10 +1141,10 @@ class Devices(models.Model):
         if LastUpdated!= None:
             self.LastUpdated=LastUpdated
             updateFields.append('LastUpdated')
-            PublishEvent(Severity=0,Text=self.Name+str(_(' updated OK')),Persistent=True)
+            PublishEvent(Severity=0,Text=self.Name+str(_(' updated OK')),Persistent=True,Code=self.getEventsCode()+'1')
         self.Error=Error
         if Error!='':
-            PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True)
+            PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True,Code=self.getEventsCode()+'105')
             
         self.save(update_fields=updateFields)
         
@@ -1148,7 +1165,8 @@ class Devices(models.Model):
         next_run_time=Devices.getNextUpdate(jobID=jobID)
         self.NextUpdate=next_run_time
         if next_run_time==None:
-            PublishEvent(Severity=3,Text='Next run time for job '+jobID+ ' could not be fetched.',Persistent=True)
+            PublishEvent(Severity=3,Text='Next run time for job '+jobID+ ' could not be fetched.',
+                         Persistent=True,Code=self.getEventsCode()+'106')
         self.save(update_fields=['NextUpdate',])
         return next_run_time
         
@@ -1209,10 +1227,8 @@ class Devices(models.Model):
                     timestamp=row[0]
                     row=row[1:]
                     if localized and timestamp!=None:
-                        from tzlocal import get_localzone
-                        local_tz=get_localzone()
-                        timestamp = local_tz.localize(timestamp)
-                        timestamp=timestamp+timestamp.utcoffset()
+                        from utils.dataMangling import localizeTimestamp
+                        timestamp=localizeTimestamp(timestamp) 
                 else:
                     timestamp=None
                     row=None
@@ -1461,7 +1477,7 @@ class Devices(models.Model):
         except:
             text = str(_("Error in create_datagram_table: ")) + str(sys.exc_info()[1]) 
             raise DevicesAppException(text)
-            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True)
+            PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True,Code=self.getEventsCode()+'110')
             #logger.error ("Unexpected error in create_datagram_table:"+ str(sys.exc_info()[1]))
     
     def createRegistersTables(self,Database):
@@ -1544,7 +1560,7 @@ class Devices(models.Model):
             if NULL==False:
                 for i in range(0,num_args): 
                     try:
-                        roundvalues.append(round(values[i],3))
+                        roundvalues.append(round(values[i],DECIMAL_POSITIONS))
                     except:
                         roundvalues.append(values[i])
             else:
@@ -1561,11 +1577,13 @@ class Devices(models.Model):
             raise DevicesAppException("Unexpected error in insert_device_register:" + str(sys.exc_info()[1]))
             
     def sendUpdateSignals(self,DG_id,values):
+        from utils.dataMangling import localizeTimestamp
         DG=Datagrams.objects.get(Identifier=DG_id)
         datagram=DG.getStructure()
-        SignalVariableValueUpdated.send(sender=None, timestamp=values[0],
-                                                                                Tags=datagram['names'],
-                                                                                Values=values[1:])
+        timestamp=localizeTimestamp(values[0])
+        SignalVariableValueUpdated.send(sender=None, timestamp=timestamp,
+                                                    Tags=datagram['names'],
+                                                    Values=values[1:])
         
     def requestDatagram(self,DatagramId,timeout=1,writeToDB=True,resetOrder=True,retries=1):
         """
@@ -1608,7 +1626,7 @@ class Devices(models.Model):
                                         Error=''
                                     else:
                                         Error='The device did not acknowledge the resetStatics order on datagram ' + DatagramId
-                            out['values']=[round(x,3) for x in datagram]
+                            out['values']=[round(x,DECIMAL_POSITIONS) for x in datagram]
                             out['LastUpdated']=timestamp
                             
                         else:
@@ -1720,7 +1738,7 @@ class DatagramItems(models.Model):
         
     Tag = models.CharField(max_length=20,unique=True)
     DataType= models.CharField(max_length=20,choices=DATATYPE_CHOICES)
-    PlotType= models.PositiveSmallIntegerField(choices=PLOTTYPE_CHOICES,default=SPLINE_PLOT)
+    PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default=SPLINE_PLOT)
     Units = models.CharField(max_length=10,null=True,blank=True)
     
     def clean(self):

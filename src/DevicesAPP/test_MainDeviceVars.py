@@ -304,14 +304,16 @@ print('###########################################')
 print('# TESTING OF MainDeviceVarsForm FUNCTIONS #')
 print('###########################################')
 
-@tag('maindevicevars')
+@tag('maindevicevarsform')
 class DevicesFormTests(TestCase):
     remoteDVT=None
     localDVT=None
     memoryDVT=None
           
     def setUp(self):
-        pass
+        from utils.BBDD import getRegistersDBInstance
+        self.DB=getRegistersDBInstance()
+        self.DB.dropTable(table='MainVariables')
                   
     def test_valid_data(self):
         '''
@@ -322,10 +324,16 @@ class DevicesFormTests(TestCase):
           
         self.assertTrue(form.is_valid())
         instance = form.save()
+        
+        print('    -> Checked the creation of registers tables')
+        table=instance.getRegistersDBTable()
+        exist=self.DB.checkIfTableExist(table=table)
+        self.assertEqual(exist,True)
+        print('    -> Checked the creation of automation var')
         AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars').filter(Tag=instance.getRegistersDBTag())
         self.assertEqual(1,AVARs.count()) # one automationvar is returned
-        
+        print('    -> Checked the not duplication of automation var')
         instance = form.save()
         AVARs=MainAPP.models.AutomationVariables.objects.filter(Device='MainVars').filter(Tag=instance.getRegistersDBTag())
         self.assertEqual(1,AVARs.count()) # one automationvar is returned
-        
+    

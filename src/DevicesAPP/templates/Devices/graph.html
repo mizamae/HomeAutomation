@@ -227,7 +227,7 @@
 					var label=DataLabels[j].label;
 					var type=DataLabels[j].type;
                     
-					if (label.includes('_bits') || (type=="digital"))
+					if (type=="digital")
 					{
                         djangoData[i].digital_Cols.push(j);
 					}else
@@ -269,33 +269,32 @@
 			    	}
 			    	var j,k;
 			    	var text=''
-			    	for (j = 1; j < djangoData[i].cols[0].length; j++) // iterates over the number of columns of the chart
+			    	for (j of djangoData[i].analog_Cols) // iterates over the number of analog columns of the chart
 			    	{			
 			    		var label=	djangoData[i].cols[0][j].label; // j+1 to avoid the timestamp col
 			    		var type=	djangoData[i].cols[0][j].type; // j+1 to avoid the timestamp col
 			    		var variable = document.createElement('li');
 			    		var stats_list = document.createElement('ul');
-			    		if (type=='analog')
-			    		{
-			    			label=parseLabel(label);
-			    			variable.appendChild(document.createTextNode(label));
-				    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
-					    	{ 
-				    			var item = document.createElement('li');
-			    				if (!stats_labels[k].includes('on_') && !stats_labels[k].includes('off_'))
-			    				{
-	                                   if (stats_data[stats_labels[k]][j-1]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2));}
-	                                   else {text=text.concat(stats_labels[k],' value: ',null)}
-			    					item.appendChild(document.createTextNode(text));
-			    					stats_list.appendChild(item);
-			    					text='';
-			    				}
-					    	}
-				    		variable.appendChild(stats_list);
-				    		list.appendChild(variable);
+
+		    			label=parseLabel(label);
+		    			variable.appendChild(document.createTextNode(label));
+			    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
+				    	{ 
+			    			var item = document.createElement('li');
+		    				if (!stats_labels[k].includes('on_') && !stats_labels[k].includes('off_'))
+		    				{
+                                   if (stats_data[stats_labels[k]][j-1]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2));}
+                                   else {text=text.concat(stats_labels[k],' value: ',null)}
+		    					item.appendChild(document.createTextNode(text));
+		    					stats_list.appendChild(item);
+		    					text='';
+		    				}
+				    	}
+			    		variable.appendChild(stats_list);
+			    		list.appendChild(variable);
 			    		}
 			    		
-			    	}
+
 		    	}	
 				
 				if (djangoData[i].digital_Cols.length>0)
@@ -332,39 +331,36 @@
 			    	}
 			    	var j,k,l;
 			    	var text=''
-			    	for (j = 1; j < djangoData[i].cols[0].length; j++) // iterates over the number of columns of the chart
+		    		for (j of djangoData[i].digital_Cols) // iterates over the number of digital columns of the chart
 			    	{			
 			    		var labels=	djangoData[i].cols[0][j].label; // j+1 to avoid the timestamp col	
                         var type=	djangoData[i].cols[0][j].type
 			    		
-			    		if (type=="digital")
-			    		{
-			    			for (l=0;l<labels.length;l++)
-		    				{
-			    				var variable = document.createElement('li');
-					    		var stats_list = document.createElement('ul');
-				    			var label=parseLabel(labels[l]);
-				    			variable.appendChild(document.createTextNode(label));
-					    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
-						    	{ 
-					    			var item = document.createElement('li');
-				    				if (stats_labels[k].includes('on_') || stats_labels[k].includes('off_'))
-				    				{
-				    					if (stats_data[stats_labels[k]].length>0){var value=stats_data[stats_labels[k]][j-1][l];}
-				    					else{var value=null;}
-				    						
-			    						text=text.concat(stats_labels[k],' value: ',value,' [s] (',Math.round(value/totalTime*100*100)/100,'%)');
-				    					
-				    					item.appendChild(document.createTextNode(text));
-				    					stats_list.appendChild(item);
-				    					text='';
-				    				}	
-						    	}
-					    		variable.appendChild(stats_list);
-					    		list.appendChild(variable);
-					    		
-		    				}
-			    		}
+		    			for (l=0;l<labels.length;l++)
+	    				{
+		    				var variable = document.createElement('li');
+				    		var stats_list = document.createElement('ul');
+			    			var label=parseLabel(labels[l]);
+			    			variable.appendChild(document.createTextNode(label));
+				    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
+					    	{ 
+				    			var item = document.createElement('li');
+			    				if (stats_labels[k].includes('on_') || stats_labels[k].includes('off_'))
+			    				{
+			    					if (stats_data[stats_labels[k]].length>0){var value=stats_data[stats_labels[k]][j-1][l];}
+			    					else{var value=null;}
+			    						
+		    						text=text.concat(stats_labels[k],' value: ',value,' [s] (',Math.round(value/totalTime*100*100)/100,'%)');
+			    					
+			    					item.appendChild(document.createTextNode(text));
+			    					stats_list.appendChild(item);
+			    					text='';
+			    				}	
+					    	}
+				    		variable.appendChild(stats_list);
+				    		list.appendChild(variable);
+				    		
+	    				}
 			    		
 				    	}			    	
 					}	    	 

@@ -1,7 +1,7 @@
 from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketConsumer
 from django.utils import timezone
 
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -23,7 +23,7 @@ class system_datetime_reset(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         from utils.NTPServer import restart
         restart()
-        PublishEvent(Severity=2,Text=_("NTP server restarted"),Persistent=True)
+        PublishEvent(Severity=2,Text=_("NTP server restarted"),Persistent=True,Code='MainAPP0')
         
 class System_consumers(WebsocketDemultiplexer):
     consumers = {
@@ -34,3 +34,25 @@ class System_consumers(WebsocketDemultiplexer):
     def connection_groups(self):
         return ["System",]
         
+
+def ws_add_avar(message):
+    Group("AVAR-values").add(message.reply_channel)
+
+def ws_disconnect_avar(message):
+    Group("AVAR-values").discard(message.reply_channel)
+    
+class avar_update(JsonWebsocketConsumer):
+    def receive(self, content, multiplexer, **kwargs):
+        pass
+        
+    @classmethod
+    def group_names(cls, *args, **kwargs):
+        return ["AVAR-values",]
+        
+   
+class AVAR_consumers(WebsocketDemultiplexer):
+    consumers = {
+        }
+
+    def connection_groups(self):
+        return ["AVAR-values",]

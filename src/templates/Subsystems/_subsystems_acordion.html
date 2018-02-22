@@ -29,6 +29,9 @@
 				{% if model == 'mastergpios' %}
 					{% include "Subsystems/_mastergpios_table.html" with tableId=model %}
 				{% endif %}
+				{% if model == 'events' %}
+					{% include "_events_table.html" %}
+				{% endif %}
 			</div>
 		</div>
 	</div>

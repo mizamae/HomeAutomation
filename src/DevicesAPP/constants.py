@@ -30,6 +30,7 @@ BOOTING_MSG=   '''
 
 # CONSTANTS OF THE REGISTERS DB
 DEVICESAPP_ROOT = os.path.dirname(os.path.realpath(__file__))
+DECIMAL_POSITIONS=3
 # END
 
 # CONSTANTS OF THE MODELS
@@ -84,10 +85,10 @@ DATATYPE_CHOICES=(
         (DTYPE_DIGITAL,_('Digital')),
         )
 
-LINE_PLOT=0
-SPLINE_PLOT=1
-COLUMN_PLOT=2
-AREA_PLOT=3
+LINE_PLOT='line'
+SPLINE_PLOT='spline'
+COLUMN_PLOT='column'
+AREA_PLOT='area'
 
 PLOTTYPE_CHOICES=(
         (LINE_PLOT,_('Hard Line')),

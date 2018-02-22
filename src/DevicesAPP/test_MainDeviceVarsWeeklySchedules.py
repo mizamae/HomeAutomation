@@ -137,7 +137,7 @@ class MainDeviceVarsWeeklySchedulesTests(TestCase):
         self.assertEqual(rows[1][1],newDict1['LValue'])# previous to latest value equals the previous Value
         self.assertEqual(rows[0][1],newDict1['LValue']+0.5) # latest value equals the newValue
         self.assertEqual(rows[0][0]-rows[1][0],datetime.timedelta(seconds=1))# checks that it inserts two rows with 1 second difference
-        self.assertAlmostEqual(rows[0][0],now+datetime.timedelta(seconds=3),delta=datetime.timedelta(seconds=1))# checks that the latest value is dated now+3sec due to the anti-collision strategy on registers DB
+        self.assertAlmostEqual(rows[0][0],now,delta=datetime.timedelta(seconds=2))# checks that the latest value is dated now+3sec due to the anti-collision strategy on registers DB
         
         instance1.modify(value='LValue',sense='-')
         self.assertEqual(instance1.LValue,newDict1['LValue'])

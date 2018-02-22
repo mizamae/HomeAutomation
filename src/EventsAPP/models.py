@@ -3,30 +3,36 @@ from channels.binding.websockets import WebsocketBinding
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
 
-class EventModel(models.Model):
+class Events(models.Model):
     
     Timestamp = models.DateTimeField(auto_now_add=True)
     Severity = models.PositiveSmallIntegerField(default=0)
     Text = models.CharField(max_length=150)
+    Code = models.CharField(max_length=50)
     IsRead = models.BooleanField(default=False)
     
-    def save(self, *args, **kwargs):
-        try:
-            EVT=EventModel.objects.get(Text=self.Text)
-        except:
-            EVT=None
+    def store2DB(self):
+        EVT=Events.checkIfExist(event=self)
         if EVT==None:
-            pass
-            #super(EventModel, self).save(*args, **kwargs)
+            super().save()
         else:
             EVT.Timestamp=self.Timestamp
-            #EVT.save()
+            EVT.save()
+    
+    @classmethod
+    def checkIfExist(cls,event):
+        try:
+            EVT=cls.objects.get(Code=event.Code)
+            return EVT
+        except:
+            return None
+        
         
     def __str__(self):
         return self.Text
 
-@receiver(post_save, sender=EventModel, dispatch_uid="update_EventModel")
-def update_EventModel(sender, instance, update_fields,**kwargs):
+@receiver(post_save, sender=Events, dispatch_uid="update_Events")
+def update_Events(sender, instance, update_fields,**kwargs):
         
     if kwargs['created']:   # new instance is created
         pass
@@ -35,9 +41,9 @@ def update_EventModel(sender, instance, update_fields,**kwargs):
             instance.delete()
             
         
-class EventModelBinding(WebsocketBinding):
+class EventsBinding(WebsocketBinding):
 
-    model = EventModel
+    model = Events
     stream = "Event_critical"
     fields = ["Timestamp","Severity","Text","IsRead"]
 

@@ -1,0 +1,38 @@
+{% load i18n %}
+{% load staticfiles %}
+
+<div class="table-responsive" id="eventsContainer">
+    <table id="eventsTable" class="table table-bordered table-responsive ">
+        <colgroup>
+          <col class="col-md-3"></col>
+          <col class="col-md-1"></col>
+          <col class="col-md-6 col-sm-10"></col>
+          <col class="col-md-2 col-sm-2"></col>
+        </colgroup>
+	 	<thead class="thead-inverse">
+		   <tr>
+		       <th class="hidden-sm hidden-xs">{% trans "Timestamp" %}</th>
+		       <th class="hidden-sm hidden-xs">{% trans "Severity" %}</th>
+		       <th>{% trans "Description" %}</th>
+		       <th>{% trans "Acknowledge" %}</th>
+		   </tr>
+		</thead>
+    	<tbody>
+        {% for event in rows %}
+            {% if event.Severity < 2 %}
+            <tr class="alert-narrow alert-info"> 
+            {% elif event.Severity < 4 %}
+            <tr class="alert-narrow alert-warning"> 
+            {% else %}
+            <tr class="alert-narrow alert-danger">
+            {% endif %}
+                <td class="hidden-sm hidden-xs">{{ event.Timestamp }}</td>
+                <td class="hidden-sm hidden-xs">{{ event.Severity }}</td>
+                <td>{{ event.Text }}</td>
+                <td> <a id="ackn{{ event.pk }}" onclick="acknowledge('{{ event.pk }}')" class="btn btn-default btn-xs" id="" role="button">{% trans "OK" %}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <script src="{% static 'EventsRT.js' %}"></script>	
+</div>

@@ -81,7 +81,10 @@ def heating(request):
             elif 'accordion4' == message.message:
                 accordion4=True # defines if the accordion 4 is initially displayed or collapsed
             
-            
+        
+        from EventsAPP.models import Events
+        EVTs=Events.objects.all()
+    
         return render(request, APP_TEMPLATE_NAMESPACE+'/subsystem.html',{'title':MainAPP.models.Subsystems.getName2Display(Name=SUBSYSTEM_HEATING),
                                                                         'DVs':DVs,
                                                                        'VARs':VARs,
@@ -93,4 +96,5 @@ def heating(request):
                                                                        'accordion3':accordion3,
                                                                        'accordion4':accordion4,
                                                                        'GPIOs':GPIOs,
+                                                                       'EVTs':EVTs,
                                                                        }) 

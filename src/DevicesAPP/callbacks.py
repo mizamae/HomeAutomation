@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 #from Devices.signals import Device_datagram_reception,Device_datagram_exception
 import time
 import os
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -97,7 +97,8 @@ class OpenWeatherMap(object):
                 LastUpdated=None
             return {'Error':Error,'LastUpdated':LastUpdated}
         else:
-            PublishEvent(Severity=5,Text=str(_('The device ')) + self.sensor.Name + str(_(' does not have any Beacon associated.')),Persistent=True)
+            PublishEvent(Severity=5,Text=str(_('The device ')) + self.sensor.Name + str(_(' does not have any Beacon associated.')),
+                         Code=self.sensor.getEventsCode()+'100',Persistent=True)
             Error=str(_('The device ')) + self.sensor.Name + str(_(' does not have any Beacon associated.'))
             return {'Error':Error,'LastUpdated':None}
         
@@ -261,7 +262,8 @@ class DHT22(object):
             if h==None:
                 h=self._maxH
                 
-            PublishEvent(Severity=0,Text='Sample ' + str(x+1) + ' yielded ' + str(t) + 'degC and ' + str(h) + '%',Persistent=False)
+            PublishEvent(Severity=0,Text='Sample ' + str(x+1) + ' yielded ' + str(t) + 'degC and ' + str(h) + '%',
+                         Code=self.sensor.getEventsCode()+'100',Persistent=False)
             
             if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
                 temperature=temperature+t

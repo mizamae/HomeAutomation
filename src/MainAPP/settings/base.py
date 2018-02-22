@@ -96,7 +96,7 @@ INSTALLED_APPS = (
     'MainAPP',
     'DevicesAPP',
     'ReportingAPP',
-    'Events',
+    'EventsAPP',
 )
 
 

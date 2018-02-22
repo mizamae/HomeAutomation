@@ -20,11 +20,20 @@ def Bytes2Float32(binnumber):
 
 def checkBit(number,position):
     mask=1<<position
-    if (number & mask)!=0:
+    if (int(number) & mask)!=0:
         return True
     else:
         return False
 
+def localizeTimestamp(timestamp):
+    from tzlocal import get_localzone
+    local_tz=get_localzone()
+
+    timestamp = local_tz.localize(timestamp.replace(tzinfo=None))
+
+    timestamp=timestamp+timestamp.utcoffset()
+    return timestamp
+            
 def dec2bin(x):
     data=[]
     for i in range(0,8):

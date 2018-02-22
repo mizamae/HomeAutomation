@@ -2,9 +2,9 @@ from django.contrib import admin
 
 from django.utils.translation import ugettext_lazy as _
 
-from Events.models import EventModel
+from .models import Events
 
-class EventModelAdmin(admin.ModelAdmin):
+class EventsAdmin(admin.ModelAdmin):
     
     list_display = ('Timestamp','Severity','Text')
     ordering=('Severity','Timestamp')
@@ -20,4 +20,4 @@ class EventModelAdmin(admin.ModelAdmin):
     markAsRead.short_description = _("Mark as read")
     
 
-admin.site.register(EventModel,EventModelAdmin)
+admin.site.register(Events,EventsAdmin)

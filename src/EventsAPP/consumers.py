@@ -1,44 +1,41 @@
 from channels import Group
 from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketConsumer
-from .models import EventModel,EventModelBinding
+from .models import Events,EventsBinding
 
 import logging
 logger = logging.getLogger("project")
 
-def ws_add(message):
+def ws_add_events(message):
     Group("Event-values").add(message.reply_channel)
 
-def ws_disconnect(message):
+def ws_disconnect_events(message):
     Group("Event-values").discard(message.reply_channel)
     
-def PublishEvent(Severity,Text,Persistent=False):
+def PublishEvent(Severity,Code,Text,Persistent=False):
     import json
     from tzlocal import get_localzone
     from django.utils import timezone
+    from utils.dataMangling import localizeTimestamp
     local_tz=get_localzone()
     Timestamp=timezone.now()
-    localdate = local_tz.localize(Timestamp.replace(tzinfo=None))
-    localdate=localdate+localdate.utcoffset()
+    localdate = localizeTimestamp(Timestamp.replace(tzinfo=None))
     if Persistent:
-        try:
-            EVM=EventModel.objects.get(Text=Text)
-            EVM.Timestamp=Timestamp
-        except:
-            EVM=EventModel(Timestamp=Timestamp,Severity=Severity,Text=Text)
-        EVM.save()
+        EVT=Events(Timestamp=Timestamp,Severity=Severity,Code=Code,Text=Text)
+        EVT.store2DB()
     else:
         Group('Event-values').send({'text':json.dumps({'Timestamp': localdate.strftime("%d %B %Y %H:%M:%S"),'Severity':Severity,'Text':Text})},immediately=True)
-                                            
-class EventModel_updater(JsonWebsocketConsumer):
+
+class Events_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
-        EVT=EventModel.objects.get(pk=int(content['pk']))
-        EVT.delete()
+        EVT=Events.objects.get(pk=int(content['pk']))
+        EVT.IsRead=True
+        EVT.save()
         
     @classmethod
     def group_names(cls, *args, **kwargs):
         return ["Event-values",]
 
-class EventModel_delete(JsonWebsocketConsumer):
+class Events_delete(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         #logger.info("EventModel_delete original_message" + ":"+ str(content['data']))
         #logger(str(content['data']["DeviceName"]))
@@ -46,9 +43,9 @@ class EventModel_delete(JsonWebsocketConsumer):
 
 class Event_consumers(WebsocketDemultiplexer):
     consumers = {
-        "Event_critical": EventModelBinding.consumer,
-        "Event_ack": EventModel_updater,
-        "Event_delete": EventModel_delete,
+        "Event_critical": EventsBinding.consumer,
+        "Event_ack": Events_updater,
+        "Event_delete": Events_delete,
     }
 
     def connection_groups(self):

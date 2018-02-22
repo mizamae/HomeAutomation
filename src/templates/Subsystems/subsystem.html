@@ -63,6 +63,14 @@
 		{% endwith %}
 	{% endif %}
 	
+	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}
+	{% with var_permission_main=perms.Events.view_events var_permission_view=perms.Events.view_events %}
+	{% with var_header="EVENTS AND ALARMS" rows=EVTs model='events' %}
+	{% include "Subsystems/_subsystems_acordion.html" %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+		
 	<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
 	{% include "_back.html" with back_to='Subsystems:home' %}
 	</div>

@@ -170,6 +170,29 @@ class Database(object):
         sql="SELECT name FROM sqlite_master WHERE type='table' AND name="+table
         return self.executeTransaction(SQLstatement=sql,arg=[])!=[]
 
+    def getLastRow(table,vars='*',localized=True):
+        if vars!='*':
+            vars_sql='"timestamp",'
+            for var in vars:
+                vars_sql+='"'+var+'",'
+            vars_sql=vars_sql[:-1]
+        else:
+            vars_sql='*'
+        sql='SELECT '+vars_sql+' FROM "'+ table +'" ORDER BY id DESC LIMIT 1'
+        row=self.executeTransaction(SQLstatement=sql)
+        if row != []:
+            timestamp=row[0]
+            values=row[1:]
+        else:
+            timestamp=None
+            values=None
+        if localized and timestamp!=None:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            timestamp = local_tz.localize(timestamp)
+            timestamp=timestamp+timestamp.utcoffset() 
+        return {'timestamp':timestamp,'values':values}
+    
 def getRegistersDBInstance(year=None):
     if year==None:
         DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))

@@ -29,7 +29,7 @@ import utils.BBDD
 
 from .constants import REGISTERS_DB_PATH,GIT_PATH
 
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 import MainAPP.models
 import MainAPP.forms
 
@@ -184,7 +184,7 @@ def arduinoCode(request):
 def SoftReset(request):
     import os
     os.system("sudo systemctl restart gunicorn")
-    PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False)
+    PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False,Code='MainAPPViews-0')
     return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
     
 @user_passes_test(lambda u: u.is_superuser)
@@ -206,7 +206,7 @@ def update(root):
     import re    
     from sys import stdout as sys_stdout
     from subprocess import Popen, PIPE
-    PublishEvent(Severity=0,Text=_("Checking for updates..."),Persistent=False)
+    PublishEvent(Severity=0,Text=_("Checking for updates..."),Persistent=False,Code='MainAPPViews-1')
 
     process = Popen("git pull", cwd=root, shell=True,
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
@@ -221,7 +221,7 @@ def update(root):
         revision = (stdout[:7] if stdout and
                     re.search(r"(?i)[0-9a-f]{32}", stdout) else "-")
         PublishEvent(Severity=0,Text=_("%s the latest source revision '%s'.") %
-              (_("Already at") if not updated else _("Updated to"), revision),Persistent=False)
+              (_("Already at") if not updated else _("Updated to"), revision),Persistent=False,Code='MainAPPViews-2')
         
         if updated:
             # CHECK IF THERE IS ANY UNAPPLIED MIGRATION
@@ -230,26 +230,28 @@ def update(root):
             stdout, err = process.communicate()
             if err:
                 logger.debug('MIGRATIONS CHECK ERROR: ' + str(err))
-                PublishEvent(Severity=5,Text=_("Error checking migrations: " + str(err)),Persistent=True)
+                PublishEvent(Severity=5,Text=_("Error checking migrations: " + str(err)),Persistent=True,Code='MainAPPViews-4')
                 
             migrations= "[ ]" in stdout
              
             if migrations:
                 logger.debug('MIGRATIONS: ' + str(stdout))
-                PublishEvent(Severity=0,Text=_("Updating DB with new migrations. Relax, it may take a while"),Persistent=False)
+                PublishEvent(Severity=0,Text=_("Updating DB with new migrations. Relax, it may take a while"),
+                             Code='MainAPPViews-5',Persistent=False)
                 process = Popen("python src/manage.py migrate", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
                 if not err:
-                    PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False)
+                    PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False,Code='MainAPPViews-6')
                 else:
-                    PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),Persistent=False)
+                    PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),
+                                 Code='MainAPPViews-7',Persistent=False)
                     logger.debug('MIGRATIONS APPLICATION ERROR: ' + str(err))
                     return
                         
-            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False)
+            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
     else:
-        PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False)
+        PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False,Code='MainAPPViews-9')
         
         err = re.search(r"(?P<error>error:[^:]*files\swould\sbe\soverwritten"
                       r"\sby\smerge:(?:\n\t[^\n]+)*)", stderr)
@@ -290,16 +292,17 @@ def update(root):
             if "HEAD is now at" in stdout:
                 #print("\nLocal copy reset to current git branch.")
                 #print("Attemping to run update again...\n")
-                PublishEvent(Severity=0,Text=_("Attemping to run update again..."),Persistent=False)
+                PublishEvent(Severity=0,Text=_("Attemping to run update again..."),Persistent=False,Code='MainAPPViews-10')
             else:
                 #print("Unable to reset local copy to current git branch.")
-                PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False)
+                PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False,Code='MainAPPViews-11')
                 return
 
             update(root)
         else:
             #print("Please make sure that you have a 'git' package installed.")
-            PublishEvent(Severity=5,Text=_("Please make sure that you have a 'git' package installed. Error: ") + str(stderr),Persistent=False)
+            PublishEvent(Severity=5,Text=_("Please make sure that you have a 'git' package installed. Error: ") + str(stderr),
+                         Code='MainAPPViews-12',Persistent=False)
             #print(stderr)
             
 def custom_error500_view(request):

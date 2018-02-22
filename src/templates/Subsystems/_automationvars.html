@@ -3,11 +3,11 @@
 {% load get_at_index %}
 <tr> 
     <td>{{ row.Label }}</td>
-    <td class="hidden-sm hidden-xs">{{ VARs_values|get_at_index:index|get_at_index:0 }}</td>
+    <td class="hidden-sm hidden-xs"><span id="timestamp">{{ VARs_values|get_at_index:index|get_at_index:0 }}</span></td>
     {% if row.Units %}
-   	<td style="text-align: center;">{{ VARs_values|get_at_index:index|get_at_index:1 }} {{ row.Units }}</td>
+   	<td style="text-align: center;"><span id="value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}</td>
    	{% else %}
-   	<td style="text-align: center;">{{ VARs_values|get_at_index:index|get_at_index:1 }}</td>
+   	<td style="text-align: center;"><span id="value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span></td>
    	{% endif %}
    	<td style="text-align: center;">
    	{% if not row.Units %}

@@ -1,6 +1,6 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events as events
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -54,6 +54,6 @@ class PollingScheduler(BackgroundScheduler):
             except:
                 text='Error on scheduler: ' + str(event.exception)
                 logger.info("APS: " + str(event.exception))
-            PublishEvent(Severity=4,Text=text,Persistent=True)
+            PublishEvent(Severity=4,Text=text,Persistent=True,Code='APS100-')
         else:
             pass

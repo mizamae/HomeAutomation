@@ -7,7 +7,7 @@ import datetime
 import sys
 import os
 import json
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save,post_save,post_delete,pre_delete
@@ -494,6 +494,9 @@ class AutomationRules(models.Model):
     def setLastEval(self,value):
         self.LastEval=value
         self.save()
+    
+    def getEventsCode(self):
+        return 'ARULE'+str(self.pk)+'-'
         
     def evaluate(self):
         if self.Active:
@@ -503,9 +506,13 @@ class AutomationRules(models.Model):
                 result=self.PreviousRule.evaluate()
                 evaluableTRUE+=str(result['TRUE']) + ' ' + self.OperatorPrev
                 evaluableFALSE+=str(result['FALSE']) + ' ' + self.switchBOOLOperator(operator=self.OperatorPrev)
-            Items=RuleItems.objects.filter(Rule=self.pk).order_by('Order')
-            if len(Items):
+                errors=[result['ERROR']]
+            else:
                 errors=[]
+            Items=RuleItems.objects.filter(Rule=self.pk).order_by('Order')
+                
+            if len(Items):
+                
                 for item in Items:
                     result=item.evaluate()
                     resultTRUE=result['TRUE']
@@ -519,7 +526,7 @@ class AutomationRules(models.Model):
                             
                     if result['ERROR']!='':
                         text='The evaluation of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)+'. Error: ' + str(result['ERROR'])
-                        PublishEvent(Severity=3,Text=text,Persistent=True)
+                        PublishEvent(Severity=3,Text=text,Persistent=True,Code=self.getEventsCode()+'100')
                         errors.append(result['ERROR'])
                 
                 evaluableTRUE=evaluableTRUE.strip()
@@ -564,14 +571,14 @@ class AutomationRules(models.Model):
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
-            PublishEvent(Severity=0,Text=text)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
             self.setLastEval(value=True)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
-            PublishEvent(Severity=0,Text=text)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'1')
             self.setLastEval(value=False)
     
     @classmethod

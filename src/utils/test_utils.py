@@ -1,4 +1,6 @@
 from os.path import dirname, join, exists
+from .dataMangling import localizeTimestamp
+
 ApacheHTTPpath=r'C:\xampp\htdocs'
 
 def editDict(keys,newValues,Dictionary):

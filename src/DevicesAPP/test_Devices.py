@@ -180,7 +180,7 @@ class DevicesModelTests(TestCase):
         print('    --> Test_OK_on_save test 1.1: Without datagrams defined for devicetype')
         #CHECKED WITHOUT DATAGRAMS DEFINED
         Datagrams.objects.filter(DVT=self.localDVT).delete()
-        newDict=editDict(keys=['DVT','Sampletime','RTsampletime'],newValues=[self.localDVT,600,60],Dictionary=DeviceDict)
+        newDict=editDict(keys=['DVT','Sampletime','RTsampletime','IO'],newValues=[self.localDVT,600,60,self.sensIO],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB() # save creates the registers tables
         DGs=Datagrams.objects.filter(DVT=instance.DVT)
@@ -389,7 +389,7 @@ class DevicesModelTests(TestCase):
         instance.delete()
         
         print('    --> Starts/Stops polling of local device and checks scheduler')
-        newDict=editDict(keys=['DVT',],newValues=[self.localDVT,],Dictionary=DeviceDict)
+        newDict=editDict(keys=['DVT','IO'],newValues=[self.localDVT,self.sensIO],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         instance.store2DB()
         instance.startPolling()
@@ -474,7 +474,8 @@ class DevicesModelTests(TestCase):
         for job in jobs:
             request_callback(DV=instance,DG=job['DG'],jobID=job['id'])
             # checks values from the signal
-            self.assertAlmostEqual(self.signaltimestamp.replace(tzinfo=None),now,delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
+            self.assertAlmostEqual(self.signaltimestamp.replace(tzinfo=None),localizeTimestamp(now).replace(tzinfo=None),
+                                   delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
             if job['DG'].Identifier=='powers':
                 self.assertEqual(self.signalValues,[7,3.25,3.24,3.258])
             else:
@@ -585,7 +586,7 @@ print('####################################')
 print('# TESTING OF DevicesForm FUNCTIONS #')
 print('####################################')
 
-@tag('devices')
+@tag('devicesform')
 class DevicesFormTests(TestCase):
     fixtures=['DevicesAPP.json',]
     remoteDVT=None
@@ -593,6 +594,9 @@ class DevicesFormTests(TestCase):
     memoryDVT=None
           
     def setUp(self):
+        from utils.BBDD import getRegistersDBInstance
+         
+        self.DB=getRegistersDBInstance()
         self.remoteDVT=DeviceTypes.objects.get(pk=1)
         self.localDVT=DeviceTypes.objects.get(pk=2)
         self.memoryDVT=DeviceTypes.objects.get(pk=3)
@@ -606,13 +610,32 @@ class DevicesFormTests(TestCase):
                   
     def test_valid_data(self):
         print('--> test_valid_data test 1.0: The form is valid with good data')
+        # FIRSTLY THE DEVICES TABLES ARE DELETED BECAUSE THEY ARE CREATED WHEN LOADING THE FIXTURE
+        newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
+        instance=Devices(**newDict)
+        instance.save()
+        instance.deleteRegistersTables()
+        instance.delete()
+        
         newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT.pk,],Dictionary=DeviceDict)
         form = DevicesForm(newDict, action='add')
           
         self.assertTrue(form.is_valid())
-        DV = form.save()
+        instance = form.save()
         for key in newDict:
             if key!='DVT':
-                self.assertEqual(getattr(DV,key), newDict[key])
+                if key!='CustomLabels':
+                    self.assertEqual(getattr(instance,key), newDict[key])
             else:
-                self.assertEqual(getattr(DV,key), self.remoteDVT)
+                self.assertEqual(getattr(instance,key), self.remoteDVT)
+        
+        DGs=Datagrams.objects.filter(DVT=instance.DVT)
+        for DG in DGs:
+            table=instance.getRegistersDBTable(DG=DG)
+            exist=self.DB.checkIfTableExist(table=table)
+            self.assertEqual(exist,True)
+            self.assertEqual(self.DB.dropTable(table=table),0)
+            exist=self.DB.checkIfTableExist(table=table)
+            self.assertEqual(exist,False)
+        instance.delete()
+        

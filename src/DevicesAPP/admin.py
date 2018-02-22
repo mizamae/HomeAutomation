@@ -32,11 +32,6 @@ class MainDeviceVarsAdmin(admin.ModelAdmin):
     inlines = [
         SubsystemsInline,
     ]
-    def save_model(self, request, obj, form, change):
-        if not change: # the object is being created
-            obj.store2DB()
-        else:
-            super().save_model(request, obj, form, change)
     
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
@@ -101,7 +96,13 @@ class MainDeviceVarWeeklySchedulesAdmin(admin.ModelAdmin):
         super().save_related(request, form, formsets, change)
         if change:
             form.instance.checkThis()
-      
+    
+    def save_model(self, request, obj, form, change):
+        if not change: # the object is being created
+            obj.store2DB()
+        else:
+            super().save_model(request, obj, form, change)
+            
     def setAsActive(self,request, queryset):
         devices_selected=queryset.count()
         if devices_selected>1:
@@ -123,11 +124,6 @@ class MasterGPIOsAdmin(admin.ModelAdmin):
     inlines = [
         SubsystemsInline,
     ]
-#     def save_model(self, request, obj, form, change):
-#         if not change and obj.Direction!=GPIO_SENSOR: # the object is being created
-#             obj.store2DB()
-#         else:
-#             super().save_model(request, obj, form, change)
 
 class DeviceTypeAdmin(admin.ModelAdmin):
     list_display = ('Code','Description','Connection')

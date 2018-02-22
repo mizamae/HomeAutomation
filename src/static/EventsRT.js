@@ -1,10 +1,12 @@
 // When we're using HTTPS, use WSS too.
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 var socket = new WebSocket(ws_scheme + '://' + window.location.host + "/stream/Events/");
-var webSocketBridge = new channels.WebSocketBridge();
-webSocketBridge.connect(ws_scheme + '://' + window.location.host + "/stream/Events/");
-webSocketBridge.listen();
-        
+var webSocketEventsBridge = new channels.WebSocketBridge();
+webSocketEventsBridge.connect(ws_scheme + '://' + window.location.host + "/stream/Events/");
+webSocketEventsBridge.listen();
+var EVTstable=document.getElementById("eventsTable");
+var EVTstableContainer=document.getElementById("eventsContainer");
+
 $(function()
 {
     checkEventsVisibility();
@@ -12,7 +14,7 @@ $(function()
                 var data = JSON.parse(message.data);
                 showEvent(data)
             };
-    webSocketBridge.demultiplex('Event_critical', function(payload, streamName) 
+    webSocketEventsBridge.demultiplex('Event_critical', function(payload, streamName) 
     {
                 // Handle different actions
                 if (payload.action == "create") 
@@ -30,33 +32,31 @@ $(function()
                 }
     });
     // Helpful debugging
-    socket.addEventListener('open', 
+    webSocketEventsBridge.socket.addEventListener('open', 
         function() { 
             console.log("Connected to notification socket"); 
             label=document.getElementById('RT_status');
-            label.style.color="LimeGreen";
-            label.innerHTML="Connected to Events engine"
+            if (label.innerHTML=="Disconnected from Events engine")
+            {label.innerHTML=='';}
     });
-    socket.addEventListener('close', 
+    webSocketEventsBridge.socket.addEventListener('close', 
         function() { 
             console.log("Disconnected to notification socket"); 
             label=document.getElementById('RT_status');
             label.style.color="Red";
-            label.innerHTML="Disconnected from Events engine"
+            label.innerHTML="Disconnected from Events engine";
     });
 });
 
 function checkEventsVisibility()
 {
-    var table=document.getElementById("eventsTable");
-    var container=document.getElementById("eventsContainer");
-    if (table.rows.length>=2)
+    if (EVTstable.rows.length>=2)
     {
-        container.className=container.className.replace('hidden','');
+        EVTstableContainer.className=EVTstableContainer.className.replace('hidden','');
     }else
     {
-        if (container.className.indexOf("hidden")<0)
-        {container.className=container.className +' hidden';}
+        if (EVTstableContainer.className.indexOf("hidden")<0)
+        {EVTstableContainer.className=EVTstableContainer.className +' hidden';}
     }
     
 }
@@ -64,7 +64,7 @@ function acknowledge(pk,add=null)
 {
     if (pk)
     {
-        webSocketBridge.stream('Event_ack').send({
+        webSocketEventsBridge.stream('Event_ack').send({
             "pk": pk,
             "action": "delete",
             "data": {}
@@ -78,14 +78,12 @@ function acknowledge(pk,add=null)
 }
 function deleteEvent(data)
 {
-    var container=document.getElementById("eventsContainer");
-    container.className=container.className.replace('hidden','');
-    var table=document.getElementById("eventsTable");
+    EVTstableContainer.className=EVTstableContainer.className.replace('hidden','');
     var rownum=-1;
-    for (var i = 0, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = EVTstable.rows[i]; i++) {
         if ((row.cells[2].innerHTML==data.Text))
         {
-            table.deleteRow(i);
+            EVTstable.deleteRow(i);
             break;
         }
     }
@@ -93,11 +91,9 @@ function deleteEvent(data)
 }
 function updateEvent(data)
 {
-    var container=document.getElementById("eventsContainer");
-    container.className=container.className.replace('hidden','');
-    var table=document.getElementById("eventsTable");
+    EVTstableContainer.className=EVTstableContainer.className.replace('hidden','');
     var rownum=-1;
-    for (var i = 0, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = EVTstable.rows[i]; i++) {
         if ((row.cells[2].innerHTML==data.Text))
         {
             rownum=i;
@@ -117,20 +113,20 @@ function showEvent(data)
 {
     if (data.Timestamp)
     {
-        var container=document.getElementById("eventsContainer");
-        container.className=container.className.replace('hidden','');
-        var table=document.getElementById("eventsTable");
-        var row = table.insertRow(-1);
+        EVTstableContainer.className=EVTstableContainer.className.replace('hidden','');
+        var row = EVTstable.insertRow(-1);
         if (data.Severity<2){row.className="alert-narrow alert-info";}
         else if (data.Severity<4){row.className="alert-narrow alert-warning";}
         else {row.className="alert-narrow alert-danger";}
         var cell1 = row.insertCell(0);
+        cell1.className="hidden-sm hidden-xs";
         var cell2 = row.insertCell(1);
+        cell2.className="hidden-sm hidden-xs";
         var cell3 = row.insertCell(2);
         var cell4 = row.insertCell(3);
         var offset = new Date().getTimezoneOffset();
         var d = new Date(data.Timestamp);
-        cell1.innerHTML=d.toLocaleString()
+        cell1.innerHTML=d.toLocaleString();
         row.appendChild(cell1);
         cell2.innerHTML=data.Severity;
         row.appendChild(cell2);
@@ -139,7 +135,7 @@ function showEvent(data)
         var buttonDel=document.createElement('a');
         buttonDel.className="btn btn-default btn-xs";
         buttonDel.role="button";
-        buttonDel.id="delete"+(table.rows.length-1).toString();
+        buttonDel.id="delete"+(EVTstable.rows.length-1).toString();
         buttonDel.addEventListener("click", function(){ acknowledge(data.pk,data.Text); });
         buttonDel.innerHTML="OK";
         cell4.appendChild(buttonDel);

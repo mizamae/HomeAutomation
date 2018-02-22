@@ -5,7 +5,7 @@ import apscheduler.events as events
 
 from MainAPP.constants import REGISTERS_DB_PATH,MANAGEMENT_TASKS_SCHEDULER_URL
 
-from Events.consumers import PublishEvent
+from EventsAPP.consumers import PublishEvent
 
 import logging
 logger = logging.getLogger("project")
@@ -21,7 +21,7 @@ def my_listener(event):
             text='The scheduled task '+event.job_id+' reported an error: ' + str(event.traceback) 
         except:
             text='Error on scheduler: ' + str(event.exception)
-        PublishEvent(Severity=4,Text=text,Persistent=False)
+        PublishEvent(Severity=4,Text=text,Persistent=False,Code='TaskAPS-100')
     else:
         pass
 
@@ -39,7 +39,8 @@ def compactRegistersDB():
     result=compactRegistersDB(year=now.year)
     sizep=result['initial_size']
     size=result['final_size']
-    PublishEvent(Severity=0,Text='The DB size is reduced from ' +str(sizep/1000) + ' to ' + str(size/1000) + ' kB after compactation',Persistent=True)
+    PublishEvent(Severity=0,Text='The DB size is reduced from ' +str(sizep/1000) + ' to ' + str(size/1000) + ' kB after compactation',
+                 Code='Taks-0',Persistent=True)
     
 def start_registersDBcompactingTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
@@ -47,7 +48,7 @@ def start_registersDBcompactingTask():
     id='registerDBcompact'
     scheduler.add_job(func=compactRegistersDB,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-1')
 
 
 def checkReportAvailability():
@@ -72,21 +73,18 @@ def updateWeekDay():
         WeekDay.updateValue(newValue=weekDay,writeDB=True)
     except:
         WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,DataType=DTYPE_INTEGER,Units='',UserEditable=False)
-        WeekDay.UserEditable=False
         WeekDay.store2DB()
+    
       
 def start_DailyTask():
-    #checkReportAvailability()
     id='checkReportAvailability'
     scheduler.add_job(func=checkReportAvailability,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
-    #updateWeekDay()
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-2')
     id='updateWeekDay'
     scheduler.add_job(func=updateWeekDay,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
-
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-3')
 
 def checkCustomCalculations():
     '''THIS TASK IS RUN EVERY HOUR.
@@ -95,7 +93,6 @@ def checkCustomCalculations():
     aCALCs=AdditionalCalculations.objects.all()
     for aCALC in aCALCs:
         if aCALC.checkTrigger():
-            #PublishEvent(Severity=0,Text=str(aCALC)+' evaluated to True',Persistent=True)
             aCALC.calculate()
             
 def HourlyTask():
@@ -112,24 +109,25 @@ def HourlyTask():
         HourDay.updateValue(newValue=hourDay,writeDB=True)
     except:
         HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=DTYPE_INTEGER,Units='H',UserEditable=False)
-        HourDay.UserEditable=False
         HourDay.store2DB()
-    #checkCustomCalculations()
 
 def start_HourlyTask():
     id='HourlyTask'
     scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False)
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-4')
     id='afterBoot'
     scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=1,replace_existing=True)
 
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    from MainAPP.models import AutomationRules
-    AutomationRules.initAll()
+    import DevicesAPP.signal_handlers
+    import MainAPP.signal_handlers
     HourlyTask()
     updateWeekDay()
+    from MainAPP.models import AutomationRules
+    AutomationRules.initAll()
     from DevicesAPP.models import initialize_polling_devices
     initialize_polling_devices()
+    
