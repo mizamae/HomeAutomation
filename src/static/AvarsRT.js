@@ -1,46 +1,27 @@
 // When we're using HTTPS, use WSS too.
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-var webSocketAVARsBridge = new channels.WebSocketBridge();
-webSocketAVARsBridge.connect(ws_scheme + '://' + window.location.host + "/stream/MainAPP/avars/");
-webSocketAVARsBridge.listen();
-
+var Avarsocket = new WebSocket(ws_scheme + '://' + window.location.host + "/stream/MainAPP/avars/");
+var AVARWebSocketBridge = new channels.WebSocketBridge();
+AVARWebSocketBridge.connect(ws_scheme + '://' + window.location.host + "/stream/MainAPP/avars/");
+AVARWebSocketBridge.listen();
 var AVARstableContainer=document.getElementById("avarsContainer");
 var AVARstable=document.getElementById("avarsTable");
 
 $(function()
 {
-    checkEventsVisibility();
-    webSocketAVARsBridge.socket.onmessage = function(message) {
+    checkAvarsVisibility();
+    Avarsocket.onmessage = function(message) {
                 var data = JSON.parse(message.data);
                 updateAvar(data)
             };
-            
-/*    webSocketAVARsBridge.demultiplex('AVAR_values', function(payload, streamName) 
-    {
-                // Handle different actions
-                if (payload.action == "create") 
-                {
-                    showEvent(payload.data)
-                    console.log("New AutomationVars model created : " + payload.data.Text);
-                }
-                if (payload.action == "update")
-                {
-                    updateEvent(payload.data)  
-                }
-                if (payload.action == "delete")
-                {
-                    deleteEvent(payload.data)  
-                }
-    });*/
-    // Helpful debugging
-    webSocketAVARsBridge.socket.addEventListener('open', 
+    AVARWebSocketBridge.socket.addEventListener('open', 
         function() { 
             console.log("Connected to avars socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from avars engine")
             {label.innerHTML=='';}
     });
-    webSocketAVARsBridge.socket.addEventListener('close', 
+    AVARWebSocketBridge.socket.addEventListener('close', 
         function() { 
             console.log("Disconnected to avars socket"); 
             label=document.getElementById('RT_status');
@@ -62,7 +43,16 @@ function checkAvarsVisibility()
     
 }
 
-function deleteAvar(data)
+function toggle_AVAR(pk)
+{
+	AVARWebSocketBridge.stream('AVAR_modify').send({
+        "pk": pk,
+        "action": "toggle",
+        "data": {"data1":'Hello'}
+    });
+}
+
+/*function deleteAvar(data)
 {
     AVARstableContainer.className=AVARstableContainer.className.replace('hidden','');
     var rownum=-1;
@@ -74,7 +64,7 @@ function deleteAvar(data)
         }
     }
     checkEventsVisibility();
-}
+}*/
 function updateAvar(data)
 {
     AVARstableContainer.className=AVARstableContainer.className.replace('hidden','');
@@ -89,9 +79,16 @@ function updateAvar(data)
     if (rownum>=1)
     {
     	var valueSpan=row.querySelector("#value");
-    	if (data.Value>1 || data.Value<-1)
-    	{valueSpan.innerHTML=data.Value.toFixed(1);}
-    	else {valueSpan.innerHTML=data.Value.toFixed(3);}
+    	elements=document.getElementsByName(valueSpan.attributes['name'].nodeValue);
+    	if (data.Type!='digital')
+    	{
+	    	if (data.Value>1 || data.Value<-1)
+	    	{valueSpan.innerHTML=data.Value.toFixed(1);}
+	    	else {valueSpan.innerHTML=data.Value.toFixed(2);}
+    	}else
+		{
+    		valueSpan.innerHTML=data.Value.toFixed(0);
+		}
     	var timeSpan=row.querySelector("#timestamp");
     	var d = new Date(data.Timestamp);
     	timeSpan.innerHTML=d.toLocaleString();
@@ -99,7 +96,7 @@ function updateAvar(data)
     
 }
     
-function showAvar(data)
+/*function showAvar(data)
 {
     if (data.Label)
     {
@@ -130,4 +127,4 @@ function showAvar(data)
         row.appendChild(cell4);
         checkEventsVisibility();
     }
-}
+}*/

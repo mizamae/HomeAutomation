@@ -17,6 +17,8 @@ class Events(models.Model):
             super().save()
         else:
             EVT.Timestamp=self.Timestamp
+            EVT.Text=self.Text
+            EVT.Severity=self.Severity
             EVT.save()
     
     @classmethod
@@ -45,7 +47,7 @@ class EventsBinding(WebsocketBinding):
 
     model = Events
     stream = "Event_critical"
-    fields = ["Timestamp","Severity","Text","IsRead"]
+    fields = ["Timestamp","Severity","Text","Code"]
 
     @classmethod
     def group_names(cls, *args, **kwargs):

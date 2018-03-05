@@ -43,7 +43,10 @@ def ws_disconnect_avar(message):
     
 class avar_update(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
-        pass
+        from .models import AutomationVariables
+        pk=content['pk']
+        AVAR=AutomationVariables.objects.get(pk=pk)
+        AVAR.toggle()
         
     @classmethod
     def group_names(cls, *args, **kwargs):
@@ -52,6 +55,7 @@ class avar_update(JsonWebsocketConsumer):
    
 class AVAR_consumers(WebsocketDemultiplexer):
     consumers = {
+        'AVAR_modify':avar_update,
         }
 
     def connection_groups(self):

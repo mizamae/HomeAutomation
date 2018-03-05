@@ -11,7 +11,7 @@
 	{% endif %}
 	{% if perms.DevicesAPP.change_state_mastergpios and row.Direction == 0 %}
 	<td style="text-align: center;">
-		<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:toggle' 'mastergpios' row.pk %}" role="button">
+		<a class="btn btn-link" style="width:25%;" onclick="toggle_GPIO({{ row.Pin }})" role="button"> <!-- href="{% url 'Devices:toggle' 'mastergpios' row.pk %}" -->
 			{% if row.Value == 0 %}
 			<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
 			{% else %}

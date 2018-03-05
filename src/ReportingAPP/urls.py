@@ -13,5 +13,5 @@ urlpatterns = [
     url(r'^view/(?P<model>.+)/(?P<pk>.+)/$',views.view, name='view'),
     url(r'^preview/(?P<title>.+)/$',views.preview, name='preview'),
     url(r'^delete/(?P<model>.+)/(?P<pk>.+)/$',views.delete, name='delete'),
-    #url(r'^modify/(?P<model>.+)/(?P<pk>.+)/$',views.edit, name='edit'),
+    url(r'^modify/(?P<model>.+)/(?P<pk>.+)/$',views.edit, name='edit'),
     ]

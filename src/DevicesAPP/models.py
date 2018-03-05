@@ -40,6 +40,53 @@ from blaze.tests.test_sql import sql
 
 logger = logging.getLogger("project")
 
+def getAllVariables():
+
+    info=[]
+    DVs=Devices.objects.all()
+    IOs=MasterGPIOs.objects.all()
+    MainVars=MainDeviceVars.objects.all()
+    tempvars=[]
+    device='MainGPIOs'
+    if len(IOs)>0:
+        for IO in IOs:
+            if IO.Direction==GPIO_INPUT or IO.Direction==GPIO_OUTPUT:
+                table=IO.getRegistersDBTable()
+                tempvars.append({'device':device,'table':table,'tag':IO.getRegistersDBTag(),
+                                'label':[IO.Label,],'extrapolate':0,'type':'digital','plottype':'line'})# this is to tell the template that it is a boolean value
+                                
+        info.append({'deviceName':device,'variables':tempvars})
+    tempvars=[]
+    device='MainVars'
+    if len(MainVars)>0:
+        for VAR in MainVars:
+            table=VAR.getRegistersDBTable()
+            if VAR.DataType!=DTYPE_DIGITAL:
+                tempvars.append({'device':device,'table':table,'tag':VAR.getRegistersDBTag(),
+                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog','plottype':VAR.PlotType})
+            else:
+                tempvars.append({'device':device,'table':table,'tag':VAR.getRegistersDBTag(),
+                            'label':[VAR.Label,],'extrapolate':0,'type':'digital','plottype':VAR.PlotType})
+                                
+        info.append({'deviceName':device,'variables':tempvars})
+        
+    for DV in DVs:
+        DGs=Datagrams.objects.filter(DVT=DV.DVT)
+        tempvars=[]
+        vars=DV.getDeviceVariables()
+        for var in vars:
+            if (var['label'].lower()!='spare') and (var['label'].lower()!='timestamp'):
+                varinfo=Datagrams.getInfoFromItemName(name=var['name'])
+                ITM=DatagramItems.objects.get(pk=varinfo['itempk'])
+                if var['bit']!=None:    # its a digital variable
+                    tempvars.append({'device':DV.Name,'table':var['table'],'tag':var['name'],'type':'digital','label':var['label'],
+                                'plottype':ITM.PlotType,'extrapolate':0})
+                else:
+                    tempvars.append({'device':DV.Name,'table':var['table'],'tag':var['name'],'type':'analog','label':var['label'],
+                                'plottype':ITM.PlotType,'extrapolate':0})
+                    
+        info.append({'deviceName':DV.Name,'variables':tempvars})
+    return info
 
 class MainDeviceVars(models.Model):
     
@@ -118,14 +165,16 @@ class MainDeviceVars(models.Model):
                 PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0')
                 self.Value=newValue
                 self.save(update_fields=['Value'])
-                SignalVariableValueUpdated.send(sender=None, timestamp=now,
-                                                            Tags=[self.getRegistersDBTag(),],
-                                                            Values=[newValue,])
+                
             if writeDB :
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now)
                 else:
                     self.insertRegister(TimeStamp=timestamp)
+            
+            SignalVariableValueUpdated.send(sender=None, timestamp=now,
+                                                            Tags=[self.getRegistersDBTag(),],
+                                                            Values=[newValue,],Types=[self.DataType,])
     
     def getEventsCode(self):
         return 'VAR'+str(self.pk)+'-'
@@ -621,9 +670,6 @@ class MasterGPIOs(models.Model):
                 PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0')
                 self.Value=newValue
                 self.save(update_fields=['Value'])
-                SignalVariableValueUpdated.send(sender=None, timestamp=now,
-                                                            Tags=[self.getRegistersDBTag(),],
-                                                            Values=[newValue,])
             
             if writeDB :
                 if timestamp==None:
@@ -637,6 +683,10 @@ class MasterGPIOs(models.Model):
                     GPIO.output(int(self.Pin),GPIO.HIGH)
                 elif self.Value==0:
                     GPIO.output(int(self.Pin),GPIO.LOW)
+            
+            SignalVariableValueUpdated.send(sender=None, timestamp=now,
+                                                            Tags=[self.getRegistersDBTag(),],
+                                                            Values=[newValue,],Types=[DTYPE_DIGITAL,])
                 
     def getRegistersDBTable(self):
         if self.Direction==GPIO_INPUT:
@@ -1077,32 +1127,32 @@ class Devices(models.Model):
                     DG=job['DG']
                     start_date=now+datetime.timedelta(seconds=i*offset+self.Sampletime/2)
                     JOB=scheduler.getJobInStore(jobId=id)
-                    if JOB==None:     
-                        callback="DevicesAPP.models:request_callback"
-                        if self.DVT.Connection==LOCAL_CONNECTION: 
-                            kwargs={'datagramId':DG.Identifier}
-                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
-                                              replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
-                        elif self.DVT.Connection==REMOTE_TCP_CONNECTION:   
-                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
-                                              replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
-                        elif self.DVT.Connection==MEMORY_CONNECTION:
-                            kwargs={'datagramId':DG.Identifier}
-                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
-                                              replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
-                        JOB=scheduler.getJobInStore(jobId=id)
-                        if JOB!=None: 
-                            text=str(_('Polling for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
-                            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
-                        else:
-                            PublishEvent(Severity=4,
-                                         Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.Name+' could not be started' ,
-                                         Code=self.getEventsCode()+'100',Persistent=True)
-                            self.State=STOPPED_STATE
-                            self.save()
+                    
+                    if JOB!=None:
+                        scheduler.remove_job(id)
+                        
+                    callback="DevicesAPP.models:request_callback"
+                    if self.DVT.Connection==LOCAL_CONNECTION: 
+                        kwargs={'datagramId':DG.Identifier}
+                        scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
+                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                    elif self.DVT.Connection==REMOTE_TCP_CONNECTION:   
+                        scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
+                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                    elif self.DVT.Connection==MEMORY_CONNECTION:
+                        kwargs={'datagramId':DG.Identifier}
+                        scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
+                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                    JOB=scheduler.getJobInStore(jobId=id)
+                    if JOB!=None: 
+                        text=str(_('Polling for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
+                        PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
                     else:
-                        PublishEvent(Severity=0,Text='Requests '+id+ ' already was in the scheduler. ' + str(_('Next request at ') + str(JOB.next_run_time)),
-                                     Code=self.getEventsCode()+'10',Persistent=True)
+                        PublishEvent(Severity=4,
+                                     Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.Name+' could not be started' ,
+                                     Code=self.getEventsCode()+'100',Persistent=True)
+                        self.State=STOPPED_STATE
+                        self.save()
             else:        
                 self.State=STOPPED_STATE
                 self.save()
@@ -1577,13 +1627,12 @@ class Devices(models.Model):
             raise DevicesAppException("Unexpected error in insert_device_register:" + str(sys.exc_info()[1]))
             
     def sendUpdateSignals(self,DG_id,values):
-        from utils.dataMangling import localizeTimestamp
         DG=Datagrams.objects.get(Identifier=DG_id)
         datagram=DG.getStructure()
-        timestamp=localizeTimestamp(values[0])
+        timestamp=values[0]
         SignalVariableValueUpdated.send(sender=None, timestamp=timestamp,
                                                     Tags=datagram['names'],
-                                                    Values=values[1:])
+                                                    Values=values[1:],Types=datagram['datatypes'])
         
     def requestDatagram(self,DatagramId,timeout=1,writeToDB=True,resetOrder=True,retries=1):
         """

@@ -11,6 +11,11 @@ from django.forms import ModelForm
 from django.urls import reverse
 
 from . import models
+from .constants import APP_TEMPLATE_NAMESPACE
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.bootstrap import FormActions,AppendedText
+from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
 
 FORMS_LABEL_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
 FORMS_FIELD_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
@@ -32,11 +37,31 @@ class ReportsForm(ModelForm):
         self.fields['Periodicity'].label = _('Set the periodicity')
         self.fields['DataAggregation'].label = _('Set the aggregation of the data')
         
+        buttons=FormActions(
+                    #Submit('edit', _('Save changes')),
+                    HTML('<a id="submit-id-edit" onclick="SaveReport();" class="btn btn-primary">'+str(_('Save'))+'</a>'),
+                    HTML('<a href="{% url "'+APP_TEMPLATE_NAMESPACE+':home" %}" class="btn btn-secondary">'+str(_('Cancel'))+'</a>')
+                )
+        
+        for field in self.fields:
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
+            else:
+                self.fields[field].widget.attrs.update({'class':'input-sm '})
+                
         self.helper.layout = Layout(
-            Field('Title', css_class='input-sm'),
-            Field('Periodicity', css_class='input-sm'),
-            Field('DataAggregation', css_class='input-sm'),
+            Field('Title'),
+            Field('Periodicity'),
+            Field('DataAggregation'),
+            buttons
             )
+    
+    def save(self):
+        instance=super().save(commit=False)
+        instance.store2DB()
+        return instance
         
     def clean(self):
         cleaned_data=super().clean() # to use the validation of the fields from the model

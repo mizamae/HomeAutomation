@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views import generic
 
+import json
 import logging
 logger = logging.getLogger("project")
 
@@ -49,11 +50,10 @@ def checkUserPermissions(request,action,model):
     else:
         return True
     
-def add(request,number=0):
+def add(request,model):
     
-    applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH) 
-    form_data={'ReportTitle':'','Periodicity':2,'DataAggregation':0}
-    form=forms.ReportForm(form_data)  
+    #form_data={'Title':'','Periodicity':2,'DataAggregation':0}
+    form=forms.ReportsForm()  
     if request.method == 'POST':
         json_data=request.body.decode('utf-8')
         #logger.info('Received the post! - '+ json_data)
@@ -64,21 +64,20 @@ def add(request,number=0):
         DataAggregation=data[0]['DataAggregation']
         ReportContentJSON=json_data
         #logger.debug('Report content: ' + ReportContentJSON)             
-        form_data={'ReportTitle':ReportTitle,'Periodicity':Periodicity,'DataAggregation':DataAggregation,'ReportContentJSON':ReportContentJSON}
-        form=DevicesAPP.forms.ReportForm(form_data)
+        form_data={'Title':ReportTitle,'Periodicity':Periodicity,'DataAggregation':DataAggregation,'ContentJSON':ReportContentJSON}
+        form=forms.ReportsForm(form_data)
         #logger.info('Trying to create a report with the title ' + ReportTitle) 
         if form.is_valid(): 
-            #logger.info('Form is valid!')
-            REP=DevicesAPP.models.ReportModel.objects.create_Report(ReportTitle=ReportTitle,Periodicity=Periodicity,DataAggregation=DataAggregation,ReportContentJSON=ReportContentJSON)
-            
-            #applicationDBs.devicesDB.insert_row(SQL_statement=applicationDBs.devicesDB.SQLinsertReport_statement,row_values=(ReportTitle,ReportCode,ReportContentJSON))
+            RPT=models.Reports(**form_data)
+            RPT.store2DB()
+            #form.save()
             return HttpResponse(json.dumps({'Confirmation': 'OK'})) 
         else:
             logger.error('Form error ' + str(form.errors))
             return HttpResponse(json.dumps({'Error': form.errors})) 
     else:
+        import DevicesAPP.models
         info=DevicesAPP.models.getAllVariables()
-        #logger.debug(info)       
         return render(request, APP_TEMPLATE_NAMESPACE+'/reportconfigurator.html', {'Form':form,
                                                                                    'data': json.dumps(info)})    
     
@@ -144,4 +143,7 @@ def viewList(request,model):
             return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
 
 def delete(request,model,pk):
+    return HttpResponseNotFound('<h1>No Page Here</h1>')
+
+def edit(request,model,pk):
     return HttpResponseNotFound('<h1>No Page Here</h1>')

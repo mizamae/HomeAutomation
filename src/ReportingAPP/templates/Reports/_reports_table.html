@@ -25,7 +25,7 @@
         {% else %}
         <tr id="{{ tableId }}TableNoDevices" ><td colspan=5>{{ message_norows }}</td></tr>
         {% endif %} 
-		{% for item in RPs %}
+		{% for item in rows %}
 			{% include "Reports/_report.html" %}
 		{% endfor %}
 		</tbody>

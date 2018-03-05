@@ -9,10 +9,10 @@
   	<link rel="stylesheet" type="text/css" href="{% static 'site/css/multi-select.css' %}">
 <!--   	<link rel="stylesheet" type="text/css" href="{% static 'site/css/context.standalone.css' %}"> -->
     <style>
-    	.base{
-    	margin-left:2%;
-    	margin-top:3em;
-    	}
+    	.container{
+    	position:relative;
+    	top:3em;
+    }
 	    .row,.row-graph{
 	    	
 	    	height: 50%;
@@ -26,59 +26,42 @@
 	    }
     </style>   
     
-  {% endblock extrahead %}
-  {% block container %}
-
-
-  <div id="base" class='base'>
-  	<div class='row'>
-  		<form method="POST" id="post-form" class="ReportForm" action="{% url 'repbuilder' 0 %}"> <!--    -->
-		    {% csrf_token %}
-		    <input id='submit' disabled=true type="submit" class="btn btn-primary" value= {% trans "SAVE REPORT" %} />
-		    <a class="btn btn-primary" href="{% url 'home' %}"  role="button">{% trans "Return to Main " %} &raquo;</a>
-		    <a id='new_report'  class="btn btn-primary" href="{% url 'repbuilder' 0 %}"  role="button" style="visibility:hidden;">{% trans "Configure new report " %} &raquo;</a></p>
-		    <div id="results">
-	            <div id='error_print' class="alert alert-danger" style="display : none;"></div>
-	            <div id='info_print' class="alert alert-info" style="display : none;"></div>
-	 		</div> <!-- errors go here -->
-	 		<!-- {% for field in Form %}
-			    <div id='fieldWrapper{{ forloop.counter }}' class="fieldWrapper">
-			        <h3>{{ field.label }} {{ field }} {{ field.help_text }}</h3>
-			    </div>
-			{% endfor %} -->
-            <div id="formFields"> 
-            {% crispy Form %}
-            </div>
-		</form>
-<!--   	  	<h3>{% trans "Title for the report " %}<input id="report_title"	value="Title for report"	style="text-align:center;"/></h3> -->
-	 </div>
-<!-- 	 <a class="btn btn-primary" role="button" style='margin-top:5em;' onclick="AddChart();">Add new chart &raquo;</a> -->
-	 
-	 	
-  </div>
-  
-  <script src="{% static 'site/js/jquery.multi-select.js' %}"></script>
-  
-  {% endblock container %}
-  
-  {% block scripts %}
-  <script type="text/javascript">
-  	
-  	
-  	var djangoData,numCharts=0,variablesToPlot=[];// this is an array with as many items [1st dim] as graphs configured and as many items in the 2nd dim as variables
-  	
-    function onload_func()
-    {
-    	djangoData = JSON.parse('{{ data|safe }}');
-    	if (djangoData.confirmation=='OK')
-    	{
-    		
-    	}
-    	else
-    	{   
+{% endblock extrahead %}
+{% block container %}
+<div id="base" class='container'>
+	<div id="results">
+		<div id='error_print' class="alert alert-danger" style="display : none;"></div>
+		<div id='info_print' class="alert alert-info" style="display : none;"></div>
+	</div>
+	<div id='formFields' class='row'>
+	{% crispy Form %}
+	</div>
+</div>
+<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+	{% include "_back.html" with back_to='home' %}
+</div>
+<script src="{% static 'site/js/jquery.multi-select.js' %}"></script>
+{% endblock container %}
+{% block scripts %}
+<script>
+$(document).ready(function() {
+		$('.has-popover').popover({'trigger':'hover'});
+});
+</script>
+<script type="text/javascript">
+	var djangoData,numCharts=0,variablesToPlot=[];// this is an array with as many items [1st dim] as graphs configured and as many items in the 2nd dim as variables
+	function onload_func()
+	{
+		djangoData = JSON.parse('{{ data|safe }}');
+		if (djangoData.confirmation=='OK')
+		{
+			
+		}
+		else
+		{
     		var base=document.getElementById('base');
     		var addChart = document.createElement('a');
-    		addChart.className = "btn btn-primary";
+    		addChart.className = "btn btn-success";
     		addChart.role="button";
     		addChart.id="addChart";
     		addChart.style='margin-top:5em;'
@@ -87,10 +70,7 @@
     		$('#addChart').bind('click', AddChart);
     		create_chart_html();
     		add_multiselect('#var-options1');
-    		var error_print=document.getElementById('error_print');
-    		error_print.style.visibility='hidden';
-    		var field=document.getElementById('fieldWrapper1');
-    		field.style.display='block';
+    		$('#submit-id-edit').prop( "disabled", true );
     	}    	
     }
     function create_chart_html()
@@ -105,7 +85,7 @@
     	base.appendChild(DivRow)
     	// the col div
     	var DivCol = document.createElement('div');
-    	DivCol.className = "col-sm-12 col-lg-6";
+    	DivCol.className = "col-sm-12 col-lg-12";
     	DivRow.appendChild(DivCol);
     	// the h2 title
     	var h2 = document.createElement('h2'); 
@@ -162,10 +142,7 @@
     	var titles_input=document.getElementsByClassName('chart_title_input');	
     	var multiple_select=document.getElementsByClassName('multiple_select');
     	var multiple_select_container=document.getElementsByClassName('ms-container');
-    	
-    	
-    	
-    	
+
     	var i=0;
     	for (i=0;i<titles_label.length;i++)
     	{
@@ -192,7 +169,7 @@
       				var num=parseInt(ID.replace('var-options',''));
 	      			variablesToPlot[num].push({'device':values.device,'table':values.table,'name':values.tag,'bitPos':values.bitPos,
 	      										'label':values.label,'extrapolate':values.extrapolate,'type':values.type,'plottype':values.plottype});
-	      			$('#submit').prop( "disabled", false );
+	      			$('#submit-id-edit').prop( "disabled", false );
 	    		    }
     			,
     		  afterDeselect: function(values){// to delete the variable from the graph
@@ -213,9 +190,9 @@
 	    			for (i=1;i<variablesToPlot.length;i++)
 	    			{
 	    				if (variablesToPlot[i].length>0){
-	    					$('#submit').prop( "disabled", false );break;
+	    					$('#submit-id-edit').prop( "disabled", false );break;
 	    				}
-	    				else{$('#submit').prop( "disabled", true );}
+	    				else{$('#submit-id-edit').prop( "disabled", true );}
 	    			}
     		 	}
       	});
@@ -289,14 +266,14 @@
     			json[i].splice(0,0,{'chart_title':title});//inserts it in the first pos	
     		}
 		}
-    	title=document.getElementById('id_ReportTitle').value;
+    	title=document.getElementById('id_Title').value;
         periodicity=document.getElementById('id_Periodicity').value;
         aggregation=document.getElementById('id_DataAggregation').value;
     	json[0]={'report_title':title,'Periodicity':periodicity,'DataAggregation':aggregation};
     	json=JSON.stringify(json);
     	console.log(json);
     	$.ajax({
-    		"url": "{% url 'repbuilder' 0 %}",
+    		"url": "{% url 'Reports:add' 'report' %}",
     	    "type": "post",
     	    "data": json, //Data that we prepared previously,
     	    "dataType": "html",
@@ -313,9 +290,7 @@
     	    		info_print.innerHTML='Report saved OK';
     	    		info_print.style.display='block';
     	    		info_print.style.visibility='visible';
-    	    		var new_report=document.getElementById('new_report');
-    	    		new_report.style.visibility='visible';
-    	    		var submitbtn=document.getElementById('submit');
+    	    		var submitbtn=document.getElementById('submit-id-edit');
     	    		submitbtn.disabled=true;
     	    		var addChartbtn=document.getElementById('addChart');
     	    		addChartbtn.style.display='none';	
@@ -335,7 +310,7 @@
     	    		var error_print=document.getElementById('error_print');
     	    		error_print.style.display='block';
     	    		error_print.style.visibility='visible';
-    	    		error_print.innerHTML=response.Error.ReportTitle.toString();
+    	    		error_print.innerHTML=response.Error.Title.toString();
     	    		
     	    	}
     	        //document.write(ret);

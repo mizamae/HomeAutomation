@@ -496,7 +496,7 @@ class AutomationRules(models.Model):
         self.save()
     
     def getEventsCode(self):
-        return 'ARULE'+str(self.pk)+'-'
+        return 'ARULE'+str(self.pk)
         
     def evaluate(self):
         if self.Active:
@@ -526,7 +526,7 @@ class AutomationRules(models.Model):
                             
                     if result['ERROR']!='':
                         text='The evaluation of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)+'. Error: ' + str(result['ERROR'])
-                        PublishEvent(Severity=3,Text=text,Persistent=True,Code=self.getEventsCode()+'100')
+                        PublishEvent(Severity=3,Text=text,Persistent=True,Code=self.getEventsCode())
                         errors.append(result['ERROR'])
                 
                 evaluableTRUE=evaluableTRUE.strip()
@@ -571,14 +571,16 @@ class AutomationRules(models.Model):
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
-            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
+            if result['ERROR']==[]:
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
             self.setLastEval(value=True)
         elif resultFALSE==True:
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
-            PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
+            if result['ERROR']==[]:
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
             self.setLastEval(value=False)
     
     @classmethod

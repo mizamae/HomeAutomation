@@ -67,7 +67,7 @@ def heating(request):
         from django.contrib.messages import get_messages
         storage = get_messages(request)
         accordion1=False
-        accordion2=False
+        accordion2=True
         accordion3=False
         accordion4=False
         for message in storage:

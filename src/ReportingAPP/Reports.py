@@ -108,10 +108,10 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             
             variable=col['name']
             table=col['table']
-            if aggregation!=0 and extrapolate!='keepPrevious':
+            if aggregation!=0 and extrapolate!=0:
                 firstRow.append(0)
             else:
-                if extrapolate=='keepPrevious':
+                if extrapolate==0:
                     sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND "'+variable +'" not null ORDER BY timestamp DESC LIMIT 1'
                     row=AppDB.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
                     if row != None:
@@ -182,7 +182,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             if not df.empty:
                 # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
                 df_resampled=df.resample('1T').mean()
-                if extrapolate=='keepPrevious':
+                if extrapolate==0:
                     df_interpolated=df_resampled.interpolate(method='zero')
                 else:
                     df_interpolated=df_resampled.interpolate(method='linear')

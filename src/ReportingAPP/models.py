@@ -20,6 +20,10 @@ class Reports(models.Model):
     DataAggregation= models.PositiveSmallIntegerField(help_text=_('Data directly from the DB or averaged over a period'),choices=AGGREGATION_CHOICES)
     ContentJSON=models.CharField(help_text='Content of the report in JSON format', max_length=20000)
     
+    def store2DB(self):
+        self.full_clean()
+        super().save()
+        
     def checkTrigger(self):
         import datetime
         now=datetime.datetime.now()

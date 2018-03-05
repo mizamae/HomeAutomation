@@ -5,13 +5,13 @@
     <td>{{ row.Label }}</td>
     <td class="hidden-sm hidden-xs"><span id="timestamp">{{ VARs_values|get_at_index:index|get_at_index:0 }}</span></td>
     {% if row.Units %}
-   	<td style="text-align: center;"><span id="value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}</td>
+   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}</td>
    	{% else %}
-   	<td style="text-align: center;"><span id="value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span></td>
+   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span></td>
    	{% endif %}
    	<td style="text-align: center;">
    	{% if not row.Units %}
-   		<a class="btn btn-link" style="width:25%;" href="{% url 'toggle' 'automationvars' row.pk %}" role="button">
+   		<a class="btn btn-link" style="width:25%;" onclick="toggle_AVAR({{ row.pk }})" role="button"> <!--  href="{% url 'toggle' 'automationvars' row.pk %}" -->
 			{% if VARs_values|get_at_index:index|get_at_index:1 == 0 %}
 			<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
 			{% else %}
