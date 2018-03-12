@@ -1153,6 +1153,7 @@ class Devices(models.Model):
                                      Code=self.getEventsCode()+'100',Persistent=True)
                         self.State=STOPPED_STATE
                         self.save()
+                scheduler.wakeup()
             else:        
                 self.State=STOPPED_STATE
                 self.save()
