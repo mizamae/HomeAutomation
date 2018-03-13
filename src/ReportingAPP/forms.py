@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.views import generic
-from django.forms import ModelForm
+from django.forms import ModelForm,HiddenInput
 from django.urls import reverse
 
 from . import models
@@ -36,6 +36,7 @@ class ReportsForm(ModelForm):
         self.fields['Title'].label = _('Title of the report')
         self.fields['Periodicity'].label = _('Set the periodicity')
         self.fields['DataAggregation'].label = _('Set the aggregation of the data')
+        self.fields['ContentJSON'].widget = HiddenInput()
         
         buttons=FormActions(
                     #Submit('edit', _('Save changes')),
@@ -74,5 +75,5 @@ class ReportsForm(ModelForm):
         
     class Meta:
         model = models.Reports
-        fields=['Title','Periodicity','DataAggregation']
+        fields=['Title','Periodicity','DataAggregation','ContentJSON']
         

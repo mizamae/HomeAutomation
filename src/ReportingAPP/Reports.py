@@ -7,15 +7,15 @@ from tzlocal import get_localzone
 from django.utils import timezone
 import datetime
 import utils.BBDD
-from HomeAutomation.constants import REGISTERS_DB_PATH
-import DevicesAPP.models
-
+from MainAPP.constants import REGISTERS_DB_PATH,JS_MONTHS_OFFSET
+from . import models
+from utils.BBDD import getRegistersDBInstance
 logger = logging.getLogger("project")
 
-def get_report(reporttitle,fromDate,toDate,aggregation):
-    AppDB=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH)
-    Report=DevicesAPP.models.ReportModel.objects.get(ReportTitle=reporttitle)
-    jsonData=Report.ReportContentJSON.replace("'",'')
+def get_report(title,fromDate,toDate,aggregation):
+    DB=getRegistersDBInstance()
+    Report=models.Reports.objects.get(Title=title)
+    jsonData=Report.ContentJSON.replace("'",'')
     #Reports.print('JSON downloaded '+jsonData) 
     data = json.loads(jsonData)
     #print('JSON parsed '+str(data)) 
@@ -94,7 +94,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
         localdate = fromDate
         localdate=localdate+localdate.utcoffset()
         
-        fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-DevicesAPP.GlobalVars.daysmonths_offset)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(localdate.second)+')'}
+        fecha={'v':'Date('+str(localdate.year)+','+str(localdate.month-JS_MONTHS_OFFSET)+','+str(localdate.day)+','+str(localdate.hour)+','+str(localdate.minute)+','+str(localdate.second)+')'}
         #tempX.append(localdate)
         #tempX2.append(fecha)
         
@@ -113,8 +113,9 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
             else:
                 if extrapolate==0:
                     sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND "'+variable +'" not null ORDER BY timestamp DESC LIMIT 1'
-                    row=AppDB.registersDB.retrieve_from_table(sql=sql,single=True,values=(None,))
-                    if row != None:
+                    row=DB.executeTransaction(SQLstatement=sql,arg=[])
+                    if row != []:
+                        row=row[0]
                         firstRow.append(row[1])
                     else:
                         firstRow.append(None)
@@ -149,7 +150,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
 
             sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" AND "'+variable +'" not null ORDER BY timestamp ASC LIMIT ' + str(limit)
             
-            df=pd.read_sql_query(sql=sql,con=AppDB.registersDB.conn,index_col='timestamp')
+            df=pd.read_sql_query(sql=sql,con=DB.getConn(),index_col='timestamp')
             
             if not df.empty:
                 
@@ -170,7 +171,7 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                     df=pd.concat([df,pd.DataFrame(new_row)], ignore_index=False)
             else:
                 sql='SELECT timestamp,"'+variable+'" FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND "'+variable +'" not null ORDER BY timestamp DESC LIMIT 1'
-                df=pd.read_sql_query(sql=sql,con=AppDB.registersDB.conn,index_col='timestamp')
+                df=pd.read_sql_query(sql=sql,con=DB.getConn(),index_col='timestamp')
                 if not df.empty:
                     values=np.concatenate([df.values,df.values])
                     ts_ini = pd.to_datetime(dateIni.replace(tzinfo=None))
@@ -196,9 +197,9 @@ def get_report(reporttitle,fromDate,toDate,aggregation):
                     tempStats['max'][columnNumber]=resultDF[variable].max()
                     tempStats['min'][columnNumber]=resultDF[variable].min()
                 else:
-                    from HomeAutomation.models import AdditionalCalculationsModel
+                    from MainAPP.models import AdditionalCalculations
                     kk=pd.DataFrame(resultDF[variable])
-                    CALC=AdditionalCalculationsModel(df=kk,key=variable)
+                    CALC=AdditionalCalculations(df=kk,key=variable)
                     tempStats['mean'][columnNumber]=None
                     tempStats['on_time'][columnNumber]=CALC.duty(level=True,absoluteValue=True)
                     tempStats['off_time'][columnNumber]=CALC.duty(level=False,absoluteValue=True)

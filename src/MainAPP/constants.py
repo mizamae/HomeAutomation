@@ -30,6 +30,8 @@ AUTOMATION_ACTION_CHOICES=(
         ('z',_('None')),
     )
 
+JS_MONTHS_OFFSET=1 # offset to substact to refer months to javascript (zero-based)
+
 SUBSYSTEM_HEATING=0
 SUBSYSTEM_GARDEN=1
 SUBSYSTEM_ALARM=2

@@ -55,22 +55,9 @@ def add(request,model):
     #form_data={'Title':'','Periodicity':2,'DataAggregation':0}
     form=forms.ReportsForm()  
     if request.method == 'POST':
-        json_data=request.body.decode('utf-8')
-        #logger.info('Received the post! - '+ json_data)
-        data = json.loads(json_data)
-        #logger.info('JSON loaded OK')
-        ReportTitle=str(data[0]['report_title'])
-        Periodicity=data[0]['Periodicity']
-        DataAggregation=data[0]['DataAggregation']
-        ReportContentJSON=json_data
-        #logger.debug('Report content: ' + ReportContentJSON)             
-        form_data={'Title':ReportTitle,'Periodicity':Periodicity,'DataAggregation':DataAggregation,'ContentJSON':ReportContentJSON}
-        form=forms.ReportsForm(form_data)
-        #logger.info('Trying to create a report with the title ' + ReportTitle) 
+        form=models.Reports.getFormFromRequest(request_body=request.body)
         if form.is_valid(): 
-            RPT=models.Reports(**form_data)
-            RPT.store2DB()
-            #form.save()
+            RPT=form.save()
             return HttpResponse(json.dumps({'Confirmation': 'OK'})) 
         else:
             logger.error('Form error ' + str(form.errors))

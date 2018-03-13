@@ -11,6 +11,7 @@ from django.db.models.signals import m2m_changed
 from .constants import DAILY_PERIODICITY,WEEKLY_PERIODICITY,MONTHLY_PERIODICITY,PERIODICITY_CHOICES, \
                         NO_AGGREGATION,HOURLY_AGGREGATION,DAILY_AGGREGATION,MONTHLY_AGGREGATION,AGGREGATION_CHOICES
 
+import json
 
         
 class Reports(models.Model):
@@ -36,8 +37,21 @@ class Reports(models.Model):
                 return True
         return False
     
+    @staticmethod
+    def getFormFromRequest(request_body):
+        from . import forms
+        json_data=request_body.decode('utf-8')
+        data = json.loads(json_data)
+        ReportTitle=str(data[0]['report_title'])
+        Periodicity=data[0]['Periodicity']
+        DataAggregation=data[0]['DataAggregation']
+        ReportContentJSON=json_data
+        form_data={'Title':ReportTitle,'Periodicity':Periodicity,'DataAggregation':DataAggregation,'ContentJSON':ReportContentJSON}
+        form=forms.ReportsForm(form_data)
+        return form
+        
     def getReportData(self,toDate=None):
-        from DevicesAPP.Reports import get_report
+        from .Reports import get_report
         import datetime
         if self.Periodicity==DAILY_PERIODICITY: # daily report
             offset=datetime.timedelta(hours=24)
@@ -54,7 +68,7 @@ class Reports(models.Model):
             toDate=timezone.now() 
         fromDate=toDate-offset
         toDate=toDate-datetime.timedelta(minutes=1)
-        reportData=get_report(reporttitle=self.ReportTitle,fromDate=fromDate,toDate=toDate,aggregation=self.DataAggregation)
+        reportData=get_report(title=self.Title,fromDate=fromDate,toDate=toDate,aggregation=self.DataAggregation)
         return reportData,fromDate,toDate
         #reportData= {'reportTitle': 'Prueba1', 'fromDate': datetime.datetime(2017, 8, 30, 9, 14, 38), 'toDate': datetime.datetime(2017, 8, 31, 2, 0), 
         # 'charts': [{'chart_title': 'Temperatura', 'cols': [{'table': 'Ambiente en salon_data', 'name': 'Temperature_degC', 'label': 'Temperature_degC', 'type': 'number', 'bitPos': None}, {'table': 'Ambiente en salon_data', 'name': 'Heat Index_degC', 'label': 'Heat Index_degC', 'type': 'number', 'bitPos': None}], 'rows': {'x_axis': [{'v': 'Date(2017,7,30,9,30,0)'}, {'v': 'Date(2017,7,30,10,30,0)'}, {'v': 'Date(2017,7,30,11,30,0)'}, {'v': 'Date(2017,7,30,12,30,0)'}, {'v': 'Date(2017,7,30,13,30,0)'}, {'v': 'Date(2017,7,30,14,30,0)'}, {'v': 'Date(2017,7,30,15,30,0)'}, {'v': 'Date(2017,7,30,16,30,0)'}, {'v': 'Date(2017,7,30,17,30,0)'}, {'v': 'Date(2017,7,30,18,30,0)'}, {'v': 'Date(2017,7,30,19,30,0)'}, {'v': 'Date(2017,7,30,20,30,0)'}, {'v': 'Date(2017,7,30,21,30,0)'}, {'v': 'Date(2017,7,30,22,30,0)'}, {'v': 'Date(2017,7,30,23,30,0)'}, {'v': 'Date(2017,7,31,0,30,0)'}, {'v': 'Date(2017,7,31,1,30,0)'}], 'y_axis': [[26.6, 0.0], [26.916666666666664, 0.0], [27.0, 0.0], [27.02777777777778, 0.0], [27.12121212121212, 0.0], [27.44827586206896, 0.0], [28.0, 0.0], [28.0, 0.0], [28.0, 0.0], [28.0, 0.0], [28.0, 0.0], [27.583333333333332, 0.0], [27.138888888888893, 0.0], [27.055555555555557, 0.0], [27.138888888888893, 0.0], [27.0, 0.0], [27.0, 0.0]]}}, 

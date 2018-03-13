@@ -474,7 +474,7 @@ class DevicesModelTests(TestCase):
         for job in jobs:
             request_callback(DV=instance,DG=job['DG'],jobID=job['id'])
             # checks values from the signal
-            self.assertAlmostEqual(self.signaltimestamp.replace(tzinfo=None),localizeTimestamp(now).replace(tzinfo=None),
+            self.assertAlmostEqual(localizeTimestamp(self.signaltimestamp).replace(tzinfo=None),localizeTimestamp(now).replace(tzinfo=None),
                                    delta=datetime.timedelta(seconds=1))# signal timestamp value is dated now
             if job['DG'].Identifier=='powers':
                 self.assertEqual(self.signalValues,[7,3.25,3.24,3.258])
