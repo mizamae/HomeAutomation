@@ -1,0 +1,230 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-03-17 23:15+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\apps.py:14
+msgid "Reporting APP"
+msgstr ""
+
+#: .\constants.py:39
+msgid "Every day"
+msgstr ""
+
+#: .\constants.py:40
+msgid "Every week"
+msgstr ""
+
+#: .\constants.py:41
+msgid "Every month"
+msgstr ""
+
+#: .\constants.py:50
+msgid "No aggregation"
+msgstr ""
+
+#: .\constants.py:51
+msgid "Hourly"
+msgstr ""
+
+#: .\constants.py:52
+msgid "Daily"
+msgstr ""
+
+#: .\constants.py:53
+msgid "Monthly"
+msgstr ""
+
+#: .\forms.py:36
+msgid "Title of the report"
+msgstr ""
+
+#: .\forms.py:37
+msgid "Set the periodicity"
+msgstr ""
+
+#: .\forms.py:38
+msgid "Set the aggregation of the data"
+msgstr ""
+
+#: .\forms.py:43
+msgid "Save"
+msgstr ""
+
+#: .\forms.py:44
+msgid "Cancel"
+msgstr ""
+
+#: .\forms.py:73
+msgid ""
+"Incompatibility - The aggregation cannot be bigger than the periodicity."
+msgstr ""
+
+#: .\models.py:19
+msgid "Invalid report title - This title already exists in the DB."
+msgstr ""
+
+#: .\models.py:20
+msgid "How often the report will be generated"
+msgstr ""
+
+#: .\models.py:21
+msgid "Data directly from the DB or averaged over a period"
+msgstr ""
+
+#: .\models.py:89
+msgid "Report"
+msgstr ""
+
+#: .\models.py:90
+msgid "Reports"
+msgstr ""
+
+#: .\models.py:103
+msgid "Generated report"
+msgstr ""
+
+#: .\models.py:104
+msgid "Generated reports"
+msgstr ""
+
+#: .\templates\Reports\_reportItems_table.html:5
+#: .\templates\Reports\reportTemplate.html:106
+msgid "Report "
+msgstr ""
+
+#: .\templates\Reports\_reportItems_table.html:8
+msgid "Preview next report"
+msgstr ""
+
+#: .\templates\Reports\_reportItems_table.html:21
+msgid "From"
+msgstr ""
+
+#: .\templates\Reports\_reportItems_table.html:22
+msgid "To"
+msgstr ""
+
+#: .\templates\Reports\_reportItems_table.html:23
+msgid "View"
+msgstr ""
+
+#: .\templates\Reports\_reportItems_table.html:24
+#: .\templates\Reports\_reports_table.html:19
+msgid "Delete"
+msgstr ""
+
+#: .\templates\Reports\_reports_table.html:15
+msgid "Title"
+msgstr ""
+
+#: .\templates\Reports\_reports_table.html:16
+msgid "Periodicity"
+msgstr ""
+
+#: .\templates\Reports\_reports_table.html:17
+msgid "Aggregation"
+msgstr ""
+
+#: .\templates\Reports\_reports_table.html:18
+msgid "Edit"
+msgstr ""
+
+#: .\templates\Reports\home.html:24
+msgid "REPORTING APP DASHBOARD"
+msgstr ""
+
+#: .\templates\Reports\home.html:55
+msgid "Please log in if you want to do something else..."
+msgstr ""
+
+#: .\templates\Reports\reportItemsList.html:33
+msgid "List of saved reports"
+msgstr ""
+
+#: .\templates\Reports\reportItemsList.html:39
+msgid "Return to Main"
+msgstr ""
+
+#: .\templates\Reports\reportTemplate.html:106
+msgid " corresponding to dates between "
+msgstr ""
+
+#: .\templates\Reports\reportTemplate.html:106
+msgid " and "
+msgstr ""
+
+#: .\templates\Reports\reportTemplate.html:108
+msgid "Something is not correct"
+msgstr ""
+
+#: .\templates\Reports\reportconfigurator.html:68
+msgid "Add new chart"
+msgstr ""
+
+#: .\templates\Reports\reportconfigurator.html:93
+msgid "Selection for chart "
+msgstr ""
+
+#: .\templates\Reports\reportconfigurator.html:101
+msgid " Remove chart "
+msgstr ""
+
+#: .\templates\Reports\reportconfigurator.html:113
+msgid "Title : "
+msgstr ""
+
+#: .\templates\Reports\reportconfigurator.html:162
+msgid "Selectable items"
+msgstr ""
+
+#: .\templates\Reports\reportconfigurator.html:163
+msgid "Selected items"
+msgstr ""
+
+#: .\templates\Reports\showReportItems.html:32
+msgid "Report Items List"
+msgstr ""
+
+#: .\templates\Reports\showReportItems.html:39
+msgid "There are no reports configured so nothing can be shown here..."
+msgstr ""
+
+#: .\templates\Reports\showReports.html:32
+msgid "Reports List"
+msgstr ""
+
+#: .\views.py:33 .\views.py:40
+msgid " saved OK"
+msgstr ""
+
+#: .\views.py:94
+msgid "List of "
+msgstr ""
+
+#: .\views.py:106 .\views.py:122
+msgid "There are no "
+msgstr ""
+
+#: .\views.py:106
+msgid " registered."
+msgstr ""
+
+#: .\views.py:122
+msgid " generated."
+msgstr ""

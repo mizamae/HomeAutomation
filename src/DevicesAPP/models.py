@@ -306,6 +306,7 @@ class MainDeviceVars(models.Model):
             
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
+        Data[name]['label']=self.Label
         return Data
         
     @staticmethod
@@ -649,6 +650,7 @@ class MasterGPIOs(models.Model):
             
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
+        Data[name]['label']=self.Label
         return Data
     
     def getEventsCode(self):
@@ -1287,11 +1289,13 @@ class Devices(models.Model):
                     Data[str(DG.pk)]['timestamp']=timestamp
                     for i,name in enumerate(CustomLabels[str(DG.pk)]):
                         info=Datagrams.getInfoFromItemName(name=name)
+                        Data[str(DG.pk)][name]={}
                         if row==None:
-                            Data[str(DG.pk)][name]=row
+                            Data[str(DG.pk)][name]['value']=row
                         else:
                             if info['type']!=DTYPE_DIGITAL:
-                                Data[str(DG.pk)][name]=row[i]
+                                Data[str(DG.pk)][name]['value']=row[i]
+                                Data[str(DG.pk)][name]['label']=CustomLabels[str(DG.pk)][name]
                             else:
                                 from utils.dataMangling import checkBit
                                 values={}
@@ -1300,7 +1304,8 @@ class Devices(models.Model):
                                         values['bit' + str(k)]=int(checkBit(number=row[i],position=k))
                                     else:
                                         values['bit' + str(k)]=None
-                                Data[str(DG.pk)][name]=values
+                                Data[str(DG.pk)][name]['value']=values
+                                Data[str(DG.pk)][name]['label']=CustomLabels[str(DG.pk)][name]
         else:
             Data=None
         return Data
@@ -1676,11 +1681,12 @@ class Devices(models.Model):
                                         Error=''
                                     else:
                                         Error='The device did not acknowledge the resetStatics order on datagram ' + DatagramId
-                            for x in datagram:
+                            for i,x in enumerate(datagram):
                                 try:
                                     x=round(x,DECIMAL_POSITIONS)
                                 except:
                                     x=None
+                                datagram[i]=x
                             out['values']=datagram
                             out['LastUpdated']=timestamp
                             

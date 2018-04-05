@@ -308,6 +308,7 @@ class AutomationVariables(models.Model):
             timestamp=timestamp+timestamp.utcoffset() 
         Data[name]['timestamp']=timestamp
         Data[name]['value']=row
+        Data[name]['label']=self.Label
         return Data
         
     def getValues(self,fromDate,toDate,localized=True):

@@ -415,10 +415,16 @@ def toggle(request,model,pk):
 @login_required
 @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
 def AdvancedDevicePage(request,pk):
+    import datetime
+    import json
     DV=models.Devices.objects.get(pk=pk)
     LatestData=DV.getLatestData()
+    for datagram in LatestData:
+        for element in LatestData[datagram]:
+            if isinstance(LatestData[datagram][element],datetime.datetime):
+                LatestData[datagram][element]=LatestData[datagram][element].timestamp()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
-                                                        {'Device':DV,'Latest':LatestData})
+                                                        {'Device':DV,'Latest':json.dumps(LatestData)})
 
 def activateSchedule(request,pk):
     if not checkUserPermissions(request=request,action='activate',model='schedule'):

@@ -28,15 +28,14 @@ class Devices_query(JsonWebsocketConsumer):
         pass
         
     def receive(self, content, multiplexer, **kwargs):
-        DV=Devices.objects.get(pk=int(content['data']['DevicePK']))
-        Labels=DV.get
-        if DV.Type.Connection==REMOTE_TCP_CONNECTION:
-            DGs=Datagrams.objects.filter(DeviceType=DV.Type).filter(Type=DG_SYNCHRONOUS)
+        DV=Devices.objects.get(pk=int(content['pk']))
+        if DV.DVT.Connection==REMOTE_TCP_CONNECTION:
+            DGs=Datagrams.objects.filter(DVT=DV.DVT).filter(Type=DG_SYNCHRONOUS)
             for DG in DGs:
-                status=DV.request_datagram(DatagramId=DG.Identifier,writeToDB=False)
+                status=DV.requestDatagram(DatagramId=DG.Identifier)
                 data=status['values']
-                multiplexer.send({"action":"query","DeviceName":DV.Name,"Datagram":DG.Identifier,"data":data})
-        elif (DV.Type.Connection==LOCAL_CONNECTION or DV.Type.Connection==MEMORY_CONNECTION):
+                multiplexer.send({"action":"query","DeviceName":DV.Name,"Datagram":DG.Identifier,"data":status})
+        elif (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
             import DevicesAPP.callbacks
             data = getattr(Devices.callbacks, DV.Type.Code)(DV).query_sensor()
             multiplexer.send({"action":"query","DeviceName":DV.Name,"data":data})

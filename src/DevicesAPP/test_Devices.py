@@ -259,11 +259,11 @@ class DevicesModelTests(TestCase):
                 if name!='timestamp':
                     info=Datagrams.getInfoFromItemName(name=name)
                     if info['type']==DTYPE_DIGITAL:
-                        self.assertEqual(latest[datagram][name]['bit2'], 1)
+                        self.assertEqual(latest[datagram][name]['value']['bit2'], 1)
                     elif info['type']==DTYPE_FLOAT:
-                        self.assertIsInstance(latest[datagram][name], type(3.2))
+                        self.assertIsInstance(latest[datagram][name]['value'], type(3.2))
                     elif info['type']==DTYPE_INTEGER:
-                        self.assertIsInstance(latest[datagram][name], type(3))
+                        self.assertIsInstance(latest[datagram][name]['value'], type(3))
         print('    --> Test_getLatestData test 3.1: Retrieval of latest data from registers DB with CustomLabels undefined')
         # run with CustomLabels empty
         prev=instance.CustomLabels
@@ -276,11 +276,11 @@ class DevicesModelTests(TestCase):
                 if name!='timestamp':
                     info=Datagrams.getInfoFromItemName(name=name)
                     if info['type']==DTYPE_DIGITAL:
-                        self.assertEqual(latest[datagram][name]['bit2'], 1)
+                        self.assertEqual(latest[datagram][name]['value']['bit2'], 1)
                     elif info['type']==DTYPE_FLOAT:
-                        self.assertIsInstance(latest[datagram][name], type(3.2))
+                        self.assertIsInstance(latest[datagram][name]['value'], type(3.2))
                     elif info['type']==DTYPE_INTEGER:
-                        self.assertIsInstance(latest[datagram][name], type(3))
+                        self.assertIsInstance(latest[datagram][name]['value'], type(3))
         print('    --> Test_getLatestData test 3.2: Retrieval of latest data from registers DB with CustomLabels undefined and no registers')
         newDict=editDict(keys=['DVT',],newValues=[self.remoteDVT,],Dictionary=DeviceDict)
         instance=Devices(**newDict)
@@ -292,11 +292,11 @@ class DevicesModelTests(TestCase):
                 if name!='timestamp':
                     info=Datagrams.getInfoFromItemName(name=name)
                     if info['type']==DTYPE_DIGITAL:
-                        self.assertEqual(latest[datagram][name], None)
+                        self.assertEqual(latest[datagram][name]['value'], None)
                     elif info['type']==DTYPE_FLOAT:
-                        self.assertEqual(latest[datagram][name], None)
+                        self.assertEqual(latest[datagram][name]['value'], None)
                     elif info['type']==DTYPE_INTEGER:
-                        self.assertEqual(latest[datagram][name], None)
+                        self.assertEqual(latest[datagram][name]['value'], None)
      
     def test_getDeviceVariables(self):
         print('## TESTING THE OPERATION OF THE getDeviceVariables METHOD ##')
@@ -493,9 +493,9 @@ class DevicesModelTests(TestCase):
                         info=Datagrams.getInfoFromItemName(name=name)
                         if info['type']==DTYPE_DIGITAL:
                             for i in range(0,8):
-                                self.assertEqual(latest[datagram][name]['bit'+str(i)], int(checkBit(number=7,position=i)))
+                                self.assertEqual(latest[datagram][name]['value']['bit'+str(i)], int(checkBit(number=7,position=i)))
                         else:
-                            self.assertIsInstance(latest[datagram][name], type(3.2))
+                            self.assertIsInstance(latest[datagram][name]['value'], type(3.2))
                     else:
                         self.assertAlmostEqual(latest[datagram][name],now,delta=datetime.timedelta(seconds=5))
         stopApache()
@@ -526,9 +526,9 @@ class DevicesModelTests(TestCase):
                             info=Datagrams.getInfoFromItemName(name=name)
                             if info['type']==DTYPE_DIGITAL:
                                 for i in range(0,8):
-                                    self.assertEqual(latest[datagram][name]['bit'+str(i)], int(checkBit(number=7,position=i)))
+                                    self.assertEqual(latest[datagram][name]['value']['bit'+str(i)], int(checkBit(number=7,position=i)))
                             else:
-                                self.assertIsInstance(latest[datagram][name], type(3.2))
+                                self.assertIsInstance(latest[datagram][name]['value'], type(3.2))
                         else:
                             self.assertAlmostEqual(latest[datagram][name],now,delta=datetime.timedelta(seconds=5))
                  
@@ -558,9 +558,9 @@ class DevicesModelTests(TestCase):
                             info=Datagrams.getInfoFromItemName(name=name)
                             if info['type']==DTYPE_DIGITAL:
                                 for i in range(0,8):
-                                    self.assertEqual(latest[datagram][name]['bit'+str(i)], int(checkBit(number=7,position=i)))
+                                    self.assertEqual(latest[datagram][name]['value']['bit'+str(i)], int(checkBit(number=7,position=i)))
                             else:
-                                self.assertIsInstance(latest[datagram][name], type(3.2))
+                                self.assertIsInstance(latest[datagram][name]['value'], type(3.2))
                         else:
                             self.assertAlmostEqual(latest[datagram][name],now,delta=datetime.timedelta(seconds=5))
                  

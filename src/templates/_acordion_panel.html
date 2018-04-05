@@ -5,11 +5,11 @@
 	<p style="text-align: center;">
 	{% if permission_OK %}
 		<a class="btn btn-primary-outline " href="{% url link_to var_model  %}" role="button">
-			<img src="{% static icon %}" alt="add" height="100%" width="100%">
+			<img src="{% static icon %}" alt="add" height="50%" width="50%">
 		</a>
 	{% else %}
 		<a class="btn btn-primary-outline disabled" href="" role="button">
-		<img src="{% static icon %}" alt="add" height="100%" width="100%">
+		<img src="{% static icon %}" alt="add" height="50%" width="50%">
 		</a>
 	{% endif %}
 	</p>
