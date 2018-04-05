@@ -73,9 +73,9 @@ def add(request,model):
 
 def preview(request,title):
     RP=models.Reports.objects.get(Title=title)
-    ReportData,fromDate,toDate=RP.getReport()
+    ReportData,fromDate,toDate=RP.getReportData()
     ReportItem=models.ReportItems(Report=RP,fromDate=fromDate,toDate=toDate,data=json.dumps(ReportData))
-    return render(request, APP_TEMPLATE_NAMESPACE+'/reportTemplate.html',{'reportTitle':ReportItem.Report.ReportTitle,
+    return render(request, APP_TEMPLATE_NAMESPACE+'/reportTemplate.html',{'reportTitle':ReportItem.Report.Title,
                                                         'fromDate':ReportItem.fromDate,
                                                         'toDate':ReportItem.toDate,
                                                         'reportData':ReportItem.data})
@@ -110,12 +110,12 @@ def viewList(request,model):
                                                                             'rows_table1':RPs
                                                                             })
         elif Model == models.ReportItems:
+            RPs=models.Reports.objects.all()
             RIs=Model.objects.all()
             elements=[]
             reportTitles=[]
-            for Item in RIs:
-                if not Item.Report.Title in reportTitles:
-                    reportTitles.append(Item.Report.Title)
+            for RP in RPs:
+                reportTitles.append(RP.Title)
             for Item in RIs:
                 elements.append(Item)
             numrows=RIs.count()

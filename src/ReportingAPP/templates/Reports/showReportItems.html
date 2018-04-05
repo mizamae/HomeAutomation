@@ -33,7 +33,7 @@
         
         {% if reportTitles %}
 	        {% for title in reportTitles %}
-	        	{% include "Reports/_reportItemstable.html" with header='' tableId="reports" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows1 %}
+	        	{% include "Reports/_reportItems_table.html" with header='' tableId="reports" colnumber=cols_table1 numrows=numrows_table1 rows=rows_table1 message_norows=message_norows1 %}
 	        {% endfor %}
         {% else %}
         	<p class=" lead bg-info">{% trans "There are no reports configured so nothing can be shown here..." %}</p>
