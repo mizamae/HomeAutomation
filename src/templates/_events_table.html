@@ -3,19 +3,13 @@
 
 <div class="table-responsive" id="eventsContainer">
 	<table id="eventsTable" class="table table-bordered table-responsive ">
-		<colgroup>
-			<col class="col-md-3"></col>
-			<col class="col-md-1"></col>
-			<col class="col-md-6 col-sm-10"></col>
-			<col class="col-md-2 col-sm-2"></col>
-		</colgroup>
 		<thead class="thead-inverse">
 			<tr>
 				<th class="hidden">Code</th>
-				<th class="hidden-sm hidden-xs">{% trans "Timestamp" %}</th>
-				<th class="hidden-sm hidden-xs">{% trans "Severity" %}</th>
-				<th>{% trans "Description" %}</th>
-				<th>{% trans "Acknowledge" %}</th>
+				<th class="col-md-3 hidden-sm hidden-xs">{% trans "Timestamp" %}</th>
+				<th class="col-md-1 hidden-sm hidden-xs">{% trans "Severity" %}</th>
+				<th class="col-md-6 col-sm-10">{% trans "Description" %}</th>
+				<th class="col-md-2 col-sm-2">{% trans "Acknowledge" %}</th>
 			</tr>
 		</thead>
 		<tbody>
