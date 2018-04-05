@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+{% block title %}{{ block.super }}{% trans "Configuration" %}{% endblock %}
+
+<!-- Benefits of the Django application -->
+
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+{% if user.is_authenticated %}
+<div class="container home-container">
+<!-- Benefits of the Django application -->
+	<h1 style="text-align: center;">{% include "_brandname.html"  %}{% trans "CONFIGURATION DASHBOARD" %}</h1>
+	<div class="apps-row">
+		{% trans "SOFT-RESET" as app_name %}
+		{% trans "" as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.jpg' %}
+		
+		{% trans "SOFTWARE UPDATE" as app_name %}
+		{% trans "" as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="gitupdate" app_icon='site/img/update.png' %}
+	</div>
+	
+	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}
+	{% with var_permission_main=perms.Events.view_events var_permission_view=perms.Events.view_events %}
+	{% with var_header="EVENTS AND ALARMS" rows=EVTs model='events' %}
+	{% include "Subsystems/_subsystems_acordion.html" %}
+	{% endwith %}
+	{% endwith %}
+	{% endwith %}
+	
+	<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+	{% include "_back.html" with back_to='home' %}
+	</div>
+</div>
+{% else %}
+	<div class="container home-container">
+		<h2>{% trans "Please log in if you want to do something else..." %}</h2>
+	</div>
+{% endif %}
+{% endblock container %}

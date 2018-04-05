@@ -88,26 +88,30 @@ def settimezone(request):
     else:
         return render(request, 'timezones.html', {'timezones': pytz.common_timezones})
 
-@user_passes_test(lambda u: u.has_perm('HomeAutomation.view_rules'))
-def viewRules(request):
-    if request.method == 'POST':
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        RULs=HomeAutomation.models.AutomationRuleModel.objects.all().order_by('-Active')
-                
-        return render(request,'rulesList.html',
-                          {'RULs':RULs})   
+# @user_passes_test(lambda u: u.has_perm('HomeAutomation.view_rules'))
+# def viewRules(request):
+#     if request.method == 'POST':
+#         return HttpResponseRedirect(reverse('home'))
+#     else:
+#         RULs=HomeAutomation.models.AutomationRuleModel.objects.all().order_by('-Active')
+#                 
+#         return render(request,'rulesList.html',
+#                           {'RULs':RULs})   
         
-@user_passes_test(lambda u: u.has_perm('HomeAutomation.activate_rule'))
-def activateRule(request,pk):
-    if request.method == 'POST':
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        RUL=HomeAutomation.models.AutomationRuleModel.objects.get(pk=pk)
-        RUL.Active=not RUL.Active
-        RUL.save()
-        return HttpResponseRedirect(reverse('viewRules'))
+# @user_passes_test(lambda u: u.has_perm('HomeAutomation.activate_rule'))
+# def activateRule(request,pk):
+#     if request.method == 'POST':
+#         return HttpResponseRedirect(reverse('home'))
+#     else:
+#         RUL=HomeAutomation.models.AutomationRuleModel.objects.get(pk=pk)
+#         RUL.Active=not RUL.Active
+#         RUL.save()
+#         return HttpResponseRedirect(reverse('viewRules'))
         
+
+@user_passes_test(lambda u: u.is_superuser)
+def configuration(request):
+    return render(request, 'configuration.html')
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('profiles.view_tracking'))

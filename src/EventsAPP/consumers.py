@@ -23,7 +23,7 @@ def PublishEvent(Severity,Code,Text,Persistent=False):
         EVT=Events(Timestamp=Timestamp,Severity=Severity,Code=Code,Text=Text)
         EVT.store2DB()
     else:
-        Group('Event-values').send({'text':json.dumps({'Timestamp': localdate.strftime("%d %B %Y %H:%M:%S"),'Severity':Severity,'Text':Text})},immediately=True)
+        Group('Event-values').send({'text':json.dumps({'Timestamp': localdate.strftime("%d %B %Y %H:%M:%S"),'Severity':Severity,'Text':Text,'Code':Code})},immediately=True)
 
 class Events_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):

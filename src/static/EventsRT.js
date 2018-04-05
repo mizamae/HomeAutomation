@@ -11,10 +11,10 @@ $(function()
 {
     checkEventsVisibility();
     Eventsocket.onmessage = function(message) {
-                var event = JSON.parse(message.data).payload;
+                var event = JSON.parse(message.data);
                 if (event!=null)
                 {
-                	if (event.pk==null){updateEvent(event.data);}
+                	if (event.pk==null){updateEvent(event);}
                 }
             };
     webSocketEventsBridge.demultiplex('Event_critical', function(payload, streamName) 
