@@ -34,11 +34,11 @@ JS_MONTHS_OFFSET=1 # offset to substact to refer months to javascript (zero-base
 
 SUBSYSTEM_HEATING=0
 SUBSYSTEM_GARDEN=1
-SUBSYSTEM_ALARM=2
+SUBSYSTEM_ACCESS=2
 SUBSYSTEMS_CHOICES=(
-                    (SUBSYSTEM_HEATING,_('Heating/Cooling')),
-                    (SUBSYSTEM_GARDEN,_('Garden')),
-                    (SUBSYSTEM_ALARM,_('Alarm')),
+                    (SUBSYSTEM_HEATING,_('Heating control')),
+                    (SUBSYSTEM_GARDEN,_('Garden control')),
+                    (SUBSYSTEM_ACCESS,_('Access control')),
                 )
 
 BOOTING_MSG=   '''

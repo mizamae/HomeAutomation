@@ -38,15 +38,13 @@
 		{% trans "" as app_description %}
 		{% include "_appDashboard.html" with app_permission=perms.ReportingAPP.view app_name=app_name app_description=app_description app_url="Reports:home" app_icon='site/img/ReportingAPP_icon.png' %}
 
-		{% trans "CONFIGURATION" as app_name %}
-		{% trans "" as app_description %} 
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="configuration" app_icon='site/img/configuration.png' %}
-	</div>
-	<div class="apps-row">
 		{% trans "SUBSYSTEMS APP" as app_name %}
 		{% trans "" as app_description %}
 		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="Subsystems:home" app_icon='site/img/SubsystemsAPP_icon.png' %}
-		
+
+		{% trans "CONFIGURATION" as app_name %}
+		{% trans "" as app_description %} 
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="configuration" app_icon='site/img/configuration.png' %}
 		
 	</div>
 </div>
