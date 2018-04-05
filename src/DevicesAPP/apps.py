@@ -41,9 +41,6 @@ class DevicesAppConfig(AppConfig):
                 singletaskingProcess=int(singletaskingProcess)
             if singletaskingProcess==int(process):
                 pass
-                from Devices.Requests import initialize_polling_devices
-                #logger.info('Initializing polling Devices for the first time on process ' + str(process))
-                initialize_polling_devices()
                 
 class DevicesAppException(Exception):
     def __name__(self):

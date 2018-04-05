@@ -17,21 +17,21 @@ $(function()
 		    	rowfieldIO=rows[i];
 		    	rowfieldIO.style.display = 'none';
 	    	}
-		    if (rows[i].getElementsByClassName("control-group  field-DeviceCode").length>0)
+		    if (rows[i].getElementsByClassName("control-group  field-Code").length>0)
 	    	{
-		    	fieldDeviceCode=document.getElementById("id_DeviceCode");
+		    	fieldDeviceCode=document.getElementById("id_Code");
 		    	rowfieldDeviceCode=rows[i];
 		    	rowfieldDeviceCode.style.display = 'none';
 	    	}
-		    if (rows[i].getElementsByClassName("control-group  field-Type").length>0)
+		    if (rows[i].getElementsByClassName("control-group  field-DVT").length>0)
 	    	{
-		    	fieldType=document.getElementById("id_Type");
+		    	fieldType=document.getElementById("id_DVT");
 		    	rowfieldType=rows[i];
 		    	rowfieldType.addEventListener("change", TypeChange);
 	    	}
-		    if (rows[i].getElementsByClassName("control-group  field-DeviceIP").length>0)
+		    if (rows[i].getElementsByClassName("control-group  field-IP").length>0)
 	    	{
-		    	fieldDeviceIP=document.getElementById("id_DeviceIP");
+		    	fieldDeviceIP=document.getElementById("id_IP");
 		    	rowfieldDeviceIP=rows[i];
 		    	rowfieldDeviceIP.style.display = 'none';
 	    	}
@@ -43,16 +43,17 @@ $(function()
 		fieldIO=document.getElementById("id_IO");
 		rowfieldIO=document.getElementById("div_id_IO");
 		rowfieldIO.style.display = 'none';
-		fieldDeviceCode=document.getElementById("id_DeviceCode");
+		fieldDeviceCode=document.getElementById("id_Code");
 		fieldDeviceCode.readOnly = true;
-		rowfieldDeviceCode=document.getElementById("div_id_DeviceCode");
+		rowfieldDeviceCode=document.getElementById("div_id_Code");
 		rowfieldDeviceCode.style.display = 'none';
-		fieldType=document.getElementById("id_Type");
+		fieldType=document.getElementById("id_DVT");
+		fieldType.addEventListener("change", TypeChange);
 		fieldType.readOnly = true;
-		rowfieldType=document.getElementById("div_id_Type");
-		fieldDeviceIP=document.getElementById("id_DeviceIP");
+		rowfieldType=document.getElementById("div_id_DVT");
+		fieldDeviceIP=document.getElementById("id_IP");
 		fieldDeviceIP.readOnly = true;
-		rowfieldDeviceIP=document.getElementById("div_id_DeviceIP");
+		rowfieldDeviceIP=document.getElementById("div_id_IP");
 		rowfieldDeviceIP.style.display = 'none';
 		TypeChange();
 	}
@@ -65,13 +66,13 @@ function TypeChange()
 	{
 		var data=JSON.stringify({DeviceTypePK: selectedType});
 		$.ajax({
-		    url: '/ajax_get_data_for_devicetype/' + selectedType,
+		    url: '/Devices/ajax_get_data_for_devicetype/' + selectedType,
 		    type: 'GET',
 		    data:  data,
 		    dataType: "html",
 		    success: function(result){
 		    	var response=JSON.parse(result);
-		    	if (response.Connection == 'LOCAL')
+		    	if (response.Connection == 0)
 		    	{
 		    		rowfieldIO.style.display = 'block';
 		    		rowfieldDeviceIP.style.display = 'none';
@@ -79,14 +80,14 @@ function TypeChange()
 		    		rowfieldDeviceCode.style.display = 'none';
 		    		fieldDeviceCode.value=null;
 		    	}
-		    	else if (response.Connection == 'REMOTE')
+		    	else if (response.Connection == 1)
 	    		{
 		    		rowfieldIO.style.display = 'none';
 		    		fieldIO.value=null;
 		    		rowfieldDeviceIP.style.display = 'block';
 		    		rowfieldDeviceCode.style.display = 'block';
 	    		}
-		    	else if (response.Connection == 'MEMORY')
+		    	else if (response.Connection == 2)
 	    		{
 		    		rowfieldIO.style.display = 'none';
 		    		fieldIO.value=null;

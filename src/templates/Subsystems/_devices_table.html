@@ -20,15 +20,7 @@
 	     <tbody>
 	        
 	        {% for row in rows %}
-	        	{% if row.IP %}
-					{% include "Subsystems/_devices.html" %}
-				{% endif %}
-				{% if row.IO.Pin %}
-					{% include "Subsystems/_devices.html" %}
-				{% else %}
-        			{% include "Subsystems/_devices.html" %}
-		        {% endif %}
-	        	
+                {% include "Subsystems/_devices.html" %}
 	        {% endfor %}
 		</tbody>
 	</table>

@@ -13,7 +13,7 @@ logger = logging.getLogger("project")
 
 now=datetime.datetime.now()
 
-PROJECT_PATH = os.path.abspath(os.path.realpath(__file__))
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 GIT_PATH = os.path.join(PROJECT_PATH,'..','..')
 
 # APPLICATION DATABASES

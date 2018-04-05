@@ -205,44 +205,22 @@ $(document).ready(function() {
     		var j=0;
     		for (j=0; j<djangoData[i].variables.length;j++)
     		{
-    			if (djangoData[i].variables[j].type == "analog")
-    			{
-	    			var opt = document.createElement("option");
-	    			var value={};
-					value.device=djangoData[i].variables[j].device;
-					value.table=djangoData[i].variables[j].table;
-					value.tag=djangoData[i].variables[j].tag;
-					value.label=djangoData[i].variables[j].label;
-					value.extrapolate=djangoData[i].variables[j].extrapolate;
-					value.type=djangoData[i].variables[j].type;
-                    value.plottype=djangoData[i].variables[j].plottype;
-					value.bitPos=null;
-					value=JSON.stringify(value);
-					opt.value=value;					
-	    			opt.innerHTML = djangoData[i].variables[j].label;
-	    			optgrp.appendChild(opt);
-    			}else
-    			{
-    				var bits=0;
-    				for (bits=0;bits<djangoData[i].variables[j].label.length;bits++)
-    				{
-    					var opt_bits = document.createElement("option");
-    					var value={};
-    					value.device=djangoData[i].variables[j].device;
-    					value.table=djangoData[i].variables[j].table;
-    					value.tag=djangoData[i].variables[j].tag;
-    					value.bitPos=bits.toString();
-    					value.label=djangoData[i].variables[j].label[bits];
-    					value.extrapolate=djangoData[i].variables[j].extrapolate;
-    					value.type=djangoData[i].variables[j].type;
-                        value.plottype=djangoData[i].variables[j].plottype;
-    					value=JSON.stringify(value);
-    					opt_bits.value=value;
-    					opt_bits.innerHTML = djangoData[i].variables[j].label[bits];   	
-    					optgrp.appendChild(opt_bits);
-    				}  				
-    			}
-    			
+                var opt = document.createElement("option");
+                var value={};
+                value.device=djangoData[i].variables[j].device;
+                value.table=djangoData[i].variables[j].table;
+                value.tag=djangoData[i].variables[j].tag;
+                value.label=djangoData[i].variables[j].label;
+                value.extrapolate=djangoData[i].variables[j].extrapolate;
+                value.type=djangoData[i].variables[j].type;
+                value.plottype=djangoData[i].variables[j].plottype;
+                if (djangoData[i].variables[j].bitpos!=null){
+                    value.bitPos=djangoData[i].variables[j].bitpos.toString();}
+                else{value.bitPos=djangoData[i].variables[j].bitpos;}
+                value=JSON.stringify(value);
+                opt.value=value;					
+                opt.innerHTML = djangoData[i].variables[j].label;
+                optgrp.appendChild(opt);
     			numitem++;
     		}
     		$(appendTO).append(optgrp);

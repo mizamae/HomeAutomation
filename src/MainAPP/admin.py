@@ -92,6 +92,10 @@ class AutomationVariablesModelAdmin(admin.ModelAdmin):
         return False
     def has_delete_permission(self, request, obj=None):
         return False
+    
+    inlines = [
+        SubsystemsInline,
+    ]
 
 admin.site.register(AdditionalCalculations,AdditionalCalculationsModelAdmin)
 admin.site.register(AutomationRules,AutomationRuleModelAdmin)

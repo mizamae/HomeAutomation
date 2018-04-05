@@ -36,7 +36,6 @@ from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION
 from .apps import DevicesAppException
 
 import logging
-from blaze.tests.test_sql import sql
 
 logger = logging.getLogger("project")
 
@@ -53,7 +52,7 @@ def getAllVariables():
             if IO.Direction==GPIO_INPUT or IO.Direction==GPIO_OUTPUT:
                 table=IO.getRegistersDBTable()
                 tempvars.append({'device':device,'table':table,'tag':IO.getRegistersDBTag(),
-                                'label':[IO.Label,],'extrapolate':0,'type':'digital','plottype':'line'})# this is to tell the template that it is a boolean value
+                                'label':[IO.Label,],'extrapolate':0,'type':'digital','plottype':'line','bitpos':0})# this is to tell the template that it is a boolean value
                                 
         info.append({'deviceName':device,'variables':tempvars})
     tempvars=[]
@@ -63,10 +62,10 @@ def getAllVariables():
             table=VAR.getRegistersDBTable()
             if VAR.DataType!=DTYPE_DIGITAL:
                 tempvars.append({'device':device,'table':table,'tag':VAR.getRegistersDBTag(),
-                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog','plottype':VAR.PlotType})
+                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog','plottype':VAR.PlotType,'bitpos':None})
             else:
                 tempvars.append({'device':device,'table':table,'tag':VAR.getRegistersDBTag(),
-                            'label':[VAR.Label,],'extrapolate':0,'type':'digital','plottype':VAR.PlotType})
+                            'label':[VAR.Label,],'extrapolate':0,'type':'digital','plottype':VAR.PlotType,'bitpos':0})
                                 
         info.append({'deviceName':device,'variables':tempvars})
         
@@ -80,10 +79,10 @@ def getAllVariables():
                 ITM=DatagramItems.objects.get(pk=varinfo['itempk'])
                 if var['bit']!=None:    # its a digital variable
                     tempvars.append({'device':DV.Name,'table':var['table'],'tag':var['name'],'type':'digital','label':var['label'],
-                                'plottype':ITM.PlotType,'extrapolate':0})
+                                'plottype':ITM.PlotType,'extrapolate':0,'bitpos':var['bit']})
                 else:
                     tempvars.append({'device':DV.Name,'table':var['table'],'tag':var['name'],'type':'analog','label':var['label'],
-                                'plottype':ITM.PlotType,'extrapolate':0})
+                                'plottype':ITM.PlotType,'extrapolate':0,'bitpos':var['bit']})
                     
         info.append({'deviceName':DV.Name,'variables':tempvars})
     return info
@@ -603,8 +602,9 @@ class MasterGPIOs(models.Model):
         if self.Direction==GPIO_INPUT:
             GPIO.setup(int(self.Pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
             self.Value=GPIO.input(int(self.Pin))
-        self.updateValue(newValue=self.Value,timestamp=now,writeDB=True,force=True)
-        self.updateAutomationVars() 
+        if self.Direction!=GPIO_SENSOR:
+            self.updateValue(newValue=self.Value,timestamp=now,writeDB=True,force=True)
+            self.updateAutomationVars() 
         
     def setHigh(self):
         if self.Direction==GPIO_OUTPUT:
@@ -1135,14 +1135,14 @@ class Devices(models.Model):
                     if self.DVT.Connection==LOCAL_CONNECTION: 
                         kwargs={'datagramId':DG.Identifier}
                         scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
-                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
                     elif self.DVT.Connection==REMOTE_TCP_CONNECTION:   
                         scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
-                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
                     elif self.DVT.Connection==MEMORY_CONNECTION:
                         kwargs={'datagramId':DG.Identifier}
                         scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
-                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=30)
+                                          replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 
                         text=str(_('Polling for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
@@ -1229,11 +1229,11 @@ class Devices(models.Model):
             else:
                 CustomLabels={}
             for DG in DGs:
-                if not str(DG.pk) in CustomLabels:
-                    CustomLabels[str(DG.pk)]={}
                 datagram=DG.getStructure()
                 names=datagram['names']
                 types=datagram['types']
+                if len(names)>0 and (not str(DG.pk) in CustomLabels):
+                    CustomLabels[str(DG.pk)]={}
                 for name,type in zip(names,types):
                     if not name in CustomLabels[str(DG.pk)]:
                         info=Datagrams.getInfoFromItemName(name=name)
@@ -1628,7 +1628,7 @@ class Devices(models.Model):
             raise DevicesAppException("Unexpected error in insert_device_register:" + str(sys.exc_info()[1]))
             
     def sendUpdateSignals(self,DG_id,values):
-        DG=Datagrams.objects.get(Identifier=DG_id)
+        DG=Datagrams.objects.get(Identifier=DG_id,DVT=self.DVT)
         datagram=DG.getStructure()
         timestamp=values[0]
         SignalVariableValueUpdated.send(sender=None, timestamp=timestamp,
@@ -1676,7 +1676,12 @@ class Devices(models.Model):
                                         Error=''
                                     else:
                                         Error='The device did not acknowledge the resetStatics order on datagram ' + DatagramId
-                            out['values']=[round(x,DECIMAL_POSITIONS) for x in datagram]
+                            for x in datagram:
+                                try:
+                                    x=round(x,DECIMAL_POSITIONS)
+                                except:
+                                    x=None
+                            out['values']=datagram
                             out['LastUpdated']=timestamp
                             
                         else:

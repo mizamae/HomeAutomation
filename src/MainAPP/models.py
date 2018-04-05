@@ -293,7 +293,11 @@ class AutomationVariables(models.Model):
         if row != []:
             row=row[0]
             timestamp=row[0]
-            row=row[1]
+            if self.BitPos!=None:
+                from utils.dataMangling import checkBit
+                row=checkBit(number=row[1],position=self.BitPos)
+            else:
+                row=row[1]
         else:
             timestamp=None
             row=None

@@ -46,7 +46,7 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
-        "ROUTING": "HomeAutomation.routing.channel_routing",
+        "ROUTING": "MainAPP.routing.channel_routing",
     },
 }
 
@@ -99,14 +99,6 @@ LOGGING = {
             'backupCount': 0,
             'formatter': 'verbose'
         },
-        'scheduler_log_file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': join(LOGFILE_ROOT, 'scheduler.log'),
-            'maxBytes': 10000,
-            'backupCount': 0,
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -127,10 +119,6 @@ LOGGING = {
             'handlers': ['proc_log_file'],
             'level': 'DEBUG',
         },
-        'apscheduler.scheduler':{
-            'handlers': ['scheduler_log_file'],
-            'level': 'DEBUG',
-        }
     }
 }
 

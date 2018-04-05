@@ -19,9 +19,10 @@ class AutomationConfig(AppConfig):
         process=os.getpid()
         import MainAPP.signal_handlers
         logger.debug('Process init: ' + str(os.getpid()) + '('+str(sys.argv[0])+ ')')
-        import MainAPP.tasks
-        logger.debug('Process '+str(process) + ' is a Gunicorn process')
-        MainAPP.tasks.start_registersDBcompactingTask()
-        MainAPP.tasks.start_DailyTask()
-        MainAPP.tasks.start_HourlyTask()
-        logger.info('Initializing management tasks on the process ' + str(os.getpid()))
+        if 'gunicorn' in sys.argv[0]:
+            import MainAPP.tasks
+            logger.debug('Process '+str(process) + ' is a Gunicorn process')
+            MainAPP.tasks.start_registersDBcompactingTask()
+            MainAPP.tasks.start_DailyTask()
+            MainAPP.tasks.start_HourlyTask()
+            logger.info('Initializing management tasks on the process ' + str(os.getpid()))

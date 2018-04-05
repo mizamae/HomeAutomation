@@ -5,6 +5,17 @@ html, body{
     height:100%;		/* For full height images */
 }
 
+.apps-row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
+  flex-wrap: wrap;
+}
+.apps-row > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
 
 .starter-template {
   padding: 40px 15px;

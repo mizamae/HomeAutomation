@@ -55,9 +55,9 @@ def checkReportAvailability():
     '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
     IN CASE SO, IT GENERATES THE REPORT.
     '''
-    from DevicesAPP.models import ReportModel,ReportItems
+    from ReportingAPP.models import Reports,ReportItems
     import json
-    reports=ReportModel.objects.all()
+    reports=Reports.objects.all()
     for report in reports:
         if report.checkTrigger():
             report.generate()
@@ -126,6 +126,7 @@ def run_afterBoot():
     updateWeekDay()
     from MainAPP.models import AutomationRules
     AutomationRules.initAll()
-    from DevicesAPP.models import initialize_polling_devices
+    from DevicesAPP.models import initialize_polling_devices,MasterGPIOs
     initialize_polling_devices()
+    MasterGPIOs.initializeIOs(declareInputEvent=True)
     

@@ -60,7 +60,7 @@ $(function()
     	}
 	}
 	
-	group=document.getElementById("ruleitem_set-group");
+	group=document.getElementById("ruleitems_set-group");
 	fieldset=$(group).children("div")[0];
 	fieldset=$(fieldset).children("fieldset.module")[0];
 	table=$(fieldset).children("table")[0];
@@ -94,7 +94,7 @@ function AddNewRuleItem()
 		if (row.className.includes("empty-form"))
 		{
 			row=table.rows[i-1];
-			if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+			if (row.className.includes("dynamic-ruleitems_set") || row.className.includes("has_original"))
 			{
 				var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
 				var Operator3Select=$(Operator3Cell).children("select")[0];
@@ -103,12 +103,12 @@ function AddNewRuleItem()
 				var DeleteLink=$(DeleteCell).children("div")[0];
 				DeleteLink=$(DeleteLink).children("a")[0];
 				if (DeleteLink){DeleteLink.addEventListener("click", function(){DeleteRuleItem(i-1);});}
-				var OrderCell=row.getElementsByClassName("field-order")[0];
+				var OrderCell=row.getElementsByClassName("field-Order")[0];
 				var OrderInput=$(OrderCell).children("input")[0];
 				if (OrderInput){OrderInput.addEventListener("change", function(){ChangedOrder(i-1);});}
 			}
 			row=table.rows[i-2];
-			if (row.className.includes("dynamic-ruleitem_set")|| row.className.includes("has_original"))
+			if (row.className.includes("dynamic-ruleitems_set")|| row.className.includes("has_original"))
 			{
 				var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
 				var Operator3Select=$(Operator3Cell).children("select")[0];
@@ -125,7 +125,7 @@ function ChangedOrder(rownum)
 	for(var i = 0; i < table.rows.length; i++)
 	{
 		var row=table.rows[i];
-		if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+		if (row.className.includes("dynamic-ruleitems_set") || row.className.includes("has_original"))
 		{
 			var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
 			var Operator3Select=$(Operator3Cell).children("select")[0];
@@ -154,7 +154,7 @@ function sortTable() {
 	    for(var i = 0; i < table.rows.length; i++)
 		{
 			var row=table.rows[i];
-			if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+			if (row.className.includes("dynamic-ruleitems_set") || row.className.includes("has_original"))
 			{
 				rows[i]=row;
 			}
@@ -167,9 +167,9 @@ function sortTable() {
 	      shouldSwitch = false;
 	      /*Get the two elements you want to compare,
 	      one from current row and one from the next:*/
-	      x = rows[i].getElementsByClassName("field-order")[0];
+	      x = rows[i].getElementsByClassName("field-Order")[0];
 	      x = parseInt($(x).children("input")[0].value);
-	      y = rows[i + 1].getElementsByClassName("field-order")[0];
+	      y = rows[i + 1].getElementsByClassName("field-Order")[0];
 	      y = parseInt($(y).children("input")[0].value);
 	      //check if the two rows should switch place:
 	      if (x > y) {
@@ -192,7 +192,7 @@ function DeleteRuleItem(rownum)
 	if (rownum > table.rows.length-3)
 	{
 		var row=table.rows[rownum-1];
-		if (row.className.includes("dynamic-ruleitem_set") || row.className.includes("has_original"))
+		if (row.className.includes("dynamic-ruleitems_set") || row.className.includes("has_original"))
 		{
 			var Operator3Cell=row.getElementsByClassName("field-Operator3")[0];
 			var Operator3Select=$(Operator3Cell).children("select")[0];
@@ -272,7 +272,7 @@ function DeviceChange()
 	{
 		var data=JSON.stringify({DevicePK: selectedDevice});
 		$.ajax({
-		    url: '/ajax_get_orders_for_device/' + selectedDevice,
+		    url: '/Devices/ajax_get_orders_for_device/' + selectedDevice,
 		    type: 'GET',
 		    data:  data,
 		    dataType: "html",
