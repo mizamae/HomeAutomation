@@ -1,0 +1,65 @@
+{% load i18n %}
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>nest1 Thermostat Control</title>
+  
+  
+  
+      <link rel="stylesheet" href="{% static 'site/css/thermostat.css' %}">
+
+  
+</head>
+
+<body>
+
+<div id='container'>
+	<div id='thermostat1' class='nestThermostat'></div>
+	<div id='controls'>
+		<p>
+			Click and hold the dial above until a white ring appears (1 second), then drag up / down or left / right to change the target temperature.	
+		</p>
+		<label><span>Target Temperature</span>
+			<input type='range' min='10' max='30' value='10' id='input_target_temperature' step='0.5' />
+		</label>
+		<label><span>Away</span>
+		<select id='input_away'>
+			<option value=''>No</option>
+			<option value='1'>Yes</option>
+		</select>
+	</div>
+</div>
+
+<script  src="{% static 'thermostat_index.js' %}"></script>
+
+<script>
+	var nest1 = new thermostatDial(document.getElementById('thermostat1'),{
+		onSetTargetTemperature: function(v) {
+			document.getElementById('input_target_temperature').value = +v;
+		},
+		diameter: 400,
+		minValue: 0, // Minimum value for target temperature
+		maxValue: 30, // Maximum value for target temperature
+		numTicks: 150, // Number of tick lines to display around the dial
+		tickDegrees:270,
+	});
+	
+	document.getElementById('input_target_temperature').addEventListener('input',function() {
+		nest1.target_temperature = this.value;
+	});
+	document.getElementById('input_ambient_temperature').addEventListener('input',function() {
+		nest1.ambient_temperature = this.value;
+	});
+	document.getElementById('input_away').addEventListener('change',function() {
+		nest1.away = this.value;
+	});
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+{
+  "short_name": "DIY4dot0 App",
+  "name": "DIY4dot0 Application",
+  "icons": [
+    {
+      "src": "/static/site/ico/smart_home.jpg",
+      "sizes": "200x200",
+      "type": "image/jpg"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any"
+}
