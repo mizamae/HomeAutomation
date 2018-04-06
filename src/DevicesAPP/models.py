@@ -359,7 +359,7 @@ class MainDeviceVars(models.Model):
             
             chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
                                 labels=labels,plottypes=plottypes,sampletime=0)
-        return [chart,]
+        return chart
     
 @receiver(post_save, sender=MainDeviceVars, dispatch_uid="update_MainDeviceVars")
 def update_MainDeviceVars(sender, instance, update_fields=[],**kwargs):

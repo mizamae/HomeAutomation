@@ -81,7 +81,28 @@ def preview(request,title):
                                                         'reportData':ReportItem.data})
 
 def view(request,model,pk):
-    return HttpResponseNotFound('<h1>No Page Here</h1>')
+    if not checkUserPermissions(request=request,action='view',model=model):
+        return HttpResponseRedirect(reverse('accounts:login'))
+    
+    data=modelSplitter(model=model)
+    if data==None:
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        Header1=str(_('List of ')) +data['Header1']
+        Model=data['Model']
+        FormModel=data['FormModel']
+        message=data['message']
+        lastAction=data['lastAction']
+    
+    if Model==models.ReportItems:
+        if pk!=None:
+            ReportItem=models.ReportItems.objects.get(pk=pk)
+            ReportData=json.dumps(ReportItem.Report.getReportData(toDate=ReportItem.toDate)[0])
+            return render(request, APP_TEMPLATE_NAMESPACE+'/reportTemplate.html',{'reportTitle':ReportItem.Report.Title,
+                                                                'fromDate':ReportItem.fromDate,
+                                                                'toDate':ReportItem.toDate,
+                                                                'reportData':ReportData})
+    return HttpResponseNotFound('<h1>No Page Here</h1>') 
 
 def viewList(request,model):
     if not checkUserPermissions(request=request,action='view',model=model):
