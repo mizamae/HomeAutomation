@@ -5,17 +5,17 @@
     <td class="hidden-sm hidden-xs">{{ second_col }}</td>
     <td class="hidden-sm hidden-xs">{{ row.DVT.Code }}</td>
    	{% if row.State == 0 %}
-      	<td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>
+  	<td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>
        {% else %}
         {% if row.Error == '' %}
-       	<td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
+   	<td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
         {% else %}
-       	<td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ row.Error }}</font></b></td>
+   	<td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ row.Error }}</font></b></td>
         {% endif %}
        {% endif %}
-       <td>
+   <td>
        {% if perms.DevicesAPP.change_state_devices %}
-           <a class="btn btn-link" style="width:100%;" href="{% url 'Devices:toggle' 'devices' row.pk %}" role="button">
+           <a class="btn btn-toggle" style="width:100%;" href="{% url 'Devices:toggle' 'devices' row.pk %}" role="button">
            	{% if row.State == 0 %}
            	<img class="img-responsive" src="{% static 'site/img/play.png' %}" alt="Toggle state">
            	{% else %}
@@ -25,27 +25,27 @@
        {% else %}
        
        {% endif %}
-       </td>
-       <td class="hidden-sm hidden-xs">
+   </td>
+   <td class="hidden-sm hidden-xs">
        {% if perms.DevicesAPP.add_devices %}
-           <a class="btn btn-link" style="width:100%;" style="visibility:visible;" role="button">
+           <a class="btn btn-toggle" style="width:100%;" style="visibility:visible;" role="button">
            	<img class="img-responsive"src="{% static 'site/img/delete.png' %}" alt="Delete">
            </a>	
        {% endif %}
-       </td>
-       <td>{{ row.LastUpdated }}</td>
-       <td>
+   </td>
+   <td class="hidden-sm hidden-xs">{{ row.LastUpdated }}</td>
+   <td>
        {% if perms.DevicesAPP.view_devices %}
-           <a class="btn btn-link" style="width:100%;" href="{% url 'Devices:devicepage' row.pk %}" role="button">
+           <a class="btn btn-toggle" style="width:100%;" href="{% url 'Devices:devicepage' row.pk %}" role="button">
            	<img class="img-responsive" src="{% static 'site/img/Advanced_device_icon.png' %}" alt="Advanced">
            </a>		        	
        {% endif %}
-       </td>
-       <td>
+   </td>
+   <td>
        {% if perms.DevicesAPP.change_devices %}
-           <a class="btn btn-link" style="width:100%;" href="{% url 'Devices:edit' 'devices' row.pk %}" role="button">
+           <a class="btn btn-toggle" style="width:100%;" href="{% url 'Devices:edit' 'devices' row.pk %}" role="button">
            	<img class="img-responsive" src="{% static 'site/img/view.png' %}" alt="Edit">
            </a>		        	
        {% endif %}
-       </td>
+   </td>
 </tr>

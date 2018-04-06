@@ -57,6 +57,9 @@ CACHES = {
     }
 }
 
+from django.core.cache import cache
+cache.clear()
+
 # Log everything to the logs directory at the top
 LOGFILE_ROOT = join(BASE_DIR, '..', 'logs') #'/home/pi/HomeAutomation/logs'
 

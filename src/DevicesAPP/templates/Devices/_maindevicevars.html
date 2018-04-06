@@ -18,7 +18,7 @@
     <td style="text-align: center;">
 		{% if row.UserEditable and perms.DevicesAPP.change_maindevicevars %}
 			{% if row.DataType == 'digital' %}
-			<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:toggle' 'maindevicevars' row.pk %}" role="button">
+			<a class="btn btn-toggle" href="{% url 'Devices:toggle' 'maindevicevars' row.pk %}" role="button">
 				{% if row.Value > 0 %}
 				<img class="img-responsive" src="{% static 'site/img/arrow-down.png' %}" alt="Toggle">
 				{% else %}
@@ -26,7 +26,7 @@
 				{% endif %}
 			</a>
 			{% endif %}
-		<a class="btn btn-link" style="width:25%;" href="{% url 'Devices:edit' 'maindevicevars' row.pk %}" role="button">
+		<a class="btn btn-toggle" href="{% url 'Devices:edit' 'maindevicevars' row.pk %}" role="button">
 			<img class="img-responsive" src="{% static 'site/img/view.png' %}" alt="Edit" >
 		</a>
 		{% endif %}

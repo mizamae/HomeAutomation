@@ -1077,7 +1077,6 @@ class Devices(models.Model):
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance(year=None)
         self.createRegistersTables(Database=DB)
-        self.updateAutomationVars()
     
     @staticmethod
     def getScheduler():
@@ -1340,7 +1339,7 @@ class Devices(models.Model):
             
         return DeviceVars
     
-    def updateAutomationVars(self):
+    def updateAutomationVars(self,setSubsystems=False):
         AutomationVars=MainAPP.models.AutomationVariables.objects.filter(Device=str(self.pk))
         DeviceVars=self.getDeviceVariables()
         SUBSYSTEMs=MainAPP.models.Subsystems.objects.filter(devices=self)
@@ -1361,11 +1360,12 @@ class Devices(models.Model):
             avar.UserEditable=False
             avar.store2DB()
             
-            if SUBSYSTEMs.count():
-                for SUBS in SUBSYSTEMs:
-                    found=avar.checkSubsystem(Name=SUBS.Name)
-                    if found==False:
-                        avar.createSubsystem(Name=SUBS.Name)
+            if setSubsystems:
+                if SUBSYSTEMs.count():
+                    for SUBS in SUBSYSTEMs:
+                        found=avar.checkSubsystem(Name=SUBS.Name)
+                        if found==False:
+                            avar.createSubsystem(Name=SUBS.Name)
                     
     def deleteAutomationVars(self):
         MainAPP.models.AutomationVariables.objects.filter(Device=self.pk).delete()
@@ -1770,7 +1770,7 @@ class Devices(models.Model):
 @receiver(post_save, sender=Devices, dispatch_uid="update_Devices")
 def update_Devices(sender, instance, update_fields,**kwargs):
     if kwargs['created']:   # new instance is created
-        pass
+        instance.updateAutomationVars(setSubsystems=True)
                
 @receiver(post_delete, sender=Devices, dispatch_uid="delete_Devices")
 def delete_Devices(sender, instance,**kwargs):

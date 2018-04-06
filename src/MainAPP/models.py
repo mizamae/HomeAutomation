@@ -345,8 +345,8 @@ def update_AutomationVariables(sender, instance, update_fields,**kwargs):
                 
 class RuleItems(models.Model):
     PREFIX_CHOICES=(
-        ('',_('None')),
-        ('not ',_('NOT'))
+        ('',''),
+        ('not ','NOT'),
     )
     OPERATOR_CHOICES=(
         ('==','=='),
@@ -489,10 +489,10 @@ class AutomationRules(models.Model):
         return result
         
     def switchBOOLOperator(self,operator):
-        if operator=='&':
-            return '|'
-        elif operator=='|':
-            return '&'
+        if '&' in operator:
+            return operator.replace('&','|')
+        elif '|' in operator:
+            return operator.replace('|','&')
         else:
             return operator
     

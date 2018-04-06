@@ -10,8 +10,8 @@
    	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span></td>
    	{% endif %}
    	<td style="text-align: center;">
-   	{% if not row.Units %}
-   		<a class="btn btn-link" style="width:25%;" onclick="toggle_AVAR({{ row.pk }})" role="button"> <!--  href="{% url 'toggle' 'automationvars' row.pk %}" -->
+   	{% if not row.Units and row.UserEditable and perms.DevicesAPP.change_maindevicevar %}
+   		<a class="btn btn-toggle" onclick="toggle_AVAR({{ row.pk }})" role="button"> <!--  href="{% url 'toggle' 'automationvars' row.pk %}" -->
 			{% if VARs_values|get_at_index:index|get_at_index:1 == 0 %}
 			<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
 			{% else %}
