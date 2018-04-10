@@ -599,7 +599,8 @@ class AutomationRules(models.Model):
 @receiver(post_save, sender=AutomationRules, dispatch_uid="update_AutomationRuleModel")
 def update_AutomationRuleModel(sender, instance, update_fields,**kwargs):    
     if not kwargs['created']:   # an instance has been modified
-        logger.info('Se ha modificado la regla de automatizacion ' + str(instance.Identifier))
+        pass
+        #logger.info('Se ha modificado la regla de automatizacion ' + str(instance.Identifier))
     else:
         logger.info('Se ha creado la regla de automatizacion ' + str(instance.Identifier))
     #if instance.Active==False:

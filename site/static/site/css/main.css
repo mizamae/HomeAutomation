@@ -84,6 +84,19 @@ body>.navbar-transparent {
     font-size: 12px;
 }
 
+.btn-toggle{
+	width:100%;
+}
+@media ( min-width : 550px) {
+	.btn-toggle{
+		width:50%;
+	}
+}
+@media ( min-width : 600px) {
+	.btn-toggle{
+		width:25%;
+	}
+}
 /* Home page styling */
 
 	.home-container {

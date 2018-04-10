@@ -102,6 +102,7 @@ def HourlyTask():
     from DevicesAPP.models import MainDeviceVars,MainDeviceVarWeeklySchedules
     from DevicesAPP.constants import DTYPE_INTEGER
     MainDeviceVarWeeklySchedules.checkAll(init=True)
+    checkCustomCalculations()
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
     try:
