@@ -101,6 +101,7 @@ class MainDeviceVars(models.Model):
                                 ); 
                                 '''  # the * will be replaced by the column names and $ by inputs or outputs
     SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
+    SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE timestamp=? ''' # the * will be replaced by the column name,the ? by the pk and the $ by the value 
     
     Label = models.CharField(max_length=50,unique=True,help_text=str(_('Unique identifier for the variable.')))
     Value = models.FloatField(null=True,help_text=str(_('Value of the variable.')))
@@ -163,7 +164,7 @@ class MainDeviceVars(models.Model):
                 text=str(_('The value of the MainDeviceVar "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
                 PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0')
                 self.Value=newValue
-                self.save(update_fields=['Value'])
+                self.save(update_fields=['Value',])
                 
             if writeDB :
                 if timestamp==None:
@@ -178,7 +179,8 @@ class MainDeviceVars(models.Model):
     def getEventsCode(self):
         return 'VAR'+str(self.pk)+'-'
     
-    def getInsertRegisterSQL(self):
+    
+    def getInsertAllRegisterSQL(self):
         sql=self.SQLinsertRegister
         #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
         struct=self.getStructure()
@@ -195,6 +197,18 @@ class MainDeviceVars(models.Model):
         valuesHolder=valuesHolder[:-1]
         sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*',columns).replace('?',valuesHolder)
         return {'query':sql,'num_args':len(names),'values':values}
+    
+    def getInsertRegisterSQL(self):
+        sql=self.SQLinsertRegister
+        #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
+        sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*','timestamp,'+'"'+self.getRegistersDBTag()+'"').replace('?','?,?')
+        return {'query':sql}
+    
+    def getUpdateRegisterSQL(self,pk):
+        sql=self.SQLupdateRegister
+        #SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE id=? ''' # the * will be replaced by the column name,the ? by the value and the $ by the pk 
+        sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*','"'+self.getRegistersDBTag()+'"').replace('$',str(self.Value))
+        return {'query':sql}
     
     def checkRegistersDB(self,Database):
         
@@ -241,6 +255,27 @@ class MainDeviceVars(models.Model):
             TimeStamp=TimeStamp.replace(microsecond=0)
             query=self.getInsertRegisterSQL()
             sql=query['query']
+            values=[self.Value,]
+            values.insert(0,TimeStamp)
+            from utils.BBDD import getRegistersDBInstance,INTEGRITY_ERROR
+            DB=getRegistersDBInstance(year=TimeStamp.year)
+            self.checkRegistersDB(Database=DB)
+            result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
+            if result==INTEGRITY_ERROR:
+                query=self.getUpdateRegisterSQL(pk=TimeStamp)
+                sql=query['query']
+                result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=[TimeStamp,])
+        except:
+            raise DevicesAppException("Unexpected error in insert_MainVars_register:" + str(sys.exc_info()[1]))
+    
+    def insertAllRegisters(self,TimeStamp,NULL=False):
+        """
+        INSERTS A REGISTER IN THE registersDB INTO THE APPROPIATE TABLE.
+        """
+        try:                              
+            TimeStamp=TimeStamp.replace(microsecond=0)
+            query=self.getInsertRegisterSQL()
+            sql=query['query']
             num_args=query['num_args']
             values=query['values']
             if NULL==True:
@@ -249,10 +284,14 @@ class MainDeviceVars(models.Model):
                 for i in range(0,num_args):  
                     values.append(None)
             values.insert(0,TimeStamp)
-            from utils.BBDD import getRegistersDBInstance
+            from utils.BBDD import getRegistersDBInstance,INTEGRITY_ERROR
             DB=getRegistersDBInstance(year=TimeStamp.year)
             self.checkRegistersDB(Database=DB)
-            DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
+            result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
+#             if result==INTEGRITY_ERROR:
+#                 query=self.getUpdateRegisterSQL(field=self.getRegistersDBTag(),pk=Timestamp)
+#                 sql=query['query']
+#                 result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=self.Value)
         except:
             raise DevicesAppException("Unexpected error in insert_MainVars_register:" + str(sys.exc_info()[1]))
         
@@ -574,6 +613,7 @@ class MasterGPIOs(models.Model):
                                 ); 
                                 '''  # the * will be replaced by the column names and $ by inputs or outputs
     SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
+    SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE timestamp=? ''' # the * will be replaced by the column name,the ? by the pk and the $ by the value 
     
     Pin = models.PositiveSmallIntegerField(primary_key=True,unique=True,help_text=str(_('The number of the pin following BCM notation.')))
     Label = models.CharField(max_length=50,unique=True,help_text=str(_('Label describing the GPIO functional meaning.')))
@@ -740,7 +780,7 @@ class MasterGPIOs(models.Model):
             raise DevicesAppException(text)
             PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True,Code=self.getEventsCode()+'100')        
             
-    def getInsertRegisterSQL(self):
+    def getInsertAllRegisterSQL(self):
         
         sql=self.SQLinsertRegister
         #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
@@ -758,6 +798,18 @@ class MasterGPIOs(models.Model):
         valuesHolder=valuesHolder[:-1]
         sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*',columns).replace('?',valuesHolder)
         return {'query':sql,'num_args':len(names),'values':values}
+    
+    def getInsertRegisterSQL(self):
+        sql=self.SQLinsertRegister
+        #SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) '''   # the * will be replaced by the column names and the $ by the values  
+        sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*','timestamp,'+'"'+self.getRegistersDBTag()+'"').replace('?','?,?')
+        return {'query':sql}
+    
+    def getUpdateRegisterSQL(self,pk):
+        sql=self.SQLupdateRegister
+        #SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE id=? ''' # the * will be replaced by the column name,the ? by the value and the $ by the pk 
+        sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*','"'+self.getRegistersDBTag()+'"').replace('$',str(self.Value))
+        return {'query':sql}
     
     def checkRegistersDB(self,Database):
         
@@ -778,6 +830,27 @@ class MasterGPIOs(models.Model):
             logger.info('The table '+table_to_find+' was not created.')
             
     def insertRegister(self,TimeStamp,NULL=False):
+        """
+        INSERTS A REGISTER IN THE registersDB INTO THE APPROPIATE TABLE.
+        """
+        try:                              
+            TimeStamp=TimeStamp.replace(microsecond=0)
+            query=self.getInsertRegisterSQL()
+            sql=query['query']
+            values=[self.Value,]
+            values.insert(0,TimeStamp)
+            from utils.BBDD import getRegistersDBInstance,INTEGRITY_ERROR
+            DB=getRegistersDBInstance(year=TimeStamp.year)
+            self.checkRegistersDB(Database=DB)
+            result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
+            if result==INTEGRITY_ERROR:
+                query=self.getUpdateRegisterSQL(pk=TimeStamp)
+                sql=query['query']
+                result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=[TimeStamp,])
+        except:
+            raise DevicesAppException("Unexpected error in insert_GPIO_register:" + str(sys.exc_info()[1]))
+        
+    def insertAllRegisters(self,TimeStamp,NULL=False):
         """
         INSERTS A REGISTER IN THE registersDB INTO THE APPROPIATE TABLE.
         """

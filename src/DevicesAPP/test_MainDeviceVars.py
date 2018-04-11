@@ -106,7 +106,7 @@ class MainDeviceVarsModelTests(TestCase):
     def test_IntegrityError(self):
         '''
         This tests checks that in case of two semi-simultaneous MainVars queries to registers DB, no error occurs. In fact, the 
-        DB driver handles it by delaying in time the conflicting row up to when there is no more integrity error.
+        DB driver handles it by updating the conflicting row.
         '''
         import time
         print('## TESTING THE OPERATION OF THE registers DB Integrity Error handler METHOD ##')
@@ -116,7 +116,7 @@ class MainDeviceVarsModelTests(TestCase):
         instance2=MainDeviceVars(**newDict)
         time.sleep(1)
         instance2.store2DB()
-        
+        time.sleep(1)
         now=timezone.now().replace(microsecond=0).replace(tzinfo=None)
         newValue1=21
         newValue2=16
@@ -131,12 +131,9 @@ class MainDeviceVarsModelTests(TestCase):
         self.assertEqual(rows[0][1],MainDeviceVarDict['Value']) # initial value of instance
         self.assertEqual(rows[0][2],None) # instance2 not yet created
         self.assertEqual(rows[1][2],newDict['Value']) # initial value of instance2
-        # instance updateValue
+        # instances updateValue
         self.assertEqual(rows[2][1],newValue1) # new value of instance
-        self.assertEqual(rows[2][2],newDict['Value']) # initial value of instance2
-        # instance2 updateValue
-        self.assertEqual(rows[3][1],newValue1) # new value of instance
-        self.assertEqual(rows[3][2],newValue2) # initial value of instance2
+        self.assertEqual(rows[2][2],newValue2) # initial value of instance2
         # time span
         for i in range(0,2):
             self.assertEqual(rows[i+1][0]-rows[i][0],datetime.timedelta(seconds=1))# checks that it inserts two rows with 1 second difference
@@ -183,10 +180,11 @@ class MainDeviceVarsModelTests(TestCase):
         dateIni=(timezone.now()-datetime.timedelta(seconds=1)).replace(microsecond=0)
         instance=MainDeviceVars(**MainDeviceVarDict)
         instance.store2DB()
-          
+        time.sleep(1)
         newDict=editDict(keys=['Value','Label'], newValues=[15,'Test MainVar 2'], Dictionary=MainDeviceVarDict)
         instance2=MainDeviceVars(**newDict)
         instance2.store2DB()
+        time.sleep(1)
         
         newValue1=21
         newValue2=16
@@ -196,36 +194,32 @@ class MainDeviceVarsModelTests(TestCase):
 
         dateEnd=(timezone.now()+datetime.timedelta(seconds=4)).replace(microsecond=0)
           
-        charts=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
-        for chart in charts:
-            title=chart['title']
-            self.assertTrue('MainVariables' in title)
-            self.assertEqual(chart['cols'][0][0]['label'],'timestamp') # first column is timestamp
-            self.assertEqual(chart['cols'][0][1]['label'],MainDeviceVarDict['Label']) # second column is the first var
-            self.assertEqual(chart['cols'][0][2]['label'],newDict['Label']) # third column is the second var
+        chart=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
+        title=chart['title']
+        self.assertTrue('MainVariables' in title)
+        self.assertEqual(chart['cols'][0][0]['label'],'timestamp') # first column is timestamp
+        self.assertEqual(chart['cols'][0][1]['label'],MainDeviceVarDict['Label']) # second column is the first var
+        self.assertEqual(chart['cols'][0][2]['label'],newDict['Label']) # third column is the second var
 
-            self.assertEqual(len(chart['rows']),4) # there are 4 rows with data
-            self.assertEqual(chart['rows'][0][1],MainDeviceVarDict['Value'])
-            self.assertEqual(chart['rows'][0][2],None)
-            self.assertEqual(chart['rows'][1][1],MainDeviceVarDict['Value'])
-            self.assertEqual(chart['rows'][1][2],newDict['Value'])
-            self.assertEqual(chart['rows'][2][1],newValue1)
-            self.assertEqual(chart['rows'][2][2],newDict['Value'])
-            self.assertEqual(chart['rows'][3][1],newValue1)
-            self.assertEqual(chart['rows'][3][2],newValue2)
+        self.assertEqual(len(chart['rows']),3) # there are 3 rows with data
+        self.assertEqual(chart['rows'][0][1],MainDeviceVarDict['Value'])
+        self.assertEqual(chart['rows'][0][2],None)
+        self.assertEqual(chart['rows'][1][1],None)
+        self.assertEqual(chart['rows'][1][2],newDict['Value'])
+        self.assertEqual(chart['rows'][2][1],newValue1)
+        self.assertEqual(chart['rows'][2][2],newValue2)
           
         print('    -> Tested with no records in the solicited timespan but yes in the DB')
         ''' creates two registers dated in dateIni and dateEnd with the last value from the registers DB
         '''
         dateIni=(timezone.now()+datetime.timedelta(seconds=10)).replace(microsecond=0)
         dateEnd=(dateIni+datetime.timedelta(seconds=10)).replace(microsecond=0)
-        charts=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
-        for chart in charts:
-            title=chart['title']
-            self.assertEqual(len(chart['rows']),2) # there are 2 rows with data dated at dateIni and dateEnd resp.
-            self.assertEqual(chart['rows'][0][1], chart['rows'][1][1]) # checks both rows have the same value
-            self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][0][0]/1000,tz=local_tz),dateIni,delta=datetime.timedelta(seconds=1))# checks that the first row is dated as dateIni
-            self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][1][0]/1000,tz=local_tz),dateEnd,delta=datetime.timedelta(seconds=1))# checks that the second row is dated as dateEnd
+        chart=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
+        title=chart['title']
+        self.assertEqual(len(chart['rows']),2) # there are 2 rows with data dated at dateIni and dateEnd resp.
+        self.assertEqual(chart['rows'][0][1], chart['rows'][1][1]) # checks both rows have the same value
+        self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][0][0]/1000,tz=local_tz),dateIni,delta=datetime.timedelta(seconds=1))# checks that the first row is dated as dateIni
+        self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][1][0]/1000,tz=local_tz),dateEnd,delta=datetime.timedelta(seconds=1))# checks that the second row is dated as dateEnd
                
         self.DB.dropTable(table=instance.getRegistersDBTable())
         self.DB.dropTable(table=instance2.getRegistersDBTable())
@@ -238,16 +232,15 @@ class MainDeviceVarsModelTests(TestCase):
         instance2=MainDeviceVars(**newDict)
         instance2.save()
         
-        charts=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
-        for chart in charts:
-            title=chart['title']
-            self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][0][0]/1000,tz=local_tz),dateIni,delta=datetime.timedelta(seconds=1))# checks that the first row is dated as dateIni
-            self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][1][0]/1000,tz=local_tz),dateEnd,delta=datetime.timedelta(seconds=1))# checks that the second row is dated as dateEnd
-            for i,col in enumerate(chart['cols'][0]):
-                if col['type']==DTYPE_DIGITAL:
-                    self.assertEqual(chart['rows'][0][i],[None,None,None,None,None,None,None,None]) # all None values
-                elif col['type']!='datetime':
-                    self.assertEqual(chart['rows'][0][i],None) # all None values
+        chart=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
+        title=chart['title']
+        self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][0][0]/1000,tz=local_tz),dateIni,delta=datetime.timedelta(seconds=1))# checks that the first row is dated as dateIni
+        self.assertAlmostEqual(datetime.datetime.fromtimestamp(chart['rows'][1][0]/1000,tz=local_tz),dateEnd,delta=datetime.timedelta(seconds=1))# checks that the second row is dated as dateEnd
+        for i,col in enumerate(chart['cols'][0]):
+            if col['type']==DTYPE_DIGITAL:
+                self.assertEqual(chart['rows'][0][i],[None,None,None,None,None,None,None,None]) # all None values
+            elif col['type']!='datetime':
+                self.assertEqual(chart['rows'][0][i],None) # all None values
                       
         print('    -> Tested with empty table in the DB')
         instance.checkRegistersDB(Database=self.DB)

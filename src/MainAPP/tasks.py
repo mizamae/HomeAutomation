@@ -118,7 +118,7 @@ def start_HourlyTask():
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-4')
     id='afterBoot'
-    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=1,replace_existing=True)
+    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=5,replace_existing=True)
 
 def run_afterBoot():
     id='afterBoot'

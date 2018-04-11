@@ -87,8 +87,22 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                     from MainAPP.models import AdditionalCalculations
                     kk=pd.DataFrame(df[col['name']])
                     CALC=AdditionalCalculations(df=kk,key=col['name'])
-                    tempStats['on_time'].append(CALC.duty(level=True,absoluteValue=True))
-                    tempStats['off_time'].append(CALC.duty(level=False,absoluteValue=True))
+                    kk=CALC.duty(level=True,absoluteValue=True)
+                    if isinstance(kk, list):
+                        for i,k in enumerate(kk):
+                            if not pd.notnull(k):
+                                kk[i]=None
+                        tempStats['on_time'].append(kk)
+                    else:
+                        tempStats['on_time'].append(kk if pd.notnull(kk) else None)
+                    kk=CALC.duty(level=False,absoluteValue=True)
+                    if isinstance(kk, list):
+                        for i,k in enumerate(kk):
+                            if not pd.notnull(k):
+                                kk[i]=None
+                        tempStats['off_time'].append(kk)
+                    else:
+                        tempStats['off_time'].append(kk if pd.notnull(kk) else None)
                 except KeyError:
                     tempStats['on_time'].append(None)
                     tempStats['off_time'].append(None)
@@ -96,13 +110,19 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             else:
                 try:
                     # AN ERROR CAN OCCUR IF THE VARIABLE HAS NO VALUE ALONG THE TIMESPAN
-                    tempStats['mean'].append(df_int[str(col['name'])].mean())
+                    kk=df_int[str(col['name'])].mean()
+                    tempStats['mean'].append(kk if pd.notnull(kk) else None)
                 except KeyError:
                     tempStats['mean'].append(None)
                 tempStats['on_time'].append(None)
                 tempStats['off_time'].append(None)
         
         tempX2 = [x / 1000000 for x in df.index.values.tolist()]
+        # INTRODUCED TO TEST INTERPOLATION ACROSS NULLS
+        try:
+            df=df.fillna(method='ffill')
+        except:
+            pass
         # TRANSFORMING THE NANs TO NONEs TO AVOID JSON ENCODING ISSUES
         tempData=df.where(pd.notnull(df), None).values.tolist()
         

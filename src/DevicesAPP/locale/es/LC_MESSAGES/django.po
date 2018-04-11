@@ -52,10 +52,8 @@ msgid "The device "
 msgstr "El dispositivo"
 
 #: HTTP_client.py:173
-#, fuzzy
-#| msgid " updated OK"
 msgid " updated OK "
-msgstr " atualizado OK"
+msgstr " actualizado OK"
 
 #: HTTP_client.py:180
 msgid " responded with a different DeviceCode than the one expected, expected "
@@ -78,8 +76,6 @@ msgid " did not respond within the timeout margin (default 1 sec)"
 msgstr " no respondió en el tiempo establecido (1 seg)"
 
 #: HTTP_client.py:201
-#, fuzzy
-#| msgid "Unexpected error in request_datagram:"
 msgid "Unexpected error in request_datagram: "
 msgstr "Error inesperado en la funcion request_datagram:"
 

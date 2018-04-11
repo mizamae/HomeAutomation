@@ -31,6 +31,8 @@ TYPE_TEXT='TEXT'
 TYPE_FLOAT='FLOAT'
 TYPE_INTEGER='INTEGER'
 TYPE_TIMESTAMP='TIMESTAMP'
+INTEGRITY_ERROR=-10
+COMMITED_OK=0
 #END
 
 #from django.conf.settings import REDIS_PORT,REDIS_HOST
@@ -63,23 +65,23 @@ class Database(object):
             cur.execute(SQLstatement,arg)
             self.conn.commit()
             cur.close()
-            return 'OK'
+            return COMMITED_OK
         except sqlite3.IntegrityError:
             cur.close()
-            return None
+            return INTEGRITY_ERROR
                 
     def executeTransactionWithCommit(self,SQLstatement,arg=[]):
         with redis_lock.Lock(lock_table, "commitRegisterDB",expire=10, auto_renewal=True):            
             name = multiprocessing.current_process().name
             if DEBUGGING: print('The process ' + name + ' has the lock.')
-            if arg!=[]:
-                while self._execute(SQLstatement=SQLstatement,arg=arg)==None:# the timestamp arg[0] is increased 1 sec to avoid integrity error
-                    arg[0]+=datetime.timedelta(seconds=1)
-            else:
-                self._execute(SQLstatement=SQLstatement,arg=arg)
+#             if arg!=[]:
+#                 while self._execute(SQLstatement=SQLstatement,arg=arg)==None:# the timestamp arg[0] is increased 1 sec to avoid integrity error
+#                     arg[0]+=datetime.timedelta(seconds=1)
+#             else:
+            result=self._execute(SQLstatement=SQLstatement,arg=arg)
             if DEBUGGING:print('The process ' + name + ' executed: ' + SQLstatement)
             if DEBUGGING:print('The process ' + name + ' releases the lock.')
-            return 0
+            return result
         return -1
             
     def executeTransaction(self,SQLstatement,arg=[]):
