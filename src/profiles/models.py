@@ -72,7 +72,7 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
                 newValue=beacon.distance_to(other=instance)
             else:
                 newValue=-1
-            mainVar.update_value(newValue=newValue,timestamp=timestamp,writeDB=True)
+            mainVar.updateValue(newValue=newValue,timestamp=timestamp,writeDB=True)
             PublishEvent(Severity=0,Text=label+' is ' + str(mainVar.Value),Persistent=False,Code='Profiles-0')
         if instance.Latitude!=None and instance.Longitude!=None:
             import json

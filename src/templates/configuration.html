@@ -27,11 +27,11 @@
 	<div class="apps-row">
 		{% trans "SOFT-RESET" as app_name %}
 		{% trans "" as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.jpg' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.jpg' %}
 		
 		{% trans "SOFTWARE UPDATE" as app_name %}
 		{% trans "" as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view app_name=app_name app_description=app_description app_url="gitupdate" app_icon='site/img/update.png' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="gitupdate" app_icon='site/img/update.png' %}
 	</div>
 	
 	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}

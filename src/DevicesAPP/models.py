@@ -422,8 +422,8 @@ class MainDeviceVarWeeklySchedules(models.Model):
         verbose_name_plural = _('Main device var weekly schedules') 
         unique_together = (('Label', 'Var'))
         permissions = (
-            ("view_schedules", "Can see available automation schedules"),
-            ("activate_schedules", "Can change the state of the schedules"),
+            ("view_maindevicevarweeklyschedules", "Can see available automation schedules"),
+            ("activate_maindevicevarweeklyschedules", "Can change the state of the schedules"),
         )
         
     Label = models.CharField(max_length=100)
@@ -1181,7 +1181,7 @@ class Devices(models.Model):
         if DGs != []:
             for DG in DGs:
                 if DG.isSynchronous():
-                    jobIDs.append({'id':self.pk + '-' + DG.pk,'DG':DG})
+                    jobIDs.append({'id':str(self.pk) + '-' + str(DG.pk),'DG':DG})
         return jobIDs
     
     def updateRequests(self):

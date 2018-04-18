@@ -30,6 +30,22 @@ logger = logging.getLogger("project")
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+class Permissions(models.Model):
+    class Meta:
+        verbose_name = _('Permission')
+        verbose_name_plural = _('Permissions') 
+        permissions = (
+            ("view_heating_subsystem", "Can view the Heating subsystem"),
+            ("view_garden_subsystem", "Can view the Garden subsystem"),
+            ("view_access_subsystem", "Can view the Access subsystem"),
+            ("reset_system", "Can force a reset of the system"),
+            ("check_updates", "Can check for updates of the system"),
+            ("view_devicesapp", "Can view the devicesAPP"),
+            ("view_reportingapp", "Can view the reportingAPP"),
+            ("view_subsystemsapp", "Can view the subsystemsAPP"),
+            ("view_configurationapp", "Can access to the configurationAPP"),
+        )
+        
 class Subsystems(models.Model):
     class Meta:
         verbose_name = _('Subsystem')

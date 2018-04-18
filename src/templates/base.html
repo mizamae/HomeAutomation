@@ -44,7 +44,11 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
+          {% if user.is_superuser or user.is_staff %}
           <a class="navbar-brand" href="{% url 'home' %}">
+          {% else %}
+          <a class="navbar-brand" href="{% url 'Subsystems:home' %}">
+          {% endif %}
             {% block navbar-brand %}
               <img src="{% static 'site/img/logo.png' %}" alt="logo">
               {% include "_brandname.html" %}
@@ -189,8 +193,8 @@
                 if (payload.action == "query_datetime") {
                 	console.log("System UTC datetime is " + payload.date + " " + payload.time);
                 	label=document.getElementById('systemTime');
-                    system_hours=payload.time.split(":")[0];
-                    system_minutes=payload.time.split(":")[1];
+                    system_hours=parseInt(payload.time.split(":")[0]);
+                    system_minutes=parseInt(payload.time.split(":")[1];
                     var currentdate = new Date();
                     if ((currentdate.getUTCHours()!=system_hours)||(currentdate.getUTCMinutes()!=system_minutes))
                     {	label.style.color="Red";

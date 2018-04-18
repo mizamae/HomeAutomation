@@ -151,7 +151,25 @@ def viewList(request,model):
             return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
 
 def delete(request,model,pk):
-    return HttpResponseNotFound('<h1>No Page Here</h1>')
+    if not checkUserPermissions(request=request,action='view',model=model):
+        return HttpResponseRedirect(reverse('accounts:login'))
+    
+    data=modelSplitter(model=model)
+    if data==None:
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        Header1=str(_('List of ')) +data['Header1']
+        Model=data['Model']
+        FormModel=data['FormModel']
+        message=data['message']
+        lastAction=data['lastAction']
+        
+    if request.method == 'POST': # the form has been submited
+        return HttpResponseNotFound('<h1>No Page Here</h1>') 
+    else:
+        instance=Model.objects.get(pk=pk)
+        instance.delete()
+        return redirect(request.META['HTTP_REFERER'])
 
 def edit(request,model,pk):
     return HttpResponseNotFound('<h1>No Page Here</h1>')

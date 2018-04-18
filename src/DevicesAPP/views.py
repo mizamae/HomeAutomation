@@ -427,7 +427,7 @@ def AdvancedDevicePage(request,pk):
                                                         {'Device':DV,'Latest':json.dumps(LatestData)})
 
 def activateSchedule(request,pk):
-    if not checkUserPermissions(request=request,action='activate',model='schedule'):
+    if not checkUserPermissions(request=request,action='activate',model='maindevicevarweeklyschedules'):
         return HttpResponseRedirect(reverse(LOGIN_PAGE))
     
     if request.method == 'POST':
@@ -441,7 +441,7 @@ def activateSchedule(request,pk):
 
 def modifySchedule(request,pk,value,sense):
     import decimal
-    if not checkUserPermissions(request=request,action='change',model='schedule'):
+    if not checkUserPermissions(request=request,action='change',model='maindevicevarweeklyschedules'):
         return HttpResponseRedirect(reverse(LOGIN_PAGE))
     
     if request.method == 'POST':

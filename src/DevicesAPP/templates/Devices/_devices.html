@@ -35,7 +35,7 @@
    </td>
    <td class="hidden-sm hidden-xs">{{ row.LastUpdated }}</td>
    <td>
-       {% if perms.DevicesAPP.view_devices %}
+       {% if perms.DevicesAPP.Devices.view_devices %}
            <a class="btn btn-toggle" style="width:100%;" href="{% url 'Devices:devicepage' row.pk %}" role="button">
            	<img class="img-responsive" src="{% static 'site/img/Advanced_device_icon.png' %}" alt="Advanced">
            </a>		        	

@@ -103,3 +103,6 @@ class ReportItems(models.Model):
         verbose_name = _('Generated report')
         verbose_name_plural = _('Generated reports')
         ordering = ('fromDate',)
+        permissions = (
+            ("view_report_items", "Can view report items generated"),
+        )

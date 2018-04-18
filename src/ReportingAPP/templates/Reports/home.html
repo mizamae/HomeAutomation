@@ -33,12 +33,10 @@
 	{% endwith %}
 	
 	{% with panelID="accordion2" collapseID="collapse2" %}
-	{% with var_permission_main=perms.ReportingAPP.view_devices var_permission_add=perms.ReportingAPP.add_devices %}
-	{% with var_permission_view=perms.ReportingAPP.view_devices var_permission_graph=perms.ReportingAPP.view_graphs %}
+	{% with var_permission_main=perms.ReportingAPP.view_report_items var_permission_add=perms.ReportingAPP.add_report_items %}
 	{% with var_header="REPORT ITEMs MANAGEMENT DASHBOARD" var_model='reportitems' %}
 	{% with  show_view_col=1 link_view='Reports:view_all' %}
 	{% include "_appsmodel_acordion.html"  %}
-	{% endwith %}
 	{% endwith %}
 	{% endwith %}
 	{% endwith %}
