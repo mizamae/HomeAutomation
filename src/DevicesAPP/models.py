@@ -1181,7 +1181,7 @@ class Devices(models.Model):
         if DGs != []:
             for DG in DGs:
                 if DG.isSynchronous():
-                    jobIDs.append({'id':self.Name + '-' + DG.Identifier,'DG':DG})
+                    jobIDs.append({'id':self.pk + '-' + DG.pk,'DG':DG})
         return jobIDs
     
     def updateRequests(self):

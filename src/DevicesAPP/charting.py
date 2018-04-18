@@ -43,7 +43,18 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
         df=pd.read_sql_query(sql=sql,con=DB.getConn(),index_col='timestamp')
         
         if not df.empty:
-            
+            nulls=df.isnull().sum() # number of null elements per column
+            rows=df.shape[0]    # total number of rows
+            for i,null in enumerate(nulls):
+                if null==rows:  # if all the rows are null
+                    variable=vars.split(',')[i+1]
+                    sql='SELECT timestamp,'+variable+' FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND '+variable +' not null ORDER BY timestamp DESC LIMIT 1'
+                    row=DB.executeTransaction(SQLstatement=sql,arg=[])
+                    if row != []:
+                        row=row[0][1]
+                    else:
+                        row=None
+                    df.iloc[0, df.columns.get_loc(variable.replace('"',''))]=row
             # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
             addedtime=pd.to_datetime(arg=df.index.values[0])-fromDate.replace(tzinfo=None)
             if addedtime>datetime.timedelta(minutes=1):
@@ -65,6 +76,18 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
             df=pd.read_sql_query(sql=sql,con=DB.getConn(),index_col='timestamp')
             if not df.empty:
+                nulls=df.isnull().sum() # number of null elements per column
+                rows=df.shape[0]    # total number of rows
+                for i,null in enumerate(nulls):
+                    if null==rows:  # if all the rows are null
+                        variable=vars.split(',')[i+1]
+                        sql='SELECT timestamp,'+variable+' FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND '+variable +' not null ORDER BY timestamp DESC LIMIT 1'
+                        row=DB.executeTransaction(SQLstatement=sql,arg=[])
+                        if row != []:
+                            row=row[0][1]
+                        else:
+                            row=None
+                        df.iloc[0, df.columns.get_loc(variable.replace('"',''))]=row
                 values=np.concatenate([df.values,df.values])
             else:
                 values=[]
@@ -77,6 +100,13 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             df_int=df
                 
         tempStats={'number':5,'num_rows':df.count(numeric_only=True).tolist(),'mean':[],'max':df.max(numeric_only=True).tolist(),'min':df.min(numeric_only=True).tolist(),'on_time':[],'off_time':[]}
+        
+        # INTRODUCED TO TEST INTERPOLATION ACROSS NULLS
+        try:
+            df=df.fillna(method='ffill')
+            df=df.fillna(method='bfill')
+        except:
+            pass
         
         for col in chart['cols'][0][1:]:
             if col['type']==DTYPE_DIGITAL:
@@ -118,11 +148,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                 tempStats['off_time'].append(None)
         
         tempX2 = [x / 1000000 for x in df.index.values.tolist()]
-        # INTRODUCED TO TEST INTERPOLATION ACROSS NULLS
-        try:
-            df=df.fillna(method='ffill')
-        except:
-            pass
+        
         # TRANSFORMING THE NANs TO NONEs TO AVOID JSON ENCODING ISSUES
         tempData=df.where(pd.notnull(df), None).values.tolist()
         
