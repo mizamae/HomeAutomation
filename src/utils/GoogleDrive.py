@@ -5,11 +5,13 @@ import os
 DRIVE_ROOT_FOLDER='DIY4dot0'
 DRIVE_DJANGO_FOLDER='DjangoDB'
 DRIVE_REGISTERS_FOLDER='RegistersDB'
+DRIVE_MAX_NUM_BACKUP_FILES=2
 # LOCAL FOLDERS
 from MainAPP.constants import DJANGO_DB_PATH,REGISTERS_DB_PATH
 from django.utils import timezone
 REGISTERS_DB_PATH=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))
 CLIENT_SECRETS_ROOT=os.path.abspath(os.path.dirname(__file__))
+GoogleAuth.DEFAULT_SETTINGS['get_refresh_token'] = True
 GoogleAuth.DEFAULT_SETTINGS['save_credentials'] = False
 GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = os.path.join(CLIENT_SECRETS_ROOT,'client_secrets.json')
 
@@ -40,6 +42,9 @@ class GoogleDriveWrapper(object):
     def saveCredentials(self):
         # Save the current credentials to a file
         self.gauth.SaveCredentialsFile(os.path.join(CLIENT_SECRETS_ROOT,"GDriveCreds.json"))
+    
+    def deleteCredentials(self):
+        os.remove(os.path.join(CLIENT_SECRETS_ROOT,"GDriveCreds.json"))
         
     def checkDriveFolders(self):
         # ROOT
@@ -74,13 +79,35 @@ class GoogleDriveWrapper(object):
                 return item
         return None
     
+    def checkMaxNumberBackups(self,root='root'):
+        file_list = self.drive.ListFile({'q': "'"+root+"' in parents and trashed=false"}).GetList()
+        if len(file_list)>=DRIVE_MAX_NUM_BACKUP_FILES:
+            return True
+        else:
+            return False
+    
+    def deleteOldestBackup(self,root='root'):
+        from pyrfc3339 import parse
+        file_list = self.drive.ListFile({'q': "'"+root+"' in parents and trashed=false"}).GetList()
+        Oldest=timezone.now()
+        for item in file_list:
+            createdDate=parse(item['createdDate'])
+            if createdDate<Oldest:
+                Oldest=createdDate
+                fileToDelete=item
+        fileToDelete.Delete()
+        
     def uploadFile(self,title,sourcepath,folderid):
         file = self.drive.CreateFile({'title': title,"parents": [{"kind": "drive#fileLink", "id": folderid}]})
         file.SetContentFile(sourcepath)
-        file.Upload() # Files.insert()
+        file.Upload()
     
     def uploadDBs(self):
+        if self.checkMaxNumberBackups(root=self.DjangoFolderID):
+            self.deleteOldestBackup(root=self.DjangoFolderID)
         self.uploadFile(title='DjangoDB_'+str(timezone.now().month)+'-'+str(timezone.now().year)+'.sqlite3', sourcepath=DJANGO_DB_PATH, folderid=self.DjangoFolderID)
+        if self.checkMaxNumberBackups(root=self.RegistersFolderID):
+            self.deleteOldestBackup(root=self.RegistersFolderID)
         self.uploadFile(title='RegistersDB_'+str(timezone.now().month)+'-'+str(timezone.now().year)+'.sqlite3', sourcepath=REGISTERS_DB_PATH, folderid=self.RegistersFolderID)
 
 

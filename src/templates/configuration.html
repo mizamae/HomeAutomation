@@ -26,12 +26,20 @@
 	<h1 style="text-align: center;">{% include "_brandname.html"  %}{% trans "CONFIGURATION DASHBOARD" %}</h1>
 	<div class="apps-row">
 		{% trans "SOFT-RESET" as app_name %}
-		{% trans "" as app_description %}
+		{% trans "Click to restart the Gunicorn processes." as app_description %}
 		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.jpg' %}
 		
 		{% trans "SOFTWARE UPDATE" as app_name %}
-		{% trans "" as app_description %}
+		{% trans "Click to look for newer versions in the repository." as app_description %}
 		{% include "_appDashboard.html" with app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="gitupdate" app_icon='site/img/update.png' %}
+		
+		{% trans "DB BACKUP" as app_name %}
+		{% if BackupActive %}
+			{% trans "Backup is configured. Click to remove it." as app_description %}
+		{% else %}
+			{% trans "Backup is not configured. Click to configure." as app_description %}
+		{% endif %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="dbbackup" app_icon='site/img/google-drive-backup.png' %}
 	</div>
 	
 	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}

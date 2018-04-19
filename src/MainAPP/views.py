@@ -87,31 +87,16 @@ def settimezone(request):
         return HttpResponseRedirect(reverse('advancedDevice'))
     else:
         return render(request, 'timezones.html', {'timezones': pytz.common_timezones})
-
-# @user_passes_test(lambda u: u.has_perm('HomeAutomation.view_rules'))
-# def viewRules(request):
-#     if request.method == 'POST':
-#         return HttpResponseRedirect(reverse('home'))
-#     else:
-#         RULs=HomeAutomation.models.AutomationRuleModel.objects.all().order_by('-Active')
-#                 
-#         return render(request,'rulesList.html',
-#                           {'RULs':RULs})   
-        
-# @user_passes_test(lambda u: u.has_perm('HomeAutomation.activate_rule'))
-# def activateRule(request,pk):
-#     if request.method == 'POST':
-#         return HttpResponseRedirect(reverse('home'))
-#     else:
-#         RUL=HomeAutomation.models.AutomationRuleModel.objects.get(pk=pk)
-#         RUL.Active=not RUL.Active
-#         RUL.save()
-#         return HttpResponseRedirect(reverse('viewRules'))
         
 
 @user_passes_test(lambda u: u.is_superuser)
 def configuration(request):
-    return render(request, 'configuration.html')
+    from EventsAPP.models import Events
+    EVTs=Events.objects.all()
+    from utils.GoogleDrive import GoogleDriveWrapper
+    instance=GoogleDriveWrapper()
+    BackupActive=instance.checkCredentials()
+    return render(request, 'configuration.html',{'EVTs':EVTs,'BackupActive':BackupActive})
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('profiles.view_tracking'))
@@ -190,14 +175,17 @@ def gdrive_authentication(request):
         code=request.GET['code']
     except:
         code=None
-    instance=GoogleDriveWrapper()
-    instance.gauth.Auth(code=code)
-    instance.saveCredentials()
     
-    autenticated=instance.checkCredentials()
-    if autenticated:
-        PublishEvent(Severity=0,Text=_("Google Drive connection authorized"),Persistent=False,Code='MainAPPViews-Drive0')
+    if code!=None:
+        instance=GoogleDriveWrapper()
+        instance.gauth.Auth(code=code)
+        instance.saveCredentials()
         
+        autenticated=instance.checkCredentials()
+        if autenticated:
+            PublishEvent(Severity=0,Text=_("Google Drive credentials have been stored"),Persistent=True,Code='MainAPPViews-Drive1')
+    else:
+        PublishEvent(Severity=4,Text=_("Google Drive permissions were not granted"),Persistent=True,Code='MainAPPViews-Drive1')
     return redirect(reverse('configuration'))
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -210,12 +198,13 @@ def DBBackup(request):
     else:
         autenticated=instance.checkCredentials()
         if autenticated:
-            instance.uploadDBs()
-            PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='MainAPPViews-Drive1')
+            instance.deleteCredentials()
+            #instance.uploadDBs()
+            PublishEvent(Severity=0,Text=_("Google Drive credentials have been deleted"),Persistent=True,Code='MainAPPViews-Drive1')
             pass
         else:
             return redirect(instance.AUTH_URL)
-    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
+    return redirect(reverse('configuration'))
     
     
     
