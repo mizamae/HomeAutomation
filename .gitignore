@@ -45,6 +45,9 @@ tramp
 *.swp
 *.swo
 
+# credentials
+./src/utils/*.json
+
 # Rope
 .ropeproject
 
