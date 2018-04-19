@@ -184,6 +184,40 @@ def arduinoCode(request):
     return resp
     #raise Http404
 
+def gdrive_authentication(request):
+    from utils.GoogleDrive import GoogleDriveWrapper
+    try:
+        code=request.GET['code']
+    except:
+        code=None
+    instance=GoogleDriveWrapper()
+    instance.gauth.Auth(code=code)
+    instance.saveCredentials()
+    
+    autenticated=instance.checkCredentials()
+    if autenticated:
+        PublishEvent(Severity=0,Text=_("Google Drive connection authorized"),Persistent=False,Code='MainAPPViews-Drive0')
+        
+    return redirect(reverse('configuration'))
+
+@user_passes_test(lambda u: u.is_superuser)
+def DBBackup(request):
+    from utils.GoogleDrive import GoogleDriveWrapper
+    instance=GoogleDriveWrapper()
+    
+    if request.method == 'POST':
+        pass
+    else:
+        autenticated=instance.checkCredentials()
+        if autenticated:
+            PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='MainAPPViews-Drive1')
+            pass
+        else:
+            return redirect(instance.AUTH_URL)
+    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
+    
+    
+    
 @user_passes_test(lambda u: u.is_superuser)
 def SoftReset(request):
     import os

@@ -17,7 +17,7 @@ PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 GIT_PATH = os.path.join(PROJECT_PATH,'..','..')
 
 # APPLICATION DATABASES
-DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..')
+DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..','db.sqlite3')
 REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqlite3')
 # END
 

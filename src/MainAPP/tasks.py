@@ -32,6 +32,8 @@ try:
 except BaseException as e:
     logger.info('Exception Tasks APS: ' + str(e))
 
+
+### MONTHLY FUNCTIONS
 def compactRegistersDB():
     import datetime
     now=datetime.datetime.now()-datetime.timedelta(hours=1)
@@ -41,16 +43,26 @@ def compactRegistersDB():
     size=result['final_size']
     PublishEvent(Severity=0,Text='The DB size is reduced from ' +str(sizep/1000) + ' to ' + str(size/1000) + ' kB after compactation',
                  Code='Taks-0',Persistent=True)
-    
-def start_registersDBcompactingTask(): 
+
+def MonthlyTask():
+    compactRegistersDB()
+    from utils.GoogleDrive import GoogleDriveWrapper
+    instance=GoogleDriveWrapper()
+    autenticated=instance.checkCredentials()
+    if autenticated:
+        instance.uploadDBs()
+        PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='Tasks-1')
+            
+def start_MonthlyTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
     '''  
-    id='registerDBcompact'
-    scheduler.add_job(func=compactRegistersDB,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
+    id='MonthlyTask'
+    scheduler.add_job(func=MonthlyTask,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-1')
 
 
+### DAILY FUNCTIONS
 def checkReportAvailability():
     '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
     IN CASE SO, IT GENERATES THE REPORT.
@@ -74,18 +86,19 @@ def updateWeekDay():
     except:
         WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,DataType=DTYPE_INTEGER,Units='',UserEditable=False)
         WeekDay.store2DB()
-    
+
+def DailyTask():
+    updateWeekDay()
+    checkReportAvailability()
       
 def start_DailyTask():
-    id='checkReportAvailability'
-    scheduler.add_job(func=checkReportAvailability,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    id='DailyTask'
+    scheduler.add_job(func=DailyTask,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-2')
-    id='updateWeekDay'
-    scheduler.add_job(func=updateWeekDay,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
-    JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-3')
 
+
+### HOURLY FUNCTIONS
 def checkCustomCalculations():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
@@ -101,8 +114,6 @@ def HourlyTask():
     import datetime
     from DevicesAPP.models import MainDeviceVars,MainDeviceVarWeeklySchedules
     from DevicesAPP.constants import DTYPE_INTEGER
-    MainDeviceVarWeeklySchedules.checkAll(init=True)
-    checkCustomCalculations()
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
     try:
@@ -111,6 +122,8 @@ def HourlyTask():
     except:
         HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=DTYPE_INTEGER,Units='H',UserEditable=False)
         HourDay.store2DB()
+    MainDeviceVarWeeklySchedules.checkAll(init=True)
+    checkCustomCalculations()
 
 def start_HourlyTask():
     id='HourlyTask'
