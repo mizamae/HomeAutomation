@@ -210,6 +210,7 @@ def DBBackup(request):
     else:
         autenticated=instance.checkCredentials()
         if autenticated:
+            instance.uploadDBs()
             PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='MainAPPViews-Drive1')
             pass
         else:
