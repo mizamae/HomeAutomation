@@ -11,7 +11,11 @@
     <meta name="description" content="{% block description %}{% endblock description %}">
     <meta name="author" content="Mikel Zabaleta">
     <link rel="shortcut icon" href="{% static 'site/ico/favicon.ico' %}">
-
+    {% if user.is_superuser or user.is_staff %}
+    <link rel="manifest" href="{% static 'manifestStaff.json' %}">
+    {% else %}
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    {% endif %}
     <title>{% block title %}{% include "_brandname.html" %} :: {% endblock %}</title>
 
     <!-- Bootstrap core CSS -->
@@ -194,7 +198,7 @@
                 	console.log("System UTC datetime is " + payload.date + " " + payload.time);
                 	label=document.getElementById('systemTime');
                     system_hours=parseInt(payload.time.split(":")[0]);
-                    system_minutes=parseInt(payload.time.split(":")[1];
+                    system_minutes=parseInt(payload.time.split(":")[1]);
                     var currentdate = new Date();
                     if ((currentdate.getUTCHours()!=system_hours)||(currentdate.getUTCMinutes()!=system_minutes))
                     {	label.style.color="Red";

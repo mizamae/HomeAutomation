@@ -25,7 +25,8 @@
 	<h1 style="text-align: center;">{% include "_brandname.html"  %}{{ title }}</h1>
 	{% if DVs %}
 		{% with panelID="accordion1" collapseID="collapse1" displayed=accordion1 %}
-		{% with var_header="DEVICES" rows=DVs model='devices' %}
+        {% trans "DEVICES" as var_header %}
+		{% with rows=DVs model='devices' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
 		{% endwith %}
 		{% endwith %}
@@ -33,7 +34,8 @@
 	
 	{% if VARs %}
 		{% with panelID="accordion2" collapseID="collapse2" displayed=accordion2 %}
-		{% with var_header="VARIABLES" rows=VARs model='automationvars' %}
+        {% trans "VARIABLES" as var_header %}
+		{% with rows=VARs model='automationvars' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
 		{% endwith %}
 		{% endwith %}
@@ -41,7 +43,8 @@
 	
 	{% if SCHs %}
 		{% with panelID="accordion3" collapseID="collapse3" displayed=accordion3 %}
-		{% with var_header="SCHEDULES" rows=SCHs model='maindevicevarweeklyschedules' %}
+        {% trans "SCHEDULES" as var_header %}
+		{% with rows=SCHs model='maindevicevarweeklyschedules' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
 		{% endwith %}
 		{% endwith %}
@@ -49,14 +52,16 @@
 	
 	{% if GPIOs %}
 		{% with panelID="accordion4" collapseID="collapse4" displayed=accordion4 %}
-		{% with var_header="MASTER UNIT I/Os" rows=GPIOs model='mastergpios' %}
+        {% trans "MASTER UNIT I/Os" as var_header %}
+		{% with rows=GPIOs model='mastergpios' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
 		{% endwith %}
 		{% endwith %}
 	{% endif %}
 	
 	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}
-	{% with var_header="EVENTS AND ALARMS" rows=EVTs model='events' %}
+    {% trans "EVENTS AND ALARMS" as var_header %}
+	{% with rows=EVTs model='events' %}
 	{% include "Subsystems/_subsystems_acordion.html" %}
 	{% endwith %}
 	{% endwith %}

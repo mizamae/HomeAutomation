@@ -8,7 +8,7 @@
       "type": "image/jpg"
     }
   ],
-  "start_url": "/",
+  "start_url": "/Subsystems/home/",
   "display": "standalone",
   "orientation": "any"
 }

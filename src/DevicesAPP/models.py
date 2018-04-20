@@ -1777,7 +1777,7 @@ class Devices(models.Model):
                     out['LastUpdated']=None
                 out['Error']=Error
             except:
-                if str(sys.exc_info()[0]).find('ConnectTimeout')>=0:
+                if str(sys.exc_info()[0]).find('Timeout')>=0:
                     if retries>0:
                         Error=self.Name+" did not respond within the timeout margin (default 1 sec)"
                     else:

@@ -40,7 +40,8 @@ MEDIA_URL = "/media/"
 
 LOCALE_PATHS = [ 
         join(BASE_DIR, "MainAPP/locale"), 
-        join(BASE_DIR, "templates/locale"), 
+        join(BASE_DIR, "templates/locale"),
+        join(BASE_DIR, "templates/Subsystems/locale"),
     ]
 
 # def get_reportsFolders():

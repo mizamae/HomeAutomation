@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: home.html:34 home.html:38 home.html:42 home.html:46
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-03 15:03+0100\n"
+"POT-Creation-Date: 2018-04-20 12:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,30 +19,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: 3xDHT22.html:43 GPIOs.html:50 advanced_device.html:101 rulesList.html:43
-#: schedulesList.html:52
-msgid "Description"
-msgstr "Descripci&oacute;n"
-
-#: 3xDHT22.html:44
-msgid "Value"
-msgstr "Valor"
-
-#: 3xDHT22.html:62 DHT11.html:44 DHT22.html:44 GPIOs.html:49
-#: showdevices.html:127 showdevices.html:205
-msgid "Pin"
-msgstr "Pin"
-
-#: 3xDHT22.html:63 DHT11.html:45 DHT22.html:45 GAPQv1.html:45
-#: OpenWeatherMap.html:45
-msgid "Type"
-msgstr "Tipo"
-
-#: 3xDHT22.html:203 DHT11.html:124 DHT22.html:124 GAPQv1.html:123
-#: GPIOs.html:90 OpenWeatherMap.html:124 timezones.html:49 trackUsers.html:74
-msgid "Return"
-msgstr "Volver "
-
 #: DeviceGraph.html:104
 msgid "Graphs for the device "
 msgstr "Gr&aacute;ficas del dispositivo "
@@ -49,14 +26,6 @@ msgstr "Gr&aacute;ficas del dispositivo "
 #: DeviceGraph.html:106
 msgid "Graphs from a device"
 msgstr "Gr&aacute;ficas del dispositivo"
-
-#: GAPQv1.html:44
-msgid "IP address"
-msgstr "Direcci&oacute;n IP"
-
-#: GAPQv1.html:46
-msgid "Active errors"
-msgstr "Errores activos"
 
 #: GPIOs.html:36
 msgid "List of GPIOs"
@@ -69,6 +38,15 @@ msgid ""
 msgstr ""
 "En la siguiente tabla, puedes encontrar todas las E/S configuradas en la "
 "unidad Master."
+
+#: GPIOs.html:49
+msgid "Pin"
+msgstr "Pin"
+
+#: GPIOs.html:50 _events_table.html:11 advanced_device.html:101
+#: rulesList.html:43 schedulesList.html:52
+msgid "Description"
+msgstr "Descripci&oacute;n"
 
 #: GPIOs.html:51 schedulesList.html:55
 msgid "Current value"
@@ -86,11 +64,51 @@ msgstr "Cambiar estado"
 msgid "No IOs configured!!"
 msgstr "No hay E/S configuradas!!"
 
+#: GPIOs.html:90 OpenWeatherMap.html:124 timezones.html:49 trackUsers.html:74
+msgid "Return"
+msgstr "Volver "
+
 #: OpenWeatherMap.html:44
 #, fuzzy
 #| msgid "Action"
 msgid "Connection"
 msgstr "Acci&oacute;n"
+
+#: OpenWeatherMap.html:45
+msgid "Type"
+msgstr "Tipo"
+
+#: _appsmodel_acordion.html:17
+msgid "ADD"
+msgstr ""
+
+#: _appsmodel_acordion.html:23
+msgid "VIEW"
+msgstr ""
+
+#: _appsmodel_acordion.html:29
+msgid "GRAPHS"
+msgstr ""
+
+#: _back.html:6
+msgid "BACK"
+msgstr ""
+
+#: _events_table.html:9 advanced_device.html:99
+msgid "Timestamp"
+msgstr ""
+
+#: _events_table.html:10 advanced_device.html:100
+msgid "Severity"
+msgstr "Severidad"
+
+#: _events_table.html:12 advanced_device.html:102
+msgid "Acknowledge"
+msgstr "Marcar como le&iacute;da"
+
+#: _events_table.html:28 advanced_device.html:117
+msgid "OK"
+msgstr ""
 
 #: _navbar.html:3
 msgid "About"
@@ -171,8 +189,8 @@ msgstr "Definici&oacute;n de las etiquetas para el dispositivo "
 msgid " finished OK"
 msgstr " termin&oacute; OK"
 
-#: admin/customLabels.html:11 reportItemsList.html:80 reqconfdevice.html:16
-#: rulesList.html:71 schedulesList.html:129 showdevices.html:266
+#: admin/customLabels.html:11 reqconfdevice.html:16 rulesList.html:71
+#: schedulesList.html:129
 msgid "Return to Main"
 msgstr "Volver "
 
@@ -203,7 +221,7 @@ msgstr ""
 "dispositivos que tengasconfigurados en el archivo xml de configuraci&oacute;"
 "n."
 
-#: advanced_device.html:56 home_device.html:122 home_device.html:124
+#: advanced_device.html:56
 msgid "Let's do it"
 msgstr "Vamos!"
 
@@ -272,23 +290,7 @@ msgstr "Reiniciar procesos"
 msgid "Events and alarms"
 msgstr "Eventos y alarmas"
 
-#: advanced_device.html:99
-msgid "Timestamp"
-msgstr ""
-
-#: advanced_device.html:100
-msgid "Severity"
-msgstr "Severidad"
-
-#: advanced_device.html:102
-msgid "Acknowledge"
-msgstr "Marcar como le&iacute;da"
-
-#: advanced_device.html:117
-msgid "OK"
-msgstr ""
-
-#: advanced_device.html:126 home_device.html:193
+#: advanced_device.html:126 configuration.html:59 home.html:53
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
 
@@ -304,151 +306,63 @@ msgstr "Define las etiquetas para las variables"
 msgid "Something failed"
 msgstr "Algo ha fallado"
 
-#: home_device.html:36
-msgid "Knowledge is power..."
-msgstr "Conocer es poder..."
-
-#: home_device.html:50
-msgid "and we want to empower you"
-msgstr "y queremos darte el poder"
-
-#: home_device.html:51
-msgid "with an open-hardware environment"
-msgstr "mediante un ecosistema de dispositivos de hardware abierto"
-
-#: home_device.html:52
-msgid "that will gather tons of information about your daily life."
-msgstr ""
-"que recoger&aacute; toneladas de informaci&oacute;n sobre tu vida diaria."
-
-#: home_device.html:53
-msgid "Wanna see more?"
-msgstr "&iquest;Quieres ver mas?"
-
-#: home_device.html:64
-msgid "OK great! you want to see more right?"
-msgstr "&iexcl;Genial! &iquest;Quieres ver mas no?"
-
-#: home_device.html:65
-msgid "What if I would tell you that you will know..."
-msgstr "Que tal si te dijera que podr&iacute;as conocer..."
-
-#: home_device.html:68
-msgid "your electricity consumption pattern."
-msgstr "tu patr&oacute;n de consumo el&eacute;ctrico."
-
-#: home_device.html:69
-msgid "your heating operation across the day."
-msgstr "el funcionamiento de tu calefacci&oacute;n a lo largo del dia."
-
-#: home_device.html:70
-msgid "the temperature and humidity anywhere in your house."
-msgstr "la temperatura y humedad ambiental en tu casa."
-
-#: home_device.html:71
-msgid "who and when enters/leaves home."
-msgstr "qui&eacute;n y cuando entra/sale de tu casa."
-
-#: home_device.html:72
-msgid "and anything else you can imagine..."
-msgstr "y cualquier otra cosa que te imagines..."
-
-#: home_device.html:118
-msgid "Register new device"
-msgstr "Registrar un nuevo dispositivo"
-
-#: home_device.html:119
-msgid "Here you can setup a new "
-msgstr "Aqu&iacute; puedes configurar un nuevo dispositivo compatible con "
-
-#: home_device.html:119
-msgid " compatible device"
-msgstr " dispositivo compatible"
-
-#: home_device.html:129
-msgid "Browse the installation"
-msgstr "Mi instalaci&oacute;n"
-
-#: home_device.html:130
-msgid ""
-"Here you can see all the devices that are currently configured in your "
-"installation. You can start or stop the polling on a certain device."
-msgstr ""
-"Aqu&iacute; puedes ver todos los dispositivos que hay configurados "
-"actualmente en tu instalaci&oacute;n. Puedes iniciar o detener el registro "
-"de un determinado dispositivo."
-
-#: home_device.html:131
-msgid "View devices"
-msgstr "Ver dispositivos"
-
-#: home_device.html:134
-msgid "Reports"
-msgstr "Informes"
-
-#: home_device.html:135
-msgid ""
-"Here you can configure and view tailor-made reports showing the information "
-"from any of your devices."
-msgstr ""
-"Aqu&iacute; puedes configurar y ver informes a medida que muestren la "
-"informaci&oacute;n de cualquiera de tus dispositivos."
-
-#: home_device.html:138 home_device.html:140
-msgid "Configure"
+#: configuration.html:8
+#, fuzzy
+#| msgid "Configure"
+msgid "Configuration"
 msgstr "Configurar"
 
-#: home_device.html:143 home_device.html:145
-msgid "View"
-msgstr "Ver"
-
-#: home_device.html:150
-msgid "Device historic plots"
-msgstr "Gr&aacute;ficas de un dispositivo"
-
-#: home_device.html:151
-msgid ""
-"Here you can see the charts with the information recorded from your devices "
-"from the very beginning."
+#: configuration.html:26
+msgid "CONFIGURATION DASHBOARD"
 msgstr ""
-"Aqu&iacute; puedes ver la informaci&oacute;n registrada por tus dispositivos "
-"desde el instante inicial."
 
-#: home_device.html:154 home_device.html:156
-msgid "View plots"
-msgstr "Ver gr&aacute;ficos"
-
-#: home_device.html:163
-msgid "Automation and control"
-msgstr "Automatizaci&oacute;n y control"
-
-#: home_device.html:164
-msgid ""
-"Here you will be able to control all the automated aspects of your home "
-"environment such as heating/cooling, motorized curtains, etc."
+#: configuration.html:28
+msgid "SOFT-RESET"
 msgstr ""
-"Aqu&iacute; puedes controlar todos los aspectos automatizados de tu casa "
-"como la calefacci&oacute;n, persianas motorizadas, etc."
 
-#: home_device.html:167 home_device.html:170
-msgid "Schedules"
-msgstr "Programaciones"
+#: configuration.html:29
+msgid "Click to restart the Gunicorn processes."
+msgstr ""
 
-#: home_device.html:168 home_device.html:171
-msgid "Automation rules"
-msgstr "Reglas de autotatizaci&oacute;n"
+#: configuration.html:32
+msgid "SOFTWARE UPDATE"
+msgstr ""
 
-#: home_device.html:177
-msgid "Advanced features"
-msgstr "Acciones avanzadas"
+#: configuration.html:33
+msgid "Click to look for newer versions in the repository."
+msgstr ""
 
-#: home_device.html:178
-msgid "Here you can do some advanced stuff."
-msgstr "Aqu&iacute; puedes hacer algunas cosillas mas avanzadas. "
+#: configuration.html:36
+msgid "DB BACKUP"
+msgstr ""
 
-#: home_device.html:180
-msgid "Let me in"
-msgstr "Dejame entrar"
+#: configuration.html:38
+msgid "Backup is configured. Click to remove it."
+msgstr ""
+
+#: configuration.html:40
+msgid "Backup is not configured. Click to configure."
+msgstr ""
+
+#: home.html:31
+msgid "APPLICATION SERVER DASHBOARD"
+msgstr ""
+
+#: home.html:33
+msgid "DEVICES APP"
+msgstr ""
+
+#: home.html:37
+msgid "REPORTING APP"
+msgstr ""
+
+#: home.html:41
+msgid "SUBSYSTEMS APP"
+msgstr ""
+
+#: home.html:45
+msgid "CONFIGURATION"
+msgstr ""
 
 #: registration/logged_out.html:9
 msgid "Thanks for spending some quality time with the Web site today."
@@ -589,92 +503,6 @@ msgstr "Direcci&oacute;n Email"
 msgid "Reset my password"
 msgstr "Resetea mi contrase&ntilde;a"
 
-#: reportItemsList.html:33
-msgid "List of saved reports"
-msgstr "Lista de los informes guardados"
-
-#: reportItemsList.html:38 reportTemplate.html:106
-msgid "Report "
-msgstr "Informes"
-
-#: reportItemsList.html:41
-msgid "Preview next report"
-msgstr "Previsualizar el siguiente informe"
-
-#: reportItemsList.html:54 reportItemsList.html:64
-msgid "From"
-msgstr "Desde"
-
-#: reportItemsList.html:55 reportItemsList.html:65
-msgid "To"
-msgstr "Hasta"
-
-#: reportItemsList.html:56
-msgid "Link"
-msgstr "Link"
-
-#: reportItemsList.html:57 reportItemsList.html:70
-#, fuzzy
-#| msgid "Delete device"
-msgid "Delete"
-msgstr "Eliminar dispositivo"
-
-#: reportItemsList.html:67
-msgid "View report"
-msgstr "Ver informe"
-
-#: reportTemplate.html:106
-msgid " corresponding to dates between "
-msgstr " correspondiente a las fechas entre "
-
-#: reportTemplate.html:106
-msgid " and "
-msgstr " y "
-
-#: reportTemplate.html:108
-msgid "Something is not correct"
-msgstr "Algo no esta cirrecto"
-
-#: reportconfigurator.html:37
-msgid "SAVE REPORT"
-msgstr "GUARDAR INFORME"
-
-#: reportconfigurator.html:38
-msgid "Return to Main "
-msgstr "Volver "
-
-#: reportconfigurator.html:39
-msgid "Configure new report "
-msgstr "Configurar nuevo informe "
-
-#: reportconfigurator.html:53
-msgid "Title for the report "
-msgstr "T&iacute;tulo del informe "
-
-#: reportconfigurator.html:85
-msgid "Add new chart"
-msgstr "A&ntilde;adir gr&aacute;fico"
-
-#: reportconfigurator.html:113
-msgid "Selection for chart "
-msgstr "Seleccion para el gr&aacute;fico "
-
-#: reportconfigurator.html:121
-msgid " Remove chart "
-msgstr " Eliminar grafico "
-
-#: reportconfigurator.html:133
-msgid "Title : "
-msgstr "Titulo : "
-
-#: reportconfigurator.html:185
-msgid "Selectable items"
-msgstr "Items seleccionables"
-
-#: reportconfigurator.html:186
-msgid "Selected items"
-msgstr "Items seleccionados"
-
 #: reqconfdevice.html:9
 msgid "Found"
 msgstr "Encontrado"
@@ -737,114 +565,6 @@ msgstr "Valor BAJO"
 msgid "HIGH value"
 msgstr "Valor ALTO"
 
-#: showdevices.html:32
-msgid "Device List"
-msgstr "Lista de dispositivos"
-
-#: showdevices.html:33
-msgid "REMOTE DEVICES"
-msgstr "DISPOSITIVOS REMOTOS"
-
-#: showdevices.html:48 showdevices.html:126 showdevices.html:204
-msgid "Device name"
-msgstr "Nombre del dispositivo"
-
-#: showdevices.html:49 showdevices.html:66
-msgid "Device IP"
-msgstr "Direcci&oacute;n IP"
-
-#: showdevices.html:50 showdevices.html:67 showdevices.html:128
-#: showdevices.html:145 showdevices.html:206 showdevices.html:223
-msgid "Device type"
-msgstr "Tipo de dispositivo"
-
-#: showdevices.html:51 showdevices.html:129 showdevices.html:207
-msgid "Device state"
-msgstr "Estado del dispositivo"
-
-#: showdevices.html:52 showdevices.html:130 showdevices.html:208
-msgid "Delete device"
-msgstr "Eliminar dispositivo"
-
-#: showdevices.html:53 showdevices.html:99 showdevices.html:131
-#: showdevices.html:177 showdevices.html:209 showdevices.html:255
-msgid "Last updated"
-msgstr "Ultima actualizaci&oacute;n"
-
-#: showdevices.html:54 showdevices.html:132 showdevices.html:210
-msgid "Device webpage"
-msgstr "Web del dispositivo"
-
-#: showdevices.html:59 showdevices.html:61 showdevices.html:137
-#: showdevices.html:139
-msgid "There are no registered local devices in the installation."
-msgstr "No hay dispositivos locales registrados en la instalaci&oacute;n"
-
-#: showdevices.html:65 showdevices.html:143 showdevices.html:221
-msgid "Device Name"
-msgstr "Nombre del dispositivo"
-
-#: showdevices.html:69 showdevices.html:147 showdevices.html:225
-msgid "STOPPED"
-msgstr "PARADO"
-
-#: showdevices.html:72 showdevices.html:150 showdevices.html:228
-msgid "RUN"
-msgstr "MARCHA"
-
-#: showdevices.html:84 showdevices.html:86 showdevices.html:162
-#: showdevices.html:164 showdevices.html:240 showdevices.html:242
-msgid "RUNNING"
-msgstr ""
-
-#: showdevices.html:86
-msgid " Error: "
-msgstr ""
-
-#: showdevices.html:90 showdevices.html:168 showdevices.html:246
-msgid "STOP"
-msgstr "PARO"
-
-#: showdevices.html:102 showdevices.html:180 showdevices.html:258
-msgid "Advanced"
-msgstr "Avanzado"
-
-#: showdevices.html:111
-msgid "LOCAL DEVICES"
-msgstr "DISPOSITIVOS LOCALES"
-
-#: showdevices.html:144 showdevices.html:222
-msgid "Device Pin"
-msgstr "Pin del dispositivo"
-
-#: showdevices.html:164 showdevices.html:242
-msgid " Error "
-msgstr ""
-
-#: showdevices.html:189
-msgid "ON MEMORY DEVICES"
-msgstr "DISPOSITIVOS EN MEMORIA"
-
-#: showdevices.html:215 showdevices.html:217
-msgid "There are no registered on memory devices in the installation."
-msgstr "No hay dispositivos en memoria registrados en la instalaci&oacute;n"
-
-#: showdevices.html:363 showdevices.html:426
-msgid " RUNNING "
-msgstr ""
-
-#: showdevices.html:363 showdevices.html:426
-msgid " STOPPED "
-msgstr "PARADO"
-
-#: showdevices.html:378 showdevices.html:433
-msgid " Start "
-msgstr " Marcha "
-
-#: showdevices.html:383 showdevices.html:444
-msgid " Stop "
-msgstr " Paro "
-
 #: trackUsers.html:37
 msgid "Users tracking"
 msgstr "Seguimiento de usuarios"
@@ -868,6 +588,257 @@ msgstr "Precisi&oacute;n [m]"
 #: trackUsers.html:51
 msgid "Last update"
 msgstr "Ultima actualizaci&oacute;n"
+
+#~ msgid "Value"
+#~ msgstr "Valor"
+
+#~ msgid "STOPPED"
+#~ msgstr "PARADO"
+
+#~ msgid "Device name"
+#~ msgstr "Nombre del dispositivo"
+
+#~ msgid "Device type"
+#~ msgstr "Tipo de dispositivo"
+
+#~ msgid "Device state"
+#~ msgstr "Estado del dispositivo"
+
+#~ msgid "Last updated"
+#~ msgstr "Ultima actualizaci&oacute;n"
+
+#~ msgid "IP address"
+#~ msgstr "Direcci&oacute;n IP"
+
+#~ msgid "Active errors"
+#~ msgstr "Errores activos"
+
+#~ msgid "Knowledge is power..."
+#~ msgstr "Conocer es poder..."
+
+#~ msgid "and we want to empower you"
+#~ msgstr "y queremos darte el poder"
+
+#~ msgid "with an open-hardware environment"
+#~ msgstr "mediante un ecosistema de dispositivos de hardware abierto"
+
+#~ msgid "that will gather tons of information about your daily life."
+#~ msgstr ""
+#~ "que recoger&aacute; toneladas de informaci&oacute;n sobre tu vida diaria."
+
+#~ msgid "Wanna see more?"
+#~ msgstr "&iquest;Quieres ver mas?"
+
+#~ msgid "OK great! you want to see more right?"
+#~ msgstr "&iexcl;Genial! &iquest;Quieres ver mas no?"
+
+#~ msgid "What if I would tell you that you will know..."
+#~ msgstr "Que tal si te dijera que podr&iacute;as conocer..."
+
+#~ msgid "your electricity consumption pattern."
+#~ msgstr "tu patr&oacute;n de consumo el&eacute;ctrico."
+
+#~ msgid "your heating operation across the day."
+#~ msgstr "el funcionamiento de tu calefacci&oacute;n a lo largo del dia."
+
+#~ msgid "the temperature and humidity anywhere in your house."
+#~ msgstr "la temperatura y humedad ambiental en tu casa."
+
+#~ msgid "who and when enters/leaves home."
+#~ msgstr "qui&eacute;n y cuando entra/sale de tu casa."
+
+#~ msgid "and anything else you can imagine..."
+#~ msgstr "y cualquier otra cosa que te imagines..."
+
+#~ msgid "Register new device"
+#~ msgstr "Registrar un nuevo dispositivo"
+
+#~ msgid "Here you can setup a new "
+#~ msgstr "Aqu&iacute; puedes configurar un nuevo dispositivo compatible con "
+
+#~ msgid " compatible device"
+#~ msgstr " dispositivo compatible"
+
+#~ msgid "Browse the installation"
+#~ msgstr "Mi instalaci&oacute;n"
+
+#~ msgid ""
+#~ "Here you can see all the devices that are currently configured in your "
+#~ "installation. You can start or stop the polling on a certain device."
+#~ msgstr ""
+#~ "Aqu&iacute; puedes ver todos los dispositivos que hay configurados "
+#~ "actualmente en tu instalaci&oacute;n. Puedes iniciar o detener el "
+#~ "registro de un determinado dispositivo."
+
+#~ msgid "View devices"
+#~ msgstr "Ver dispositivos"
+
+#~ msgid "Reports"
+#~ msgstr "Informes"
+
+#~ msgid ""
+#~ "Here you can configure and view tailor-made reports showing the "
+#~ "information from any of your devices."
+#~ msgstr ""
+#~ "Aqu&iacute; puedes configurar y ver informes a medida que muestren la "
+#~ "informaci&oacute;n de cualquiera de tus dispositivos."
+
+#~ msgid "View"
+#~ msgstr "Ver"
+
+#~ msgid "Device historic plots"
+#~ msgstr "Gr&aacute;ficas de un dispositivo"
+
+#~ msgid ""
+#~ "Here you can see the charts with the information recorded from your "
+#~ "devices from the very beginning."
+#~ msgstr ""
+#~ "Aqu&iacute; puedes ver la informaci&oacute;n registrada por tus "
+#~ "dispositivos desde el instante inicial."
+
+#~ msgid "View plots"
+#~ msgstr "Ver gr&aacute;ficos"
+
+#~ msgid "Automation and control"
+#~ msgstr "Automatizaci&oacute;n y control"
+
+#~ msgid ""
+#~ "Here you will be able to control all the automated aspects of your home "
+#~ "environment such as heating/cooling, motorized curtains, etc."
+#~ msgstr ""
+#~ "Aqu&iacute; puedes controlar todos los aspectos automatizados de tu casa "
+#~ "como la calefacci&oacute;n, persianas motorizadas, etc."
+
+#~ msgid "Schedules"
+#~ msgstr "Programaciones"
+
+#~ msgid "Automation rules"
+#~ msgstr "Reglas de autotatizaci&oacute;n"
+
+#~ msgid "Advanced features"
+#~ msgstr "Acciones avanzadas"
+
+#~ msgid "Here you can do some advanced stuff."
+#~ msgstr "Aqu&iacute; puedes hacer algunas cosillas mas avanzadas. "
+
+#~ msgid "Let me in"
+#~ msgstr "Dejame entrar"
+
+#~ msgid "List of saved reports"
+#~ msgstr "Lista de los informes guardados"
+
+#~ msgid "Report "
+#~ msgstr "Informes"
+
+#~ msgid "Preview next report"
+#~ msgstr "Previsualizar el siguiente informe"
+
+#~ msgid "From"
+#~ msgstr "Desde"
+
+#~ msgid "To"
+#~ msgstr "Hasta"
+
+#~ msgid "Link"
+#~ msgstr "Link"
+
+#, fuzzy
+#~| msgid "Delete device"
+#~ msgid "Delete"
+#~ msgstr "Eliminar dispositivo"
+
+#~ msgid "View report"
+#~ msgstr "Ver informe"
+
+#~ msgid " corresponding to dates between "
+#~ msgstr " correspondiente a las fechas entre "
+
+#~ msgid " and "
+#~ msgstr " y "
+
+#~ msgid "Something is not correct"
+#~ msgstr "Algo no esta cirrecto"
+
+#~ msgid "SAVE REPORT"
+#~ msgstr "GUARDAR INFORME"
+
+#~ msgid "Return to Main "
+#~ msgstr "Volver "
+
+#~ msgid "Configure new report "
+#~ msgstr "Configurar nuevo informe "
+
+#~ msgid "Title for the report "
+#~ msgstr "T&iacute;tulo del informe "
+
+#~ msgid "Add new chart"
+#~ msgstr "A&ntilde;adir gr&aacute;fico"
+
+#~ msgid "Selection for chart "
+#~ msgstr "Seleccion para el gr&aacute;fico "
+
+#~ msgid " Remove chart "
+#~ msgstr " Eliminar grafico "
+
+#~ msgid "Title : "
+#~ msgstr "Titulo : "
+
+#~ msgid "Selectable items"
+#~ msgstr "Items seleccionables"
+
+#~ msgid "Selected items"
+#~ msgstr "Items seleccionados"
+
+#~ msgid "Device List"
+#~ msgstr "Lista de dispositivos"
+
+#~ msgid "REMOTE DEVICES"
+#~ msgstr "DISPOSITIVOS REMOTOS"
+
+#~ msgid "Device IP"
+#~ msgstr "Direcci&oacute;n IP"
+
+#~ msgid "Delete device"
+#~ msgstr "Eliminar dispositivo"
+
+#~ msgid "Device webpage"
+#~ msgstr "Web del dispositivo"
+
+#~ msgid "There are no registered local devices in the installation."
+#~ msgstr "No hay dispositivos locales registrados en la instalaci&oacute;n"
+
+#~ msgid "Device Name"
+#~ msgstr "Nombre del dispositivo"
+
+#~ msgid "RUN"
+#~ msgstr "MARCHA"
+
+#~ msgid "STOP"
+#~ msgstr "PARO"
+
+#~ msgid "Advanced"
+#~ msgstr "Avanzado"
+
+#~ msgid "LOCAL DEVICES"
+#~ msgstr "DISPOSITIVOS LOCALES"
+
+#~ msgid "Device Pin"
+#~ msgstr "Pin del dispositivo"
+
+#~ msgid "ON MEMORY DEVICES"
+#~ msgstr "DISPOSITIVOS EN MEMORIA"
+
+#~ msgid "There are no registered on memory devices in the installation."
+#~ msgstr "No hay dispositivos en memoria registrados en la instalaci&oacute;n"
+
+#~ msgid " STOPPED "
+#~ msgstr "PARADO"
+
+#~ msgid " Start "
+#~ msgstr " Marcha "
+
+#~ msgid " Stop "
+#~ msgstr " Paro "
 
 #~ msgid "List of schedules"
 #~ msgstr "Lista de las programaciones"
