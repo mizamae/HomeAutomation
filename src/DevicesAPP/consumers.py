@@ -37,7 +37,7 @@ class Devices_query(JsonWebsocketConsumer):
                 multiplexer.send({"action":"query","DeviceName":DV.Name,"Datagram":DG.Identifier,"data":status})
         elif (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
             import DevicesAPP.callbacks
-            data = getattr(Devices.callbacks, DV.Type.Code)(DV).query_sensor()
+            data = getattr(DevicesAPP.callbacks, DV.DVT.Code)(DV).query_sensor()
             multiplexer.send({"action":"query","DeviceName":DV.Name,"data":data})
 
 class GPIO_updater(JsonWebsocketConsumer):
