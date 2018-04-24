@@ -374,7 +374,7 @@ class DHT22(object):
         Read temperature and humidity from DHT sensor.
         """
         timestamp=timezone.now() #para hora con info UTC 
-        humidity, temperature = Adafruit_DHT.read_retry(self.type, self.sensor.IO.pin)
+        humidity, temperature = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
         if temperature==None:
             temperature=self._maxT
         if humidity==None:
