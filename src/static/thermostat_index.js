@@ -10,6 +10,8 @@ function updateThermostat(data)
 		}
 		if (ThermostatInstances[index].targetVARpk == data.pk)
 		{
+			
+			clearInterval(ThermostatInstances[index].acknowledged);
 			ThermostatInstances[index].target_temperature=data.Value;
 		}
 	}
@@ -140,13 +142,27 @@ var thermostatDial = (function() {
 			target_temperature: options.initialTarget,
 			ambient_temperature: options.initialValue,
 			hvac_state: properties.hvac_states[0],
-			has_leaf: false,
-			away: false
+			has_leaf: true,
+			away: false,
+			acknowledged:null
 		};
 		
 		/*
 		 * Property getter / setters
 		 */
+		
+		Object.defineProperty(this,'acknowledged',{
+			get: function() {
+				for (i in icoWifi)
+				{
+					setClass(icoWifi[i],'dial_ico_wifiNOOK',false);
+				}
+				return state.acknowledged;
+			},
+			set: function(val) {
+				state.acknowledged = val;
+			}
+		});
 		Object.defineProperty(this,'valueVARpk',{
 			get: function() {
 				return state.valueVARpk;
@@ -295,25 +311,44 @@ var thermostatDial = (function() {
 		},svg);
 		var lblAway_text = document.createTextNode('AWAY');
 		lblAway.appendChild(lblAway_text);
-		//
-		var icoLeaf = createSVGElement('path',{
-			class: 'dial__ico__leaf'
-		},svg);
 		
 		/*
-		 * LEAF
+		 * WIFI ICON
 		 */
-		var leafScale = properties.radius/5/100;
-		var leafDef = ["M", 3, 84, "c", 24, 17, 51, 18, 73, -6, "C", 100, 52, 100, 22, 100, 4, "c", -13, 15, -37, 9, -70, 19, "C", 4, 32, 0, 63, 0, 76, "c", 6, -7, 18, -17, 33, -23, 24, -9, 34, -9, 48, -20, -9, 10, -20, 16, -43, 24, "C", 22, 63, 8, 78, 3, 84, "z"].map(function(x) {
+		var leafScale = properties.radius/5/10;
+		var wifiDef3=["M",9.9,5,"C",6.8,5,4,6.4,2.2,8.7,"l",1.1,1.1,"c",1.6,-2,4,-3.2,6.7,-3.2,"c",2.7,0,5.1,1.3,6.7,3.2,"l",1.1,-1.1,"C",15.8,6.4,13,5,9.9,5,"z"].map(function(x) {
 			return isNaN(x) ? x : x*leafScale;
 		}).join(' ');
-		var translate = [properties.radius-(leafScale*100*0.5),properties.radius*1.5]
-		var icoLeaf = createSVGElement('path',{
-			class: 'dial__ico__leaf',
-			d: leafDef,
+		var wifiDef2=["M",9.9,8,"c",-2.3,0,-4.3,1.1,-5.6,2.8,"l",1.1,1.1,"c",1,-1.4,2.6,-2.4,4.5,-2.4,"c",1.9,0,3.5,0.9,4.5,2.4,"l",1.1,-1.1,"C",14.2,9.1,12.2,8,9.9,8,"z"].map(function(x) {
+			return isNaN(x) ? x : x*leafScale;
+		}).join(' ');
+		var wifiDef1=["M",9.9,11,"c",-1.5,0,-2.7,0.8,-3.4,2,"l",1.1,1.1,"c",0.4,-0.9,1.3,-1.6,2.3,-1.6,"s",2,0.7,2.3,1.6,"l",1.1,-1.1,"C",12.6,11.8,11.4,11,9.9,11,"z"].map(function(x) {
+			return isNaN(x) ? x : x*leafScale;
+		}).join(' ');
+		var translate = [properties.radius-(leafScale*10*0.9),properties.radius*1.5]
+		var icoWifi=[];
+		icoWifi.push(createSVGElement('path',{
+			class: 'dial_ico_wifiOK',
+			d: wifiDef3,
 			transform: 'translate('+translate[0]+','+translate[1]+')'
-		},svg);
-			
+		},svg));
+		icoWifi.push(createSVGElement('path',{
+			class: 'dial_ico_wifiOK',
+			d: wifiDef2,
+			transform: 'translate('+translate[0]+','+translate[1]+')'
+		},svg));
+		icoWifi.push(createSVGElement('path',{
+			class: 'dial_ico_wifiOK',
+			d: wifiDef1,
+			transform: 'translate('+translate[0]+','+translate[1]+')',
+		},svg));
+		icoWifi.push(createSVGElement('circle',{
+			class: 'dial_ico_wifiOK',
+			r: 1*leafScale,
+			cx:9.9*leafScale,
+			cy:15.3*leafScale,
+			transform: 'translate('+translate[0]+','+translate[1]+')',
+		},svg));
 		/*
 		 * RENDER
 		 */
@@ -454,6 +489,7 @@ var thermostatDial = (function() {
 			},1000);
 		};
 		
+		
 		function dragEnd (ev) {
 			clearTimeout(startDelay);
 			setClass(svg, 'dial--edit', false);
@@ -462,6 +498,11 @@ var thermostatDial = (function() {
 			if (self.target_temperature != _drag.startTemperature) {
 				if (typeof options.onSetTargetTemperature == 'function') {
 					options.onSetTargetTemperature(self.target_temperature);
+					for (i in icoWifi)
+					{
+						setClass(icoWifi[i],'dial_ico_wifiNOOK',true);
+					}
+					state.acknowledged = setInterval(options.onSetTargetTemperature,2000,self.target_temperature);
 				};
 			};
 		};

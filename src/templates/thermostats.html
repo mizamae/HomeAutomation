@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+{% block title %}{{ block.super }}{{ title }}{% endblock %}
 
 {% block extrahead %}
 	<title>nest1 Thermostat Control</title>
@@ -31,7 +35,7 @@
 	var container=document.getElementById('thermostat{{ forloop.counter }}');
 	var nest{{ forloop.counter }} = new thermostatDial(container,{
 		onSetTargetTemperature: function(v) {
-			toggle_AVAR(this.targetVARpk,v);
+			toggle_AVAR(nest{{ forloop.counter }}.targetVARpk,v);
 		},
 		diameter: container.offsetWidth,
 		minValue: 0, // Minimum value for target temperature
@@ -49,4 +53,3 @@
 
 {% endblock scripts %}
 
-</html>
