@@ -177,7 +177,7 @@ var thermostatDial = (function() {
 				return state.ambient_temperature;
 			},
 			set: function(val) {
-				state.ambient_temperature = roundHalf(+val);
+				state.ambient_temperature = val;
 				render();
 			}
 		});

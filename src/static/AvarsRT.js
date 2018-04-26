@@ -21,6 +21,7 @@ $(function()
                 updateThermostat(data);
                 }catch(err){}
             };
+    try{
     AVARWebSocketBridge.socket.addEventListener('open', 
         function() { 
             console.log("Connected to avars socket"); 
@@ -35,6 +36,7 @@ $(function()
             label.style.color="Red";
             label.innerHTML="Disconnected from avars engine";
     });
+    }catch(err){}
 });
 
 function checkAvarsVisibility()
