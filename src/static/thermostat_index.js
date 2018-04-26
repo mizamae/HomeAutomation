@@ -1,3 +1,20 @@
+var ThermostatInstances=[];
+
+function updateThermostat(data)
+{
+	for (index in ThermostatInstances)
+	{
+		if (ThermostatInstances[index].valueVARpk == data.pk)
+		{
+			ThermostatInstances[index].ambient_temperature=data.Value;
+		}
+		if (ThermostatInstances[index].targetVARpk == data.pk)
+		{
+			ThermostatInstances[index].target_temperature=data.Value;
+		}
+	}
+}
+
 var thermostatDial = (function() {
 	
 	/*
@@ -93,6 +110,10 @@ var thermostatDial = (function() {
 			numTicks: options.numTicks || 150, // Number of tick lines to display around the dial
 			tickDegrees: options.tickDegrees ||300, //  Degrees of the dial that should be covered in tick lines
 			onSetTargetTemperature: options.onSetTargetTemperature || function() {}, // Function called when new target temperature set by the dial
+			initialTarget: options.initialTarget||0,
+			initialValue: options.initialValue||0,
+			targetVARpk: options.targetVARpk,
+			valueVARpk: options.valueVARpk
 		};
 		
 		/*
@@ -114,8 +135,10 @@ var thermostatDial = (function() {
 		 * Object state
 		 */
 		var state = {
-			target_temperature: options.minValue,
-			ambient_temperature: options.minValue,
+			valueVARpk: options.valueVARpk,
+			targetVARpk: options.targetVARpk,
+			target_temperature: options.initialTarget,
+			ambient_temperature: options.initialValue,
 			hvac_state: properties.hvac_states[0],
 			has_leaf: false,
 			away: false
@@ -124,6 +147,22 @@ var thermostatDial = (function() {
 		/*
 		 * Property getter / setters
 		 */
+		Object.defineProperty(this,'valueVARpk',{
+			get: function() {
+				return state.valueVARpk;
+			},
+			set: function(val) {
+				state.valueVARpk = val;
+			}
+		});
+		Object.defineProperty(this,'targetVARpk',{
+			get: function() {
+				return state.targetVARpk;
+			},
+			set: function(val) {
+				state.targetVARpk = val;
+			}
+		});
 		Object.defineProperty(this,'target_temperature',{
 			get: function() {
 				return state.target_temperature;
@@ -243,6 +282,12 @@ var thermostatDial = (function() {
 		var lblAmbient_text = document.createTextNode('');
 		lblAmbient.appendChild(lblAmbient_text);
 		//
+		var lblAmbientHalf = createSVGElement('text',{
+			class: 'dial__lbl dial__lbl--ambient--half'
+		},svg);
+		var lblAmbientHalf_text = document.createTextNode('');
+		lblAmbientHalf.appendChild(lblAmbientHalf_text);
+		//
 		var lblAway = createSVGElement('text',{
 			x: properties.radius,
 			y: properties.radius,
@@ -319,8 +364,13 @@ var thermostatDial = (function() {
 		 */
 		function renderAmbientTemperature() {
 			lblAmbient_text.nodeValue = Math.floor(self.ambient_temperature);
+			var shiftX=0;
 			if (self.ambient_temperature%1!=0) {
-				lblAmbient_text.nodeValue += '⁵';
+				var decimalPart = (self.ambient_temperature - Math.floor(self.ambient_temperature)).toFixed(1)*10;
+				lblAmbientHalf_text.nodeValue = decimalPart.toString();//'⁵'
+				shiftX=4;
+			}else
+			{lblAmbientHalf_text.nodeValue='';
 			}
 			var peggedValue = restrictToRange(self.ambient_temperature, options.minValue, options.maxValue);
 			degs = properties.tickDegrees * (peggedValue-options.minValue)/properties.rangeValue - properties.offsetDegrees;
@@ -329,10 +379,15 @@ var thermostatDial = (function() {
 			} else {
 				degs -= 8;
 			}
+			
 			var pos = rotatePoint(properties.lblAmbientPosition,degs,[properties.radius, properties.radius]);
 			attr(lblAmbient,{
-				x: pos[0],
+				x: pos[0]-shiftX,
 				y: pos[1]
+			});
+			attr(lblAmbientHalf,{
+				x: pos[0]+16,
+				y: pos[1]-4
 			});
 		}
 

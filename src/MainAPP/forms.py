@@ -77,12 +77,12 @@ class RuleItemForm(ModelForm):
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
         self.fields['Order'].label = _("Execution order")
-        self.fields['PreVar1'].label = _("Prefix for the first term")
-        self.fields['Var1'].label = _("First term")
+        self.fields['PreVar1'].label = _("Prefix for the value")
+        self.fields['Var1'].label = _("Value")
         self.fields['Operator12'].label = _("Operator")
-        self.fields['PreVar2'].label = _("Prefix for the second term")
-        self.fields['Var2'].label = _("Second term")
-        self.fields['IsConstant'].label = _("Second term is a constant")
+        self.fields['PreVar2'].label = _("Prefix for the setpoint")
+        self.fields['Var2'].label = _("Setpoint")
+        self.fields['IsConstant'].label = _("Setpoint is a constant")
         self.fields['Constant'].label = _("Constant value")
         self.fields['Var2Hyst'].label = _("Hysteresis value")
         self.fields['Operator3'].label = _("Operator with the next rule")

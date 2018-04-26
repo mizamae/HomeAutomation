@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules,AdditionalCalculations
+from .models import Subsystems,AutomationVariables,RuleItems,AutomationRules,AdditionalCalculations,Thermostats
 from .forms import RuleItemForm,AutomationRuleForm,AdditionalCalculationsForm
 
 class SubsystemsInline(GenericStackedInline):
@@ -24,6 +24,8 @@ class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
         else:
             super().save_model(request, obj, form, change)
             
+class ThermostatAdmin(admin.ModelAdmin):
+    pass
 
 class RuleItemInline(admin.TabularInline):
     model = RuleItems
@@ -99,4 +101,5 @@ class AutomationVariablesModelAdmin(admin.ModelAdmin):
 
 admin.site.register(AdditionalCalculations,AdditionalCalculationsModelAdmin)
 admin.site.register(AutomationRules,AutomationRuleModelAdmin)
+admin.site.register(Thermostats,ThermostatAdmin)
 admin.site.register(AutomationVariables,AutomationVariablesModelAdmin)

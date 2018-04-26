@@ -11,8 +11,13 @@
 
 {% block container %}
 <div class="container home-container">
-	<div class="apps-row">
-		<div id='thermostat1' class='nestThermostat'></div>
+	<div class="row">
+	{% for THERM in THERMs %}
+		<div class="col-md-4 col-sm-12">
+       		<h2 style="text-align: center;">{{ THERM.RITM.Var1.Label }}</h2>
+			<div id='thermostat{{ forloop.counter }}' class='row'></div>
+		</div>
+   {% endfor %}
 	</div>
 </div>
 {% endblock container %}
@@ -21,23 +26,26 @@
 <script src="{% static 'AvarsRT.js' %}"></script>	
 <script  src="{% static 'thermostat_index.js' %}"></script>
 
+{% for THERM in THERMs %}
 <script>
-	var nest1 = new thermostatDial(document.getElementById('thermostat1'),{
+	var container=document.getElementById('thermostat{{ forloop.counter }}');
+	var nest{{ forloop.counter }} = new thermostatDial(container,{
 		onSetTargetTemperature: function(v) {
 			toggle_AVAR(this.targetVARpk,v);
 		},
-		diameter: 400,
+		diameter: container.offsetWidth,
 		minValue: 0, // Minimum value for target temperature
 		maxValue: 30, // Maximum value for target temperature
 		numTicks: 150, // Number of tick lines to display around the dial
 		tickDegrees:270,
-		initialTarget:24.5,
-		initialValue:24.,
-		targetVARpk:1,	// pk for the setpoint AVAR 
-		valueVARpk:2,	// pk for the value AVAR 
-		
+		initialTarget:{{ THERM.RITM.Var2.getLatestValue }},
+		initialValue:{{ THERM.RITM.Var1.getLatestValue }},
+		targetVARpk: {{ THERM.RITM.Var2.pk }},	// pk for the setpoint AVAR 
+		valueVARpk: {{ THERM.RITM.Var1.pk }},	// pk for the value AVAR 
 	});
+	ThermostatInstances.push(nest{{ forloop.counter }});
 </script>
+{% endfor %}
 
 {% endblock scripts %}
 

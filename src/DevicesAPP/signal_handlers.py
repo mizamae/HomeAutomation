@@ -18,16 +18,19 @@ def SignalSetGPIO_handler(sender, **kwargs):
             IO.setLow()
         elif Value==1:
             IO.setHigh()
-
+    
 @receiver(MainAPP.signals.SignalToggleAVAR, dispatch_uid="SignalToggleAVAR_DevicesAPP_receiver")
 def SignalToggleAVAR_handler(sender, **kwargs):
     Device=kwargs['Device']
     Tag=kwargs['Tag']
+    newValue=kwargs['newValue']
     if Device=='MainGPIOs':
         Instance=MasterGPIOs.objects.get(pk=Tag)
     elif Device=='MainVars':
         Instance=MainDeviceVars.objects.get(pk=Tag)
-    Instance.toggle()
+    else:
+        return
+    Instance.toggle(newValue=newValue)
     
 @receiver(MainAPP.signals.SignalCreateMainDeviceVars, dispatch_uid="SignalCreateMainDeviceVars_DevicesAPP_receiver")
 def SignalCreateMainDeviceVars_handler(sender, **kwargs):

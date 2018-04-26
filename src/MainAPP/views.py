@@ -110,7 +110,12 @@ def viewUserUbication(request):
             if usr.profile.tracking:
                 pass
         return render(request, 'trackUsers.html',{'Users':users})
-    
+
+def thermostat(request):
+    THERMs=MainAPP.models.Thermostats.objects.all()
+    return render(request, 'thermostats.html',{'THERMs':THERMs})
+
+
 @csrf_exempt
 def handleLocation(request,user):
     if request.method == 'POST':
@@ -226,6 +231,7 @@ def GitUpdate(request):
             update(root)
             break
     return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
+
 
 def update(root):
     """

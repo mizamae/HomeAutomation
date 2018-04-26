@@ -19,7 +19,7 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
         try:
             AVAR=AutomationVariables.objects.get(Tag=Tag)
             AVAR.executeAutomationRules()
-            Group('AVAR-values').send({'text':json.dumps({'Timestamp': timestamp.strftime("%d %B %Y %H:%M:%S"),
+            Group('AVAR-values').send({'text':json.dumps({'Timestamp': timestamp.strftime("%d %B %Y %H:%M:%S"),'pk':AVAR.pk,
                                                           'Label':AVAR.Label,'Value':Values[i],'Type':Types[i]})},
                                       immediately=True)
         except:

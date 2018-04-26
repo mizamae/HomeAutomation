@@ -133,9 +133,12 @@ class MainDeviceVars(models.Model):
         self.updateAutomationVars()
         self.updateValue(newValue=self.Value,timestamp=timezone.now(),writeDB=True,force=True)
     
-    def toggle(self):
-        if self.DataType==DTYPE_DIGITAL:
-            self.updateValue(newValue=not (self.Value),timestamp=None,writeDB=True,force=False)
+    def toggle(self,newValue=None):
+        if newValue==None:
+            if self.DataType==DTYPE_DIGITAL:
+                self.updateValue(newValue=not (self.Value),timestamp=None,writeDB=True,force=False)
+        else:
+            self.updateValue(newValue=newValue,timestamp=None,writeDB=True,force=False)
         
     def updateLabel(self,newLabel):
         self.Label=newLabel
@@ -661,12 +664,18 @@ class MasterGPIOs(models.Model):
             newValue=GPIO.LOW
             self.updateValue(newValue=newValue,timestamp=None,writeDB=True,force=False)
             
-    def toggle(self):
-        if self.Value==GPIO.HIGH:
-            self.setLow()
-        else:
+    def toggle(self,newValue=None):
+        if newValue==None:
+            # TOGGLE
+            if self.Value==GPIO.HIGH:
+                self.setLow()
+            else:
+                self.setHigh()
+        elif newValue==1:
             self.setHigh()
-    
+        else:
+            self.setLow()
+            
     def getLatestData(self,localized=True):
         Data={}
         name=self.getRegistersDBTag()

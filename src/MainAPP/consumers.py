@@ -45,8 +45,9 @@ class avar_update(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         from .models import AutomationVariables
         pk=content['pk']
+        newValue=content['data']['newValue']
         AVAR=AutomationVariables.objects.get(pk=pk)
-        AVAR.toggle()
+        AVAR.toggle(newValue=newValue)
         
     @classmethod
     def group_names(cls, *args, **kwargs):

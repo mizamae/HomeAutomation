@@ -278,8 +278,9 @@ class AutomationVariables(models.Model):
         self.full_clean()
         super().save() 
     
-    def toggle(self):
-        MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device)
+    def toggle(self,newValue=None):
+        if self.UserEditable:
+            MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue)
         
     def checkSubsystem(self,Name):
         SSYTMs=Subsystems.objects.filter(automationvariables=self)
@@ -326,7 +327,11 @@ class AutomationVariables(models.Model):
         Data[name]['value']=row
         Data[name]['label']=self.Label
         return Data
-        
+    
+    def getLatestValue(self):
+        data=self.getLatestData()
+        return str(data[self.Tag]['value'])
+         
     def getValues(self,fromDate,toDate,localized=True):
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance()
@@ -358,7 +363,18 @@ class AutomationVariables(models.Model):
 @receiver(post_save, sender=AutomationVariables, dispatch_uid="update_AutomationVariables")
 def update_AutomationVariables(sender, instance, update_fields,**kwargs):   
     pass
-                
+
+class Thermostats(models.Model):
+    class Meta:
+        verbose_name = _('Thermostat')
+        verbose_name_plural = _('Thermostats')
+     
+    RITM = models.OneToOneField('MainAPP.RuleItems',help_text=str(_('The rule item that the thermostat is linked to.')),
+                           on_delete=models.CASCADE,related_name='ruleitem2thermostat',unique=True,null=False,blank=False,limit_choices_to={'Var2__UserEditable': True})
+    
+    def __str__(self):
+        return str(self.RITM.Rule) + ' - ' + str(self.RITM.Var1) + ' VS ' + str(self.RITM.Var2)
+    
 class RuleItems(models.Model):
     PREFIX_CHOICES=(
         ('',''),
