@@ -200,7 +200,7 @@ def getRegistersDBInstance(year=None):
         DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(timezone.now().year))
     else:
         DBPath=REGISTERS_DB_PATH.replace("_XYEARX_",str(year))
-    logger.debug(DBPath)
+    #logger.debug(DBPath)
     DB=Database(location=DBPath)
     return DB
 

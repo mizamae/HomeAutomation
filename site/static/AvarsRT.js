@@ -9,11 +9,19 @@ var AVARstable=document.getElementById("avarsTable");
 
 $(function()
 {
+	try{
     checkAvarsVisibility();
+	}catch(err){}
     Avarsocket.onmessage = function(message) {
                 var data = JSON.parse(message.data);
-                updateAvar(data)
+                try{
+                updateAvar(data);
+                }catch(err){}
+                try{
+                updateThermostat(data);
+                }catch(err){}
             };
+    try{
     AVARWebSocketBridge.socket.addEventListener('open', 
         function() { 
             console.log("Connected to avars socket"); 
@@ -28,6 +36,7 @@ $(function()
             label.style.color="Red";
             label.innerHTML="Disconnected from avars engine";
     });
+    }catch(err){}
 });
 
 function checkAvarsVisibility()
@@ -43,12 +52,12 @@ function checkAvarsVisibility()
     
 }
 
-function toggle_AVAR(pk)
+function toggle_AVAR(pk,newValue=null)
 {
 	AVARWebSocketBridge.stream('AVAR_modify').send({
         "pk": pk,
         "action": "toggle",
-        "data": {"data1":'Hello'}
+        "data": {"newValue":newValue}
     });
 }
 

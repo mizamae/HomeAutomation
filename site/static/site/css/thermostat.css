@@ -93,6 +93,15 @@ body {
   font-size: 22px;
   font-weight: bold;
 }
+.dial__lbl--ambient--half {
+  font-size: 18px;
+  font-weight: bold;
+}
+.dial__lbl--ambient--half.shown {
+  opacity: 1;
+  -webkit-transition: opacity 0s;
+  transition: opacity 0s;
+}
 .dial__lbl--away {
   font-size: 72px;
   font-weight: bold;

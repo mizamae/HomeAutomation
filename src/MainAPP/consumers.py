@@ -23,7 +23,7 @@ class system_datetime_reset(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         from utils.NTPServer import restart
         restart()
-        PublishEvent(Severity=2,Text=_("NTP server restarted"),Persistent=True,Code='MainAPP0')
+        PublishEvent(Severity=2,Text="NTP server restarted",Persistent=True,Code='MainAPP0')
         
 class System_consumers(WebsocketDemultiplexer):
     consumers = {
@@ -44,6 +44,7 @@ def ws_disconnect_avar(message):
 class avar_update(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         from .models import AutomationVariables
+        #logger.debug('Received WS!!: ' + str(content))
         pk=content['pk']
         newValue=content['data']['newValue']
         AVAR=AutomationVariables.objects.get(pk=pk)
