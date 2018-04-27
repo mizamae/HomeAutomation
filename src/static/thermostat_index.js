@@ -10,12 +10,13 @@ function updateThermostat(data)
 		}
 		if (ThermostatInstances[index].targetVARpk == data.pk)
 		{
-			
+			var check=ThermostatInstances[index].is_true;
 			clearInterval(ThermostatInstances[index].acknowledged);
 			ThermostatInstances[index].target_temperature=data.Value;
 		}
 	}
 }
+
 
 var thermostatDial = (function() {
 	
@@ -115,7 +116,9 @@ var thermostatDial = (function() {
 			initialTarget: options.initialTarget||0,
 			initialValue: options.initialValue||0,
 			targetVARpk: options.targetVARpk,
-			valueVARpk: options.valueVARpk
+			valueVARpk: options.valueVARpk,
+			hysteresis: options.hysteresis,
+			operator: options.operator,
 		};
 		
 		/*
@@ -144,13 +147,29 @@ var thermostatDial = (function() {
 			hvac_state: properties.hvac_states[0],
 			has_leaf: true,
 			away: false,
-			acknowledged:null
+			acknowledged:null,
+			is_true:false,
 		};
 		
 		/*
 		 * Property getter / setters
 		 */
-		
+		Object.defineProperty(this,'hysteresis',{
+			get: function() {
+				return options.hysteresis;
+			},
+			set: function(val) {
+				options.hysteresis = val;
+			}
+		});
+		Object.defineProperty(this,'operator',{
+			get: function() {
+				return options.operator;
+			},
+			set: function(val) {
+				options.operator = val;
+			}
+		});
 		Object.defineProperty(this,'acknowledged',{
 			get: function() {
 				for (i in icoWifi)
@@ -226,7 +245,16 @@ var thermostatDial = (function() {
 				render();
 			}
 		});
-		
+		Object.defineProperty(this,'is_true',{
+			get: function() {
+				checkIsTrue();
+				return state.is_true;
+			},
+			set: function(val) {
+				state.is_true = val;
+				render();
+			}
+		});
 		/*
 		 * SVG
 		 */
@@ -349,6 +377,15 @@ var thermostatDial = (function() {
 			cy:15.3*leafScale,
 			transform: 'translate('+translate[0]+','+translate[1]+')',
 		},svg));
+		var icoON=createSVGElement('circle',{
+			class: 'dial_ico_isTrue',
+			r: 3*leafScale,
+			cx:9.9*leafScale,
+			cy:-2*leafScale,
+			transform: 'translate('+translate[0]+','+translate[1]+')',
+		},svg);
+		
+				
 		/*
 		 * RENDER
 		 */
@@ -359,9 +396,26 @@ var thermostatDial = (function() {
 			renderTargetTemperature();
 			renderAmbientTemperature();
 			renderLeaf();
+			renderIsTrue();
 		}
 		render();
-
+		
+		function checkIsTrue()
+		{
+			if (self.operator.includes("&lt"))
+			{
+				if (self.ambient_temperature<self.target_temperature-self.hysteresis)
+				{ state.is_true= true}
+				if (self.ambient_temperature>self.target_temperature+self.hysteresis)
+				{ state.is_true= false}
+			}else
+			{
+				if (self.ambient_temperature>self.target_temperature+self.hysteresis)
+				{ state.is_true= true}
+				if (self.ambient_temperature<self.target_temperature-self.hysteresis)
+				{ state.is_true= false}
+			}
+		}
 		/*
 		 * RENDER - ticks
 		 */
@@ -439,6 +493,12 @@ var thermostatDial = (function() {
 		 */
 		function renderLeaf() {
 			setClass(svg,'has-leaf',self.has_leaf);
+		}
+		/*
+		 * RENDER - is_true
+		 */
+		function renderIsTrue() {
+			setClass(icoON,'is-true',self.is_true);
 		}
 		
 		/*

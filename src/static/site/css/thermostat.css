@@ -45,6 +45,17 @@ body {
   opacity: 1;
   pointer-events: initial;
 }
+.dial_ico_isTrue {
+  opacity: 0.2;
+  fill: #FF0000;
+  display: block;
+  pointer-events: initial;
+}
+.dial_ico_isTrue.is-true{
+  opacity: 1;
+  -webkit-transition: opacity 1s;
+  transition: opacity 1s;
+}
 .dial__editableIndicator {
   fill: white;
   fill-rule: evenodd;

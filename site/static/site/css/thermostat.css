@@ -14,7 +14,7 @@ body {
       -ms-user-select: none;
           user-select: none;
 }
-.dial.away .dial__ico__leaf {
+.dial.away .dial_ico_wifiOK {
   visibility: hidden;
 }
 .dial.away .dial__lbl--target {
@@ -30,17 +30,31 @@ body {
   -webkit-transition: fill 0.5s;
   transition: fill 0.5s;
 }
-.dial__ico__leaf {
+.dial_ico_wifiOK {
   fill: #13EB13;
   opacity: 0;
   -webkit-transition: opacity 0.5s;
   transition: opacity 0.5s;
   pointer-events: none;
 }
-.dial.has-leaf .dial__ico__leaf {
+.dial_ico_wifiNOOK {
+  fill: #FF0000;
+}
+.dial.has-leaf .dial_ico_wifiOK {
   display: block;
   opacity: 1;
   pointer-events: initial;
+}
+.dial_ico_isTrue {
+  opacity: 0.2;
+  fill: #FF0000;
+  display: block;
+  pointer-events: initial;
+}
+.dial_ico_isTrue.is-true{
+  opacity: 1;
+  -webkit-transition: opacity 1s;
+  transition: opacity 1s;
 }
 .dial__editableIndicator {
   fill: white;
