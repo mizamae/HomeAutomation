@@ -19,8 +19,7 @@ from .constants import DTYPE_DIGITAL,DTYPE_FLOAT,DTYPE_INTEGER,APP_TEMPLATE_NAME
                     DG_SYNCHRONOUS,DG_ASYNCHRONOUS,\
                     GPIO_DIRECTION_CHOICES,GPIO_OUTPUT,GPIO_INPUT,GPIO_SENSOR,GPIOVALUE_CHOICES,GPIO_HIGH,GPIO_LOW
                     
-from .models import Devices,DeviceTypes,Datagrams,DatagramItems,ItemOrdering,MasterGPIOs,MainDeviceVars,\
-            MainDeviceVarWeeklySchedules,inlineDaily
+from .models import Devices,DeviceTypes,Datagrams,DatagramItems,ItemOrdering,MasterGPIOs,MainDeviceVars
 from .apps import DevicesAppException
 from .forms import DevicesForm,DatagramCustomLabelsForm,MainDeviceVarsForm,MasterGPIOsForm
 
@@ -37,8 +36,6 @@ P1=None
 P2=None
 
 
-
-VARWeeklyScheduleDict={'Label':'Weekly schedule test','Var':'','LValue':20,'HValue':25}
 MainDeviceVarDict={'Label':'Test Main Var','Value':23,'DataType':DTYPE_INTEGER,'PlotType':LINE_PLOT,'Units':'H','UserEditable':True}
 MasterGPIODict={'Pin':17,'Label':'Test Output 1','Direction':GPIO_OUTPUT,'Value':GPIO_HIGH}
 DatagramItemDict={'Tag':'Digital Item 1','DataType':DTYPE_DIGITAL,'PlotType':SPLINE_PLOT,'Units':''}

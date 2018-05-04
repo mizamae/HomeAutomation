@@ -58,7 +58,7 @@ def heating(request):
             data=VAR.getLatestData()[str(VAR.Tag)]
             VARs_values.append([data['timestamp'],data['value']])
         
-        SCHs=DevicesAPP.models.MainDeviceVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM_HEATING).order_by('Var','-Active')
+        SCHs=MainAPP.models.AutomationVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM_HEATING).order_by('Var','-Active')
         
         GPIOs=DevicesAPP.models.MasterGPIOs.objects.filter(Subsystem__Name=SUBSYSTEM_HEATING)
         
@@ -111,7 +111,7 @@ def garden(request):
             data=VAR.getLatestData()[str(VAR.Tag)]
             VARs_values.append([data['timestamp'],data['value']])
         
-        SCHs=DevicesAPP.models.MainDeviceVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM_GARDEN).order_by('Var','-Active')
+        SCHs=MainAPP.models.AutomationVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM_GARDEN).order_by('Var','-Active')
         
         GPIOs=DevicesAPP.models.MasterGPIOs.objects.filter(Subsystem__Name=SUBSYSTEM_GARDEN)
         
@@ -164,7 +164,7 @@ def access(request):
             data=VAR.getLatestData()[str(VAR.Tag)]
             VARs_values.append([data['timestamp'],data['value']])
         
-        SCHs=DevicesAPP.models.MainDeviceVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM_ACCESS).order_by('Var','-Active')
+        SCHs=MainAPP.models.AutomationVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM_ACCESS).order_by('Var','-Active')
         
         GPIOs=DevicesAPP.models.MasterGPIOs.objects.filter(Subsystem__Name=SUBSYSTEM_ACCESS)
         

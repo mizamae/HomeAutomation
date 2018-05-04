@@ -426,31 +426,7 @@ def AdvancedDevicePage(request,pk):
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
                                                         {'Device':DV,'Latest':json.dumps(LatestData)})
 
-def activateSchedule(request,pk):
-    if not checkUserPermissions(request=request,action='activate',model='maindevicevarweeklyschedules'):
-        return HttpResponseRedirect(reverse(LOGIN_PAGE))
-    
-    if request.method == 'POST':
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        
-        SCHD=models.MainDeviceVarWeeklySchedules.objects.get(pk=pk)
-        SCHD.setActive(value=not SCHD.Active)
-        messages.info(request, 'accordion3')
-        return redirect(request.META['HTTP_REFERER'])
 
-def modifySchedule(request,pk,value,sense):
-    import decimal
-    if not checkUserPermissions(request=request,action='change',model='maindevicevarweeklyschedules'):
-        return HttpResponseRedirect(reverse(LOGIN_PAGE))
-    
-    if request.method == 'POST':
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        SCHD=models.MainDeviceVarWeeklySchedules.objects.get(pk=pk)
-        SCHD.modify(value=value,sense=sense)
-        messages.info(request, 'accordion3')
-        return redirect(request.META['HTTP_REFERER'])
     
 # END
 

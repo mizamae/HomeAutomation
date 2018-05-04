@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^'+REPORTINGAPP_TEMPLATE_NAMESPACE+'/', include(ReportingAPP.urls, namespace=REPORTINGAPP_TEMPLATE_NAMESPACE)),
     url(r'^'+SUBSYSTEMAPP_TEMPLATE_NAMESPACE+'/', include(Subsystems.urls, namespace=SUBSYSTEMAPP_TEMPLATE_NAMESPACE)),
     
+    url(r'^activateSchedule/(?P<pk>.+)/$', views.activateSchedule,name='activateSchedule'),
+    url(r'^modifySchedule/(?P<pk>.+)/(?P<value>.+)/(?P<sense>.+)/$', views.modifySchedule,name='modifySchedule'),
     url(r'^configuration/$',views.configuration, name='configuration'),
     url(r'^toggle/(?P<model>.+)/(?P<pk>.+)/$',views.toggle, name='toggle'),
     url(r'^settimezone/$', views.settimezone,name='settimezone'),
@@ -50,6 +52,7 @@ urlpatterns = [
     url(r'^userubication/$', views.viewUserUbication,name='viewUserUbication'),
     #url(r'^view_rules/$', views.viewRules,name='viewRules'),
     url(r'^thermostat/$', views.thermostat,name='thermostat'),
+    url(r'^override/$', views.override,name='override'),
     url(r'^gitupdate/$', views.GitUpdate,name='gitupdate'),
     url(r'^softreset/$', views.SoftReset,name='softreset'),
     url(r'^configurebackup/$', views.DBBackup,name='dbbackup'),

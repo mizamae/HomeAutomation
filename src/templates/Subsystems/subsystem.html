@@ -44,7 +44,7 @@
 	{% if SCHs %}
 		{% with panelID="accordion3" collapseID="collapse3" displayed=accordion3 %}
         {% trans "SCHEDULES" as var_header %}
-		{% with rows=SCHs model='maindevicevarweeklyschedules' %}
+		{% with rows=SCHs model='automationvarweeklyschedule' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
 		{% endwith %}
 		{% endwith %}

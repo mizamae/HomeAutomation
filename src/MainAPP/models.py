@@ -66,7 +66,6 @@ class Subsystems(models.Model):
     def __str__(self):
         return self.get_Name_display()
     
-
 class AdditionalCalculations(models.Model):
     PERIODICITY_CHOICES=(
         (0,_('With every new value')),
@@ -253,7 +252,6 @@ def update_AdditionalCalculations(sender, instance, update_fields,**kwargs):
         logger.info('Se ha creado el calculo ' + str(instance))
          
 
-
 class AutomationVariables(models.Model):
     class Meta:
         unique_together = ('Tag','BitPos','Table')
@@ -268,6 +266,7 @@ class AutomationVariables(models.Model):
     Sample = models.PositiveSmallIntegerField(default=0)
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
     UserEditable = models.BooleanField(default=True)
+    OverrideTime = models.PositiveSmallIntegerField(default=3600)
     
     Subsystem = GenericRelation(Subsystems,related_query_name='automationvariables')
     
@@ -278,9 +277,11 @@ class AutomationVariables(models.Model):
         self.full_clean()
         super().save() 
     
-    def toggle(self,newValue=None):
+    def updateValue(self,newValue=None,overrideTime=None,**kwargs):
         if self.UserEditable:
-            MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue)
+            MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,**kwargs)
+            if overrideTime!=None:
+                AutomationVarWeeklySchedules.override(var=self,value=True,duration=overrideTime)
         
     def checkSubsystem(self,Name):
         SSYTMs=Subsystems.objects.filter(automationvariables=self)
@@ -330,7 +331,14 @@ class AutomationVariables(models.Model):
     
     def getLatestValue(self):
         data=self.getLatestData()
-        return str(data[self.Tag]['value'])
+        return data[self.Tag]['value']
+    
+    def getLatestValueString(self):
+        value=self.getLatestValue()
+        if value!=None:
+            return str(value)
+        else:
+            return str(5)
          
     def getValues(self,fromDate,toDate,localized=True):
         from utils.BBDD import getRegistersDBInstance
@@ -364,6 +372,212 @@ class AutomationVariables(models.Model):
 def update_AutomationVariables(sender, instance, update_fields,**kwargs):   
     pass
 
+class AutomationVarWeeklySchedules(models.Model):
+    class Meta:
+        verbose_name = _('Automation var weekly schedule')
+        verbose_name_plural = _('Automation var weekly schedules') 
+        unique_together = (('Label', 'Var'))
+        permissions = (
+            ("view_AutomationVarWeeklySchedules", "Can see available automation schedules"),
+            ("activate_AutomationVarWeeklySchedules", "Can change the state of the schedules"),
+        )
+        
+    Label = models.CharField(max_length=100)
+    Active = models.BooleanField(default=False)
+    Var = models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,limit_choices_to={'UserEditable': True})
+    LValue = models.DecimalField(max_digits=6, decimal_places=2)
+    HValue = models.DecimalField(max_digits=6, decimal_places=2)
+    Overriden = models.BooleanField(default=False)
+    Days = models.ManyToManyField('inlineDaily',blank=True)
+ 
+    Subsystem = GenericRelation(Subsystems,related_query_name='weeklyschedules')
+    
+    def __str__(self):
+        return self.Label
+    
+    def store2DB(self): 
+        self.full_clean() 
+        super().save() 
+        if self.Active:
+            self.checkThis()
+            
+    def setActive(self,value=True):
+        self.Active=value
+        self.save()
+         
+        if self.Active:
+            logger.info('Se ha activado la planificacion semanal ' + str(self.Label) + ' para la variable ' + str(self.Var))
+            SCHDs=AutomationVarWeeklySchedules.objects.filter(Var=self.Var)
+            for SCHD in SCHDs:
+                if SCHD.Label!=self.Label:
+                    SCHD.setActive(value=False)
+            self.checkThis()
+         
+    def getTodaysPattern(self):
+        import datetime
+        timestamp=datetime.datetime.now()
+        weekDay=timestamp.weekday()
+        hour=timestamp.hour
+        dailySchedules=self.inlinedaily_set.all()
+        pattern=[]
+        for daily in dailySchedules:
+            if daily.Day==weekDay:
+                for i in range(0,24):
+                    Setpoint=getattr(daily,'Hour'+str(i))
+                    pattern.append(Setpoint)
+                return pattern
+        return None
+         
+    def modify(self,value,sense='+'):
+        import decimal
+        if value=='LValue':
+            if sense=='-':
+                self.LValue-=decimal.Decimal.from_float(0.5)
+            else:
+                self.LValue+=decimal.Decimal.from_float(0.5)
+            self.save(update_fields=['LValue'])
+            self.checkThis()
+        elif value=='HValue':
+            if sense=='-':
+                self.HValue-=decimal.Decimal.from_float(0.5)
+            else:
+                self.HValue+=decimal.Decimal.from_float(0.5)
+            self.save(update_fields=['HValue'])
+            self.checkThis()
+        elif value=='REFValue':
+            if self.Var.getLatestValue()==self.HValue:
+                Value=self.LValue
+            else:
+                Value=self.HValue
+            self.Var.updateValue(newValue=float(Value),force=False)
+             
+    def getFormset(self):
+        from django.forms import inlineformset_factory
+        AutomationVarWeeklySchedulesFormset = inlineformset_factory (AutomationVarWeeklySchedules,AutomationVarWeeklySchedules,fk_name)
+    
+    def checkThis(self,init=False):
+        timestamp=datetime.datetime.now()
+        weekDay=timestamp.weekday()        
+        hour=timestamp.hour
+        if self.Active and (not self.Overriden):
+            dailySchedules=self.inlinedaily_set.all()
+            for daily in dailySchedules:
+                if daily.Day==weekDay:
+                    Setpoint=getattr(daily,'Hour'+str(hour))
+                    if Setpoint==0:
+                        Value=float(self.LValue)
+                    elif Setpoint==1:
+                        Value=float(self.HValue)
+                    else:
+                        text='The schedule ' + self.Label + ' returned a non-understandable setpoint (0=LOW,1=HIGH). It returned ' + str(Setpoint)
+                        PublishEvent(Severity=2,Text=text,Persistent=True,Code=self.getEventsCode()+'101')
+                        break
+                    if self.Var.getLatestValue()!=Value or init:
+                        self.Var.updateValue(newValue=Value,writeDB=True,force=init)
+                    break
+    
+    @classmethod
+    def override(cls,var,value,duration=3600):
+        SCHs=cls.objects.filter(Var=var)
+        for SCH in SCHs:
+            SCH.Overriden=value
+            SCH.save()
+            print("Schedule " + str(SCH)+" is now overriden at time "+str(datetime.datetime.now()))
+        if value:
+            id='Overriding-'+str(var.pk)
+            from utils.asynchronous_tasks import BackgroundTimer
+            Timer=BackgroundTimer(interval=duration,threadName=id,callable=cls.overrideTimeout,kwargs={'var':var})
+
+    @classmethod
+    def overrideTimeout(cls,var):
+        SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
+        for SCH in SCHs:
+            SCH.Overriden=False
+            SCH.save()
+            print("Schedule " + str(SCH)+" is now released at time "+str(datetime.datetime.now()))
+        
+    @classmethod
+    def initialize(cls):
+        schedules=cls.objects.all()
+        for schedule in schedules:
+            schedule.Overriden=False
+            
+    @classmethod
+    def checkAll(cls,init=False):
+        schedules=cls.objects.filter(Active=True)
+        for schedule in schedules:
+            schedule.checkThis(init=init)
+
+
+            
+@receiver(post_save, sender=AutomationVarWeeklySchedules, dispatch_uid="update_AutomationVarWeeklySchedules")
+def update_AutomationVarWeeklySchedules(sender, instance, update_fields,**kwargs):
+    timestamp=timezone.now() #para hora con info UTC
+    if not kwargs['created']:   # an instance has been modified
+        pass
+    else:
+        logger.info('Se ha creado la planificacion semanal ' + str(instance.Label))
+
+
+class inlineDaily(models.Model):
+    class Meta:
+        unique_together = ('Day', 'Weekly')
+        verbose_name = _('Automation var hourly schedule')
+        verbose_name_plural = _('Automation var hourly schedules')
+        
+    WEEKDAYS = (
+      (0, _("Monday")),
+      (1, _("Tuesday")),
+      (2, _("Wednesday")),
+      (3, _("Thursday")),
+      (4, _("Friday")),
+      (5, _("Saturday")),
+      (6, _("Sunday")),
+    )
+    STATE_CHOICES=(
+        (0,_('LOW')),
+        (1,_('HIGH'))
+    )
+    Day = models.PositiveSmallIntegerField(choices=WEEKDAYS)
+    Weekly = models.ForeignKey(AutomationVarWeeklySchedules, on_delete=models.CASCADE)
+    Hour0 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour1 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour2 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour3 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour4 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour5 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour6 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour7 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour8 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour9 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour10 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour11 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour12 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour13 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour14 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour15 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour16 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour17 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour18 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour19 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour20 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour21 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour22 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+    Hour23 = models.PositiveSmallIntegerField(choices=STATE_CHOICES,default=0)
+     
+    def __str__(self):
+        return self.get_Day_display()
+     
+    def setInlineHours(self,hours):
+        if len(hours)!=24:
+            text = "Error in setting an inline. The string passed " +hours + " does not have 24 elements" 
+            raise DevicesAppException(text)
+        else:
+            for i,hour in enumerate(hours):
+                if int(hour)>0:
+                    setattr(self,'Hour'+str(i),1)
+                else:
+                    setattr(self,'Hour'+str(i),0)
 class Thermostats(models.Model):
     class Meta:
         verbose_name = _('Thermostat')

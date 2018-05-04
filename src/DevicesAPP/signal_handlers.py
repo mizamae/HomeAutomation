@@ -24,13 +24,14 @@ def SignalToggleAVAR_handler(sender, **kwargs):
     Device=kwargs['Device']
     Tag=kwargs['Tag']
     newValue=kwargs['newValue']
+    force=kwargs.get('force',None)
     if Device=='MainGPIOs':
         Instance=MasterGPIOs.objects.get(pk=Tag)
     elif Device=='MainVars':
         Instance=MainDeviceVars.objects.get(pk=Tag)
     else:
         return
-    Instance.toggle(newValue=newValue)
+    Instance.toggle(newValue=newValue,force=force)
     
 @receiver(MainAPP.signals.SignalCreateMainDeviceVars, dispatch_uid="SignalCreateMainDeviceVars_DevicesAPP_receiver")
 def SignalCreateMainDeviceVars_handler(sender, **kwargs):

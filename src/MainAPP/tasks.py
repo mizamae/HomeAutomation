@@ -42,7 +42,7 @@ def compactRegistersDB():
     sizep=result['initial_size']
     size=result['final_size']
     PublishEvent(Severity=0,Text='The DB size is reduced from ' +str(sizep/1000) + ' to ' + str(size/1000) + ' kB after compactation',
-                 Code='Taks-0',Persistent=True)
+                 Code='Tasks-M_0',Persistent=True)
 
 def MonthlyTask():
     compactRegistersDB()
@@ -51,7 +51,9 @@ def MonthlyTask():
     autenticated=instance.checkCredentials()
     if autenticated:
         instance.uploadDBs()
-        PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='Tasks-1')
+        PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='Tasks-1_1')
+    else:
+        PublishEvent(Severity=0,Text=_("Unable to autenticate to GDrive"),Persistent=True,Code='Tasks-M_1')
             
 def start_MonthlyTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
@@ -59,7 +61,7 @@ def start_MonthlyTask():
     id='MonthlyTask'
     scheduler.add_job(func=MonthlyTask,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-1')
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-M')
 
 
 ### DAILY FUNCTIONS
@@ -95,7 +97,7 @@ def start_DailyTask():
     id='DailyTask'
     scheduler.add_job(func=DailyTask,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-2')
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-D')
 
 
 ### HOURLY FUNCTIONS
@@ -112,7 +114,8 @@ def HourlyTask():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
     import datetime
-    from DevicesAPP.models import MainDeviceVars,MainDeviceVarWeeklySchedules
+    from DevicesAPP.models import MainDeviceVars
+    from MainAPP.models import AutomationVarWeeklySchedules
     from DevicesAPP.constants import DTYPE_INTEGER
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
@@ -122,14 +125,14 @@ def HourlyTask():
     except:
         HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=DTYPE_INTEGER,Units='H',UserEditable=False)
         HourDay.store2DB()
-    MainDeviceVarWeeklySchedules.checkAll(init=True)
+    AutomationVarWeeklySchedules.checkAll(init=True)
     checkCustomCalculations()
 
 def start_HourlyTask():
     id='HourlyTask'
     scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
-    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Taks-4')
+    PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-H')
     id='afterBoot'
     scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=5,replace_existing=True)
 
@@ -138,8 +141,9 @@ def run_afterBoot():
     scheduler.remove_job(id)
     HourlyTask()
     updateWeekDay()
-    from MainAPP.models import AutomationRules
+    from MainAPP.models import AutomationRules,AutomationVarWeeklySchedules
     AutomationRules.initAll()
+    AutomationVarWeeklySchedules.initialize()
     from DevicesAPP.models import initialize_polling_devices,MasterGPIOs
     initialize_polling_devices()
     MasterGPIOs.initializeIOs(declareInputEvent=True)

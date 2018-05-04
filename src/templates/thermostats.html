@@ -35,15 +35,15 @@
 	var container=document.getElementById('thermostat{{ forloop.counter }}');
 	var nest{{ forloop.counter }} = new thermostatDial(container,{
 		onSetTargetTemperature: function(v) {
-			toggle_AVAR(nest{{ forloop.counter }}.targetVARpk,v);
+			toggle_AVAR(nest{{ forloop.counter }}.targetVARpk,v,{{ THERM.RITM.Var2.OverrideTime }});
 		},
 		diameter: container.offsetWidth,
 		minValue: 0, // Minimum value for target temperature
 		maxValue: 30, // Maximum value for target temperature
 		numTicks: 150, // Number of tick lines to display around the dial
 		tickDegrees:270,
-		initialTarget:{{ THERM.RITM.Var2.getLatestValue }},
-		initialValue:{{ THERM.RITM.Var1.getLatestValue }},
+		initialTarget:{{ THERM.RITM.Var2.getLatestValueString }},
+		initialValue:{{ THERM.RITM.Var1.getLatestValueString }},
 		targetVARpk: {{ THERM.RITM.Var2.pk }},	// pk for the setpoint AVAR 
 		valueVARpk: {{ THERM.RITM.Var1.pk }},	// pk for the value AVAR 
 		hysteresis: parseFloat("{{ THERM.RITM.Var2Hyst }}".split(",").join(".")),	// hysteresis for the setpoint

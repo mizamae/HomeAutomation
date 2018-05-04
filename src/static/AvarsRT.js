@@ -52,12 +52,12 @@ function checkAvarsVisibility()
     
 }
 
-function toggle_AVAR(pk,newValue=null)
+function toggle_AVAR(pk,newValue=null,overrideTime=null)
 {
 	AVARWebSocketBridge.stream('AVAR_modify').send({
         "pk": pk,
         "action": "toggle",
-        "data": {"newValue":newValue}
+        "data": {"newValue":newValue,"overrideTime":overrideTime}
     });
 }
 

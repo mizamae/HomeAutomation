@@ -47,8 +47,9 @@ class avar_update(JsonWebsocketConsumer):
         #logger.debug('Received WS!!: ' + str(content))
         pk=content['pk']
         newValue=content['data']['newValue']
+        overrideTime=content['data']['overrideTime']
         AVAR=AutomationVariables.objects.get(pk=pk)
-        AVAR.toggle(newValue=newValue)
+        AVAR.updateValue(newValue=newValue,overrideTime=10)
         
     @classmethod
     def group_names(cls, *args, **kwargs):

@@ -22,6 +22,7 @@ REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqli
 # END
 
 MANAGEMENT_TASKS_SCHEDULER_URL='sqlite:///TasksScheduler.sqlite'
+AVAR_OVERRIDE_SCHEDULER_URL='sqlite:///OverrideScheduler.sqlite'
 
 AUTOMATION_ACTION_CHOICES=(
         ('a',_('Activate output on Main')),

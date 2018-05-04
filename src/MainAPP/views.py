@@ -30,7 +30,7 @@ import utils.BBDD
 from .constants import REGISTERS_DB_PATH,GIT_PATH
 
 from EventsAPP.consumers import PublishEvent
-import MainAPP.models
+from . import models
 import MainAPP.forms
 
 
@@ -39,11 +39,18 @@ LOGIN_PAGE='accounts:login'
 
 def modelSplitter(model):
     if model=='automationvars':
-        Header1 = MainAPP.models.AutomationVariables._meta.verbose_name.title()
-        Model=MainAPP.models.AutomationVariables
+        Header1 = models.AutomationVariables._meta.verbose_name.title()
+        Model=models.AutomationVariables
         FormModel=None
         FormKwargs={}
-        message=MainAPP.models.AutomationVariables._meta.verbose_name.title()+ str(_(' saved OK'))
+        message=models.AutomationVariables._meta.verbose_name.title()+ str(_(' saved OK'))
+        lastAction='add'
+    elif model=='automationvarweeklyschedule':
+        Header1 = models.AutomationVarWeeklySchedules._meta.verbose_name.title()
+        Model=models.AutomationVarWeeklySchedules
+        FormModel=None
+        FormKwargs={}
+        message=models.AutomationVarWeeklySchedules._meta.verbose_name.title()+ str(_(' saved OK'))
         lastAction='add'
     else:
         return None
@@ -56,6 +63,32 @@ def checkUserPermissions(request,action,model):
     else:
         return True
 
+def activateSchedule(request,pk):
+    if not checkUserPermissions(request=request,action='activate',model='maindevicevarweeklyschedules'):
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
+    
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        
+        SCHD=models.AutomationVarWeeklySchedules.objects.get(pk=pk)
+        SCHD.setActive(value=not SCHD.Active)
+        messages.info(request, 'accordion3')
+        return redirect(request.META['HTTP_REFERER'])
+
+def modifySchedule(request,pk,value,sense):
+    import decimal
+    if not checkUserPermissions(request=request,action='change',model='maindevicevarweeklyschedules'):
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
+    
+    if request.method == 'POST':
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        SCHD=models.AutomationVarWeeklySchedules.objects.get(pk=pk)
+        SCHD.modify(value=value,sense=sense)
+        messages.info(request, 'accordion3')
+        return redirect(request.META['HTTP_REFERER'])
+    
 def toggle(request,model,pk):
     if not checkUserPermissions(request=request,action='toggle',model=model):
         return HttpResponseRedirect(reverse(LOGIN_PAGE))
@@ -112,9 +145,14 @@ def viewUserUbication(request):
         return render(request, 'trackUsers.html',{'Users':users})
 
 def thermostat(request):
-    THERMs=MainAPP.models.Thermostats.objects.all()
+    THERMs=models.Thermostats.objects.all()
     return render(request, 'thermostats.html',{'THERMs':THERMs})
 
+def override(request):
+    SCHDs=models.AutomationVarWeeklySchedules.objects.all()
+    for SCH in SCHDs:
+        SCH.override(var=SCH.Var,value=True,duration=30)
+    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
 
 @csrf_exempt
 def handleLocation(request,user):
