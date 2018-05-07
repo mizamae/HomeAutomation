@@ -44,12 +44,12 @@ def ws_disconnect_avar(message):
 class avar_update(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         from .models import AutomationVariables
-        #logger.debug('Received WS!!: ' + str(content))
+        logger.debug('Received WS!!: ' + str(content))
         pk=content['pk']
         newValue=content['data']['newValue']
-        overrideTime=content['data']['overrideTime']
+        overrideTime=int(content['data']['overrideTime'])
         AVAR=AutomationVariables.objects.get(pk=pk)
-        AVAR.updateValue(newValue=newValue,overrideTime=10)
+        AVAR.updateValue(newValue=newValue,overrideTime=overrideTime)
         
     @classmethod
     def group_names(cls, *args, **kwargs):

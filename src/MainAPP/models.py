@@ -482,7 +482,7 @@ class AutomationVarWeeklySchedules(models.Model):
         for SCH in SCHs:
             SCH.Overriden=value
             SCH.save()
-            print("Schedule " + str(SCH)+" is now overriden at time "+str(datetime.datetime.now()))
+            PublishEvent(Severity=3,Text="Schedule " + str(SCH)+" is now overriden at time "+str(datetime.datetime.now()),Persistent=True,Code=str(SCH)+'o')
         if value:
             id='Overriding-'+str(var.pk)
             from utils.asynchronous_tasks import BackgroundTimer
@@ -494,7 +494,13 @@ class AutomationVarWeeklySchedules(models.Model):
         for SCH in SCHs:
             SCH.Overriden=False
             SCH.save()
-            print("Schedule " + str(SCH)+" is now released at time "+str(datetime.datetime.now()))
+            try:
+                SCHu=cls.objects.get(pk=SCHD.pk)    # refreshing the instance
+                SCHu.checkThis()
+            except:
+                e = sys.exc_info()[0]
+                PublishEvent(Severity=0,Text="Schedule " + str(SCH)+" failed to be checked. Error: " + str(e),Persistent=True,Code=str(SCH)+'r')
+            PublishEvent(Severity=0,Text="Schedule " + str(SCH)+" is now released at time "+str(datetime.datetime.now()),Persistent=True,Code=str(SCH)+'r')
         
     @classmethod
     def initialize(cls):
