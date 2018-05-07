@@ -495,7 +495,7 @@ class AutomationVarWeeklySchedules(models.Model):
             SCH.Overriden=False
             SCH.save()
             try:
-                SCHu=cls.objects.get(pk=SCHD.pk)    # refreshing the instance
+                SCHu=cls.objects.get(pk=SCH.pk)    # refreshing the instance
                 SCHu.checkThis()
             except:
                 e = sys.exc_info()[0]
