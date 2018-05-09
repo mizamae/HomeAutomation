@@ -11,7 +11,7 @@
    	{% endif %}
    	<td style="text-align: center;">
    	{% if not row.Units and row.UserEditable and perms.DevicesAPP.change_maindevicevars %}
-   		<a class="btn btn-toggle" onclick="toggle_AVAR({{ row.pk }})" role="button"> <!--  href="{% url 'toggle' 'automationvars' row.pk %}" -->
+   		<a class="btn btn-toggle" onclick="toggle_AVAR({{ row.pk }})" role="button">
 			{% if VARs_values|get_at_index:index|get_at_index:1 == 0 %}
 			<img class="img-responsive" src="{% static 'site/img/arrow-up.png' %}" alt="Toggle">
 			{% else %}

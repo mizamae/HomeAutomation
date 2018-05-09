@@ -117,7 +117,8 @@ class AboutPage(generic.TemplateView):
 def settimezone(request):
     if request.method == 'POST':
         request.session['django_timezone'] = request.POST['timezone']
-        return HttpResponseRedirect(reverse('advancedDevice'))
+        PublishEvent(Severity=0,Text=_("Timezone has been set to ") + request.POST['timezone'],Persistent=True,Code='MainAPPViews-Timezone1')
+        return HttpResponseRedirect(reverse('configuration'))
     else:
         return render(request, 'timezones.html', {'timezones': pytz.common_timezones})
         
@@ -144,15 +145,10 @@ def viewUserUbication(request):
                 pass
         return render(request, 'trackUsers.html',{'Users':users})
 
+@login_required
 def thermostat(request):
     THERMs=models.Thermostats.objects.all()
     return render(request, 'thermostats.html',{'THERMs':THERMs})
-
-def override(request):
-    SCHDs=models.AutomationVarWeeklySchedules.objects.all()
-    for SCH in SCHDs:
-        SCH.override(var=SCH.Var,value=True,duration=30)
-    return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
 
 @csrf_exempt
 def handleLocation(request,user):

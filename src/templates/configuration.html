@@ -27,7 +27,7 @@
 	<div class="apps-row">
 		{% trans "SOFT-RESET" as app_name %}
 		{% trans "Click to restart the Gunicorn processes." as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.jpg' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.png' %}
 		
 		{% trans "SOFTWARE UPDATE" as app_name %}
 		{% trans "Click to look for newer versions in the repository." as app_description %}
@@ -40,6 +40,10 @@
 			{% trans "Backup is not configured. Click to configure." as app_description %}
 		{% endif %}
 		{% include "_appDashboard.html" with app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="dbbackup" app_icon='site/img/google-drive-backup.png' %}
+		
+		{% trans "TIMEZONE SET" as app_name %}
+		{% trans "Click to set the timezone for the system." as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="settimezone" app_icon='site/img/time-zone-icon.png' %}
 	</div>
 	
 	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}

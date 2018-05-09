@@ -47,7 +47,10 @@ class avar_update(JsonWebsocketConsumer):
         logger.debug('Received WS!!: ' + str(content))
         pk=content['pk']
         newValue=content['data']['newValue']
-        overrideTime=int(content['data']['overrideTime'])
+        try:
+            overrideTime=int(content['data']['overrideTime'])
+        except:
+            overrideTime=None
         AVAR=AutomationVariables.objects.get(pk=pk)
         AVAR.updateValue(newValue=newValue,overrideTime=overrideTime)
         
