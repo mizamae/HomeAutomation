@@ -11,12 +11,12 @@ import logging
 
 logger = logging.getLogger("project")
 
-class BeaconModel(models.Model):
+class Beacons(models.Model):
     Identifier = models.CharField(max_length=20,unique=True,error_messages={'unique':_("Invalid Beacon name - This name already exists in the DB.")})
     Latitude = models.FloatField()
     Longitude = models.FloatField()
     WeatherObserver=models.OneToOneField(Devices,on_delete=models.CASCADE,related_name='device2beacon',
-                                         null=True,blank=True,limit_choices_to={'Type__Code': 'OpenWeatherMap'})
+                                         null=True,blank=True,limit_choices_to={'DVT__Code': 'OpenWeatherMap'})
 
     def distance_to(self,other):
         from math import sin, cos, sqrt, atan2, radians

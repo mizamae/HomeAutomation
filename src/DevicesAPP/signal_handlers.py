@@ -37,7 +37,10 @@ def SignalToggleAVAR_handler(sender, **kwargs):
 def SignalCreateMainDeviceVars_handler(sender, **kwargs):
     data=kwargs['Data']
     Instance=MainDeviceVars(**data)
-    Instance.store2DB()
+    try:
+        Instance.store2DB()
+    except:
+        pass    # pass if the mainvar already exists
     
 @receiver(MainAPP.signals.SignalUpdateValueMainDeviceVars, dispatch_uid="SignalUpdateValueMainDeviceVars_DevicesAPP_receiver")
 def SignalUpdateValueMainDeviceVars_handler(sender, **kwargs):

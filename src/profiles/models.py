@@ -53,20 +53,15 @@ class BaseProfile(models.Model):
 @receiver(post_save)
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
     if issubclass(sender, BaseProfile):
-        from DevicesAPP.models import Beacons,MainDeviceVars
+        from TracksAPP.models import Beacons
         from DevicesAPP.constants import DTYPE_FLOAT
         beacons=Beacons.objects.all()
 
         for beacon in beacons:
             label='Distance from ' + instance.user.name + ' to ' + str(beacon) 
             timestamp=timezone.now()
-            try:
-                mainVar=MainDeviceVars.objects.get(Label=label)
-            except:
-                
-                mainVar=MainDeviceVars(Label=label,Value=-1,DataType=DTYPE_FLOAT,Units='km',UserEditable=False)
-                mainVar.store2DB()
-                logger.info('Creating main Var ' + label)
+            data={'Label':label,'Value':-1,'DataType':DTYPE_FLOAT,'Units':'km','UserEditable':False}
+            MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
 
             if instance.Latitude!=None and instance.Longitude!=None:
                 newValue=beacon.distance_to(other=instance)
