@@ -98,19 +98,19 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
         import MainAPP.models
         import MainAPP.signals
         beacons=Beacons.objects.all()
-        print('Found ' + str(beacons.count()) + ' beacons')
+        #print('Found ' + str(beacons.count()) + ' beacons')
         for beacon in beacons:
             label='Distance from ' + instance.user.name + ' to ' + str(beacon) 
             timestamp=timezone.now()
             data={'Label':label,'Value':-1,'DataType':DTYPE_FLOAT,'Units':'km','UserEditable':False}
             MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
-            print('Send signal to create MainVar ' + str(data))
+            #print('Send signal to create MainVar ' + str(data))
             if instance.Latitude!=None and instance.Longitude!=None:
                 newValue=beacon.distance_to(other=instance)
             else:
                 newValue=-1
             
-            print('MainVar value ' + str(newValue))
+            #print('MainVar value ' + str(newValue))
             avar=MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Label=data['Label'])
             MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=avar.Tag,timestamp=timestamp,newValue=newValue)
             PublishEvent(Severity=0,Text=label+' is ' + str(avar.getLatestValue),Persistent=False,Code='Profiles-0')

@@ -70,7 +70,9 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                 df=pd.concat([df,pd.DataFrame(new_row)], ignore_index=False)
             
             # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
-            df_res=df.resample('1T').mean()
+            
+            
+            df_res=df.fillna(method='ffill').fillna(method='bfill').resample('1T').mean()
             df_int=df_res.interpolate(method='zero')
         else:
             sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
@@ -99,7 +101,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             df = pd.DataFrame(data=values,index=[ts_ini,ts_end],columns=df.columns)
             df_int=df
                 
-        tempStats={'number':5,'num_rows':df.count(numeric_only=True).tolist(),'mean':[],'max':df.max(numeric_only=True).tolist(),'min':df.min(numeric_only=True).tolist(),'on_time':[],'off_time':[]}
+        tempStats={'number':5,'num_rows':df.count().tolist(),'mean':[],'max':df.max().tolist(),'min':df.min().tolist(),'on_time':[],'off_time':[]}
         
         # INTRODUCED TO TEST INTERPOLATION ACROSS NULLS
         try:
@@ -107,7 +109,6 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             df=df.fillna(method='bfill')
         except:
             pass
-        
         for col in chart['cols'][0][1:]:
             if col['type']==DTYPE_DIGITAL:
                 from utils.dataMangling import dec2bin
