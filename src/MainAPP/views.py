@@ -152,12 +152,15 @@ def thermostat(request):
 
 @csrf_exempt
 def handleLocation(request,user):
+    #print('Received request for location ' +request.method+' ' +str(request.body))
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
-        #logger.info('JSON: ' + str(request.body.decode('utf-8')))
+        #print('JSON: ' + str(request.body.decode('utf-8')))
         from authtools.models import User
         users = User.objects.all()
+        #print('Looking for user : ' + str(user))
         for usr in users:
+            #print('Checked user : ' + str(usr))
             if usr.email.find(user)>=0:
                 #print('Found user : ' + str(usr))
                 if usr.profile.tracking:

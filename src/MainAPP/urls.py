@@ -63,7 +63,7 @@ urlpatterns = [
     
 ]
 
-handler500 = 'HomeAutomation.views.custom_error500_view'
+handler500 = 'MainAPP.views.custom_error500_view'
 
 # User-uploaded files like profile pics need to be served in development
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext as _
 import uuid
 from channels.binding.websockets import WebsocketBinding
+import sys
 
 from django.utils import timezone
 from django.conf import settings
@@ -49,14 +50,15 @@ class BaseProfile(models.Model):
     LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     
     def updateLocationData(self,Latitude,Longitude,Accuracy):
-        timestamp=timezone.now()
-        self.Latitude=Latitude
-        self.Longitude=Longitude
-        self.Accuracy=Accuracy
-        self.LastUpdated=timestamp
-        self.save()
-        timestamp=timezone.now()
-        self.insertTrackRegister(TimeStamp=timsetamp,Latitude=Latitude,Longitude=Longitude,Accuracy=Accuracy)
+        if self.tracking:
+            timestamp=timezone.now()
+            self.Latitude=Latitude
+            self.Longitude=Longitude
+            self.Accuracy=Accuracy
+            self.LastUpdated=timestamp
+            self.save()
+            timestamp=timezone.now()
+            self.insertTrackRegister(TimeStamp=timestamp,Latitude=Latitude,Longitude=Longitude,Accuracy=Accuracy)
     
     
     @staticmethod
@@ -76,7 +78,7 @@ class BaseProfile(models.Model):
         DBinstance=utils.BBDD.getRegistersDBInstance()
         sql=SQLinsertTrack_statement
         try:
-            DBinstance.executeTransactionWithCommit(SQLstatement=sql,args=[TimeStamp,str(self.user.email),Latitude,Longitude,Accuracy])
+            DBinstance.executeTransactionWithCommit(SQLstatement=sql,arg=[TimeStamp,str(self.user.email),Latitude,Longitude,Accuracy])
         except:
             PublishEvent(Severity=3,Text="Unexpected error in insert_track: "+ sys.exc_info()[1],Persistent=True,Code='Profiles-10')
             
@@ -89,23 +91,26 @@ class BaseProfile(models.Model):
 
 @receiver(post_save)
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
-    if issubclass(sender, BaseProfile):
-        from TracksAPP.models import Beacons
+    
+    if issubclass(sender, BaseProfile) and instance.tracking:
+        from DevicesAPP.models import Beacons
         from DevicesAPP.constants import DTYPE_FLOAT
         import MainAPP.models
         import MainAPP.signals
         beacons=Beacons.objects.all()
-
+        print('Found ' + str(beacons.count()) + ' beacons')
         for beacon in beacons:
             label='Distance from ' + instance.user.name + ' to ' + str(beacon) 
             timestamp=timezone.now()
             data={'Label':label,'Value':-1,'DataType':DTYPE_FLOAT,'Units':'km','UserEditable':False}
             MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
-
+            print('Send signal to create MainVar ' + str(data))
             if instance.Latitude!=None and instance.Longitude!=None:
                 newValue=beacon.distance_to(other=instance)
             else:
                 newValue=-1
+            
+            print('MainVar value ' + str(newValue))
             avar=MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Label=data['Label'])
             MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=avar.Tag,timestamp=timestamp,newValue=newValue)
             PublishEvent(Severity=0,Text=label+' is ' + str(avar.getLatestValue),Persistent=False,Code='Profiles-0')

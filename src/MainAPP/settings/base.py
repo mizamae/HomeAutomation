@@ -98,7 +98,7 @@ INSTALLED_APPS = (
     'DevicesAPP',
     'ReportingAPP',
     'EventsAPP',
-    'TracksAPP',
+    #'TracksAPP',
     
 )
 
