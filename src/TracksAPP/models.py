@@ -15,7 +15,7 @@ class Beacons(models.Model):
     Identifier = models.CharField(max_length=20,unique=True,error_messages={'unique':_("Invalid Beacon name - This name already exists in the DB.")})
     Latitude = models.FloatField()
     Longitude = models.FloatField()
-    WeatherObserver=models.OneToOneField(Devices,on_delete=models.CASCADE,related_name='device2beacon',
+    WeatherObserver=models.OneToOneField(Devices,on_delete=models.CASCADE,related_name='device2beacons',
                                          null=True,blank=True,limit_choices_to={'DVT__Code': 'OpenWeatherMap'})
 
     def distance_to(self,other):

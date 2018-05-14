@@ -13,7 +13,7 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
 
-import Tracks.models
+import TracksAPP.models
 
 import logging
 logger = logging.getLogger("project")
@@ -47,7 +47,7 @@ class BeaconForm(ModelForm):
                 )
         
     class Meta:
-        model = Tracks.models.BeaconModel
+        model = TracksAPP.models.Beacons
         
         fields=['Identifier','WeatherObserver','Latitude','Longitude']
     class Media:

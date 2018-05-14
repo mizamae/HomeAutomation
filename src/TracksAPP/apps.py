@@ -13,7 +13,7 @@ logger = logging.getLogger("processes")
 from .constants import BOOTING_MSG
                 
 class TracksConfig(AppConfig):
-    name = 'Tracks'
+    name = 'TracksAPP'
     verbose_name = _('Tracking manager')
     
     def ready(self):

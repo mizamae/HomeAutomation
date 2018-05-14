@@ -8,13 +8,13 @@ import json
 
 from django.utils.translation import ugettext_lazy as _
 
-from Tracks.models import BeaconModel
-from Tracks.forms import BeaconForm
+from TracksAPP.models import Beacons
+from TracksAPP.forms import BeaconForm
     
 class BeaconModelAdmin(admin.ModelAdmin):
      list_display = ('Identifier','Latitude','Longitude')
      form=BeaconForm
 
-admin.site.register(BeaconModel,BeaconModelAdmin)
+admin.site.register(Beacons,BeaconModelAdmin)
 
 # GOOGLEMAPS API KEY= AIzaSyARa_5fk7pCUNLM9Ce_czcokqdVbn5PLyQ

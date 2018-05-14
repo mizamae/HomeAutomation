@@ -1,1 +1,1 @@
-default_app_config = 'Tracks.apps.TracksConfig'
+default_app_config = 'TracksAPP.apps.TracksConfig'

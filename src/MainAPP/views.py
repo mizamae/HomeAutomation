@@ -161,9 +161,6 @@ def handleLocation(request,user):
             if usr.email.find(user)>=0:
                 #print('Found user : ' + str(usr))
                 if usr.profile.tracking:
-                    timestamp=timezone.now()
-                    applicationDBs=DevicesAPP.BBDD.DIY4dot0_Databases(registerDBPath=REGISTERS_DB_PATH)
-                    applicationDBs.insert_track(TimeStamp=timestamp,User=str(usr.email),Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
                     usr.profile.updateLocationData(Latitude=data['lat'],Longitude=data['lon'],Accuracy=data['acc'])
                     # usr.profile.Latitude=data['lat']
                     # usr.profile.Longitude=data['lon']
