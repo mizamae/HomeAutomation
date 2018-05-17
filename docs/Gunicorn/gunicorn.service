@@ -6,7 +6,7 @@ After=network.target
 User=pi
 Group=www-data
 WorkingDirectory=/home/pi/HomeAutomation/src
-ExecStart= /usr/local/bin/gunicorn --access-logfile - --error-logfile - --timeout 60 --workers 2 --preload --bind unix:/home/pi/run/HomeAutomation.sock HomeAutomation.wsgi:application
+ExecStart= /usr/local/bin/gunicorn --access-logfile - --error-logfile - --timeout 60 --workers 2 --preload --bind unix:/home/pi/run/HomeAutomation.sock MainAPP.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

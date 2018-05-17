@@ -35,13 +35,22 @@ A more detailed but general manual about configuring Nginx can be found [here][1
 
 ## Generation of user and passw pairs to accept or deny the publication of location data
 Details are shown [here][2]
-    1. Verify that apache2-utils are installed. 
+    1. Verify that apache2-utils are installed.
+    	
+    	sudo apt-get install apache2-utils
+
     2. Create a password file and a first user
     
         sudo htpasswd -c /etc/apache2/.htpasswd user1
         
     3. In the same way create other user-password pairs
 
+To get a summary of the access types registered by Nginx. This can help you in finding if somebody it trying to access.
+
+	awk '{print $9}' /var/log/nginx/access.log | sort | uniq -c | sort -rn
+To get the pages with broken link (404)
+
+	 awk '($9 ~ /404/)' /var/log/nginx/access.log | awk '{print $7}' | sort | uniq -c | sort -rn
 Take a look at the docs for more information.
 
 [0]: https://nginx.org/en/

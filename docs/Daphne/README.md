@@ -29,6 +29,7 @@ In order to do both things at the same time, the following steps are to be follo
 		1.2 Or copying the file included here using the command
 		sudo mv /source_folder/daphne.service  /etc/systemd/system/	
    		
+  	
    2. Now the Daphne service created can be started and enabled it to automatically start at boot
 			
 		sudo systemctl start daphne 

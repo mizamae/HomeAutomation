@@ -5,7 +5,7 @@ map $http_upgrade $connection_upgrade {
 
 server{
     listen 80;
-    server_name 192.168.0.160;
+    server_name my_LAN_IP;
     charset utf-8;
     location = /favicon.ico {access_log off;log_not_found off;}
     location /static/{
@@ -37,7 +37,7 @@ server{
 
 server {  
     listen  80;
-    server_name mizamae2.ddns.net;
+    server_name my_DNS_name;
     charset     utf-8;
     location = /favicon.ico { access_log off; log_not_found off; }
     
@@ -51,6 +51,8 @@ server {
     }
     location / {
         include proxy_params;
+        auth_basic "DIY4dot0 User Area";
+        auth_basic_user_file /etc/apache2/.htpasswd;
         proxy_pass http://unix:/home/pi/run/HomeAutomation.sock;
     }
     location /owntracks {
