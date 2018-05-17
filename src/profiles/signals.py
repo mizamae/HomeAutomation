@@ -2,7 +2,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,post_delete
 from django.dispatch import receiver
 
 from . import models
@@ -19,3 +19,7 @@ def create_profile_handler(sender, instance, created, **kwargs):
     profile = models.Profile(user=instance)
     profile.save()
     logger.info('New user profile for {} created'.format(instance))
+
+@receiver(post_delete, sender=settings.AUTH_USER_MODEL)
+def delete_user_handler(sender, instance, **kwargs):
+    logger.info('User {} deleted'.format(instance))
