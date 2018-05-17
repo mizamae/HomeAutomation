@@ -1872,8 +1872,7 @@ class Beacons(models.Model):
     WeatherObserver=models.OneToOneField(Devices,on_delete=models.CASCADE,related_name='device2beacon',
                                          null=True,blank=True,limit_choices_to={'DVT__Code': 'OpenWeatherMap'})
     
-    @staticmethod
-    def distance_to(other):
+    def distance_to(self,other):
         from math import sin, cos, sqrt, atan2, radians
         # approximate radius of earth in km
         R = 6373.0

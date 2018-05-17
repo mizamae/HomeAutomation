@@ -199,7 +199,10 @@ class AdditionalCalculations(models.Model):
                 from scipy import integrate
                 result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
         else:
-            result= None
+            if self.Calculation<=1:     # Duty cycle OFF,ON
+                result=0
+            else:
+                result= None
         
         if not isinstance(result, pd.DataFrame):
             MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=DBDate,
