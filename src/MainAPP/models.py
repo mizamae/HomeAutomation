@@ -69,6 +69,9 @@ class SiteSettings(SingletonModel):
     WIFI_SSID= models.CharField(verbose_name=_('WIFI network identificator'),
                                 help_text=_('This is the name of the WiFi network generated to communicate with the slaves'),
                                 max_length=50,default='DIY4dot0')
+    WIFI_PASSW= models.CharField(verbose_name=_('WIFI network passphrase'),
+                                help_text=_('This is the encryption password for the WIFI network'),
+                                max_length=50,default='DIY4dot0')
     WIFI_IP= models.GenericIPAddressField(verbose_name=_('IP address for the WIFI network'),
                                 help_text=_('This is the IP address for the WiFi network generated to communicate with the slaves'),
                                 protocol='IPv4', default='10.10.10.1')

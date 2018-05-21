@@ -56,6 +56,7 @@ class SiteSettingsForm(ModelForm):
                 ),
             Fieldset(_('Slaves WIFI network'),
                      Field('WIFI_SSID'),
+                     Field('WIFI_PASSW'),
                      Field('WIFI_IP'),
                      Field('WIFI_MASK'),
                      Field('WIFI_GATE'),
@@ -83,6 +84,9 @@ class SiteSettingsForm(ModelForm):
     class Meta:
         model = models.SiteSettings
         exclude=[]
+        #widgets = {
+        #    'WIFI_PASSW': forms.PasswordInput(render_value=True),
+        #}
         
 class AdditionalCalculationsForm(ModelForm):
     def __init__(self, *args, **kwargs):
