@@ -3,6 +3,7 @@
 	<td>{{ item.Title }}</td>
 	<td>{{ item.get_Periodicity_display }}</td>
 	<td>{{ item.get_DataAggregation_display }}</td>
+	<td>{{ item.Enable }}</td>
 	<td>
 		<a class="btn btn-primary-outline" href="{% url 'Reports:edit' 'reports' item.pk %}" id="" role="button">
 			<img src="{% static 'site/img/view.png' %}" alt="view" height="50%" width="50%">

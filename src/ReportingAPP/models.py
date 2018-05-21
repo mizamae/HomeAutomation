@@ -19,6 +19,7 @@ class Reports(models.Model):
     Title = models.CharField(max_length=50,unique=True,error_messages={'unique':_("Invalid report title - This title already exists in the DB.")})
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the report will be generated'),choices=PERIODICITY_CHOICES)
     DataAggregation= models.PositiveSmallIntegerField(help_text=_('Data directly from the DB or averaged over a period'),choices=AGGREGATION_CHOICES)
+    Enable = models.BooleanField(help_text='Enables/Disables the generation of the report',default=True)
     ContentJSON=models.CharField(help_text='Content of the report in JSON format', max_length=20000)
     
     def store2DB(self):
@@ -28,13 +29,14 @@ class Reports(models.Model):
     def checkTrigger(self):
         import datetime
         now=datetime.datetime.now()
-        if now.hour==0 and now.minute==0:
-            if self.Periodicity==DAILY_PERIODICITY: # daily report launched on next day at 00:00
-                return True
-            elif self.Periodicity==WEEKLY_PERIODICITY and now.weekday()==0: # weekly report launched on Monday at 00:00
-                return True
-            elif self.Periodicity==MONTHLY_PERIODICITY and now.day==1: # monthly report launched on 1st day at 00:00
-                return True
+        if self.Enable:
+            if now.hour==0 and now.minute==0:
+                if self.Periodicity==DAILY_PERIODICITY: # daily report launched on next day at 00:00
+                    return True
+                elif self.Periodicity==WEEKLY_PERIODICITY and now.weekday()==0: # weekly report launched on Monday at 00:00
+                    return True
+                elif self.Periodicity==MONTHLY_PERIODICITY and now.day==1: # monthly report launched on 1st day at 00:00
+                    return True
         return False
     
     @staticmethod
