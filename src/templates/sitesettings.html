@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+{% block title %}{{ block.super }}Profile{% endblock %}
+
+<!-- Benefits of the Django application -->
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+	<div class="container">
+	  <h1 class="text-primary">{{ Header1 }}</h1>
+		{% crispy Form %}
+		{% if RedMessages %}
+	    	{% for RedMessage in RedMessages %}
+	    		<p class="lead"><font color="red"><b>{{ RedMessage }}</b></font></p>
+	    	{% endfor %}
+    	{% endif %}
+	    {% if GreenMessages %}
+	    	{% for GreenMessage in GreenMessages %}
+	    	<p class="lead"><font color="green"><b>{{ GreenMessage }}</b></font></p>
+	    	{% endfor %}
+	    {% endif %}
+		<div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+		{% include "_back.html" with back_to='home' %}
+		</div>
+		
+	</div>
+{% endblock container %}
+  
+{% block scripts %}
+  <script>
+  $(document).ready(function() {
+    					$('.has-popover').popover({'trigger':'hover'});
+						});
+  </script>
+{% endblock scripts %}
