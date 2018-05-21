@@ -4,6 +4,10 @@ from subprocess import Popen, PIPE
 from django.utils.translation import ugettext as _    
 from EventsAPP.consumers import PublishEvent
 
+import logging
+
+logger = logging.getLogger("project")
+
 def checkUpdates():
     cmd='git remote show origin'
     process = Popen(cmd, cwd=root, shell=True,
