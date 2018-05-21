@@ -89,6 +89,10 @@ def updateWeekDay():
         WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,DataType=DTYPE_INTEGER,Units='',UserEditable=False)
         WeekDay.store2DB()
 
+def checkSoftwareUpdates():
+    from utils.GitHub import checkUpdates
+    checkUpdates()
+    
 def DailyTask():
     updateWeekDay()
     checkReportAvailability()
