@@ -55,8 +55,7 @@ class SingletonModel(models.Model):
 class SiteSettings(SingletonModel):
     class Meta:
         verbose_name = _('Settings')
-        
-    
+
     FACILITY_NAME= models.CharField(verbose_name=_('Name of the installation'),max_length=100,default='My house')
     SITE_DNS= models.CharField(verbose_name=_('Name of the domain to access the application'),
                                 help_text=_('This is the DNS address that gives access to the application from the internet.'),

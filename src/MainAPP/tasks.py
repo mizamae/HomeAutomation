@@ -89,14 +89,19 @@ def updateWeekDay():
         WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,DataType=DTYPE_INTEGER,Units='',UserEditable=False)
         WeekDay.store2DB()
 
-def checkSoftwareUpdates():
-    from utils.GitHub import checkUpdates
-    checkUpdates()
-    
 def DailyTask():
+    from MainAPP.models import SiteSettings
     updateWeekDay()
     checkReportAvailability()
-      
+    SETTINGS=SiteSettings.load()
+    if SETTINGS.VERSION_AUTO_DETECT:
+        from utils.GitHub import checkUpdates
+        checkUpdates()
+        if SETTINGS.VERSION_AUTO_UPDATE:
+            from utils.GitHub import update
+            from .constants import GIT_PATH
+            update(root=GIT_PATH)
+        
 def start_DailyTask():
     id='DailyTask'
     scheduler.add_job(func=DailyTask,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)

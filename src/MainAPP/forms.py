@@ -75,6 +75,9 @@ class SiteSettingsForm(ModelForm):
         
     def clean(self):
         cleaned_data=super().clean() # to use the validation of the fields from the model
+        VERSION_AUTO_DETECT = cleaned_data['VERSION_AUTO_DETECT']
+        if not VERSION_AUTO_DETECT:
+            cleaned_data.update(VERSION_AUTO_UPDATE=False)
         return cleaned_data
      
     class Meta:
