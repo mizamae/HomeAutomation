@@ -31,6 +31,7 @@ from .constants import REGISTERS_DB_PATH,GIT_PATH
 
 from EventsAPP.consumers import PublishEvent
 from . import models
+from . import forms
 import MainAPP.forms
 
 
@@ -113,6 +114,31 @@ class Home(generic.TemplateView):
 class AboutPage(generic.TemplateView):
     template_name = "about.html"
 
+@user_passes_test(lambda u: u.is_superuser)
+def SiteSettings(request):
+    if not checkUserPermissions(request=request,action='change',model='SiteSettings'):
+        return HttpResponseRedirect(reverse(LOGIN_PAGE))
+    if request.method == 'POST':
+        form=forms.SiteSettingsForm(request.POST)
+        redmessages=[]
+        greenmessages=[]
+        
+        if form.is_valid():
+            instance=form.save()
+            greenmessages.append(_('Changes updated OK'))
+        else:
+            redmessages.append(_('Something is wrong with the data provided'))
+        return render(request, 'sitesettings.html', {'Form': form,
+                                                     'GreenMessages':greenmessages,
+                                                     'RedMessages':redmessages})
+    else:
+        SETTINGS=models.SiteSettings.load()
+        form=forms.SiteSettingsForm(instance=SETTINGS)
+        return render(request, 'sitesettings.html', {'Form': form,
+                                                     'GreenMessages':[],
+                                                     'RedMessages':[]})
+        
+        
 @user_passes_test(lambda u: u.is_superuser)
 def settimezone(request):
     if request.method == 'POST':

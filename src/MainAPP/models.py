@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.utils.functional import lazy
+from django.core.cache import cache
 import datetime
 import sys
 import os
@@ -30,6 +31,74 @@ logger = logging.getLogger("project")
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+# settings from https://steelkiwi.com/blog/practical-application-singleton-design-pattern/
+class SingletonModel(models.Model):
+    class Meta:
+        abstract = True
+        
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(SingletonModel, self).save(*args, **kwargs)
+        self.set_cache()
+    
+    def set_cache(self):
+        cache.set(self.__class__.__name__, self)
+        
+    @classmethod
+    def load(cls):
+        if cache.get(cls.__name__) is None:
+            obj, created = cls.objects.get_or_create(pk=1)
+            if not created:
+                obj.set_cache()
+        return cache.get(cls.__name__)
+
+class SiteSettings(SingletonModel):
+    class Meta:
+        verbose_name = _('Settings')
+        
+    
+    FACILITY_NAME= models.CharField(verbose_name=_('Name of the installation'),max_length=100,default='My house')
+    SITE_DNS= models.CharField(verbose_name=_('Name of the domain to access the application'),
+                                help_text=_('This is the DNS address that gives access to the application from the internet.'),
+                                max_length=100,default='myDIY4dot0House.net')
+    
+    VERSION_AUTO_DETECT=models.BooleanField(verbose_name=_('Autodetect new software releases'),
+                                help_text=_('Automatically checks the repository for new software'),default=True)
+    VERSION_AUTO_UPDATE=models.BooleanField(verbose_name=_('Apply automatically new software releases'),
+                                help_text=_('Automatically updates to (and applies) the latest software'),default=False)
+    
+    WIFI_SSID= models.CharField(verbose_name=_('WIFI network identificator'),
+                                help_text=_('This is the name of the WiFi network generated to communicate with the slaves'),
+                                max_length=50,default='DIY4dot0')
+    WIFI_IP= models.GenericIPAddressField(verbose_name=_('IP address for the WIFI network'),
+                                help_text=_('This is the IP address for the WiFi network generated to communicate with the slaves'),
+                                protocol='IPv4', default='10.10.10.1')
+    WIFI_MASK= models.GenericIPAddressField(verbose_name=_('WIFI network mask'),
+                                help_text=_('This is the mask of the WiFi network generated to communicate with the slaves'),
+                                protocol='IPv4', default='255.255.255.0')
+    WIFI_GATE= models.GenericIPAddressField(verbose_name=_('WIFI network gateway'),
+                                help_text=_('This is the gateway for the WiFi network generated to communicate with the slaves'),
+                                protocol='IPv4', default='10.10.10.1')
+    
+    ETH_IP= models.GenericIPAddressField(verbose_name=_('IP address for the LAN network'),
+                                help_text=_('This is the IP for the LAN network that is providing the internet access.'),
+                                protocol='IPv4', default='192.168.0.160')
+    ETH_MASK= models.GenericIPAddressField(verbose_name=_('Mask for the LAN network'),
+                                help_text=_('This is the mask for the LAN network that is providing the internet access.'),
+                                protocol='IPv4', default='255.255.255.0')
+    ETH_GATE= models.GenericIPAddressField(verbose_name=_('Gateway of the LAN network'),
+                                help_text=_('This is the gateway IP of the LAN network that is providing the internet access.'),
+                                protocol='IPv4', default='192.168.0.1')
+    
+    def store2DB(self):
+        self.save()
+
+@receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
+def update_SiteSettings(sender, instance, update_fields,**kwargs):
+    if not kwargs['created']:   # an instance has been created
+        logger.info('Se ha creado el calculo ' + str(instance))
+         
+    
 class Permissions(models.Model):
     class Meta:
         verbose_name = _('Permission')

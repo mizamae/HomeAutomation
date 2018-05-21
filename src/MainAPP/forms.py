@@ -15,14 +15,72 @@ from DevicesAPP.constants import REMOTE_TCP_CONNECTION as DevicesAPP_REMOTE_TCP_
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
+from crispy_forms.bootstrap import InlineCheckboxes
 
 from . import models
 from .constants import AUTOMATION_ACTION_CHOICES
 
 import logging
 logger = logging.getLogger("project")
-                               
 
+FORMS_LABEL_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
+FORMS_FIELD_CLASS='col-lg-5 col-md-5 col-sm-12 col-xs-12'
+
+class SiteSettingsForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(SiteSettingsForm, self).__init__(*args, **kwargs)
+        # If you pass FormHelper constructor a form instance
+        # It builds a default layout with all its fields
+        self.helper = FormHelper(self)
+        self.helper.labels_uppercase = True
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method = 'post'
+        
+        for field in self.fields:
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
+            else:
+                self.fields[field].widget.attrs.update({'class':'input-sm '})
+                
+        self.helper.layout = Layout(
+            Fieldset(_('General'),
+                     Field('FACILITY_NAME'),
+                     Field('SITE_DNS'),
+                     Field('VERSION_AUTO_DETECT'),
+                     Field('VERSION_AUTO_UPDATE'),
+                ),
+            Fieldset(_('Slaves WIFI network'),
+                     Field('WIFI_SSID'),
+                     Field('WIFI_IP'),
+                     Field('WIFI_MASK'),
+                     Field('WIFI_GATE'),
+                ),
+            Fieldset(_('LAN network'),
+                     Field('ETH_IP'),
+                     Field('ETH_MASK'),
+                     Field('ETH_GATE'),
+                ),
+            Submit('submit', _('Save'),css_class='btn-primary'),
+            )
+     
+    def save(self, *args, **kwargs):
+        instance=super().save(commit=False)
+        instance.store2DB()
+        return instance
+        
+    def clean(self):
+        cleaned_data=super().clean() # to use the validation of the fields from the model
+        return cleaned_data
+     
+    class Meta:
+        model = models.SiteSettings
+        exclude=[]
+        
 class AdditionalCalculationsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdditionalCalculationsForm, self).__init__(*args, **kwargs)

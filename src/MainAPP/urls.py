@@ -54,6 +54,7 @@ urlpatterns = [
     url(r'^thermostat/$', views.thermostat,name='thermostat'),
     url(r'^gitupdate/$', views.GitUpdate,name='gitupdate'),
     url(r'^softreset/$', views.SoftReset,name='softreset'),
+    url(r'^sitesettings/$', views.SiteSettings,name='sitesettings'),
     url(r'^configurebackup/$', views.DBBackup,name='dbbackup'),
     url(r'^gdrive_authentication/$', views.gdrive_authentication,name='gdrive_authentication'),
     url(r'^users/', include(profiles.urls, namespace='profiles')),

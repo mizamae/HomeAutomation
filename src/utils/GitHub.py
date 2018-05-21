@@ -69,6 +69,7 @@ def update(root):
             
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
             import os
+            os.system("python HomeAutomation/src/manage.py collectstatic --noinput")
             os.system("sudo systemctl restart daphne worker")
     else:
         PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False,Code='MainAPPViews-9')
