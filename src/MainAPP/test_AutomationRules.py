@@ -10,7 +10,7 @@ class AutomationRulesTest(TestCase):
     def setUp(self):
         from utils.BBDD import getRegistersDBInstance
         self.DB=getRegistersDBInstance()
-        self.DB.dropTable(table='MainVariables')
+        #self.DB.dropTable(table='MainVariables')
         self.signal_was_called = False
         self.signaltimestamp=None
         self.signalTag=None
@@ -19,7 +19,7 @@ class AutomationRulesTest(TestCase):
         self.AVAR1=AutomationVariables(**AutomationVariablesDict)
         self.AVAR1.store2DB()
         newDict=editDict(keys=['Label','Tag'], \
-                         newValues=['Test Automation Var2','3_1_1'], Dictionary=AutomationVariablesDict)
+                         newValues=['Test Automation Var2','2'], Dictionary=AutomationVariablesDict)
         self.AVAR2=AutomationVariables(**newDict)
         self.AVAR2.store2DB()
         
@@ -136,6 +136,85 @@ class AutomationRulesTest(TestCase):
         self.outIO=MasterGPIOs.objects.get(Pin=18)      # an update of the instance is required to refresh the value
         self.assertEqual(self.outIO.Value,GPIO_LOW)
         
+        newValue1=25
+        newValue2=24
+        InsertRegister2DB(DB=self.DB,table=self.AVAR1.Table,tags=['timestamp',self.AVAR1.Tag,self.AVAR2.Tag],\
+                      values=[now,newValue1,newValue2])
+        instance.execute()
+        print('    --> Tested the signal emmission for GPIO change to False')
+        # checks values from the signal
+        self.assertEqual(self.signalPK,self.outIO.pk)   # signal
+        self.assertEqual(self.signalValue,GPIO_HIGH)
+        print('    --> Tested the effective change of the GPIO to False')
+        # checks the update of the GPIO
+        self.outIO=MasterGPIOs.objects.get(Pin=18)      # an update of the instance is required to refresh the value
+        self.assertEqual(self.outIO.Value,GPIO_HIGH)
+        
+        
+        SignalSetGPIO.disconnect(self.handler)
+        
+    def test_EdgeExecute(self):
+        '''
+        execute: method provided to execute the rule
+        '''
+        print('## TESTING THE OPERATION OF THE execute METHOD ##')
+        now=timezone.now()
+        instance=AutomationRules(**AutomationRulesDict)
+        instance.EdgeExec=True
+        instance.store2DB()
+        instance.setActive(value=True)
+        newDict=editDict(keys=['Rule','Order','Var1','Operator12','Var2','IsConstant'], \
+                             newValues=[instance,1,self.AVAR1,'==',self.AVAR2,False], Dictionary=RuleItemsDict)
+        item=RuleItems(**newDict)
+        item.store2DB()
+        # TESTING TWO CONSECUTIVE FALSE EVALUATIONS
+        newValue1=25
+        newValue2=24
+        InsertRegister2DB(DB=self.DB,table=self.AVAR1.Table,tags=['timestamp',self.AVAR1.Tag,self.AVAR2.Tag],\
+                      values=[now,newValue1,newValue2])
+        SignalSetGPIO.connect(self.handler)
+        self.assertEqual(self.outIO.Value,GPIO_HIGH)
+        self.assertEqual(instance.LastEval,False)
+        self.outIO.Value=GPIO_LOW
+        self.outIO.save()
+        # initial execution is false and LastEval is false so no execution is performed
+        instance.execute()
+        DeleteLastRegisterFromDB(DB=self.DB,table=self.AVAR1.Table)
+        
+        self.assertEqual(instance.LastEval,False)
+        
+        # checks that no update of the GPIO is applied
+        self.outIO=MasterGPIOs.objects.get(Pin=18)      # an update of the instance is required to refresh the value
+        self.assertEqual(self.outIO.Value,GPIO_LOW)
+        
+        # TESTING AN EDGE TO TRUE
+        newValue1=25
+        newValue2=25
+        InsertRegister2DB(DB=self.DB,table=self.AVAR1.Table,tags=['timestamp',self.AVAR1.Tag,self.AVAR2.Tag],\
+                      values=[now,newValue1,newValue2])
+        instance.execute()
+        print('    --> Tested the signal emmission for GPIO change to False')
+        # checks values from the signal
+        self.assertEqual(self.signalPK,self.outIO.pk)   # signal
+        self.assertEqual(self.signalValue,GPIO_LOW)
+        print('    --> Tested the effective change of the GPIO to False')
+        # checks the update of the GPIO
+        self.outIO=MasterGPIOs.objects.get(Pin=18)      # an update of the instance is required to refresh the value
+        self.assertEqual(self.outIO.Value,GPIO_LOW)
+        
+        # TESTING TWO CONSECUTIVE TRUE EVALUATIONS
+        self.outIO.Value=GPIO_HIGH
+        self.outIO.save()
+        instance.execute()
+        # checks the update of the GPIO
+        self.outIO=MasterGPIOs.objects.get(Pin=18)      # an update of the instance is required to refresh the value
+        self.assertEqual(self.outIO.Value,GPIO_HIGH)
+        
+        DeleteLastRegisterFromDB(DB=self.DB,table=self.AVAR1.Table)
+        
+        # TESTING AN EDGE TO FALSE
+        self.outIO.Value=GPIO_LOW
+        self.outIO.save()
         newValue1=25
         newValue2=24
         InsertRegister2DB(DB=self.DB,table=self.AVAR1.Table,tags=['timestamp',self.AVAR1.Tag,self.AVAR2.Tag],\

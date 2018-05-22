@@ -29,7 +29,7 @@ from utils.test_utils import *
 
 VARWeeklyScheduleDict={'Label':'Weekly schedule test','Var':'','LValue':20,'HValue':25}
 AdditionalCalculationsDict={'SourceVar':None,'SinkVar':None,'Periodicity':2,'Calculation':0}
-AutomationVariablesDict={'Label':'Test Automation Var1','Tag':'1','Device':'MainVars','Table':'1_1',
+AutomationVariablesDict={'Label':'Test Automation Var1','Tag':'1','Device':'MainVars','Table':'MainVariables',
                          'BitPos':None,'Sample':1,'Units':'kW'}
 RuleItemsDict={'Rule':'','Order':1,'PreVar1':'','Var1':'','Operator12':'>','PreVar2':'','Var2':'','Var2Hyst':0.2,
                'IsConstant':False,'Constant':20,'Operator3':'|'}

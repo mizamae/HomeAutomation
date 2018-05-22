@@ -118,26 +118,26 @@ class AboutPage(generic.TemplateView):
 def SiteSettings(request):
     if not checkUserPermissions(request=request,action='change',model='SiteSettings'):
         return HttpResponseRedirect(reverse(LOGIN_PAGE))
+    SETTINGS=models.SiteSettings.load()
     if request.method == 'POST':
-        form=forms.SiteSettingsForm(request.POST)
+        
+        form=forms.SiteSettingsForm(request.POST,instance=SETTINGS)
         redmessages=[]
         greenmessages=[]
         
-        if form.is_valid():
+        if form.is_valid() and form.has_changed():
             instance=form.save()
             greenmessages.append(_('Changes updated OK'))
-        else:
+        elif not form.is_valid():
             redmessages.append(_('Something is wrong with the data provided'))
         return render(request, 'sitesettings.html', {'Form': form,
                                                      'GreenMessages':greenmessages,
                                                      'RedMessages':redmessages})
     else:
-        SETTINGS=models.SiteSettings.load()
-        form=forms.SiteSettingsForm(instance=SETTINGS)
+        form=forms.SiteSettingsForm(initial=SETTINGS.__dict__,instance=SETTINGS)
         return render(request, 'sitesettings.html', {'Form': form,
                                                      'GreenMessages':[],
                                                      'RedMessages':[]})
-        
         
 @user_passes_test(lambda u: u.is_superuser)
 def settimezone(request):
@@ -276,6 +276,9 @@ def SoftReset(request):
     import os
     os.system("sudo systemctl restart gunicorn")
     PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False,Code='MainAPPViews-0')
+    id='Restarting-daphne worker'
+    from utils.asynchronous_tasks import BackgroundTimer
+    Timer=BackgroundTimer(interval=15,threadName=id,callable=os.system,kwargs={'command':"sudo systemctl restart daphne worker"})
     return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
     
 @user_passes_test(lambda u: u.is_superuser)

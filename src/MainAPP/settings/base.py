@@ -43,11 +43,6 @@ LOCALE_PATHS = [
         join(BASE_DIR, "templates/locale"),
         join(BASE_DIR, "templates/Subsystems/locale"),
     ]
-
-# def get_reportsFolders():
-    # dirs = os.listdir(join(MEDIA_ROOT,'Reports')
-    # templateFolders=[join(BASE_DIR, 'templates')]
-    # for folder in dirs:
         
         
 # Use Django templates using the new Django 1.8 TEMPLATES settings
@@ -148,7 +143,6 @@ LANGUAGES = [
 
 USE_TZ = True
 TIME_ZONE = env('TIME_ZONE')
-#TIME_ZONE = 'Europe/Madrid'
 
 #from django.utils import timezone
 #import pytz

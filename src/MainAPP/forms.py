@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.views import generic
 from django.forms import ModelForm
+from django.contrib.auth import get_user_model
 
 import json
 import DevicesAPP.models
@@ -66,12 +67,17 @@ class SiteSettingsForm(ModelForm):
                      Field('ETH_MASK'),
                      Field('ETH_GATE'),
                 ),
+            Fieldset(_('Security'),
+                     Field('PROXY_CREDENTIALS'),
+                     Field('PROXY_USER1'),
+                     Field('PROXY_PASSW1'),
+                ),
             Submit('submit', _('Save'),css_class='btn-primary'),
             )
      
     def save(self, *args, **kwargs):
         instance=super().save(commit=False)
-        instance.store2DB()
+        instance.store2DB(update_fields=self.changed_data)
         return instance
         
     def clean(self):
@@ -240,6 +246,8 @@ class RuleItemForm(ModelForm):
 class AutomationRuleForm(ModelForm):
     
     ActionType = forms.ChoiceField(choices=AUTOMATION_ACTION_CHOICES,label=_('Select the action'))
+    Users = forms.ModelMultipleChoiceField(queryset=get_user_model().objects.all(),
+                              label=_('Select the user to send the email to'),required = False)
     IO=forms.ModelChoiceField(queryset=DevicesAPP.models.MasterGPIOs.objects.filter(Direction=GPIO_OUTPUT),
                               label=_('Select the output'),required = False)
     IOValue=forms.ChoiceField(choices=DevicesAPP.constants.GPIOVALUE_CHOICES,
@@ -272,6 +280,7 @@ class AutomationRuleForm(ModelForm):
         self.fields['Identifier'].label = _("Set the name for the automation rule")
         self.fields['Active'].label = _("Activate the rule")
         self.fields['OnError'].label = _("Select the rule evaluation in case of error")
+        self.fields['EdgeExec'].label = _("Execute rule only on the transitions from FALSE to TRUE and viceversa")
         self.fields['PreviousRule'].label = _("Select the previous rule to be chained")
         self.fields['PreviousRule'].queryset=models.AutomationRules.objects.filter(Action__contains='"ActionType": "z"')
         self.fields['OperatorPrev'].label = _("Select the operator between the previous rule and this one")
@@ -279,6 +288,7 @@ class AutomationRuleForm(ModelForm):
             Field('Identifier', css_class='input-sm'),
             Field('Active', css_class='input-sm'),
             Field('OnError', css_class='input-sm'),
+            Field('EdgeExec', css_class='input-sm'),
             )
         self.helper.layout.append(Field('ActionType', css_class='input-sm'))
         self.helper.layout.append(Field('IO', css_class='input-sm'))
@@ -290,6 +300,7 @@ class AutomationRuleForm(ModelForm):
     def clean(self):
          cleaned_data = super(AutomationRuleForm, self).clean()
          action = cleaned_data.get('Action')
+         EdgeExec=cleaned_data.get('EdgeExec')
          ActionType = cleaned_data.get('ActionType')
          IO = cleaned_data.get('IO')
          IOValue = cleaned_data.get('IOValue')
@@ -300,12 +311,12 @@ class AutomationRuleForm(ModelForm):
          if PreviousRule!=None:
              if OperatorPrev==None:
                  raise ValidationError({'OperatorPrev':_("This field cannot be left empty if a previous rule has been selected")})
-         if ActionType=='a':
+         if ActionType=='a': # activate Main device IO
              Device=None
              Order=None
              if IO==None:
                  raise ValidationError({'IO':_("This field cannot be left empty if 'Activate output on Main' is selected as action")})
-         elif ActionType=='b':
+         elif ActionType=='b': # send an order to a device
              IO=None
              IOValue=None
              if Device==None:
@@ -313,7 +324,15 @@ class AutomationRuleForm(ModelForm):
              else:
                  if Order==None:
                      raise ValidationError({'Order':_("This field cannot be left empty if Send command to a device is selected as action")})
-         elif ActionType=='z':
+             cleaned_data.update(EdgeExec=True)
+         elif ActionType=='c': # send email
+             Device=None
+             Order=None
+             IO==None
+             if IO==None:
+                 raise ValidationError({'IO':_("This field cannot be left empty if 'Activate output on Main' is selected as action")})
+             cleaned_data.update(EdgeExec=True)
+         elif ActionType=='z': # no action
             IO=None
             IOValue=None
             Device=None
@@ -332,7 +351,7 @@ class AutomationRuleForm(ModelForm):
          return cleaned_data
          
     class Meta:
-        fields=['Identifier','Active','OnError','PreviousRule','OperatorPrev','Action']
+        fields=['Identifier','Active','OnError','EdgeExec','PreviousRule','OperatorPrev','Action']
         widgets = {'Action': forms.HiddenInput()}
         model = models.AutomationRules
         

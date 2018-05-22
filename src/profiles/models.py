@@ -89,7 +89,7 @@ class BaseProfile(models.Model):
             ("change_trackingstate", "Can change the state of the tracking of a user"),
         )
 
-@receiver(post_save)
+@receiver(post_save,dispatch_uid="update_profile")
 def update_BaseProfile(sender, instance, update_fields,**kwargs):
     
     if issubclass(sender, BaseProfile) and instance.tracking:

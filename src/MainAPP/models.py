@@ -92,8 +92,31 @@ class SiteSettings(SingletonModel):
                                 help_text=_('This is the gateway IP of the LAN network that is providing the internet access.'),
                                 protocol='IPv4', default='192.168.0.1')
     
-    def store2DB(self):
-        self.save()
+    PROXY_CREDENTIALS=models.BooleanField(verbose_name=_('Require credentials to access the server'),
+                                help_text=_('Increased access security by including an additional barrier on the proxy.'),default=True)
+    PROXY_USER1=models.CharField(verbose_name=_('Username 1'),
+                                max_length=10,help_text=_('First username enabled to get through the proxy barrier.'),default='DIY4dot0')
+    PROXY_PASSW1=models.CharField(verbose_name=_('Password for username 1'),
+                                max_length=10,help_text=_('First username password.'),default='DIY4dot0')
+    
+    def store2DB(self,update_fields=None):
+        self.save(update_fields=update_fields)
+        if update_fields!=None:
+            self.applyChanges(update_fields=update_fields)
+            
+    def applyChanges(self,update_fields):
+        for field in update_fields:
+            if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
+                pass    
+                # update /etc/nginx/sites-available/HomeAutomation.nginxconf
+                # update allowed_hosts in settings.local.env
+                # update /etc/network/interfaces
+            if field in ['WIFI_IP','WIFI_MASK','WIFI_GATE']:
+                pass
+                # update /etc/network/interfaces
+            if field in ['WIFI_SSID','WIFI_PASSW']:
+                pass
+                # update /etc/hostapd/hostapd.conf
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
@@ -789,6 +812,7 @@ class AutomationRules(models.Model):
     OperatorPrev = models.CharField(choices=BOOL_OPERATOR_CHOICES,max_length=2,blank=True,null=True)
     RuleItems = models.ManyToManyField(RuleItems)
     Action = models.CharField(max_length=500,blank=True) # receives a json object describind the action desired
+    EdgeExec = models.BooleanField(default=False)
     LastEval = models.BooleanField(default=False)
     
     _timestamp1=None
@@ -897,7 +921,7 @@ class AutomationRules(models.Model):
             resultTRUE=eval(self.get_OnError_display())
             resultFALSE=eval('not ' + self.get_OnError_display())
         
-        if resultTRUE==True:
+        if (resultTRUE==True and (not self.EdgeExec or not self.LastEval)):
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
@@ -905,7 +929,7 @@ class AutomationRules(models.Model):
             if result['ERROR']==[]:
                 PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
             self.setLastEval(value=True)
-        elif resultFALSE==True:
+        elif (resultFALSE==True and (not self.EdgeExec or self.LastEval)):
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
