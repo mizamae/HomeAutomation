@@ -7,32 +7,36 @@ SETUP WLAN0 FOR STATIC IP
 	sudo nano /etc/network/interfaces
 
 file should look like: 
+
 	# interfaces(5) file used by ifup(8) and ifdown(8)
-	
+
 	# Please note that this file is written to be used with dhcpcd
 	# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
 	
 	# Include files from /etc/network/interfaces.d:
 	source-directory /etc/network/interfaces.d
-	
 	auto lo
 	iface lo inet loopback
-	
-	# Ideally eth0 should be set as static IP. I did it in the router though
+		
+	# Ideally eth0 should be set as static IP. It can be done in the router though
 	auto eth0
-	iface eth0 inet dhcp
-	
+		iface eth0 inet static
+		address 192.168.0.160
+		netmask 255.255.255.0
+		gateway 192.168.0.1
+		network 192.168.0.0
+		
 	auto wlan0
-	allow-hotplug wlan0
-	iface wlan0 inet static
-	    address 10.10.10.1
-	    gateway 10.10.10.1
-	    netmask 255.255.255.0
-	    network 10.10.10.0
-	
+		allow-hotplug wlan0
+		iface wlan0 inet static
+		address 10.10.10.1
+		netmask 255.255.255.0
+		gateway 10.10.10.1
+		network 10.10.10.0
+		
 	allow-hotplug wlan1
 	iface wlan1 inet manual
-	    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+		 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 
     
 CONFIGURE ACCESS POINT

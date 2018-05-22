@@ -10,11 +10,9 @@ from .base import *  # NOQA
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-
-
 # Must mention ALLOWED_HOSTS in production!
-ALLOWED_HOSTS = ["mizamae2.ddns.net","192.168.0.160","127.0.0.1"]
-
+#ALLOWED_HOSTS = ["mizamae2.ddns.net","192.168.0.160","127.0.0.1"]
+ALLOWED_HOSTS = [s.strip() for s in env('ALLOWED_HOSTS').split(',')]
 
 MIGRATION_MODULES={
         'HomeAutomation':'HomeAutomation.migrations',

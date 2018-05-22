@@ -31,7 +31,7 @@ if exists(env_file):
 #os.environ["SECRET_KEY"]="kak(4m!d=)pc0idl1jq4nqrda7lu5b2%rucly)22qj4%9l8l5"
 
 SECRET_KEY = env('SECRET_KEY')
- 
+
 # Build paths inside the project like this: join(BASE_DIR, "directory")
 BASE_DIR = dirname(dirname(dirname(__file__))) # points to the folder src
 STATICFILES_DIRS = [join(BASE_DIR, 'static')]
@@ -147,7 +147,8 @@ LANGUAGES = [
 ]
 
 USE_TZ = True
-TIME_ZONE = 'Europe/Madrid'
+TIME_ZONE = env('TIME_ZONE')
+#TIME_ZONE = 'Europe/Madrid'
 
 #from django.utils import timezone
 #import pytz

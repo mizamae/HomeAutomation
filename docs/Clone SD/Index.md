@@ -86,4 +86,4 @@ Create a password file and a first user
     
 	sudo htpasswd -c /etc/apache2/.htpasswd user1
         
-In the same way create other user-password pairs
+In the same way create other user-password pairs without -c flag
