@@ -96,7 +96,7 @@ def DailyTask():
     SETTINGS=SiteSettings.load()
     if SETTINGS.VERSION_AUTO_DETECT:
         from utils.GitHub import checkUpdates
-        checkUpdates()
+        checkUpdates(root=GIT_PATH)
         if SETTINGS.VERSION_AUTO_UPDATE:
             from utils.GitHub import update
             from .constants import GIT_PATH

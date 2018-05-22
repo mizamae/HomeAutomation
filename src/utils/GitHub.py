@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger("project")
 
-def checkUpdates():
+def checkUpdates(root):
     cmd='git remote show origin'
     process = Popen(cmd, cwd=root, shell=True,
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
