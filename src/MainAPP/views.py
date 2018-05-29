@@ -285,10 +285,12 @@ def GitUpdate(request):
     from os import walk
     for root, dirs, n in walk(GIT_PATH):
         if ".git" in dirs:
-            #print("\"%s\" has git dir: \"%s\"" % (root, dirs))
-            #dirs.remove('.git')
             from utils.GitHub import update
-            update(root)
+            revision=update(root)
+            if revision!=None:
+                SETTINGS=models.SiteSettings.load()
+                SETTINGS.VERSION_CODE=revision
+                SETTINGS.save(update_fields=['VERSION_CODE',])
             break
     return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
 

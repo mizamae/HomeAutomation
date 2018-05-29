@@ -56,7 +56,8 @@ class SiteSettings(SingletonModel):
     class Meta:
         verbose_name = _('Settings')
 
-    FACILITY_NAME= models.CharField(verbose_name=_('Name of the installation'),max_length=100,default='My house')
+    FACILITY_NAME= models.CharField(verbose_name=_('Name of the installation'),max_length=100,
+                                    help_text=_('Descriptive name for the installation.'),default='My house')
     SITE_DNS= models.CharField(verbose_name=_('Name of the domain to access the application'),
                                 help_text=_('This is the DNS address that gives access to the application from the internet.'),
                                 max_length=100,default='myDIY4dot0House.net')
@@ -65,6 +66,8 @@ class SiteSettings(SingletonModel):
                                 help_text=_('Automatically checks the repository for new software'),default=True)
     VERSION_AUTO_UPDATE=models.BooleanField(verbose_name=_('Apply automatically new software releases'),
                                 help_text=_('Automatically updates to (and applies) the latest software'),default=False)
+    VERSION_CODE= models.CharField(verbose_name=_('Code of the version of the application framework'),
+                                max_length=100,default='')
     NTPSERVER_RESTART_TIMEDELTA=models.PositiveSmallIntegerField(verbose_name=_('NTP server restart time delta'),
                                 help_text=_('Time difference in minutes that will trigger a restart of the NTP server'),default=5)
     
@@ -125,7 +128,10 @@ class SiteSettings(SingletonModel):
             checkUpdates(root=GIT_PATH)
             if self.VERSION_AUTO_UPDATE:
                 from utils.GitHub import update
-                update(root=GIT_PATH)
+                revision=update(root=GIT_PATH)
+                if revision!=None:
+                    self.VERSION_CODE=revision
+                    self.save(update_fields=['VERSION_CODE',])
     
     def checkDeniableIPs(self):
         if self.PROXY_AUTO_DENYIP:

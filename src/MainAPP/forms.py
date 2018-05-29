@@ -46,7 +46,7 @@ class SiteSettingsForm(ModelForm):
             if help_text != '':
                 self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
             else:
-                self.fields[field].widget.attrs.update({'class':'input-sm '})
+                self.fields[field].widget.attrs.update({'class':'input-sm ','readonly':True})
                 
         self.helper.layout = Layout(
             Fieldset(_('General'),
@@ -54,6 +54,7 @@ class SiteSettingsForm(ModelForm):
                      Field('SITE_DNS'),
                      Field('VERSION_AUTO_DETECT'),
                      Field('VERSION_AUTO_UPDATE'),
+                     Field('VERSION_CODE'),
                      AppendedText('NTPSERVER_RESTART_TIMEDELTA', 'min'),
                 ),
             Fieldset(_('Slaves WIFI network'),
