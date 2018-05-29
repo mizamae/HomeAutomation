@@ -232,7 +232,6 @@ def arduinoCode(request):
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
 
     return resp
-    #raise Http404
 
 def gdrive_authentication(request):
     from utils.GoogleDrive import GoogleDriveWrapper

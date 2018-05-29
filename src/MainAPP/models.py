@@ -65,6 +65,8 @@ class SiteSettings(SingletonModel):
                                 help_text=_('Automatically checks the repository for new software'),default=True)
     VERSION_AUTO_UPDATE=models.BooleanField(verbose_name=_('Apply automatically new software releases'),
                                 help_text=_('Automatically updates to (and applies) the latest software'),default=False)
+    NTPSERVER_RESTART_TIMEDELTA=models.PositiveSmallIntegerField(verbose_name=_('NTP server restart time delta'),
+                                help_text=_('Time difference in minutes that will trigger a restart of the NTP server'),default=5)
     
     WIFI_SSID= models.CharField(verbose_name=_('WIFI network identificator'),
                                 help_text=_('This is the name of the WiFi network generated to communicate with the slaves'),
@@ -92,11 +94,19 @@ class SiteSettings(SingletonModel):
                                 help_text=_('This is the gateway IP of the LAN network that is providing the internet access.'),
                                 protocol='IPv4', default='192.168.0.1')
     
+    PROXY_AUTO_DENYIP=models.BooleanField(verbose_name=_('Enable automatic IP blocking'),
+                                help_text=_('Feature that blocks automatically WAN IPs with more than in 24 h.'),default=True)
+    AUTODENY_ATTEMPTS=models.PositiveSmallIntegerField(verbose_name=_('Number of denied attempts to block an IP'),
+                                help_text=_('The number of denied accesses in 24h that will result in an IP blocked.'),default=40)
     PROXY_CREDENTIALS=models.BooleanField(verbose_name=_('Require credentials to access the server'),
                                 help_text=_('Increased access security by including an additional barrier on the proxy.'),default=True)
     PROXY_USER1=models.CharField(verbose_name=_('Username 1'),
-                                max_length=10,help_text=_('First username enabled to get through the proxy barrier.'),default='DIY4dot0')
+                                max_length=10,help_text=_('First username enabled to get through the proxy barrier.'),default='user1')
     PROXY_PASSW1=models.CharField(verbose_name=_('Password for username 1'),
+                                max_length=10,help_text=_('First username password.'),default='DIY4dot0')
+    PROXY_USER2=models.CharField(verbose_name=_('Username 2'),
+                                max_length=10,help_text=_('First username enabled to get through the proxy barrier.'),default='user2')
+    PROXY_PASSW2=models.CharField(verbose_name=_('Password for username 2'),
                                 max_length=10,help_text=_('First username password.'),default='DIY4dot0')
     
     def store2DB(self,update_fields=None):
@@ -107,7 +117,7 @@ class SiteSettings(SingletonModel):
     def applyChanges(self,update_fields):
         for field in update_fields:
             if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
-                pass    
+                pass
                 # update /etc/nginx/sites-available/HomeAutomation.nginxconf
                 # update allowed_hosts in settings.local.env
                 # update /etc/network/interfaces
@@ -117,11 +127,18 @@ class SiteSettings(SingletonModel):
             if field in ['WIFI_SSID','WIFI_PASSW']:
                 pass
                 # update /etc/hostapd/hostapd.conf
+            if field in ['PROXY_CREDENTIALS',]:
+                pass
+                # update /etc/nginx/sites-available/HomeAutomation.nginxconf
+            if field in ['PROXY_USER1','PROXY_PASSW1','PROXY_USER2','PROXY_PASSW2']:
+                if self.PROXY_CREDENTIALS:
+                    from utils.NginxUsers import createUser
+                    createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
+                    createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
-    if not kwargs['created']:   # an instance has been created
-        logger.info('Se ha creado el calculo ' + str(instance))
+    pass
          
     
 class Permissions(models.Model):

@@ -43,6 +43,7 @@ class OpenWeatherMap(object):
                 # datagram = 'observation'
             #logger.error('Datagram: ' + datagram)
             Error=''
+            #datagramId='forecast'
             if datagramId =='observation':
                 retries=self._MAX_RETRIES
                 while retries>0:
@@ -79,17 +80,31 @@ class OpenWeatherMap(object):
                         Error='APIError'
                         values=(None,None,None,None,None)
                         null=True
-                
+                        
+                self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
             elif datagramId =='forecast':
-                forecast = self._owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
-                fcs = forecast.get_forecast()
+                fc = self._owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
+                f = fc.get_forecast()
                 print('Forecasts for the next 12 H')
-                for i,fc in enumerate(fcs):
-                    print(fc.get_reference_time('date'),fc.get_status())
-                timestamp=timezone.now() #para hora con info UTC 
-                values=(None,)
+                for i,w in enumerate(f):
+                    timestamp=w.get_reference_time(timeformat='date')
+                    clouds=w.get_clouds()                       # Returns the cloud coverage percentage as an int
+                    temperature=w.get_temperature('celsius')['temp']
+                    wind=w.get_wind()
+                    if 'speed' in wind:
+                        windspeed=wind['speed']                           # {'speed': 4.6, 'deg': 330}
+                    else:
+                        windspeed=None
+                    rain=w.get_rain()                           # {'3h': 0} 
+                    if '3h' in rain:
+                        rain=rain['3h']
+                    else:
+                        rain=0
+                    values=(temperature,windspeed,rain,clouds)
+                    self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
+                    print(w.get_reference_time('date'),w.get_status())
             
-            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
+            #self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
                 
             if null==False:
                 LastUpdated=timezone.now()

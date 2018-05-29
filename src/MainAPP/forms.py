@@ -16,7 +16,7 @@ from DevicesAPP.constants import REMOTE_TCP_CONNECTION as DevicesAPP_REMOTE_TCP_
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,Fieldset
-from crispy_forms.bootstrap import InlineCheckboxes
+from crispy_forms.bootstrap import AppendedText
 
 from . import models
 from .constants import AUTOMATION_ACTION_CHOICES
@@ -54,6 +54,7 @@ class SiteSettingsForm(ModelForm):
                      Field('SITE_DNS'),
                      Field('VERSION_AUTO_DETECT'),
                      Field('VERSION_AUTO_UPDATE'),
+                     AppendedText('NTPSERVER_RESTART_TIMEDELTA', 'min'),
                 ),
             Fieldset(_('Slaves WIFI network'),
                      Field('WIFI_SSID'),
@@ -68,9 +69,13 @@ class SiteSettingsForm(ModelForm):
                      Field('ETH_GATE'),
                 ),
             Fieldset(_('Security'),
+                     Field('PROXY_AUTO_DENYIP'),
+                     Field('AUTODENY_ATTEMPTS'),
                      Field('PROXY_CREDENTIALS'),
                      Field('PROXY_USER1'),
                      Field('PROXY_PASSW1'),
+                     Field('PROXY_USER2'),
+                     Field('PROXY_PASSW2'),
                 ),
             Submit('submit', _('Save'),css_class='btn-primary'),
             )
