@@ -95,9 +95,9 @@ class SiteSettings(SingletonModel):
                                 protocol='IPv4', default='192.168.0.1')
     
     PROXY_AUTO_DENYIP=models.BooleanField(verbose_name=_('Enable automatic IP blocking'),
-                                help_text=_('Feature that blocks automatically WAN IPs with more than in 24 h.'),default=True)
-    AUTODENY_ATTEMPTS=models.PositiveSmallIntegerField(verbose_name=_('Number of denied attempts to block an IP'),
-                                help_text=_('The number of denied accesses in 24h that will result in an IP blocked.'),default=40)
+                                help_text=_('Feature that blocks automatically WAN IPs with more than certain denied attempts in 24 h.'),default=True)
+    AUTODENY_ATTEMPTS=models.PositiveSmallIntegerField(verbose_name=_('Number of denied attempts needed to block an IP'),
+                                help_text=_('The number of denied accesses in 24h that will result in an IP being blocked.'),default=40)
     PROXY_CREDENTIALS=models.BooleanField(verbose_name=_('Require credentials to access the server'),
                                 help_text=_('Increased access security by including an additional barrier on the proxy.'),default=True)
     PROXY_USER1=models.CharField(verbose_name=_('Username 1'),
@@ -113,7 +113,28 @@ class SiteSettings(SingletonModel):
         self.save(update_fields=update_fields)
         if update_fields!=None:
             self.applyChanges(update_fields=update_fields)
-            
+    
+    def dailyTasks(self):
+        self.checkRepository()
+        self.checkDeniableIPs()
+        
+    def checkRepository(self):
+        if self.VERSION_AUTO_DETECT:
+            from utils.GitHub import checkUpdates
+            from .constants import GIT_PATH
+            checkUpdates(root=GIT_PATH)
+            if self.VERSION_AUTO_UPDATE:
+                from utils.GitHub import update
+                update(root=GIT_PATH)
+    
+    def checkDeniableIPs(self):
+        if self.PROXY_AUTO_DENYIP:
+            from utils.combinedLog import CombinedLogParser
+            instance=CombinedLogParser()
+            for element in instance.getNginxAccessIPs(hours=24):
+                if element['trials']>=self.AUTODENY_ATTEMPTS:
+                    PublishEvent(Severity=3,Text='IP address '+element['IP']+ ' has been blocked',Persistent=True,Code='IP-filter-'+element['IP'])
+        
     def applyChanges(self,update_fields):
         for field in update_fields:
             if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:

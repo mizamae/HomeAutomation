@@ -94,19 +94,7 @@ def DailyTask():
     updateWeekDay()
     checkReportAvailability()
     SETTINGS=SiteSettings.load()
-    if SETTINGS.VERSION_AUTO_DETECT:
-        from utils.GitHub import checkUpdates
-        from .constants import GIT_PATH
-        checkUpdates(root=GIT_PATH)
-        if SETTINGS.VERSION_AUTO_UPDATE:
-            from utils.GitHub import update
-            update(root=GIT_PATH)
-    if SETTINGS.PROXY_AUTO_DENYIP:
-        from utils.combinedLog import CombinedLogParser
-        instance=CombinedLogParser()
-        for element in instance.getNginxAccessIPs(hours=24):
-            if element['trials']>=SETTINGS.AUTODENY_ATTEMPTS:
-                PublishEvent(Severity=3,Text='IP address '+element['IP']+ ' has been blocked',Persistent=True,Code='IP-filter-'+element['IP'])
+    SETTINGS.dailyTasks()
         
 def start_DailyTask():
     id='DailyTask'
