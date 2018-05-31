@@ -99,6 +99,8 @@ class SiteSettingsForm(ModelForm):
         #widgets = {
         #    'WIFI_PASSW': forms.PasswordInput(render_value=True),
         #}
+    class Media:
+        js = ('SiteSettingsFormAnimations.js',)
         
 class AdditionalCalculationsForm(ModelForm):
     def __init__(self, *args, **kwargs):

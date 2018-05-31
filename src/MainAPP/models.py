@@ -137,7 +137,7 @@ class SiteSettings(SingletonModel):
         if self.PROXY_AUTO_DENYIP:
             from utils.combinedLog import CombinedLogParser
             instance=CombinedLogParser()
-            for element in instance.getNginxAccessIPs(hours=24):
+            for element in instance.getNginxAccessIPs(hours=24,codemin=400):
                 if element['trials']>=self.AUTODENY_ATTEMPTS:
                     PublishEvent(Severity=3,Text='IP address '+element['IP']+ ' has been blocked',Persistent=True,Code='IP-filter-'+element['IP'])
         

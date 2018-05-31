@@ -87,3 +87,10 @@ Create a password file and a first user
 	sudo htpasswd -c /etc/apache2/.htpasswd user1
         
 In the same way create other user-password pairs without -c flag
+
+Install Adafruit DHT library
+
+	git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+	cd Adafruit_Python_DH
+	sudo apt-get install build-essential python-dev python-openssl
+	sudo python setup.py install

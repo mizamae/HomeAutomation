@@ -1,5 +1,6 @@
 
 import os
+from django.utils.translation import ugettext_lazy as _
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events as events
 
@@ -101,7 +102,6 @@ def start_DailyTask():
     scheduler.add_job(func=DailyTask,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-D')
-
 
 ### HOURLY FUNCTIONS
 def checkCustomCalculations():
