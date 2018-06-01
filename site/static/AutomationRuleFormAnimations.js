@@ -1,5 +1,5 @@
-var fieldIO,fieldIOValue,fieldActionType,fieldDevice,fieldOrder,fieldIsConstant,fieldConstant;
-var rowfieldIO,rowfieldIOValue,rowfieldDevice,rowfieldOrder,rowfieldConstant,rowfieldVar2;
+var fieldIO,fieldIOValue,fieldActionType,fieldDevice,fieldOrder,fieldIsConstant,fieldConstant,fieldUsers;
+var rowfieldIO,rowfieldIOValue,rowfieldDevice,rowfieldOrder,rowfieldConstant,rowfieldVar2,rowfieldUsers;
 
 var group;
 var fieldset;
@@ -11,6 +11,12 @@ $(function()
 	var rows = document.getElementsByClassName("row");
 	var i;
 	for (i = 0; i < rows.length; i++) {
+		if (rows[i].getElementsByClassName("control-group  field-Users").length>0)
+    	{
+	    	fieldUsers=document.getElementById("id_Users");
+	    	rowfieldUsers=rows[i];
+    		rows[i].style.display = 'none';
+    	}
 		//console.log(x[i].getElementsByClassName("control-group  field-IO"))
 	    if (rows[i].getElementsByClassName("control-group  field-IO").length>0)
     	{
@@ -257,12 +263,19 @@ function ActionTypeChange()
 	//selectedAction="c" - > Send email
 	
 	var selectedAction=fieldActionType.options[fieldActionType.selectedIndex].value;
-	if (selectedAction=="a"){rowfieldIO.style.display = 'block';rowfieldIOValue.style.display = 'block';}
+	if (selectedAction=="a"){
+		rowfieldIO.style.display = 'block';
+		rowfieldIOValue.style.display = 'block';
+	}
 	else{rowfieldIO.style.display = 'none';rowfieldIOValue.style.display = 'none';}
 	if (selectedAction=="b")
-	{rowfieldDevice.style.display = 'block';}
+	{rowfieldDevice.style.display = 'block';
+	rowfieldOrder.style.display = 'block';}
 	else{rowfieldDevice.style.display = 'none';
 		rowfieldOrder.style.display = 'none';}
+	if (selectedAction=="c")
+	{rowfieldUsers.style.display = 'block';}
+	else{rowfieldUsers.style.display = 'none';}
 }
 
 function DeviceChange()
