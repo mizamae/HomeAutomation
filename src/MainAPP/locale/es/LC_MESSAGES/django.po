@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-20 12:24+0200\n"
+"POT-Creation-Date: 2018-06-01 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:16
+#: admin.py:19
 msgid "Description"
 msgstr "Descripción"
 
-#: admin.py:50
+#: admin.py:68 admin.py:135
 msgid "Current value"
 msgstr "Valor actual"
 
-#: admin.py:66 forms.py:142
+#: admin.py:83
+msgid "Current setpoint"
+msgstr "Consigna actual"
+
+#: admin.py:106
+msgid "Set as active schedule"
+msgstr "Establecer como programación activa"
+
+#: admin.py:151 forms.py:289
 msgid "Activate the rule"
 msgstr "Activar la regla"
 
@@ -36,154 +44,182 @@ msgstr "Activar la regla"
 msgid "Automation APP"
 msgstr "Regla de automatización"
 
-#: constants.py:27
+#: constants.py:28
 msgid "Activate output on Main"
 msgstr "Activar salida en la unidad Principal"
 
-#: constants.py:28
+#: constants.py:29
 msgid "Send command to a device"
 msgstr "Enviar orden a un dispositivo"
 
-#: constants.py:29
+#: constants.py:30
 msgid "Send an email"
 msgstr "Enviar un email"
 
-#: constants.py:30
+#: constants.py:31
 msgid "None"
 msgstr "Ninguno"
 
-#: constants.py:39
+#: constants.py:40
 msgid "Heating control"
 msgstr "Control de la calefacción"
 
-#: constants.py:40
+#: constants.py:41
 msgid "Garden control"
 msgstr "Control del jardín"
 
-#: constants.py:41
+#: constants.py:42
 msgid "Access control"
 msgstr "Control de accesos"
 
-#: consumers.py:26
-msgid "NTP server restarted"
-msgstr "Servidor NTP reiniciado"
+#: forms.py:52
+msgid "General"
+msgstr ""
 
-#: forms.py:40
+#: forms.py:60
+msgid "Slaves WIFI network"
+msgstr ""
+
+#: forms.py:67
+msgid "LAN network"
+msgstr ""
+
+#: forms.py:72
+msgid "Security"
+msgstr ""
+
+#: forms.py:81 forms.py:306
+msgid "Save"
+msgstr "Guardar"
+
+#: forms.py:118
 msgid "Select the source variable"
 msgstr "Selecciona la variable origen"
 
-#: forms.py:41
+#: forms.py:119
 msgid "Select the calculation update frequency"
 msgstr "Selecciona la frecuencia de refresco del cálculo"
 
-#: forms.py:42
+#: forms.py:120
 msgid "Select the calculation"
 msgstr "Selecciona el cálculo"
 
-#: forms.py:49
+#: forms.py:127
 msgid "Submit"
 msgstr "Enviar"
 
-#: forms.py:79
+#: forms.py:224
 msgid "Execution order"
 msgstr "Orden de ejecución"
 
-#: forms.py:80
-msgid "Prefix for the first term"
+#: forms.py:225
+#, fuzzy
+#| msgid "Prefix for the first term"
+msgid "Prefix for the value"
 msgstr "Modificador del primer término"
 
-#: forms.py:81
-msgid "First term"
-msgstr "Primer término"
+#: forms.py:226
+msgid "Value"
+msgstr ""
 
-#: forms.py:82
+#: forms.py:227
 msgid "Operator"
 msgstr "Operador"
 
-#: forms.py:83
-msgid "Prefix for the second term"
+#: forms.py:228
+#, fuzzy
+#| msgid "Prefix for the second term"
+msgid "Prefix for the setpoint"
 msgstr "Modificador del segundo término"
 
-#: forms.py:84
-msgid "Second term"
-msgstr "Segundo término"
+#: forms.py:229
+msgid "Setpoint"
+msgstr ""
 
-#: forms.py:85
-msgid "Second term is a constant"
+#: forms.py:230
+#, fuzzy
+#| msgid "Second term is a constant"
+msgid "Setpoint is a constant"
 msgstr "El segundo término es una constante"
 
-#: forms.py:86
+#: forms.py:231
 msgid "Constant value"
 msgstr "Valor de la constante"
 
-#: forms.py:87
+#: forms.py:232
 msgid "Hysteresis value"
 msgstr "Valor de histéresis"
 
-#: forms.py:88
+#: forms.py:233
 msgid "Operator with the next rule"
 msgstr "Operador para la siguiente regla"
 
-#: forms.py:98
+#: forms.py:243
 msgid "This field cannot be left empty if 'IsConstant' has been selected"
 msgstr ""
 "Este campo no se puede dejar vacío si 'El segundo término es una constante' "
 "está seleccionado"
 
-#: forms.py:101
+#: forms.py:246
 msgid "This field cannot be left empty if 'IsConstant' is not selected"
 msgstr ""
 "Este campo no se puede dejar vacío si 'El segundo término es una constante' "
 "no está seleccionado"
 
-#: forms.py:111
+#: forms.py:256
 msgid "Select the action"
 msgstr "Selecciona la acción"
 
-#: forms.py:113
+#: forms.py:258
+#, fuzzy
+#| msgid "Select the device to send the order to"
+msgid "Select the user to send the email to"
+msgstr "Selecciona el dispositivo al que enviar la orden"
+
+#: forms.py:260
 msgid "Select the output"
 msgstr "Selecciona la salida"
 
-#: forms.py:115
+#: forms.py:262
 msgid "Select the output value when the rule is True"
 msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
 
-#: forms.py:117
+#: forms.py:264
 msgid "Select the device to send the order to"
 msgstr "Selecciona el dispositivo al que enviar la orden"
 
-#: forms.py:119
+#: forms.py:266
 msgid "Select the order to send"
 msgstr "Selecciona la orden a enviar"
 
-#: forms.py:141
+#: forms.py:288
 msgid "Set the name for the automation rule"
 msgstr "Introduce el nombre de la regla de automatización"
 
-#: forms.py:143
+#: forms.py:290
 #, fuzzy
 #| msgid "Select the output value in case of error"
 msgid "Select the rule evaluation in case of error"
 msgstr "Selecciona el valor de la salida en el caso de error"
 
-#: forms.py:144
+#: forms.py:291
+msgid "Execute rule only on the transitions from FALSE to TRUE and viceversa"
+msgstr ""
+
+#: forms.py:292
 msgid "Select the previous rule to be chained"
 msgstr "Selecciona la regla anterior a encadenar"
 
-#: forms.py:146
+#: forms.py:294
 msgid "Select the operator between the previous rule and this one"
 msgstr "Selecciona el operador entre la regla anterior y esta"
 
-#: forms.py:157
-msgid "Save"
-msgstr "Guardar"
-
-#: forms.py:171
+#: forms.py:321
 msgid "This field cannot be left empty if a previous rule has been selected"
 msgstr ""
 "Este campo no se puede dejar vacío si se ha seleccionado una regla anterior"
 
-#: forms.py:176
+#: forms.py:326 forms.py:341
 msgid ""
 "This field cannot be left empty if 'Activate output on Main' is selected as "
 "action"
@@ -191,7 +227,7 @@ msgstr ""
 "Este campo no se puede dejar vacío si 'Activar salida de la unidad "
 "Principal' está seleccionada como acción"
 
-#: forms.py:181 forms.py:184
+#: forms.py:331 forms.py:334
 msgid ""
 "This field cannot be left empty if Send command to a device is selected as "
 "action"
@@ -199,214 +235,470 @@ msgstr ""
 "Este campo no se puede dejar vacío si 'Mandar una orden a un dispositivo' "
 "está seleccionada como acción"
 
-#: models.py:35
+#: models.py:57
+msgid "Settings"
+msgstr ""
+
+#: models.py:59
+#, fuzzy
+#| msgid "Select the calculation"
+msgid "Name of the installation"
+msgstr "Selecciona el cálculo"
+
+#: models.py:60
+#, fuzzy
+#| msgid "Set the name for the automation rule"
+msgid "Descriptive name for the installation."
+msgstr "Introduce el nombre de la regla de automatización"
+
+#: models.py:61
+msgid "Name of the domain to access the application"
+msgstr ""
+
+#: models.py:62
+msgid ""
+"This is the DNS address that gives access to the application from the "
+"internet."
+msgstr ""
+
+#: models.py:65
+msgid "Autodetect new software releases"
+msgstr ""
+
+#: models.py:66
+msgid "Automatically checks the repository for new software"
+msgstr ""
+
+#: models.py:67
+msgid "Apply automatically new software releases"
+msgstr ""
+
+#: models.py:68
+msgid "Automatically updates to (and applies) the latest software"
+msgstr ""
+
+#: models.py:69
+msgid "Code of the version of the application framework"
+msgstr ""
+
+#: models.py:71
+#, fuzzy
+#| msgid "NTP server restarted"
+msgid "NTP server restart time delta"
+msgstr "Servidor NTP reiniciado"
+
+#: models.py:72
+msgid ""
+"Time difference in minutes that will trigger a restart of the NTP server"
+msgstr ""
+
+#: models.py:74
+msgid "WIFI network identificator"
+msgstr ""
+
+#: models.py:75
+msgid ""
+"This is the name of the WiFi network generated to communicate with the slaves"
+msgstr ""
+
+#: models.py:77
+msgid "WIFI network passphrase"
+msgstr ""
+
+#: models.py:78
+msgid "This is the encryption password for the WIFI network"
+msgstr ""
+
+#: models.py:80
+msgid "IP address for the WIFI network"
+msgstr ""
+
+#: models.py:81
+msgid ""
+"This is the IP address for the WiFi network generated to communicate with "
+"the slaves"
+msgstr ""
+
+#: models.py:83
+msgid "WIFI network mask"
+msgstr ""
+
+#: models.py:84
+msgid ""
+"This is the mask of the WiFi network generated to communicate with the slaves"
+msgstr ""
+
+#: models.py:86
+msgid "WIFI network gateway"
+msgstr ""
+
+#: models.py:87
+msgid ""
+"This is the gateway for the WiFi network generated to communicate with the "
+"slaves"
+msgstr ""
+
+#: models.py:90
+msgid "IP address for the LAN network"
+msgstr ""
+
+#: models.py:91
+msgid ""
+"This is the IP for the LAN network that is providing the internet access."
+msgstr ""
+
+#: models.py:93
+msgid "Mask for the LAN network"
+msgstr ""
+
+#: models.py:94
+msgid ""
+"This is the mask for the LAN network that is providing the internet access."
+msgstr ""
+
+#: models.py:96
+msgid "Gateway of the LAN network"
+msgstr ""
+
+#: models.py:97
+msgid ""
+"This is the gateway IP of the LAN network that is providing the internet "
+"access."
+msgstr ""
+
+#: models.py:100
+msgid "Enable automatic IP blocking"
+msgstr ""
+
+#: models.py:101
+msgid ""
+"Feature that blocks automatically WAN IPs with more than certain denied "
+"attempts in 24 h."
+msgstr ""
+
+#: models.py:102
+msgid "Number of denied attempts needed to block an IP"
+msgstr ""
+
+#: models.py:103
+msgid ""
+"The number of denied accesses in 24h that will result in an IP being blocked."
+msgstr ""
+
+#: models.py:104
+msgid "Require credentials to access the server"
+msgstr ""
+
+#: models.py:105
+msgid ""
+"Increased access security by including an additional barrier on the proxy."
+msgstr ""
+
+#: models.py:106
+msgid "Username 1"
+msgstr ""
+
+#: models.py:107 models.py:111
+msgid "First username enabled to get through the proxy barrier."
+msgstr ""
+
+#: models.py:108
+msgid "Password for username 1"
+msgstr ""
+
+#: models.py:109 models.py:113
+msgid "First username password."
+msgstr ""
+
+#: models.py:110
+msgid "Username 2"
+msgstr ""
+
+#: models.py:112
+msgid "Password for username 2"
+msgstr ""
+
+#: models.py:173
 msgid "Permission"
 msgstr "Permiso"
 
-#: models.py:36
+#: models.py:174
 msgid "Permissions"
 msgstr "Permisos"
 
-#: models.py:51
+#: models.py:189
 msgid "Subsystem"
 msgstr "Subsistema"
 
-#: models.py:52
+#: models.py:190
 msgid "Subsystems"
 msgstr "Subsistemas"
 
-#: models.py:72
+#: models.py:209
 msgid "With every new value"
 msgstr "Con cada nuevo valor"
 
-#: models.py:73
+#: models.py:210
 msgid "Every hour"
 msgstr "Cada hora"
 
-#: models.py:74
+#: models.py:211
 msgid "Every day"
 msgstr "Cada dia"
 
-#: models.py:75
+#: models.py:212
 msgid "Every week"
 msgstr "Cada semana"
 
-#: models.py:76
+#: models.py:213
 msgid "Every month"
 msgstr "Cada mes"
 
-#: models.py:80
+#: models.py:217
 msgid "Duty cycle OFF"
 msgstr "Ciclo de trabajo a OFF"
 
-#: models.py:81
+#: models.py:218
 msgid "Duty cycle ON"
 msgstr "Ciclo de trabajo a ON"
 
-#: models.py:82
+#: models.py:219
 msgid "Mean value"
 msgstr "Valor medio"
 
-#: models.py:83
+#: models.py:220
 msgid "Max value"
 msgstr "Valor máximo"
 
-#: models.py:84
+#: models.py:221
 msgid "Min value"
 msgstr "Valor mínimo"
 
-#: models.py:85
+#: models.py:222
 msgid "Cummulative sum"
 msgstr "Suma acumulada"
 
-#: models.py:86
+#: models.py:223
 msgid "Integral over time"
 msgstr "Integral temporal"
 
-#: models.py:91
+#: models.py:228
 msgid "How often the calculation will be updated"
 msgstr "Frecuencia con la que se actualizará el cálculo"
 
-#: models.py:260
+#: models.py:399
 msgid "Automation variable"
 msgstr "Variable de automatización"
 
-#: models.py:261
+#: models.py:400
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:269
+#: models.py:408
 msgid "Units of the variable."
 msgstr "Unidades de la variable"
 
-#: models.py:376 models.py:468
+#: models.py:518
+#, fuzzy
+#| msgid "Main device var weekly schedule"
+msgid "Automation var weekly schedule"
+msgstr "Programación semanal de variables de la unidad Principal"
+
+#: models.py:519
+#, fuzzy
+#| msgid "Main device var weekly schedules"
+msgid "Automation var weekly schedules"
+msgstr "Programaciones semanales de variables de la unidad Principal"
+
+#: models.py:672
+#, fuzzy
+#| msgid "Main device var hourly schedule"
+msgid "Automation var hourly schedule"
+msgstr "Programación horaria de variables de la unidad Principal"
+
+#: models.py:673
+#, fuzzy
+#| msgid "Main device var hourly schedules"
+msgid "Automation var hourly schedules"
+msgstr "Programaciones horarias de variables de la unidad Principal"
+
+#: models.py:676
+msgid "Monday"
+msgstr "Lunes"
+
+#: models.py:677
+msgid "Tuesday"
+msgstr "Martes"
+
+#: models.py:678
+msgid "Wednesday"
+msgstr "Miércoles"
+
+#: models.py:679
+msgid "Thursday"
+msgstr "Jueves"
+
+#: models.py:680
+msgid "Friday"
+msgstr "Viernes"
+
+#: models.py:681
+msgid "Saturday"
+msgstr "Sábado"
+
+#: models.py:682
+msgid "Sunday"
+msgstr "Domingo"
+
+#: models.py:685
+msgid "LOW"
+msgstr "BAJO"
+
+#: models.py:686
+msgid "HIGH"
+msgstr "ALTO"
+
+#: models.py:730
+msgid "Thermostat"
+msgstr ""
+
+#: models.py:731
+msgid "Thermostats"
+msgstr ""
+
+#: models.py:733
+msgid "The rule item that the thermostat is linked to."
+msgstr ""
+
+#: models.py:753 models.py:845
 msgid "AND"
 msgstr ""
 
-#: models.py:377 models.py:469
+#: models.py:754 models.py:846
 msgid "OR"
 msgstr ""
 
-#: models.py:380
+#: models.py:757
 msgid "Order of execution"
 msgstr "Orden de ejecución"
 
-#: models.py:455
+#: models.py:832
 msgid "Automation expression"
 msgstr "Expresión de automatización"
 
-#: models.py:456
+#: models.py:833
 msgid "Automation expressions"
 msgstr "Expresiones de automatización"
 
-#: models.py:460
+#: models.py:837
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:461
+#: models.py:838
 msgid "Automation rules"
 msgstr "Reglas de automatización"
 
-#: models.py:472
+#: models.py:849
 msgid "False"
 msgstr "Falso"
 
-#: models.py:473
+#: models.py:850
 msgid "True"
 msgstr "Verdadero"
 
-#: settings/base.py:143
+#: settings/base.py:140
 msgid "Spanish"
 msgstr "Español"
 
-#: settings/base.py:144
+#: settings/base.py:141
 msgid "English"
 msgstr "Inglés"
 
-#: tasks.py:54
+#: tasks.py:55
 msgid "DBs uploaded to GDrive"
 msgstr "BBDD subidas a GDrive"
 
-#: views.py:46
+#: tasks.py:57
+msgid "Unable to autenticate to GDrive"
+msgstr ""
+
+#: views.py:47 views.py:54
 msgid " saved OK"
 msgstr ""
 
-#: views.py:186
+#: views.py:130
+#, fuzzy
+#| msgid "Django DB updated OK"
+msgid "Changes updated OK"
+msgstr "La BBDD de Django se ha actualizado OK"
+
+#: views.py:132
+msgid "Something is wrong with the data provided"
+msgstr ""
+
+#: views.py:146
+msgid "Timezone has been set to "
+msgstr ""
+
+#: views.py:250
 msgid "Google Drive credentials have been stored"
 msgstr "Las credenciales de Google Drive se han almacenado"
 
-#: views.py:188
+#: views.py:252
 msgid "Google Drive permissions were not granted"
 msgstr "No se han otorgado los permisos de acceso de Google Drive"
 
-#: views.py:203
+#: views.py:267
 msgid "Google Drive credentials have been deleted"
 msgstr "Las credenciales de Google Drive se han eliminado"
 
-#: views.py:215
+#: views.py:277
 msgid "Gunicorn processes restarted"
 msgstr "Relanzados los procesos Gunicorn"
 
-#: views.py:237
-msgid "Checking for updates..."
-msgstr "Buscando actualizaciones..."
+#~ msgid "First term"
+#~ msgstr "Primer término"
 
-#: views.py:251
-#, python-format
-msgid "%s the latest source revision '%s'."
-msgstr "%s la última revisión del código '%s'."
+#~ msgid "Second term"
+#~ msgstr "Segundo término"
 
-#: views.py:252
-msgid "Already at"
-msgstr "Ya se encontraba en"
+#~ msgid "Checking for updates..."
+#~ msgstr "Buscando actualizaciones..."
 
-#: views.py:252
-msgid "Updated to"
-msgstr "Actualizada a "
+#~ msgid "%s the latest source revision '%s'."
+#~ msgstr "%s la última revisión del código '%s'."
 
-#: views.py:261
-msgid "Error checking migrations: "
-msgstr "Error comprobando migraciones: "
+#~ msgid "Already at"
+#~ msgstr "Ya se encontraba en"
 
-#: views.py:267
-msgid "Updating DB with new migrations. Relax, it may take a while"
-msgstr ""
-"Actualizando la BBDD con las nuevas migraciones. Relájate, puede llevarle un "
-"rato"
+#~ msgid "Updated to"
+#~ msgstr "Actualizada a "
 
-#: views.py:273
-msgid "Django DB updated OK"
-msgstr "La BBDD de Django se ha actualizado OK"
+#~ msgid "Error checking migrations: "
+#~ msgstr "Error comprobando migraciones: "
 
-#: views.py:275
-msgid "Error applying the migration: "
-msgstr "Error ejecutando la migración: "
+#~ msgid "Updating DB with new migrations. Relax, it may take a while"
+#~ msgstr ""
+#~ "Actualizando la BBDD con las nuevas migraciones. Relájate, puede llevarle "
+#~ "un rato"
 
-#: views.py:280
-msgid "Restart processes to apply the new changes"
-msgstr "Reinicia los procesos para aplicar los nuevos cambios"
+#~ msgid "Error applying the migration: "
+#~ msgstr "Error ejecutando la migración: "
 
-#: views.py:282
-msgid "Problem occurred while updating program."
-msgstr "Ocurrió un problema en la actualización de la aplicación."
+#~ msgid "Restart processes to apply the new changes"
+#~ msgstr "Reinicia los procesos para aplicar los nuevos cambios"
 
-#: views.py:323
-msgid "Attemping to run update again..."
-msgstr "Intentando actualizar de nuevo..."
+#~ msgid "Problem occurred while updating program."
+#~ msgstr "Ocurrió un problema en la actualización de la aplicación."
 
-#: views.py:326
-msgid "Unable to reset local copy to current git branch."
-msgstr "No se ha podido resetear la copia local a la branch actual"
+#~ msgid "Attemping to run update again..."
+#~ msgstr "Intentando actualizar de nuevo..."
 
-#: views.py:332
-msgid "Please make sure that you have a 'git' package installed. Error: "
-msgstr "Asegurate de que el packete 'git' se encuentra instalado. Error: "
+#~ msgid "Unable to reset local copy to current git branch."
+#~ msgstr "No se ha podido resetear la copia local a la branch actual"
 
-#~ msgid "Current setpoint"
-#~ msgstr "Consigna actual"
-
-#~ msgid "Set as active schedule"
-#~ msgstr "Establecer como programación activa"
+#~ msgid "Please make sure that you have a 'git' package installed. Error: "
+#~ msgstr "Asegurate de que el packete 'git' se encuentra instalado. Error: "
 
 #~ msgid "HomeAutomation base app"
 #~ msgstr "Aplicación principal de HomeAutomation"
@@ -452,45 +744,6 @@ msgstr "Asegurate de que el packete 'git' se encuentra instalado. Error: "
 
 #~ msgid "Main device vars"
 #~ msgstr "Variables de la unidad principal"
-
-#~ msgid "Main device var weekly schedule"
-#~ msgstr "Programación semanal de variables de la unidad Principal"
-
-#~ msgid "Main device var weekly schedules"
-#~ msgstr "Programaciones semanales de variables de la unidad Principal"
-
-#~ msgid "Monday"
-#~ msgstr "Lunes"
-
-#~ msgid "Tuesday"
-#~ msgstr "Martes"
-
-#~ msgid "Wednesday"
-#~ msgstr "Miércoles"
-
-#~ msgid "Thursday"
-#~ msgstr "Jueves"
-
-#~ msgid "Friday"
-#~ msgstr "Viernes"
-
-#~ msgid "Saturday"
-#~ msgstr "Sábado"
-
-#~ msgid "Sunday"
-#~ msgstr "Domingo"
-
-#~ msgid "LOW"
-#~ msgstr "BAJO"
-
-#~ msgid "HIGH"
-#~ msgstr "ALTO"
-
-#~ msgid "Main device var hourly schedule"
-#~ msgstr "Programación horaria de variables de la unidad Principal"
-
-#~ msgid "Main device var hourly schedules"
-#~ msgstr "Programaciones horarias de variables de la unidad Principal"
 
 #~ msgid "Variable "
 #~ msgstr "Variable "

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-20 12:24+0200\n"
+"POT-Creation-Date: 2018-06-01 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,53 +18,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:27 admin.py:78
+#: admin.py:26
 msgid "Current value"
-msgstr ""
+msgstr "Valor actual"
 
-#: admin.py:93
-msgid "Current setpoint"
-msgstr ""
-
-#: admin.py:116
-msgid "Set as active schedule"
-msgstr ""
-
-#: admin.py:162
+#: admin.py:82
 msgid "Define custom labels for the variables"
 msgstr "Definir las etiquetas particularizadas para las variables"
 
 #: apps.py:14
-#, fuzzy
-#| msgid "Devices"
 msgid "Devices APP"
-msgstr "Dispositivos"
+msgstr "APP de Dispositivos"
 
-#: callbacks.py:100 callbacks.py:102 views.py:263
+#: callbacks.py:115 callbacks.py:117 views.py:263
 msgid "The device "
 msgstr "El dispositivo"
 
-#: callbacks.py:100 callbacks.py:102
+#: callbacks.py:115 callbacks.py:117
 msgid " does not have any Beacon associated."
 msgstr " no tiene ningun Beacon asociado."
 
 #: constants.py:41
 msgid "Output"
-msgstr ""
+msgstr "Salida"
 
 #: constants.py:42
 msgid "Input"
-msgstr ""
+msgstr "Entrada"
 
 #: constants.py:43
 msgid "Sensor"
 msgstr ""
 
-#: constants.py:48 models.py:551
+#: constants.py:48
 msgid "LOW"
 msgstr ""
 
-#: constants.py:49 models.py:552
+#: constants.py:49
 msgid "HIGH"
 msgstr ""
 
@@ -74,11 +64,11 @@ msgstr ""
 
 #: constants.py:61
 msgid "REMOTE OVER TCP"
-msgstr ""
+msgstr "REMOTO MEDIANTE TCP"
 
 #: constants.py:62
 msgid "MEMORY"
-msgstr ""
+msgstr "MEMORIA"
 
 #: constants.py:83
 msgid "Analog Integer"
@@ -108,375 +98,279 @@ msgstr "Columnas"
 msgid "Area"
 msgstr ""
 
-#: forms.py:52 forms.py:189 forms.py:252 forms.py:312 forms.py:319
-#: forms.py:431
+#: forms.py:52 forms.py:123 forms.py:186 forms.py:246 forms.py:253
+#: forms.py:365
 msgid "Save"
 msgstr "Guardar"
 
 #: forms.py:53 forms.py:59
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
-#: forms.py:58 forms.py:195 forms.py:258 forms.py:325
-#, fuzzy
-#| msgid "Slave devices"
+#: forms.py:58 forms.py:129 forms.py:192 forms.py:259
 msgid "Save changes"
-msgstr "Dispositivos"
+msgstr "Guardar cambios"
 
 #: forms.py:62
 msgid ""
 "The action parameter passed to the form MainDeviceVarsForm is not accepted. "
 "Action= "
-msgstr ""
+msgstr "El parametro accion del formulario no es correcto. Accion="
 
 #: forms.py:64
-#, fuzzy
-#| msgid "Enter the name for the device"
 msgid "Enter the label for the variable"
-msgstr "Introduce el nombre del dispositivo"
+msgstr "Introduce el nombre de la variable"
 
 #: forms.py:65
-#, fuzzy
-#| msgid "Select the state of the device"
 msgid "Set the datatype of the variable"
-msgstr "Selecciona el estado del dispositivo"
+msgstr "Selecciona el tipo de dato de la variable"
 
 #: forms.py:66
-#, fuzzy
-#| msgid "Enter the name for the device"
 msgid "Enter the value for the variable"
-msgstr "Introduce el nombre del dispositivo"
+msgstr "Introduce el valor de la variable"
 
 #: forms.py:67
-#, fuzzy
-#| msgid "Set the connection of the device"
 msgid "Set the units of the variable"
-msgstr "Selecciona la conexión del dispositivo"
+msgstr "Introduce las unidades de la variable"
 
 #: forms.py:68
-#, fuzzy
-#| msgid "Enter the type of the device"
 msgid "Set the type of plot for the variable"
-msgstr "Introduce el tipo de dispositivo"
+msgstr "Selecciona el tipo de grafica de la variable"
 
 #: forms.py:69
 msgid "The user can alter the value of the variable"
-msgstr ""
+msgstr "El usuario puede modificar el valor de la variable"
 
-#: forms.py:199
+#: forms.py:133
 msgid ""
 "The action parameter passed to the form MasterGPIOsForm is not accepted. "
 "Action= "
-msgstr ""
+msgstr "El parametro accion del formulario no es correcto. Accion="
 
-#: forms.py:201
+#: forms.py:135
 msgid "Enter the pin number"
-msgstr ""
+msgstr "Introduce el numero del pin"
 
-#: forms.py:202
-#, fuzzy
-#| msgid "Enter the name for the device"
+#: forms.py:136
 msgid "Enter a label for the IO"
-msgstr "Introduce el nombre del dispositivo"
+msgstr "Introduce el nombre de la IO"
 
-#: forms.py:203
-#, fuzzy
-#| msgid "Set the connection of the device"
+#: forms.py:137
 msgid "Set the direction of the IO"
-msgstr "Selecciona la conexión del dispositivo"
+msgstr "Selecciona la dirección de la IO"
 
-#: forms.py:204
+#: forms.py:138
 msgid "Set the current value for the IO"
-msgstr ""
+msgstr "Introduce el valor de la IO"
 
-#: forms.py:262
+#: forms.py:196
 msgid ""
 "The action parameter passed to the form DevicetypesForm is not accepted. "
 "Action= "
-msgstr ""
+msgstr "El parametro accion del formulario no es correcto. Accion="
 
-#: forms.py:264
+#: forms.py:198
 msgid "Set the connection of the device"
 msgstr "Selecciona la conexión del dispositivo"
 
-#: forms.py:265
+#: forms.py:199
 msgid "Enter the type-descriptor of the device"
 msgstr "Introduce el código descriptivo del tipo del dispositivo"
 
-#: forms.py:266
+#: forms.py:200
 msgid "Enter the description of the device"
 msgstr "Introduce la descripción del dispositivo"
 
-#: forms.py:268
-#, fuzzy
-#| msgid "Select the minimum sample time for the device [s]"
+#: forms.py:202
 msgid "Select the minimum sample time for the device"
 msgstr "Introduce el tiempo de sampleo minimo del dispositivo [s]"
 
-#: forms.py:269
+#: forms.py:203
 msgid "Upload an image for the DeviceType"
 msgstr "Carga una imagen para el tipop de dispositivo"
 
-#: forms.py:313 forms.py:332
+#: forms.py:247 forms.py:266
 msgid "Scan"
 msgstr ""
 
-#: forms.py:341
-#, fuzzy
-#| msgid "Define custom labels for the variables"
+#: forms.py:275
 msgid "Set labels for the data"
 msgstr "Definir las etiquetas particularizadas para las variables"
 
-#: forms.py:345
+#: forms.py:279
 msgid ""
 "The action parameter passed to the form DevicesForm is not accepted. Action= "
-msgstr ""
+msgstr "El parametro accion del formulario no es correcto. Accion="
 
-#: forms.py:347
+#: forms.py:281
 msgid "Enter the name for the device"
 msgstr "Introduce el nombre del dispositivo"
 
-#: forms.py:348 models.py:1050 templates/Devices/_devices_table.html:9
+#: forms.py:282 models.py:885 templates/Devices/_devices_table.html:9
 msgid "Device type"
 msgstr "Tipo de dispositivo"
 
-#: forms.py:351
+#: forms.py:285
 msgid "Enter the GPIO for the device"
 msgstr "Selecciona la GPIO del dispositivo"
 
-#: forms.py:352
-#, fuzzy
-#| msgid "Polling for the device "
+#: forms.py:286
 msgid "Code for the device"
-msgstr "El muestreo del dispositivo"
+msgstr "Código del dispositivo"
 
-#: forms.py:355
-#, fuzzy
-#| msgid "Enter the IP addres for the device"
+#: forms.py:289
 msgid "IP address for the device"
 msgstr "Introduce la direccion IP del dispositivo"
 
-#: forms.py:358
-#, fuzzy
-#| msgid "Enter the sample time for the device [s]"
+#: forms.py:292
 msgid "Enter the sample time for the device"
 msgstr "Introduce el tiempo de sampleo del dispositivo [s]"
 
-#: forms.py:359
-#, fuzzy
-#| msgid "Enter the real-time sample time for the device [s]"
+#: forms.py:293
 msgid "Enter the real-time sample time for the device"
 msgstr "Introduce el tiempo de sampleo en tiempo real del dispositivo [s]"
 
-#: forms.py:360
+#: forms.py:294
 msgid "Select the state of the device"
 msgstr "Selecciona el estado del dispositivo"
 
-#: forms.py:472
+#: forms.py:406
 msgid "The value in CustomLabels "
-msgstr ""
+msgstr "El valor en Customabels "
 
-#: forms.py:472
+#: forms.py:406
 msgid " is digital but does not have 8 bits separated by \"$\""
-msgstr ""
+msgstr " es digital pero no tiene 8 bits separados por \"$\""
 
-#: forms.py:546
+#: forms.py:480
 msgid "Select the device"
 msgstr "Selecciona el dispositivo"
 
-#: forms.py:547
+#: forms.py:481
 msgid "From"
 msgstr "Desde"
 
-#: forms.py:548
+#: forms.py:482
 msgid "To"
 msgstr "Hasta"
 
-#: forms.py:560
+#: forms.py:494
 msgid "Main Unit"
-msgstr ""
+msgstr "Unidad principal"
 
-#: forms.py:579
+#: forms.py:513
 msgid "Submit"
 msgstr "Enviar"
 
-#: forms.py:614
-#, fuzzy
-#| msgid "Enter the name for the device"
+#: forms.py:548
 msgid "Set the unique name for the beacon"
-msgstr "Introduce el nombre del dispositivo"
+msgstr "Introduce el nombre de la baliza"
 
-#: forms.py:615
-#, fuzzy
-#| msgid "Select the state of the device"
+#: forms.py:549
 msgid "Select the weather source for the beacon"
-msgstr "Selecciona el estado del dispositivo"
+msgstr "Selecciona la fuente de datos climatológicos de la baliza"
 
-#: forms.py:616
-#, fuzzy
-#| msgid "Enter the type of the device"
+#: forms.py:550
 msgid "Enter the latitude of the beacon"
-msgstr "Introduce el tipo de dispositivo"
+msgstr "Introduce la latitud de la baliza"
 
-#: forms.py:617
-#, fuzzy
-#| msgid "Enter the type of the device"
+#: forms.py:551
 msgid "Enter the longitude of the beacon"
-msgstr "Introduce el tipo de dispositivo"
+msgstr "Introduce la longitud de la baliza"
 
 #: models.py:93
-#, fuzzy
-#| msgid "The device "
 msgid "Main device var"
-msgstr "El dispositivo"
+msgstr "Variable de la unidad principal"
 
 #: models.py:94
-#, fuzzy
-#| msgid "Slave devices"
 msgid "Main device vars"
-msgstr "Dispositivos"
+msgstr "Variables de la unidad principal"
 
 #: models.py:106
-#, fuzzy
-#| msgid "Define custom labels for the variables"
 msgid "Unique identifier for the variable."
-msgstr "Definir las etiquetas particularizadas para las variables"
+msgstr "Identificador para la variable"
 
 #: models.py:107
-#, fuzzy
-#| msgid "Name of the device"
 msgid "Value of the variable."
-msgstr "Nombre del dispositivo"
+msgstr "Valor de la variable"
 
 #: models.py:108
 msgid "Type of data of the variable."
-msgstr ""
+msgstr "Tipo de dato de la variable."
 
 #: models.py:109
-#, fuzzy
-#| msgid "Define custom labels for the variables"
 msgid "The type of plot desired for the variable."
-msgstr "Definir las etiquetas particularizadas para las variables"
+msgstr "Tipo de gráfica para la variable."
 
 #: models.py:110
-#, fuzzy
-#| msgid "Define custom labels for the variables"
 msgid "Units of the variable."
-msgstr "Definir las etiquetas particularizadas para las variables"
+msgstr "Unidades de la variable"
 
 #: models.py:111
 msgid "Can the user modify the value??"
-msgstr ""
+msgstr "¿Puede modificar el valor el usuario?"
 
-#: models.py:164
-#, fuzzy
-#| msgid "The name for the device "
+#: models.py:167
 msgid "The value of the MainDeviceVar \""
-msgstr "El nombre del dispositivo"
+msgstr "El valor de la variable \""
 
-#: models.py:164 models.py:711
-#, fuzzy
-#| msgid " has changed. Now it is named "
+#: models.py:167 models.py:546
 msgid "\" has changed. Now it is "
-msgstr " ha cambiado. Ahora se llama "
+msgstr "\" ha cambiado. Ahora se vale "
 
-#: models.py:246
+#: models.py:249
 msgid "Error in create_MainVars_table: "
 msgstr ""
 
-#: models.py:421
-msgid "Main device var weekly schedule"
-msgstr ""
-
-#: models.py:422
-msgid "Main device var weekly schedules"
-msgstr ""
-
-#: models.py:538
-msgid "Main device var hourly schedule"
-msgstr ""
-
-#: models.py:539
-msgid "Main device var hourly schedules"
-msgstr ""
-
-#: models.py:542
-msgid "Monday"
-msgstr ""
-
-#: models.py:543
-msgid "Tuesday"
-msgstr ""
-
-#: models.py:544
-msgid "Wednesday"
-msgstr ""
-
-#: models.py:545
-msgid "Thursday"
-msgstr ""
-
-#: models.py:546
-msgid "Friday"
-msgstr ""
-
-#: models.py:547
-msgid "Saturday"
-msgstr ""
-
-#: models.py:548
-msgid "Sunday"
-msgstr ""
-
-#: models.py:602
+#: models.py:431
 msgid "Input/Output"
-msgstr ""
+msgstr "Entrada/Salida"
 
-#: models.py:603
+#: models.py:432
 msgid "Inputs/Outputs"
-msgstr ""
+msgstr "Entradas/Salidas"
 
-#: models.py:618
+#: models.py:447
 msgid "The number of the pin following BCM notation."
-msgstr ""
+msgstr "El número del pin siguiendo la numeración BCM."
 
-#: models.py:619
+#: models.py:448
 msgid "Label describing the GPIO functional meaning."
-msgstr ""
+msgstr "Etiqueta descriptiva del funcionamiento de la E/S"
 
-#: models.py:620
+#: models.py:449
 msgid ""
 "Choose wether the GPIO is to be an output, an input or a sensor interface."
-msgstr ""
+msgstr "Selecciona si la E/S es una salida, una entrada, o un interface con sensores."
 
-#: models.py:621
+#: models.py:450
 msgid "Set the value of the GPIO (only applies to outputs)"
-msgstr ""
+msgstr "introduce el valor de la E/S (solo aplica a salidas)"
 
-#: models.py:711
+#: models.py:546
 msgid "The value of the GPIO \""
-msgstr ""
+msgstr "El valor de la E/S \""
 
-#: models.py:739
+#: models.py:574
 msgid "Only GPIOs defined as Input or Output can be registered to the DB"
 msgstr ""
 
-#: models.py:779
+#: models.py:614
 msgid "Error in create_GPIO_table: "
 msgstr ""
 
-#: models.py:1027
+#: models.py:862
 msgid ""
 "Unique identifier of the device type. Usually between 5 and 8 characters."
 msgstr ""
 
-#: models.py:1029
+#: models.py:864
 msgid ""
 "Minimum accepted time between two polls. Refer to the device type "
 "documentation."
-msgstr ""
+msgstr "Tiempo minimo entre dos peticiones consecutivas. Ver documentacion del tipo de dispositivo"
 
-#: models.py:1030
+#: models.py:865
 msgid ""
 "The connection can be: \n"
 "                                                                    - LOCAL "
@@ -485,193 +379,173 @@ msgid ""
 "OVER TCP for devices communicating through the WiFi interface.\n"
 "                                                                    - MEMORY "
 "for devices that reside in the memory of the Master unit."
-msgstr ""
+msgstr "La conexión puede ser: \n -LOCAL: para dispositivos que se conectan a un pin de la unidad principal.\n -REMOTO MEDIANTE TCP: para dispositivos que se comunican a través del interfaz WIFI.\n -MEMORIA: para dispositivos que residen en la memoria de la unidad principal."
 
-#: models.py:1051
+#: models.py:886
 msgid "Device types"
 msgstr "Tipos de dispositivos"
 
-#: models.py:1094
-#, fuzzy
-#| msgid "Slave device"
+#: models.py:929
 msgid "Slave Device"
 msgstr "Dispositivo"
 
-#: models.py:1095
-#, fuzzy
-#| msgid "Slave devices"
+#: models.py:930
 msgid "Slave Devices"
 msgstr "Dispositivos"
 
-#: models.py:1097
+#: models.py:932
 msgid "Unique identifier of the device. Limited to 50 characters."
-msgstr ""
+msgstr "Identificador del dispositivo. Limitado a 50 caracteres."
 
-#: models.py:1098
+#: models.py:933
 msgid "Invalid device name - This name already exists in the DB."
 msgstr "Nombre del dispositivo erróneo - Este nombre ya existe en la BBDD."
 
-#: models.py:1099
+#: models.py:934
 msgid ""
 "The pin of the Master unit to which the device is connected. Only applies to "
 "locally connected devices."
-msgstr ""
+msgstr "El pin de la unidad principal al que se conecta el dispositivo. Sólo aplica a dispositivos locales."
 
-#: models.py:1101
+#: models.py:936
 msgid ""
 "Unique byte-type identifier of the device. It is used to identify the device "
 "within the communication frames."
-msgstr ""
+msgstr "Identificador único tipo-byte del dispositivo. Se usa para identificarlo en las tramas de comunicación."
 
-#: models.py:1102
+#: models.py:937
 msgid "Invalid device code - This code already exists in the DB."
 msgstr "Código de dispositivo erróneo - El código ya existe en la BBDD."
 
-#: models.py:1103
+#: models.py:938
 msgid "Invalid IP - This IP already exists in the DB."
 msgstr "Dirección IP errónea - Esta IP ya existe en la BBDD."
 
-#: models.py:1105
+#: models.py:940
 msgid "Polling state of the device. STOPPED = no polling."
-msgstr ""
+msgstr "Estado de pool del dispositivo. PARADO = sin pooling."
 
-#: models.py:1107
-#, fuzzy
-#| msgid "Enter the type of the device"
+#: models.py:942
 msgid "Elapsed time between two polls to the device."
-msgstr "Introduce el tipo de dispositivo"
+msgstr "Tiempo entre dos peticiones al dispositivo."
 
-#: models.py:1108
+#: models.py:943
 msgid "Elapsed time between two polls to the device on realtime polling."
-msgstr ""
+msgstr "Tiempo entre dos peticiones al dispositivo en tiempo real."
 
-#: models.py:1134
+#: models.py:969
 msgid "A locally connected device needs to have a GPIO defined"
-msgstr ""
+msgstr "Un dispositivo local necesita tener una E/S definida"
 
-#: models.py:1137
+#: models.py:972
 msgid "The GPIO selected is not configured as sensor"
 msgstr "La GPIO seleccionada no está configurada como sensor"
 
-#: models.py:1139
+#: models.py:974
 msgid "The sample time selected is too low for the "
 msgstr "El tiempo de sampleo introducido es demasiado bajo para "
 
-#: models.py:1222
+#: models.py:1057
 msgid "Polling for the device "
 msgstr "El muestreo del dispositivo"
 
-#: models.py:1222
+#: models.py:1057
 msgid " is started with sampletime= "
 msgstr " ha empezado con una frecuencia= "
 
-#: models.py:1222
-#, fuzzy
-#| msgid "Sent request "
+#: models.py:1057
 msgid " [s]. Next request at "
-msgstr "Enviada solicitud "
+msgstr " [s]. La próxima petición será "
 
-#: models.py:1234
-#, fuzzy
-#| msgid "Polling for the device "
+#: models.py:1069
 msgid "Polling for device "
 msgstr "El muestreo del dispositivo"
 
-#: models.py:1234
+#: models.py:1069
 msgid " could not be started. It has no Datagrams defined "
-msgstr ""
+msgstr " no se pudo iniciar. No tiene Datagramas definidos "
 
-#: models.py:1253
+#: models.py:1088
 msgid "Job "
 msgstr ""
 
-#: models.py:1253
-#, fuzzy
-#| msgid "Polling for the device "
+#: models.py:1088
 msgid " did not exist. The device "
-msgstr "El muestreo del dispositivo"
+msgstr " no existe. El dispositivo "
 
-#: models.py:1253
-#, fuzzy
-#| msgid " is stopped "
+#: models.py:1088
 msgid " was already stopped."
-msgstr " se ha detenido "
+msgstr " ya estaba detenido."
 
-#: models.py:1269
+#: models.py:1104
 msgid " updated OK"
-msgstr " atualizado OK"
+msgstr " actualizado OK"
 
-#: models.py:1510
-#, fuzzy
-#| msgid "Device type"
+#: models.py:1345
 msgid "Unknown Device type: "
-msgstr "Tipo de dispositivo"
+msgstr "Tipo de dispositivo desconocido: "
 
-#: models.py:1510
+#: models.py:1345
 msgid ". You should firstly register the Device type."
-msgstr ""
+msgstr ". Debes registrarlo antes."
 
-#: models.py:1528
+#: models.py:1363
 msgid ""
 "Device did not acknowledge the \"SetConf\" order. Revise the Device source "
 "code."
 msgstr ""
 
-#: models.py:1607
+#: models.py:1442
 msgid "Error in create_datagram_table: "
 msgstr ""
 
-#: models.py:1870
+#: models.py:1705
 msgid "Datagram item"
 msgstr "Elemento de trama"
 
-#: models.py:1871
+#: models.py:1706
 msgid "Datagram items"
 msgstr "Elementos de trama"
 
-#: models.py:1907
+#: models.py:1742
 msgid "Datagram"
 msgstr "Trama"
 
-#: models.py:1908
+#: models.py:1743
 msgid "Datagrams"
 msgstr "Tramas"
 
-#: models.py:1945 models.py:1947
-#, fuzzy
-#| msgid "Datagram item"
+#: models.py:1780 models.py:1782
 msgid "The datagram item name "
-msgstr "Elemento de trama"
+msgstr ""
 
-#: models.py:1945
+#: models.py:1780
 msgid " raised exception when getting its info."
 msgstr ""
 
-#: models.py:1947
+#: models.py:1782
 msgid " does not have the proper structure \"Item.pk_NumItem_Datagram.pk\""
 msgstr ""
 
-#: models.py:2015
+#: models.py:1850
 msgid "Item"
 msgstr "Elemento"
 
-#: models.py:2016
+#: models.py:1851
 msgid "Items"
 msgstr "Elementos"
 
-#: models.py:2029
+#: models.py:1864
 msgid "Command"
 msgstr "Orden"
 
-#: models.py:2030
+#: models.py:1865
 msgid "Commands"
 msgstr "Órdenes"
 
-#: models.py:2034
-#, fuzzy
-#| msgid "Invalid device name - This name already exists in the DB."
+#: models.py:1869
 msgid "Invalid Beacon name - This name already exists in the DB."
-msgstr "Nombre del dispositivo erróneo - Este nombre ya existe en la BBDD."
+msgstr "Nombre de baliza erróneo - Este nombre ya existe en la BBDD."
 
 #: templates/Devices/3xDHT22.html:44
 #: templates/Devices/showDevicesTables.html:34
@@ -681,7 +555,7 @@ msgstr ""
 #: templates/Devices/3xDHT22.html:45 templates/Devices/DHT11.html:45
 #: templates/Devices/DHT22.html:45 templates/Devices/GAPQv1.html:45
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
 #: templates/Devices/DHT11.html:44 templates/Devices/DHT22.html:44
 #: templates/Devices/_mastergpios_table.html:17
@@ -691,19 +565,19 @@ msgstr ""
 
 #: templates/Devices/DHT11.html:124 templates/Devices/GAPQv1.html:123
 msgid "Return"
-msgstr ""
+msgstr "Volver"
 
 #: templates/Devices/GAPQv1.html:44
 msgid "IP address"
-msgstr ""
+msgstr "Direccion IP"
 
 #: templates/Devices/GAPQv1.html:46
 msgid "Active errors"
-msgstr ""
+msgstr "Errores activos"
 
 #: templates/Devices/_devices.html:8 templates/Devices/_devices_WS.html:8
 msgid "STOPPED"
-msgstr ""
+msgstr "PARADO"
 
 #: templates/Devices/_devices.html:11 templates/Devices/_devices.html:13
 #: templates/Devices/_devices_WS.html:27 templates/Devices/_devices_WS.html:29
@@ -715,148 +589,122 @@ msgid " Error: "
 msgstr ""
 
 #: templates/Devices/_devices_table.html:7
-#, fuzzy
-#| msgid "Device type"
 msgid "Device name"
-msgstr "Tipo de dispositivo"
+msgstr "Nombre de dispositivo"
 
 #: templates/Devices/_devices_table.html:10
-#, fuzzy
-#| msgid "Device type"
 msgid "Device state"
-msgstr "Tipo de dispositivo"
+msgstr "Estado del dispositivo"
 
 #: templates/Devices/_devices_table.html:11
-#, fuzzy
-#| msgid "Select the device"
 msgid "Delete device"
-msgstr "Selecciona el dispositivo"
+msgstr "Eliminar el dispositivo"
 
 #: templates/Devices/_devices_table.html:12
-#, fuzzy
-#| msgid " updated OK"
 msgid "Last updated"
-msgstr " atualizado OK"
+msgstr "Ultima actualizacion"
 
 #: templates/Devices/_devices_table.html:13
-#, fuzzy
-#| msgid "Device type"
 msgid "Device webpage"
-msgstr "Tipo de dispositivo"
+msgstr "Web del dispositivo"
 
 #: templates/Devices/_devices_table.html:14
 #: templates/Devices/_devicetypes_table.html:20
 #: templates/Devices/_maindevicevars_table.html:14
 #: templates/Devices/_mastergpios_table.html:25
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: templates/Devices/_devicetypes.html:12
 msgid "No picture"
-msgstr ""
+msgstr "Sin imagen"
 
 #: templates/Devices/_devicetypes_table.html:15
-#, fuzzy
-#| msgid "Device type"
 msgid "Device Code"
-msgstr "Tipo de dispositivo"
+msgstr "Codigo del dispositivo"
 
 #: templates/Devices/_devicetypes_table.html:16
-#, fuzzy
-#| msgid "Devices common"
 msgid "Device Description"
-msgstr "Común a todos los dispositivos"
+msgstr "Descripcion del dispositivo"
 
 #: templates/Devices/_devicetypes_table.html:17
-#, fuzzy
-#| msgid "Select the minimum sample time for the device [s]"
 msgid "Device minimum sample time"
-msgstr "Introduce el tiempo de sampleo minimo del dispositivo [s]"
+msgstr "Tiempo de sampleo minimo del dispositivo"
 
 #: templates/Devices/_devicetypes_table.html:18
-#, fuzzy
-#| msgid "Devices common"
 msgid "Device Connection"
-msgstr "Común a todos los dispositivos"
+msgstr "Conexion del dispositivo"
 
 #: templates/Devices/_devicetypes_table.html:19
 msgid "Picture"
-msgstr ""
+msgstr "Imagen"
 
 #: templates/Devices/_maindevicevars_table.html:12
 #: templates/Devices/_mastergpios_table.html:18
 msgid "Label"
-msgstr ""
+msgstr "Etiqueta"
 
 #: templates/Devices/_maindevicevars_table.html:13
 #: templates/Devices/_mastergpios_table.html:20
 msgid "Value"
-msgstr ""
+msgstr "Valor"
 
 #: templates/Devices/_mastergpios_table.html:22
-#, fuzzy
-#| msgid "Devices"
 msgid "Device"
-msgstr "Dispositivos"
+msgstr "Dispositivo"
 
 #: templates/Devices/_mastergpios_table.html:24
 msgid "Change state"
-msgstr ""
+msgstr "Cambiar estado"
 
 #: templates/Devices/graph.html:100
-#, fuzzy
-#| msgid "The name for the device "
 msgid "Graphs for the device "
-msgstr "El nombre del dispositivo"
+msgstr "Graficas del dispositivo "
 
 #: templates/Devices/graph.html:102
 msgid "Graphs from a device"
-msgstr ""
+msgstr "Graficas del dispositivo"
 
 #: templates/Devices/home.html:25
 msgid "DEVICES APP DASHBOARD"
-msgstr ""
+msgstr "PANEL DE LA APP DE DISPOSITIVOS"
 
 #: templates/Devices/home.html:75
 msgid "Please log in if you want to do something else..."
-msgstr ""
+msgstr "Logueate si quieres hacer algo mas..."
 
 #: templates/Devices/showDeviceTypeTable.html:32
-#, fuzzy
-#| msgid "Device types"
 msgid "Device Types List"
-msgstr "Tipos de dispositivos"
+msgstr "Lista de tipos de dispositivos"
 
 #: templates/Devices/showDeviceTypeTable.html:34
 #: templates/Devices/showGPIOsTables.html:33
 msgid "Outputs"
-msgstr ""
+msgstr "Salidas"
 
 #: templates/Devices/showDevicesTables.html:32
-#, fuzzy
-#| msgid "Devices"
 msgid "Device List"
-msgstr "Dispositivos"
+msgstr "Lista de dispositivos"
 
 #: templates/Devices/showDevicesTables.html:33
 msgid "REMOTE DEVICES"
-msgstr ""
+msgstr "DISPOSITIVOS REMOTOS"
 
 #: templates/Devices/showDevicesTables.html:35
 msgid "There are no registered remote devices in the installation."
-msgstr ""
+msgstr "No hay dispositivos remotos registrados en la instalacion."
 
 #: templates/Devices/showDevicesTables.html:40
 msgid "LOCAL DEVICES"
-msgstr ""
+msgstr "DISPOSITIVOS LOCALES"
 
 #: templates/Devices/showDevicesTables.html:42
 msgid "There are no registered local devices in the installation."
-msgstr ""
+msgstr "No hay dispositivos locales registrados en la instalacion."
 
 #: templates/Devices/showDevicesTables.html:47
 msgid "ON MEMORY DEVICES"
-msgstr ""
+msgstr "DISPOSITIVOS EN MEMORIA"
 
 #: templates/Devices/showDevicesTables.html:48
 msgid "PK"
@@ -864,7 +712,7 @@ msgstr ""
 
 #: templates/Devices/showDevicesTables.html:49
 msgid "There are no registered on memory devices in the installation."
-msgstr ""
+msgstr "No hay dispositivos en memoria registrados en la instalacion."
 
 #: templates/Devices/showDevicesTables.html:153
 #: templates/Devices/showDevicesTables.html:216
@@ -874,7 +722,7 @@ msgstr ""
 #: templates/Devices/showDevicesTables.html:153
 #: templates/Devices/showDevicesTables.html:216
 msgid " STOPPED "
-msgstr ""
+msgstr " PARADO "
 
 #: templates/Devices/showDevicesTables.html:168
 #: templates/Devices/showDevicesTables.html:223
@@ -888,109 +736,99 @@ msgstr ""
 
 #: templates/Devices/showGPIOsTables.html:32
 msgid "Master GPIOs List"
-msgstr ""
+msgstr "Lista de E/S de la unidad master"
 
 #: templates/Devices/showGPIOsTables.html:34
 msgid "There are no registered outputs in the installation."
-msgstr ""
+msgstr "No hay salidas registradas en la instalacion"
 
 #: templates/Devices/showGPIOsTables.html:37
 msgid "Inputs"
-msgstr ""
+msgstr "Entradas"
 
 #: templates/Devices/showGPIOsTables.html:38
 msgid "There are no registered inputs in the installation."
-msgstr ""
+msgstr "No hay entradas registradas en la instalacion"
 
 #: templates/Devices/showGPIOsTables.html:41
 msgid "Sensors"
-msgstr ""
+msgstr "Sensores"
 
 #: templates/Devices/showGPIOsTables.html:42
 msgid "There are no registered sensor pins in the installation."
-msgstr ""
+msgstr "No hay pines de sensor registrados en la instalacion"
 
 #: templates/Devices/showMainDeviceVarsTable.html:32
 msgid "Main Device Vars List"
-msgstr ""
+msgstr "Lista de variables de la unidad principal"
 
 #: views.py:50 views.py:57 views.py:64 views.py:71 views.py:78
-#, fuzzy
-#| msgid " updated OK"
 msgid " saved OK"
-msgstr " atualizado OK"
+msgstr " guardado OK"
 
 #: views.py:101
 msgid "Adding a new "
-msgstr ""
+msgstr "Añadiendo un nuevo "
 
 #: views.py:129 views.py:376
 msgid "Something is wrong with the data provided"
-msgstr ""
+msgstr "Algo esta mal con la información recibida"
 
 #: views.py:145
-#, fuzzy
-#| msgid "Setup the aggregation of the data"
 msgid "Setting up the labels for the data from "
-msgstr "Introduce el factor de agregación de los datos"
+msgstr "Definiendo las etiquetas para los datos de "
 
 #: views.py:155
-#, fuzzy
-#| msgid "Define custom labels for the variables"
 msgid "Custom labels for device "
-msgstr "Definir las etiquetas particularizadas para las variables"
+msgstr "Las etiquetas particularizadas del dispositivo "
 
 #: views.py:155
 msgid " have been set properly."
-msgstr ""
+msgstr " se han definido correctamente."
 
 #: views.py:189
 msgid "Scanning for a new "
-msgstr ""
+msgstr "Buscando un nuevo "
 
 #: views.py:204
 msgid "Found a "
-msgstr ""
+msgstr "Encontrado un "
 
 #: views.py:208
 msgid "No device was found"
-msgstr ""
+msgstr "No se ha encontrado ningún sispositivo"
 
 #: views.py:263
-#, fuzzy
-#| msgid " does not have any Beacon associated."
 msgid " does not have any datagram defined."
-msgstr " no tiene ningun Beacon asociado."
+msgstr " no tiene ningun datagrama asociado."
 
 #: views.py:264
-#, fuzzy
-#| msgid "Upload an image for the DeviceType"
 msgid "Please define a datagram for the device type "
-msgstr "Carga una imagen para el tipop de dispositivo"
+msgstr "Define un datagrama para el tipo de dispositivo"
 
 #: views.py:264
 msgid " and start polling to "
-msgstr ""
+msgstr " y comienza el pooling para "
 
 #: views.py:265
 msgid "gather some data to be plotted."
-msgstr ""
+msgstr "recoger datos que plotear."
 
 #: views.py:286
 msgid "List of "
-msgstr ""
+msgstr "Lista de "
 
 #: views.py:309 views.py:330
 msgid "There are no "
-msgstr ""
+msgstr "No hay ningún "
 
 #: views.py:309 views.py:330
 msgid " registered."
-msgstr ""
+msgstr " registrado."
 
 #: views.py:347
 msgid "Editing a "
-msgstr ""
+msgstr "Editando un "
 
 #~ msgid " updated OK "
 #~ msgstr " actualizado OK"

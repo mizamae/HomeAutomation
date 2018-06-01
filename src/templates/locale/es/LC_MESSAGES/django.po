@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-20 12:24+0200\n"
+"POT-Creation-Date: 2018-06-01 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -290,7 +290,7 @@ msgstr "Reiniciar procesos"
 msgid "Events and alarms"
 msgstr "Eventos y alarmas"
 
-#: advanced_device.html:126 configuration.html:59 home.html:53
+#: advanced_device.html:126 configuration.html:67 home.html:53
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
 
@@ -342,6 +342,24 @@ msgstr ""
 
 #: configuration.html:40
 msgid "Backup is not configured. Click to configure."
+msgstr ""
+
+#: configuration.html:44
+msgid "TIMEZONE SET"
+msgstr ""
+
+#: configuration.html:45
+#, fuzzy
+#| msgid "Here you can edit the timezone for this application."
+msgid "Click to set the timezone for the system."
+msgstr "Aqu&iacute; puedes seleccionar tu zona horaria"
+
+#: configuration.html:49
+msgid "SETTINGS"
+msgstr ""
+
+#: configuration.html:50
+msgid "Click to configure the site settings."
 msgstr ""
 
 #: home.html:31

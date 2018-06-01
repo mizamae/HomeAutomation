@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-20 12:24+0200\n"
+"POT-Creation-Date: 2018-06-01 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,19 +87,19 @@ msgstr ""
 msgid "Data directly from the DB or averaged over a period"
 msgstr ""
 
-#: models.py:89
+#: models.py:91
 msgid "Report"
 msgstr ""
 
-#: models.py:90
+#: models.py:92
 msgid "Reports"
 msgstr ""
 
-#: models.py:103
+#: models.py:105
 msgid "Generated report"
 msgstr ""
 
-#: models.py:104
+#: models.py:106
 msgid "Generated reports"
 msgstr ""
 
@@ -125,23 +125,27 @@ msgid "View"
 msgstr ""
 
 #: templates/Reports/_reportItems_table.html:24
-#: templates/Reports/_reports_table.html:19
+#: templates/Reports/_reports_table.html:21
 msgid "Delete"
 msgstr ""
 
-#: templates/Reports/_reports_table.html:15
+#: templates/Reports/_reports_table.html:16
 msgid "Title"
 msgstr ""
 
-#: templates/Reports/_reports_table.html:16
+#: templates/Reports/_reports_table.html:17
 msgid "Periodicity"
 msgstr ""
 
-#: templates/Reports/_reports_table.html:17
+#: templates/Reports/_reports_table.html:18
 msgid "Aggregation"
 msgstr ""
 
-#: templates/Reports/_reports_table.html:18
+#: templates/Reports/_reports_table.html:19
+msgid "Enable"
+msgstr ""
+
+#: templates/Reports/_reports_table.html:20
 msgid "Edit"
 msgstr ""
 

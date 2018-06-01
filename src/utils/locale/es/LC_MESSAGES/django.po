@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-20 12:24+0200\n"
+"POT-Creation-Date: 2018-06-01 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,4 +20,61 @@ msgstr ""
 
 #: BBDD.py:136
 msgid "Error in compact_table: "
+msgstr ""
+
+#: GitHub.py:23
+msgid "There is a new version to download. Version code: "
+msgstr ""
+
+#: GitHub.py:31
+msgid "Checking for updates..."
+msgstr ""
+
+#: GitHub.py:45
+#, python-format
+msgid "%s the latest source revision '%s'."
+msgstr ""
+
+#: GitHub.py:46
+msgid "Already at"
+msgstr ""
+
+#: GitHub.py:46
+msgid "Updated to"
+msgstr ""
+
+#: GitHub.py:55
+msgid "Error checking migrations: "
+msgstr ""
+
+#: GitHub.py:61
+msgid "Updating DB with new migrations. Relax, it may take a while"
+msgstr ""
+
+#: GitHub.py:67
+msgid "Django DB updated OK"
+msgstr ""
+
+#: GitHub.py:69
+msgid "Error applying the migration: "
+msgstr ""
+
+#: GitHub.py:74
+msgid "Restart processes to apply the new changes"
+msgstr ""
+
+#: GitHub.py:79
+msgid "Problem occurred while updating program."
+msgstr ""
+
+#: GitHub.py:120
+msgid "Attemping to run update again..."
+msgstr ""
+
+#: GitHub.py:123
+msgid "Unable to reset local copy to current git branch."
+msgstr ""
+
+#: GitHub.py:129
+msgid "Please make sure that you have a 'git' package installed. Error: "
 msgstr ""

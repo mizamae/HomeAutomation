@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: home.html:29 home.html:33 home.html:37
+#: Subsystems/home.html:29 Subsystems/home.html:33 Subsystems/home.html:37
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-20 12:51+0200\n"
+"POT-Creation-Date: 2018-06-01 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,126 +19,129 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: _automationvars_table.html:15 _mastergpios_table.html:16
+#: Subsystems/_automationvars_table.html:15
+#: Subsystems/_mastergpios_table.html:16
 msgid "Label"
 msgstr "Etiqueta"
 
-#: _automationvars_table.html:16
+#: Subsystems/_automationvars_table.html:16
 msgid "Timestamp"
 msgstr ""
 
-#: _automationvars_table.html:17 _mastergpios_table.html:17
+#: Subsystems/_automationvars_table.html:17
+#: Subsystems/_mastergpios_table.html:17
 msgid "Value"
 msgstr "Valor"
 
-#: _automationvars_table.html:18 _mastergpios_table.html:18
+#: Subsystems/_automationvars_table.html:18
+#: Subsystems/_mastergpios_table.html:18
 msgid "Action"
 msgstr "Accion"
 
-#: _devices.html:7
-msgid "STOPPED"
-msgstr "PARADO"
-
-#: _devices.html:10 _devices.html:12
-msgid "RUNNING"
-msgstr "ACTIVO"
-
-#: _devices.html:12
-msgid " Error: "
-msgstr ""
-
-#: _devices_table.html:14
-msgid "Device name"
-msgstr "Nombre"
-
-#: _devices_table.html:15
-msgid "Device type"
-msgstr "Tipo"
-
-#: _devices_table.html:16
-msgid "Device state"
-msgstr "Estado"
-
-#: _devices_table.html:17
-msgid "Last updated"
-msgstr "Ultima actualizacion"
-
-#: _maindevicevarweeklyschedules.html:9
+#: Subsystems/_automationvarweeklyschedules.html:9
 msgid "Active"
 msgstr "Activo"
 
-#: _maindevicevarweeklyschedules.html:15
+#: Subsystems/_automationvarweeklyschedules.html:15
 msgid "Inactive"
 msgstr "Inactivo"
 
-#: _maindevicevarweeklyschedules_table.html:15
+#: Subsystems/_automationvarweeklyschedules_table.html:15
 msgid "Description"
 msgstr "Descripcion"
 
-#: _maindevicevarweeklyschedules_table.html:16
+#: Subsystems/_automationvarweeklyschedules_table.html:16
 msgid "Status"
 msgstr "Estado"
 
-#: _maindevicevarweeklyschedules_table.html:17
+#: Subsystems/_automationvarweeklyschedules_table.html:17
 msgid "Activate"
 msgstr "Activado"
 
-#: _maindevicevarweeklyschedules_table.html:18
+#: Subsystems/_automationvarweeklyschedules_table.html:18
 msgid "Current value"
 msgstr "Valor actual"
 
-#: _maindevicevarweeklyschedules_table.html:19
+#: Subsystems/_automationvarweeklyschedules_table.html:19
 msgid "LOW value"
 msgstr "Valor BAJO"
 
-#: _maindevicevarweeklyschedules_table.html:20
+#: Subsystems/_automationvarweeklyschedules_table.html:20
 msgid "HIGH value"
 msgstr "Valor ALTO"
 
-#: _mastergpios_table.html:15
+#: Subsystems/_devices.html:7
+msgid "STOPPED"
+msgstr "PARADO"
+
+#: Subsystems/_devices.html:10 Subsystems/_devices.html:12
+msgid "RUNNING"
+msgstr "ACTIVO"
+
+#: Subsystems/_devices.html:12
+msgid " Error: "
+msgstr ""
+
+#: Subsystems/_devices_table.html:14
+msgid "Device name"
+msgstr "Nombre"
+
+#: Subsystems/_devices_table.html:15
+msgid "Device type"
+msgstr "Tipo"
+
+#: Subsystems/_devices_table.html:16
+msgid "Device state"
+msgstr "Estado"
+
+#: Subsystems/_devices_table.html:17
+msgid "Last updated"
+msgstr "Ultima actualizacion"
+
+#: Subsystems/_mastergpios_table.html:15
 msgid "Pin"
 msgstr ""
 
-#: home.html:8
+#: Subsystems/home.html:8
 msgid "Subsystems"
 msgstr "Subsistemas"
 
-#: home.html:26
+#: Subsystems/home.html:26
 msgid "SUBSYSTEMS DASHBOARD"
 msgstr "PANEL DE SUBSISTEMAS"
 
-#: home.html:28
+#: Subsystems/home.html:28
 msgid "HEATING"
 msgstr "CALEFACCION"
 
-#: home.html:32
+#: Subsystems/home.html:32
 msgid "GARDEN"
 msgstr "JARDIN"
 
-#: home.html:36
+#: Subsystems/home.html:36
 msgid "ACCESS"
 msgstr "ACCESOS"
 
-#: home.html:45 subsystem.html:76
+#: Subsystems/home.html:45 Subsystems/subsystem.html:76
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor logueate si quieres hacer algo mas..."
 
-#: subsystem.html:28
+#: Subsystems/subsystem.html:28
 msgid "DEVICES"
 msgstr "DISPOSITIVOS"
 
-#: subsystem.html:37
+#: Subsystems/subsystem.html:37
 msgid "VARIABLES"
 msgstr ""
 
-#: subsystem.html:46
+#: Subsystems/subsystem.html:46
 msgid "SCHEDULES"
 msgstr "PROGRAMACIONES"
 
-#: subsystem.html:55
+#: Subsystems/subsystem.html:55
 msgid "MASTER UNIT I/Os"
 msgstr "ENTRADAS/SALIDAS"
 
-#: subsystem.html:63
+#: Subsystems/subsystem.html:63
 msgid "EVENTS AND ALARMS"
 msgstr "EVENTOS Y ALARMAS"
