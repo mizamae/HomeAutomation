@@ -39,10 +39,8 @@ msgid "Activate the rule"
 msgstr "Activar la regla"
 
 #: apps.py:16
-#, fuzzy
-#| msgid "Automation rule"
 msgid "Automation APP"
-msgstr "Regla de automatización"
+msgstr "APP de automatización"
 
 #: constants.py:28
 msgid "Activate output on Main"
@@ -78,15 +76,15 @@ msgstr ""
 
 #: forms.py:60
 msgid "Slaves WIFI network"
-msgstr ""
+msgstr "Red WIFI de los dispositivos"
 
 #: forms.py:67
 msgid "LAN network"
-msgstr ""
+msgstr "Red LAN"
 
 #: forms.py:72
 msgid "Security"
-msgstr ""
+msgstr "Seguridad"
 
 #: forms.py:81 forms.py:306
 msgid "Save"
@@ -113,34 +111,28 @@ msgid "Execution order"
 msgstr "Orden de ejecución"
 
 #: forms.py:225
-#, fuzzy
-#| msgid "Prefix for the first term"
 msgid "Prefix for the value"
-msgstr "Modificador del primer término"
+msgstr "Prefijo para el valor"
 
 #: forms.py:226
 msgid "Value"
-msgstr ""
+msgstr "Valor"
 
 #: forms.py:227
 msgid "Operator"
 msgstr "Operador"
 
 #: forms.py:228
-#, fuzzy
-#| msgid "Prefix for the second term"
 msgid "Prefix for the setpoint"
-msgstr "Modificador del segundo término"
+msgstr "Prefijo para la consigna"
 
 #: forms.py:229
 msgid "Setpoint"
-msgstr ""
+msgstr "Consigna"
 
 #: forms.py:230
-#, fuzzy
-#| msgid "Second term is a constant"
 msgid "Setpoint is a constant"
-msgstr "El segundo término es una constante"
+msgstr "La consigna es una constante"
 
 #: forms.py:231
 msgid "Constant value"
@@ -171,10 +163,8 @@ msgid "Select the action"
 msgstr "Selecciona la acción"
 
 #: forms.py:258
-#, fuzzy
-#| msgid "Select the device to send the order to"
 msgid "Select the user to send the email to"
-msgstr "Selecciona el dispositivo al que enviar la orden"
+msgstr "Selecciona el usuario al que enviar el email"
 
 #: forms.py:260
 msgid "Select the output"
@@ -197,14 +187,12 @@ msgid "Set the name for the automation rule"
 msgstr "Introduce el nombre de la regla de automatización"
 
 #: forms.py:290
-#, fuzzy
-#| msgid "Select the output value in case of error"
 msgid "Select the rule evaluation in case of error"
-msgstr "Selecciona el valor de la salida en el caso de error"
+msgstr "Selecciona el valor de la evaluación en el caso de error"
 
 #: forms.py:291
 msgid "Execute rule only on the transitions from FALSE to TRUE and viceversa"
-msgstr ""
+msgstr "Ejecutar la regla solo en el caso de transiciones de FALSO a VERDADERO y viceversa"
 
 #: forms.py:292
 msgid "Select the previous rule to be chained"
@@ -237,91 +225,85 @@ msgstr ""
 
 #: models.py:57
 msgid "Settings"
-msgstr ""
+msgstr "Parámetros"
 
 #: models.py:59
-#, fuzzy
-#| msgid "Select the calculation"
 msgid "Name of the installation"
-msgstr "Selecciona el cálculo"
+msgstr "Nombre de la instalación"
 
 #: models.py:60
-#, fuzzy
-#| msgid "Set the name for the automation rule"
 msgid "Descriptive name for the installation."
-msgstr "Introduce el nombre de la regla de automatización"
+msgstr "Descripción de la instalación."
 
 #: models.py:61
 msgid "Name of the domain to access the application"
-msgstr ""
+msgstr "Nombre del dominio con el que se accede a la aplicación"
 
 #: models.py:62
 msgid ""
 "This is the DNS address that gives access to the application from the "
 "internet."
-msgstr ""
+msgstr "Es la dirección DNS que redirecciona a la aplicación desde internet."
 
 #: models.py:65
 msgid "Autodetect new software releases"
-msgstr ""
+msgstr "Detectar automáticamente nuevas versiones de la aplicación"
 
 #: models.py:66
 msgid "Automatically checks the repository for new software"
-msgstr ""
+msgstr "Chequear automáticamente el repositorio en busqueda de nuevo software"
 
 #: models.py:67
 msgid "Apply automatically new software releases"
-msgstr ""
+msgstr "Aplicar automáticamente las nuevas versiones de código"
 
 #: models.py:68
 msgid "Automatically updates to (and applies) the latest software"
-msgstr ""
+msgstr "Se actualiza automáticamente a la última version de software disponible"
 
 #: models.py:69
 msgid "Code of the version of the application framework"
-msgstr ""
+msgstr "Código de la versión de la aplicación"
 
 #: models.py:71
-#, fuzzy
-#| msgid "NTP server restarted"
 msgid "NTP server restart time delta"
-msgstr "Servidor NTP reiniciado"
+msgstr "Error de tiempo para reiniciar el servidor NTP"
 
 #: models.py:72
 msgid ""
 "Time difference in minutes that will trigger a restart of the NTP server"
-msgstr ""
+msgstr "La diferencia de tiempo en minutos que lanzará la orden para reiniciar el servidor NTP"
 
 #: models.py:74
 msgid "WIFI network identificator"
-msgstr ""
+msgstr "Identificador de la red WIFI"
 
 #: models.py:75
 msgid ""
 "This is the name of the WiFi network generated to communicate with the slaves"
-msgstr ""
+msgstr "El nombre de la red WIFI que se generará para comunicarse con los dispositivos"
 
 #: models.py:77
 msgid "WIFI network passphrase"
-msgstr ""
+msgstr "Clave de la red WIFI"
 
 #: models.py:78
 msgid "This is the encryption password for the WIFI network"
-msgstr ""
+msgstr "Es la contraseña de encriptación de la red WIFI"
 
 #: models.py:80
 msgid "IP address for the WIFI network"
-msgstr ""
+msgstr "Dirección IP de la red WIFI"
 
 #: models.py:81
 msgid ""
 "This is the IP address for the WiFi network generated to communicate with "
 "the slaves"
-msgstr ""
+msgstr "Es la dirección IP de la red WIFI de dispositivos"
 
 #: models.py:83
 msgid "WIFI network mask"
-msgstr ""
+msgstr "Máscara de la red WIFI"
 
 #: models.py:84
 msgid ""
@@ -330,7 +312,7 @@ msgstr ""
 
 #: models.py:86
 msgid "WIFI network gateway"
-msgstr ""
+msgstr "Gateway de la red WIFI"
 
 #: models.py:87
 msgid ""
@@ -340,7 +322,7 @@ msgstr ""
 
 #: models.py:90
 msgid "IP address for the LAN network"
-msgstr ""
+msgstr "Dirección IP de la red LAN"
 
 #: models.py:91
 msgid ""
@@ -349,7 +331,7 @@ msgstr ""
 
 #: models.py:93
 msgid "Mask for the LAN network"
-msgstr ""
+msgstr "Máscara de la red LAN"
 
 #: models.py:94
 msgid ""
@@ -358,7 +340,7 @@ msgstr ""
 
 #: models.py:96
 msgid "Gateway of the LAN network"
-msgstr ""
+msgstr "Gateway de la red LAN"
 
 #: models.py:97
 msgid ""
@@ -368,7 +350,7 @@ msgstr ""
 
 #: models.py:100
 msgid "Enable automatic IP blocking"
-msgstr ""
+msgstr "Habilitar bloqueo automático de IPs"
 
 #: models.py:101
 msgid ""
@@ -378,7 +360,7 @@ msgstr ""
 
 #: models.py:102
 msgid "Number of denied attempts needed to block an IP"
-msgstr ""
+msgstr "Número de intentos rechazados para bloquear una IP"
 
 #: models.py:103
 msgid ""
@@ -387,7 +369,7 @@ msgstr ""
 
 #: models.py:104
 msgid "Require credentials to access the server"
-msgstr ""
+msgstr "Requerir credenciales para acceder al servidor"
 
 #: models.py:105
 msgid ""
@@ -499,28 +481,20 @@ msgid "Units of the variable."
 msgstr "Unidades de la variable"
 
 #: models.py:518
-#, fuzzy
-#| msgid "Main device var weekly schedule"
 msgid "Automation var weekly schedule"
-msgstr "Programación semanal de variables de la unidad Principal"
+msgstr "Programación semanal de variables de automatización"
 
 #: models.py:519
-#, fuzzy
-#| msgid "Main device var weekly schedules"
 msgid "Automation var weekly schedules"
-msgstr "Programaciones semanales de variables de la unidad Principal"
+msgstr "Programaciones semanales de variables de automatización"
 
 #: models.py:672
-#, fuzzy
-#| msgid "Main device var hourly schedule"
 msgid "Automation var hourly schedule"
-msgstr "Programación horaria de variables de la unidad Principal"
+msgstr "Programación horaria de variables de automatización"
 
 #: models.py:673
-#, fuzzy
-#| msgid "Main device var hourly schedules"
 msgid "Automation var hourly schedules"
-msgstr "Programaciones horarias de variables de la unidad Principal"
+msgstr "Programaciones horarias de variables de automatización"
 
 #: models.py:676
 msgid "Monday"
@@ -560,15 +534,15 @@ msgstr "ALTO"
 
 #: models.py:730
 msgid "Thermostat"
-msgstr ""
+msgstr "Termostato"
 
 #: models.py:731
 msgid "Thermostats"
-msgstr ""
+msgstr "Termostatos"
 
 #: models.py:733
 msgid "The rule item that the thermostat is linked to."
-msgstr ""
+msgstr "El item de automatización al que el termostato está ligado."
 
 #: models.py:753 models.py:845
 msgid "AND"
@@ -620,25 +594,23 @@ msgstr "BBDD subidas a GDrive"
 
 #: tasks.py:57
 msgid "Unable to autenticate to GDrive"
-msgstr ""
+msgstr "Imposible la autenticación con Google Drive"
 
 #: views.py:47 views.py:54
 msgid " saved OK"
-msgstr ""
+msgstr " guardado OK"
 
 #: views.py:130
-#, fuzzy
-#| msgid "Django DB updated OK"
 msgid "Changes updated OK"
-msgstr "La BBDD de Django se ha actualizado OK"
+msgstr "Los cambios se han actualizado OK"
 
 #: views.py:132
 msgid "Something is wrong with the data provided"
-msgstr ""
+msgstr "Algo está mal con los datos proporcionados"
 
 #: views.py:146
 msgid "Timezone has been set to "
-msgstr ""
+msgstr "La zona horaria se ha cambiado a "
 
 #: views.py:250
 msgid "Google Drive credentials have been stored"
