@@ -200,7 +200,7 @@
                     system_hours=parseInt(payload.time.split(":")[0]);
                     system_minutes=parseInt(payload.time.split(":")[1]);
                     var currentdate = new Date();
-                    if ((currentdate.getUTCHours()!=system_hours)||(currentdate.getUTCMinutes()!=system_minutes))
+                    if ((currentdate.getUTCHours()!=system_hours)||(currentdate.getUTCMinutes()<=system_minutes-2)||(currentdate.getUTCMinutes()>=system_minutes+2))
                     {	label.style.color="Red";
                     	label.innerHTML= payload.date + " " + payload.time;
                     	restart_NTP();
