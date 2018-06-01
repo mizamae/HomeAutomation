@@ -69,10 +69,8 @@ msgid "Return"
 msgstr "Volver "
 
 #: OpenWeatherMap.html:44
-#, fuzzy
-#| msgid "Action"
 msgid "Connection"
-msgstr "Acci&oacute;n"
+msgstr "Conexi&oacute;n"
 
 #: OpenWeatherMap.html:45
 msgid "Type"
@@ -84,15 +82,15 @@ msgstr ""
 
 #: _appsmodel_acordion.html:23
 msgid "VIEW"
-msgstr ""
+msgstr "VER"
 
 #: _appsmodel_acordion.html:29
 msgid "GRAPHS"
-msgstr ""
+msgstr "GRAFICAS"
 
 #: _back.html:6
 msgid "BACK"
-msgstr ""
+msgstr "VOLVER"
 
 #: _events_table.html:9 advanced_device.html:99
 msgid "Timestamp"
@@ -307,18 +305,16 @@ msgid "Something failed"
 msgstr "Algo ha fallado"
 
 #: configuration.html:8
-#, fuzzy
-#| msgid "Configure"
 msgid "Configuration"
-msgstr "Configurar"
+msgstr "Configuraci&oacute;n"
 
 #: configuration.html:26
 msgid "CONFIGURATION DASHBOARD"
-msgstr ""
+msgstr "PANEL DE CONFIGURACION"
 
 #: configuration.html:28
 msgid "SOFT-RESET"
-msgstr ""
+msgstr "RESET"
 
 #: configuration.html:29
 msgid "Click to restart the Gunicorn processes."
@@ -349,10 +345,8 @@ msgid "TIMEZONE SET"
 msgstr ""
 
 #: configuration.html:45
-#, fuzzy
-#| msgid "Here you can edit the timezone for this application."
 msgid "Click to set the timezone for the system."
-msgstr "Aqu&iacute; puedes seleccionar tu zona horaria"
+msgstr "Aqu&iacute; puedes cambiar la zona horaria"
 
 #: configuration.html:49
 msgid "SETTINGS"
@@ -364,23 +358,23 @@ msgstr ""
 
 #: home.html:31
 msgid "APPLICATION SERVER DASHBOARD"
-msgstr ""
+msgstr "PANEL DEL SERVIDOR DE APLICACIONES"
 
 #: home.html:33
 msgid "DEVICES APP"
-msgstr ""
+msgstr "APP DE DISPOSITIVOS"
 
 #: home.html:37
 msgid "REPORTING APP"
-msgstr ""
+msgstr "APP DE INFORMES"
 
 #: home.html:41
 msgid "SUBSYSTEMS APP"
-msgstr ""
+msgstr "APP DE SUBSISTEMAS"
 
 #: home.html:45
 msgid "CONFIGURATION"
-msgstr ""
+msgstr "CONFIGURACION"
 
 #: registration/logged_out.html:9
 msgid "Thanks for spending some quality time with the Web site today."
@@ -566,10 +560,8 @@ msgid "Inactive"
 msgstr "Inactiva"
 
 #: schedulesList.html:32
-#, fuzzy
-#| msgid "List of automation rules"
 msgid "List of automation items"
-msgstr "Lista de reglas de automatizaci&oacute;n"
+msgstr "Lista de items de automatizaci&oacute;n"
 
 #: schedulesList.html:37
 msgid "Variable "
