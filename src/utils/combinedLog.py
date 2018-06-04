@@ -48,7 +48,11 @@ class CombinedLogParser(object):
                 attempts.append({'IP':cols[1],'trials':int(cols[0])})
         return attempts
 
-# instance=CombinedLogParser()
-# print(instance.getNginxAccessHTTPCodes())
-# for element in instance.getNginxAccessIPs(hours=24):
-#     print(element)
+def main():
+    instance=CombinedLogParser()
+    print(instance.getNginxAccessHTTPCodes())
+    for element in instance.getNginxAccessIPs(hours=24):
+        print(element)
+        
+if __name__ == '__main__':
+    main()
