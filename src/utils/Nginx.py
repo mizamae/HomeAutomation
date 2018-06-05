@@ -8,6 +8,11 @@ class NginxManager(object):
         cmd='sudo systemctl restart nginx'
         os.system(cmd)
         PublishEvent(Severity=0,Text='Nginx restarted OK',Persistent=True,Code='Nginx-0')
+    
+    def reload(self):
+        cmd='sudo nginx -s reload'
+        os.system(cmd)
+        PublishEvent(Severity=0,Text='Nginx configuration reloaded OK',Persistent=True,Code='Nginx-0')
         
     def createUser(self,user,passw,firstUser=False):
         if firstUser:

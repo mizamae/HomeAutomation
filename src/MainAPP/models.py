@@ -145,7 +145,7 @@ class SiteSettings(SingletonModel):
                     if NGINX.blockIP(IP=element['IP'])!=-1:
                         updated=True
             if updated:
-                NGINX.restart()
+                NGINX.reload()
         
     def applyChanges(self,update_fields):
         for field in update_fields:
@@ -166,9 +166,9 @@ class SiteSettings(SingletonModel):
             if field in ['PROXY_USER1','PROXY_PASSW1','PROXY_USER2','PROXY_PASSW2']:
                 if self.PROXY_CREDENTIALS:
                     from utils.Nginx import NginxManager
-                    Nginx=NginxManager()
-                    Nginx.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
-                    Nginx.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
+                    NGINX=NginxManager()
+                    NGINX.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
+                    NGINX.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
