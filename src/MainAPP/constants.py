@@ -13,8 +13,11 @@ logger = logging.getLogger("project")
 
 now=datetime.datetime.now()
 
+# APPLICATION PATHS
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 GIT_PATH = os.path.join(PROJECT_PATH,'..','..')
+BLOCK_IPS_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','blockips.conf'))
+NGINX_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','sites-available','HomeAutomation.nginxconf'))
 
 # APPLICATION DATABASES
 DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..','db.sqlite3')

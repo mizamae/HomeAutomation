@@ -136,10 +136,16 @@ class SiteSettings(SingletonModel):
     def checkDeniableIPs(self):
         if self.PROXY_AUTO_DENYIP:
             from utils.combinedLog import CombinedLogParser
+            updated=False
             instance=CombinedLogParser()
             for element in instance.getNginxAccessIPs(hours=24,codemin=400):
                 if element['trials']>=self.AUTODENY_ATTEMPTS:
-                    PublishEvent(Severity=3,Text='IP address '+element['IP']+ ' has been blocked',Persistent=True,Code='IP-filter-'+element['IP'])
+                    from utils.Nginx import NginxManager
+                    NGINX=NginxManager()
+                    if NGINX.blockIP(IP=element['IP'])!=-1:
+                        updated=True
+            if updated:
+                NGINX.restart()
         
     def applyChanges(self,update_fields):
         for field in update_fields:
@@ -159,9 +165,10 @@ class SiteSettings(SingletonModel):
                 # update /etc/nginx/sites-available/HomeAutomation.nginxconf
             if field in ['PROXY_USER1','PROXY_PASSW1','PROXY_USER2','PROXY_PASSW2']:
                 if self.PROXY_CREDENTIALS:
-                    from utils.NginxUsers import createUser
-                    createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
-                    createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
+                    from utils.Nginx import NginxManager
+                    Nginx=NginxManager()
+                    Nginx.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
+                    Nginx.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
