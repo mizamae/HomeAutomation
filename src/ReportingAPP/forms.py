@@ -54,6 +54,7 @@ class ReportsForm(ModelForm):
                 
         self.helper.layout = Layout(
             Field('Title'),
+            Field('Enable'),
             Field('Periodicity'),
             Field('DataAggregation'),
             buttons
@@ -75,5 +76,5 @@ class ReportsForm(ModelForm):
         
     class Meta:
         model = models.Reports
-        fields=['Title','Periodicity','DataAggregation','ContentJSON']
+        fields=['Title','Enable','Periodicity','DataAggregation','ContentJSON']
         

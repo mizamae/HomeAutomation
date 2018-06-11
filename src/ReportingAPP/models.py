@@ -82,7 +82,7 @@ class Reports(models.Model):
         RITM.save()
         
     def __str__(self):
-        return self.ReportTitle
+        return self.Title
         
     class Meta:
         permissions = (
@@ -98,7 +98,7 @@ class ReportItems(models.Model):
     data = models.CharField(help_text='Data of the report in JSON format', max_length=20000,null=True,blank=True)
     
     def __str__(self):
-        return str(self.Report.ReportTitle)
+        return str(self.Report.Title)
         
     class Meta:
         unique_together = ('Report', 'fromDate','toDate')
