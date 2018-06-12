@@ -254,7 +254,8 @@
 			    	iDiv3.id = 'stats_col'.concat(i.toString(),subindex);
 			    	iDiv3.className = statistics_class;
 			    	iDiv.appendChild(iDiv3);
-		    		drawChart(arrayData,DataLabels,djangoData[i].analog_Cols,djangoData[i].title.concat(' analog values'),'chart_col'.concat(i.toString(),subindex),false);
+			    	djangoData[i].analogDiv='chart_col'.concat(i.toString(),subindex);
+		    		drawChart(arrayData,DataLabels,djangoData[i].analog_Cols,djangoData[i].title.concat(' analog values'),djangoData[i].analogDiv,false);
 			    	var stats= document.getElementById('stats_col'.concat(i.toString(),subindex));
 			    	var list = document.createElement('ul');
 			    	list.className="treeview";
@@ -480,10 +481,17 @@
                 var container = $('#'+divs[i].id)
                 var chart=container.highcharts();
                 chart.destroy();
-                var arrayData=djangoData[djangoDataPos].rows;
+				for (chart in djangoData)
+				{
+					if (djangoData[chart].analogDiv==divs[i].id)
+					{
+						djangoDataPos=chart;
+						break;
+					}
+				}
+				var arrayData=djangoData[djangoDataPos].rows;
 				var DataLabels=djangoData[djangoDataPos].cols[0];
-                drawChart(arrayData,DataLabels,djangoData[djangoDataPos].analog_Cols,djangoData[djangoDataPos].title.concat(' analog values'),'chart_col'.concat(djangoDataPos,"analog"),hourly_data,daily_data);
-                djangoDataPos++;
+                drawChart(arrayData,DataLabels,djangoData[djangoDataPos].analog_Cols,djangoData[djangoDataPos].title.concat(' analog values'),divs[i].id,hourly_data,daily_data);
            }
         }
     }
