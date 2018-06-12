@@ -18,7 +18,9 @@ PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 GIT_PATH = os.path.join(PROJECT_PATH,'..','..')
 BLOCK_IPS_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','blockips.conf'))
 NGINX_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','sites-available','HomeAutomation.nginxconf'))
-
+APACHE_HTPASSWD_PATH=os.path.abspath(os.path.join(os.sep,'etc','apache2','.htpasswd'))
+LOCALENV_PATH=os.path.join(PROJECT_PATH,'settings','local.env')
+WIFI_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd.conf'))
 # APPLICATION DATABASES
 DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..','db.sqlite3')
 REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqlite3')

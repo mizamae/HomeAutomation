@@ -107,6 +107,15 @@ def toggle(request,model,pk):
         
     return redirect(request.META['HTTP_REFERER'])
 
+# def test(request):
+#       
+#     if request.method == 'GET':
+#         from .tasks import checkCustomCalculations
+#         checkCustomCalculations()
+#         return HttpResponseNotFound('<h1>No Page Here for Model '+str(model)+'</h1>') 
+#           
+#     return redirect(request.META['HTTP_REFERER'])
+
 
 class Home(generic.TemplateView):
     template_name = "home.html"

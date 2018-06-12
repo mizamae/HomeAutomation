@@ -74,10 +74,6 @@ class Database(object):
         with redis_lock.Lock(lock_table, "commitRegisterDB",expire=10, auto_renewal=True):            
             name = multiprocessing.current_process().name
             if DEBUGGING: print('The process ' + name + ' has the lock.')
-#             if arg!=[]:
-#                 while self._execute(SQLstatement=SQLstatement,arg=arg)==None:# the timestamp arg[0] is increased 1 sec to avoid integrity error
-#                     arg[0]+=datetime.timedelta(seconds=1)
-#             else:
             result=self._execute(SQLstatement=SQLstatement,arg=arg)
             if DEBUGGING:print('The process ' + name + ' executed: ' + SQLstatement)
             if DEBUGGING:print('The process ' + name + ' releases the lock.')

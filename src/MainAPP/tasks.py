@@ -64,7 +64,6 @@ def start_MonthlyTask():
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-M')
 
-
 ### DAILY FUNCTIONS
 def checkReportAvailability():
     '''THIS TASK IS RUN EVERY DAY AT HOUR 0 AND CHECKS IF ANY REPORT TRIGGERING CONDITION IS MET.
@@ -85,10 +84,10 @@ def updateWeekDay():
     weekDay=timestamp.weekday()
     try:
         WeekDay=MainDeviceVars.objects.get(Label='Day of the week')
-        WeekDay.updateValue(newValue=weekDay,writeDB=True)
     except:
         WeekDay=MainDeviceVars(Label='Day of the week',Value=weekDay,DataType=DTYPE_INTEGER,Units='',UserEditable=False)
         WeekDay.store2DB()
+    WeekDay.updateValue(newValue=weekDay,writeDB=True)
 
 def DailyTask():
     from MainAPP.models import SiteSettings
@@ -124,10 +123,10 @@ def HourlyTask():
     hourDay=timestamp.hour
     try:
         HourDay=MainDeviceVars.objects.get(Label='Hour of the day')
-        HourDay.updateValue(newValue=hourDay,writeDB=True)
     except:
         HourDay=MainDeviceVars(Label='Hour of the day',Value=hourDay,DataType=DTYPE_INTEGER,Units='H',UserEditable=False)
         HourDay.store2DB()
+    HourDay.updateValue(newValue=hourDay,writeDB=True)
     AutomationVarWeeklySchedules.checkAll(init=True)
     checkCustomCalculations()
 

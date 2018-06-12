@@ -60,6 +60,8 @@ urlpatterns = [
     url(r'^users/', include(profiles.urls, namespace='profiles')),
     url(r'^admin/', include(admin.site.urls)),
     
+    #url(r'^test/$', views.SoftReset,name='test'),
+    
     url(r'^', include(accounts.urls, namespace='accounts')),
     
 ]

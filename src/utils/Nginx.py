@@ -15,10 +15,11 @@ class NginxManager(object):
         PublishEvent(Severity=0,Text='Nginx configuration reloaded OK',Persistent=True,Code='Nginx-0')
         
     def createUser(self,user,passw,firstUser=False):
+        from MainAPP.constants import APACHE_HTPASSWD_PATH
         if firstUser:
-            cmd='sudo htpasswd -ci /etc/apache2/.htpasswd '+user
+            cmd='sudo htpasswd -ci '+APACHE_HTPASSWD_PATH+' ' +user
         else:
-            cmd='sudo htpasswd -i /etc/apache2/.htpasswd '+user
+            cmd='sudo htpasswd -i '+APACHE_HTPASSWD_PATH+' ' +user
             
         process = Popen(cmd, shell=True,
                         stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)

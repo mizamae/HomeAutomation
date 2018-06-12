@@ -47,5 +47,6 @@ def SignalUpdateValueMainDeviceVars_handler(sender, **kwargs):
     Tag=kwargs['Tag']
     timestamp=kwargs['timestamp']
     newValue=kwargs['newValue']
+    force=kwargs['force']
     Instance=MainDeviceVars.objects.get(pk=Tag)
-    Instance.updateValue(newValue=newValue,timestamp=timestamp,writeDB=True)
+    Instance.updateValue(newValue=newValue,timestamp=timestamp,writeDB=True,force=force)

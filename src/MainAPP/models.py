@@ -169,6 +169,40 @@ class SiteSettings(SingletonModel):
                     NGINX=NginxManager()
                     NGINX.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
                     NGINX.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
+                    NGINX.reload()
+    
+    @staticmethod
+    def editUniqueKeyedFile(path,key,delimiter,newValue,endChar='',addKey=True):
+        try:
+            file = open(path, 'r') 
+        except:
+            text=_('Error opening the file ') + path
+            PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
+        
+        lines=file.readlines()
+        if len(lines)>0:
+            keyFound=False
+            for i,line in enumerate(lines):
+                contents=line.split(delimiter)
+                if len(contents)==2:
+                    thisKey=contents[0]
+                    if thisKey==key:
+                        keyFound=True
+                        lines[i]=key+delimiter+newValue+endChar
+                else:
+                    del lines[i]
+            if not keyFound and addKey:
+                if not '\n' in lines[-1]:
+                    lines[-1]=lines[-1]+'\n'
+                lines.append(key+delimiter+newValue+endChar)
+                
+        fileString=''.join(lines)
+        file.close()
+        from subprocess import Popen, PIPE
+        cmd="echo '"+fileString+"' | sudo tee "+ path
+        process = Popen(cmd, shell=True,
+                    stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
+        stdout, err = process.communicate()
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
@@ -339,7 +373,7 @@ class AdditionalCalculations(models.Model):
             elif self.Calculation==4:   # Min value
                 result= self.df.min()[0]
             elif self.Calculation==5:   # Cummulative sum
-                result= self.df.cumsum()
+                result= self.df[self.key].cumsum().iloc[-1]
             elif self.Calculation==6:   # integral over time
                 from scipy import integrate
                 result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
@@ -351,11 +385,11 @@ class AdditionalCalculations(models.Model):
         
         if not isinstance(result, pd.DataFrame):
             MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=DBDate,
-                                                                 newValue=result)
+                                                                 newValue=result,force=True)
         else:
             for index, row in result.iterrows():
                 MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=self.SinkVar.Tag,timestamp=index.to_pydatetime(),
-                                                                 newValue=float(row[0]))
+                                                                 newValue=float(row[0]),force=True)
                 
         return result
               

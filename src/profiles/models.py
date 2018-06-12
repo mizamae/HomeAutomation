@@ -112,7 +112,7 @@ def update_BaseProfile(sender, instance, update_fields,**kwargs):
             
             #print('MainVar value ' + str(newValue))
             avar=MainAPP.models.AutomationVariables.objects.get(Device='MainVars',Label=data['Label'])
-            MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=avar.Tag,timestamp=timestamp,newValue=newValue)
+            MainAPP.signals.SignalUpdateValueMainDeviceVars.send(sender=None,Tag=avar.Tag,timestamp=timestamp,newValue=newValue,force=True)
             PublishEvent(Severity=0,Text=label+' is ' + str(avar.getLatestValue),Persistent=False,Code='Profiles-0')
         if instance.Latitude!=None and instance.Longitude!=None:
             import json

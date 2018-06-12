@@ -235,7 +235,7 @@ def viewGraphs(request,model):
     if request.method == 'POST': # the form has been submited
         form = forms.DeviceGraphs(request.POST)
         
-        logger.debug(str(request.POST))
+        #logger.debug(str(request.POST))
         if form.is_valid():
             devicename=form.cleaned_data['DeviceName']
             fromDate=form.cleaned_data['fromDate']
@@ -253,7 +253,7 @@ def viewGraphs(request,model):
             
             charts=[]
             if DV!='MainUnit':  # a device is selected
-                logger.info('The device is a '+str(DV.DVT))
+                #logger.info('The device is a '+str(DV.DVT))
                 charts=DV.getCharts(fromDate=fromDate,toDate=toDate)
             else:
                 logger.info('The device is the Main Unit')
