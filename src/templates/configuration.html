@@ -27,11 +27,11 @@
 	<div class="apps-row">
 		{% trans "SOFT-RESET" as app_name %}
 		{% trans "Click to restart the Gunicorn processes." as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.png' %}
+		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="softreset" app_icon='site/img/reset.png' %}
 		
 		{% trans "SOFTWARE UPDATE" as app_name %}
 		{% trans "Click to look for newer versions in the repository." as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="gitupdate" app_icon='site/img/update.png' %}
+		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="gitupdate" app_icon='site/img/update.png' %}
 		
 		{% trans "DB BACKUP" as app_name %}
 		{% if BackupActive %}
@@ -39,16 +39,16 @@
 		{% else %}
 			{% trans "Backup is not configured. Click to configure." as app_description %}
 		{% endif %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="dbbackup" app_icon='site/img/google-drive-backup.png' %}
+		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.check_updates app_name=app_name app_description=app_description app_url="dbbackup" app_icon='site/img/google-drive-backup.png' %}
 		
 		{% trans "TIMEZONE SET" as app_name %}
 		{% trans "Click to set the timezone for the system." as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="settimezone" app_icon='site/img/time-zone-icon.png' %}
+		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="settimezone" app_icon='site/img/time-zone-icon.png' %}
 	</div>
 	<div class="apps-row">
 		{% trans "SETTINGS" as app_name %}
 		{% trans "Click to configure the site settings." as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="sitesettings" app_icon='site/img/settings.png' %}
+		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="sitesettings" app_icon='site/img/settings.png' %}
 	</div>
 	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}
 	{% with var_permission_main=perms.Events.view_events var_permission_view=perms.Events.view_events %}

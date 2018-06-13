@@ -6,11 +6,19 @@
 	<div class="col-xs-12" style="text-align: center;vertical-align:bottom;">
 	{% if app_permission %}
 		<a class="btn btn-primary-outline" href="{% url app_url %}" role="button">
+			{% if size %}
+			<img src="{% static app_icon %}" alt="Not found" height="{{size}}%" width="{{size}}%">
+			{% else %}
 			<img src="{% static app_icon %}" alt="Not found" height="100%" width="100%">
+			{% endif %}
 		</a>
 	{% else %}
 		<a class="btn btn-primary-outline disabled" href="" role="button">
+			{% if size %}
+			<img src="{% static app_icon %}" alt="Not found" height="{{size}}%" width="{{size}}%">
+			{% else %}
 			<img src="{% static app_icon %}" alt="Not found" height="100%" width="100%">
+			{% endif %}
 		</a>
 	{% endif %}
 	</div>
