@@ -150,6 +150,9 @@ class SiteSettings(SingletonModel):
     def applyChanges(self,update_fields):
         for field in update_fields:
             if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
+                from utils.Nginx import NginxManager
+                NGINX=NginxManager()
+                NGINX.editConfigFile(key='#'+field,delimiter=' ',newValue=getattr(self,field),endChar=';')
                 pass
                 # update /etc/nginx/sites-available/HomeAutomation.nginxconf
                 # update allowed_hosts in settings.local.env

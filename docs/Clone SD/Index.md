@@ -94,3 +94,10 @@ Install Adafruit DHT library
 	cd Adafruit_Python_DH
 	sudo apt-get install build-essential python-dev python-openssl
 	sudo python setup.py install
+
+Install bluetooth handler
+
+	sudo apt-get install libbluetooth-dev
+	sudo pip install pybluez
+
+
