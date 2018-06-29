@@ -61,6 +61,8 @@ class NginxManager(object):
         if len(lines)>0:
             keyFound=False
             for i,line in enumerate(lines):
+                if "''" in line:
+                    lines[i]=line.replace("''","\\'\\'")
                 if key in line:
                     keyFound=True
                     values=line.split(delimiter)
