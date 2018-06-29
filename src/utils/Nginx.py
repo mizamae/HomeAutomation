@@ -75,3 +75,5 @@ class NginxManager(object):
                 process = Popen(cmd, shell=True,
                             stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
+                text='Modified NGINX field ' + key + ' from ' + str(values[1]) + ' to ' + str(newValue)
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code='Nginx-'+key)

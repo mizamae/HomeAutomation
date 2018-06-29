@@ -150,13 +150,18 @@ class SiteSettings(SingletonModel):
     def applyChanges(self,update_fields):
         for field in update_fields:
             if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
+                # update /etc/nginx/sites-available/HomeAutomation.nginxconf
                 from utils.Nginx import NginxManager
                 NGINX=NginxManager()
                 NGINX.editConfigFile(key='#'+field,delimiter=' ',newValue=getattr(self,field),endChar=';')
-                pass
-                # update /etc/nginx/sites-available/HomeAutomation.nginxconf
+                NGINX.reload()
                 # update allowed_hosts in settings.local.env
+                from .constants import LOCALENV_PATH
+                self.editUniqueKeyedFile(path=LOCALENV_PATH,key='ALLOWED_HOSTS',delimiter='=',
+                                         newValue=getattr(self,'SITE_DNS')+','+getattr(self,'ETH_IP')+',127.0.0.1',
+                                         endChar='\n',addKey=True)
                 # update /etc/network/interfaces
+                pass
             if field in ['WIFI_IP','WIFI_MASK','WIFI_GATE']:
                 pass
                 # update /etc/network/interfaces
@@ -192,8 +197,6 @@ class SiteSettings(SingletonModel):
                     if thisKey==key:
                         keyFound=True
                         lines[i]=key+delimiter+newValue+endChar
-                else:
-                    del lines[i]
             if not keyFound and addKey:
                 if not '\n' in lines[-1]:
                     lines[-1]=lines[-1]+'\n'
