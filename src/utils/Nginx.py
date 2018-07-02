@@ -46,7 +46,10 @@ class NginxManager(object):
         process = Popen(cmd, shell=True,
                     stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
         stdout, err = process.communicate()
-        PublishEvent(Severity=1,Text='IP address '+IP+ ' has been blocked',Persistent=True,Code='Nginx-'+IP)
+        if err=='':
+            PublishEvent(Severity=1,Text='IP address '+IP+ ' has been blocked',Persistent=True,Code='Nginx-'+IP)
+        else:
+            PublishEvent(Severity=3,Text='Error blocking IP '+IP+ '. Err: '+ err,Persistent=True,Code='Nginx-'+IP)
             
     @staticmethod
     def editConfigFile(key,delimiter,newValue,endChar=';'):
@@ -71,9 +74,14 @@ class NginxManager(object):
                 fileString=''.join(lines)
                 file.close()
                 from subprocess import Popen, PIPE
-                cmd="echo '"+fileString+"' | sudo tee /"+ NGINX_CONF_PATH
+                cmd="echo '"+fileString+"' | sudo tee "+ NGINX_CONF_PATH
                 process = Popen(cmd, shell=True,
                             stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
-                text='Modified NGINX field ' + key + ' from ' + str(values[1]) + ' to ' + str(newValue)
-                PublishEvent(Severity=0,Text=text,Persistent=True,Code='Nginx-'+key)
+                if err=='':
+                    text='Modified NGINX field ' + key + ' from ' + str(values[1]) + ' to ' + str(newValue)
+                    severity=0
+                else:
+                    text=err
+                    severity=3
+                PublishEvent(Severity=severity,Text=text,Persistent=True,Code='Nginx-'+key)
