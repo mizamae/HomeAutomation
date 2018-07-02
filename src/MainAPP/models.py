@@ -209,6 +209,8 @@ class SiteSettings(SingletonModel):
         process = Popen(cmd, shell=True,
                     stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
         stdout, err = process.communicate()
+        text='The key '+key+' on the file ' + path+ ' has been modified to ' +newValue
+        PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
@@ -831,8 +833,8 @@ class RuleItems(models.Model):
         
         if self.Var1.Sample>0:
             if value1==None or (now-timestamp1>datetime.timedelta(seconds=int(2.5*self.Var1.Sample))):
-                logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
-                logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' is ' + str(timestamp1))
+                #logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
+                #logger.warning('    The latest timestamp for the variable ' + str(self.Var1) + ' is ' + str(timestamp1))
                 return {'TRUE':eval(str(self.Rule.OnError)),'FALSE':eval('not ' + str(self.Rule.OnError)),'ERROR':'Too old data from var ' + str(self.Var1)}
         
         if self.Var1.BitPos!=None:
@@ -844,8 +846,8 @@ class RuleItems(models.Model):
             value2=data['value']
             if self.Var2.Sample>0:
                 if value2==None or (now-timestamp2>datetime.timedelta(seconds=int(2.5*self.Var2.Sample))):
-                    logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
-                    logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' is ' + str(timestamp2))
+                    #logger.warning('The rule ' + self.Rule.Identifier + ' was evaluated with data older than expected')
+                    #logger.warning('    The latest timestamp for the variable ' + str(self.Var2) + ' is ' + str(timestamp2))
                     return {'TRUE':eval(str(self.Rule.OnError)),'FALSE':eval('not ' + str(self.Rule.OnError)),'ERROR':'Too old data from var ' + str(self.Var2)}
                     
             if self.Var2.BitPos!=None:
