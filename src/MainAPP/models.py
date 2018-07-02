@@ -213,7 +213,7 @@ class SiteSettings(SingletonModel):
             text='The key '+key+' on the file ' + path+ ' has been modified to ' +newValue
             severity=0
         else:
-            text=err
+            text='Error updating key ' + key+ 'on the file ' + path+ 'Error: ' + err
             severity=3
         PublishEvent(Severity=severity,Text=text,Persistent=True,Code='EditFile-'+key)
 

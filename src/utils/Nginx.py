@@ -82,6 +82,6 @@ class NginxManager(object):
                     text='Modified NGINX field ' + key + ' from ' + str(values[1]) + ' to ' + str(newValue)
                     severity=0
                 else:
-                    text=err
+                    text='Error updating NGINX configuration file. Err: '+ err
                     severity=3
                 PublishEvent(Severity=severity,Text=text,Persistent=True,Code='Nginx-'+key)
