@@ -71,7 +71,7 @@ class NginxManager(object):
                 fileString=''.join(lines)
                 file.close()
                 from subprocess import Popen, PIPE
-                cmd="echo '"+fileString+"' | sudo tee "+ NGINX_CONF_PATH
+                cmd="echo '"+fileString+"' | sudo tee /"+ NGINX_CONF_PATH
                 process = Popen(cmd, shell=True,
                             stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()

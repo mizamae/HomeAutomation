@@ -205,12 +205,12 @@ class SiteSettings(SingletonModel):
         fileString=''.join(lines)
         file.close()
         from subprocess import Popen, PIPE
-        cmd="echo '"+fileString+"' | sudo tee "+ path
+        cmd="echo '"+fileString+"' | sudo tee /"+ path
         process = Popen(cmd, shell=True,
                     stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
         stdout, err = process.communicate()
         text='The key '+key+' on the file ' + path+ ' has been modified to ' +newValue
-        PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
+        PublishEvent(Severity=0,Text=text,Persistent=True,Code='EditFile-'+key)
 
 @receiver(post_save, sender=SiteSettings, dispatch_uid="update_SiteSettings")
 def update_SiteSettings(sender, instance, update_fields,**kwargs):
