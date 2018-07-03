@@ -43,6 +43,7 @@ class SiteSettingsForm(ModelForm):
         for field in self.fields:
             help_text = self.fields[field].help_text
             self.fields[field].help_text = None
+            self.fields[field].widget.attrs.update({'onblur':'checkIfChanged('+str(field)+')'})
             if help_text != '':
                 self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
             else:

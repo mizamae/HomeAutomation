@@ -43,6 +43,7 @@
   <script>
   $(document).ready(function() {
     					$('.has-popover').popover({'trigger':'hover'});
+    					currentValues = JSON.parse('{{ CurrentValues | safe }}')[0];
 						});
   </script>
 {% endblock scripts %}

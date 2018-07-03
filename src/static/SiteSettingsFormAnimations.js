@@ -1,6 +1,6 @@
 var field_PROXY_AUTO_DENYIP,field_PROXY_CREDENTIALS;
 var row_AUTODENY_ATTEMPTS,row_PROXY_USER1,row_PROXY_PASSW1,row_PROXY_USER2,row_PROXY_PASSW2;
-
+var currentValues,originalFontColor;
 // this function is executed on load
 $(function()
 {
@@ -13,7 +13,7 @@ $(function()
 	row_PROXY_PASSW1=document.getElementById("div_id_PROXY_PASSW1");
 	row_PROXY_USER2=document.getElementById("div_id_PROXY_USER2");
 	row_PROXY_PASSW2=document.getElementById("div_id_PROXY_PASSW2");
-	
+	originalFontColor=document.getElementById("id_FACILITY_NAME").style.color;
 });
 
 function checkSettings()
@@ -41,3 +41,16 @@ function checkSettings()
 }
 window.onload = checkSettings;
 
+function checkIfChanged(field2check)
+{
+
+	if (field2check.value!=currentValues.fields[field2check.name])
+	{
+		field2check.style.color = "#ff0000";
+		console.log('Ha cambiado!!')
+	}else
+	{
+		field2check.style.color = originalFontColor;
+	}
+
+}

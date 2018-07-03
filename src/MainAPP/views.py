@@ -24,6 +24,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
 
 import utils.BBDD
 
@@ -141,12 +142,16 @@ def SiteSettings(request):
             redmessages.append(_('Something is wrong with the data provided'))
         return render(request, 'sitesettings.html', {'Form': form,
                                                      'GreenMessages':greenmessages,
-                                                     'RedMessages':redmessages})
+                                                     'RedMessages':redmessages,
+                                                     'CurrentValues':serializers.serialize("json",models.SiteSettings.objects.all())}
+                      )
     else:
         form=forms.SiteSettingsForm(initial=SETTINGS.__dict__,instance=SETTINGS)
         return render(request, 'sitesettings.html', {'Form': form,
                                                      'GreenMessages':[],
-                                                     'RedMessages':[]})
+                                                     'RedMessages':[],
+                                                     'CurrentValues':serializers.serialize("json",models.SiteSettings.objects.all())}
+                      )
         
 @user_passes_test(lambda u: u.is_superuser)
 def settimezone(request):
