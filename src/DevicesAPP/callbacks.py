@@ -80,8 +80,6 @@ class OpenWeatherMap(object):
                         Error='APIError'
                         values=(None,None,None,None,None)
                         null=True
-                        
-                self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
             elif datagramId =='forecast':
                 fc = self._owm.three_hours_forecast_at_coords(lat=self.place.Latitude, lon=self.place.Longitude)
                 f = fc.get_forecast()
@@ -104,12 +102,12 @@ class OpenWeatherMap(object):
                     self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
                     print(w.get_reference_time('date'),w.get_status())
             
-            #self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
-                
             if null==False:
                 LastUpdated=timezone.now()
             else:
                 LastUpdated=None
+                timestamp=timezone.now()
+            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=null)
             return {'Error':Error,'LastUpdated':LastUpdated}
         else:
             PublishEvent(Severity=5,Text=str(_('The device ')) + self.sensor.Name + str(_(' does not have any Beacon associated.')),
