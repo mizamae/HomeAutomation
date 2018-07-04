@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger("project")
 
 import Adafruit_DHT
-
+import math
     
 '''
 A class with the name of each of the DeviceTypes defined for local connection need to be created.
@@ -252,7 +252,7 @@ class DHT22(object):
                 -0.00000199 * temperature**2 * percentHumidity**2)
 
         if((percentHumidity < 13) and (temperature >= 80.0) and (temperature <= 112.0)):
-            hi -= ((13.0 - percentHumidity) * 0.25) * sqrt((17.0 - fabs(temperature - 95.0)) * 0.05882);
+            hi -= ((13.0 - percentHumidity) * 0.25) * math.sqrt((17.0 - fabs(temperature - 95.0)) * 0.05882);
         elif((percentHumidity > 85.0) and (temperature >= 80.0) and (temperature <= 87.0)):
             hi += ((percentHumidity - 85.0) * 0.1) * ((87.0 - temperature) * 0.2);
             

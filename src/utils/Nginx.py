@@ -59,6 +59,7 @@ class NginxManager(object):
         except:
             text=_('Error opening the file ') + NGINX_CONF_PATH
             PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
+            return
         
         lines=file.readlines()
         if len(lines)>0:

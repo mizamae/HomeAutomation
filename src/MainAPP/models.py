@@ -153,7 +153,7 @@ class SiteSettings(SingletonModel):
                 # update /etc/nginx/sites-available/HomeAutomation.nginxconf
                 from utils.Nginx import NginxManager
                 NGINX=NginxManager()
-                NGINX.editConfigFile(key='#'+field,delimiter=' ',newValue=getattr(self,field),endChar=';')
+                NGINX.editConfigFile(key='#'+field,delimiter=' ',newValue=getattr(self,field),endChar=';') # yet does not work, it does not write the file
                 NGINX.reload()
                 # update allowed_hosts in settings.local.env
                 from .constants import LOCALENV_PATH
