@@ -232,17 +232,20 @@ class DHT22(object):
         self.sensor=DV
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2degC per minute
     
-    def convertCtoF(self,c):
+    @staticmethod
+    def convertCtoF(c):
       return c*1.8+32
-
-    def convertFtoC(self,f):
+    
+    @staticmethod
+    def convertFtoC(f):
       return (f-32)*0.55555
 
-    def computeHeatIndex(self,temperature, percentHumidity):
+    @classmethod
+    def computeHeatIndex(cls,temperature, percentHumidity):
     # Using both Rothfusz and Steadman's equations
     # http://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
 
-        temperature = self.convertCtoF(temperature);
+        temperature = cls.convertCtoF(temperature);
 
         hi = 0.5 * (temperature + 61.0 + ((temperature - 68.0) * 1.2) + (percentHumidity * 0.094));
 
@@ -256,7 +259,7 @@ class DHT22(object):
         elif((percentHumidity > 85.0) and (temperature >= 80.0) and (temperature <= 87.0)):
             hi += ((percentHumidity - 85.0) * 0.1) * ((87.0 - temperature) * 0.2);
             
-        return self.convertFtoC(hi)
+        return cls.convertFtoC(hi)
     
     def initial_calibration(self):
         ''' THIS CODE TRIES TO INITIALIZE THE VARIABLE self._lastTemp WITH A GOOD VALUE OF TEMPERATURE
