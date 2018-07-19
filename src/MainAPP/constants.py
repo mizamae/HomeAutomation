@@ -21,6 +21,7 @@ NGINX_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','sites-availab
 APACHE_HTPASSWD_PATH=os.path.abspath(os.path.join(os.sep,'etc','apache2','.htpasswd'))
 LOCALENV_PATH=os.path.join(PROJECT_PATH,'settings','local.env')
 WIFI_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd.conf'))
+INTERFACES_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','network','interfaces'))
 # APPLICATION DATABASES
 DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..','db.sqlite3')
 REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqlite3')

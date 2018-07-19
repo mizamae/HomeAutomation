@@ -44,23 +44,26 @@ CONFIGURE ACCESS POINT
 	sudo nano /etc/hostapd/hostapd.conf
 
 write:
-interface=wlan0
-#driver=rtl871xdrv #commented if using rasppi 3 built-in adapter
-ssid=Pi_AP
-country_code=ES
-hw_mode=g
-channel=6
-macaddr_acl=0
-auth_algs=1
-ignore_broadcast_ssid=0 # set this to 1 to hide the ssid
-wpa=2
-wpa_passphrase=Raspberry
-wpa_key_mgmt=WPA-PSK
-wpa_pairwise=CCMP
-wpa_group_rekey=86400
-ieee80211n=1
-wme_enabled=1
-    
+
+	interface=wlan0
+	#driver=rtl871xdrv #commented if using rasppi 3 built-in adapter
+	ssid=Pi_AP
+	country_code=ES
+	hw_mode=g
+	channel=6
+	macaddr_acl=0
+	auth_algs=1
+	ignore_broadcast_ssid=0 # set this to 1 to hide the ssid
+	wpa=2
+	wpa_passphrase=Raspberry
+	wpa_key_mgmt=WPA-PSK
+	wpa_pairwise=CCMP
+	wpa_group_rekey=86400
+	ieee80211n=1
+	wme_enabled=1
+
+Then execute edit hostapd default config
+
 	sudo nano /etc/default/hostapd
 
 Find the line #DAEMON_CONF="" and edit it so it says DAEMON_CONF="/etc/hostapd/hostapd.conf"

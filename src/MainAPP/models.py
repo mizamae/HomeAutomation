@@ -43,7 +43,15 @@ class SingletonModel(models.Model):
     
     def set_cache(self):
         cache.set(self.__class__.__name__, self)
-        
+    
+    @classmethod
+    def checkIfExists(cls):
+        try:
+            obj = cls.objects.get(pk=1)
+            return True
+        except cls.DoesNotExist:
+            return False
+    
     @classmethod
     def load(cls):
         if cache.get(cls.__name__) is None:
@@ -161,13 +169,36 @@ class SiteSettings(SingletonModel):
                                          newValue=getattr(self,'SITE_DNS')+','+getattr(self,'ETH_IP')+',127.0.0.1',
                                          endChar='\n',addKey=True)
                 # update /etc/network/interfaces
-                pass
+                from .constants import INTERFACES_CONF_PATH
+                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#ETH_IP',
+                                         newValue='    address '+getattr(self,'ETH_IP'),
+                                         endChar='\n',nextLine=True)
+                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#ETH_MASK',
+                                         newValue='    netmask '+getattr(self,'ETH_MASK'),
+                                         endChar='\n',nextLine=True)
+                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#ETH_GATE',
+                                         newValue='    gateway '+getattr(self,'ETH_GATE'),
+                                         endChar='\n',nextLine=True)
             if field in ['WIFI_IP','WIFI_MASK','WIFI_GATE']:
-                pass
                 # update /etc/network/interfaces
+                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#WIFI_IP',
+                                         newValue='    address '+getattr(self,'WIFI_IP'),
+                                         endChar='\n',nextLine=True)
+                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#WIFI_MASK',
+                                         newValue='    netmask '+getattr(self,'WIFI_MASK'),
+                                         endChar='\n',nextLine=True)
+                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#WIFI_GATE',
+                                         newValue='    gateway '+getattr(self,'WIFI_GATE'),
+                                         endChar='\n',nextLine=True)
             if field in ['WIFI_SSID','WIFI_PASSW']:
-                pass
                 # update /etc/hostapd/hostapd.conf
+                from .constants import WIFI_CONF_PATH
+                self.editKeyedFile(path=WIFI_CONF_PATH,key='#WIFI_SSID',
+                                         newValue='ssid='+getattr(self,'WIFI_SSID'),
+                                         endChar='\n',nextLine=True)
+                self.editKeyedFile(path=WIFI_CONF_PATH,key='#WIFI_PASSW',
+                                         newValue='wpa_passphrase='+getattr(self,'WIFI_PASSW'),
+                                         endChar='\n',nextLine=True)
             if field in ['PROXY_CREDENTIALS',]:
                 pass
                 # update /etc/nginx/sites-available/HomeAutomation.nginxconf
@@ -178,6 +209,46 @@ class SiteSettings(SingletonModel):
                     NGINX.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
                     NGINX.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
                     NGINX.reload()
+    
+    @staticmethod
+    def editKeyedFile(path,key,newValue,endChar=' ',nextLine=True):
+        '''
+            :param key: determines the text to look for the place to write 
+            :param nextLine: determines if once the key is found, it is the next line where it should write 
+        '''
+        try:
+            file = open(path, 'r') 
+        except:
+            text=_('Error opening the file ') + path
+            PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
+        
+        lines=file.readlines()
+        if len(lines)>0:
+            keyFound=False
+            for i,line in enumerate(lines):
+                if key in line or keyFound:
+                    if not nextLine:
+                        lines[i]=newValue+key+endChar
+                        keyFound=False
+                    elif keyFound:
+                        lines[i]=newValue+endChar
+                        keyFound=False
+                    else:
+                        keyFound=True
+        fileString=''.join(lines)
+        file.close()
+        from subprocess import Popen, PIPE
+        cmd="echo '"+fileString+"' | sudo tee "+ path
+        process = Popen(cmd, shell=True,
+                    stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
+        stdout, err = process.communicate()
+        if err=='':
+            text='The key '+key+' on the file ' + path+ ' has been modified to ' +newValue
+            severity=0
+        else:
+            text='Error updating key ' + key+ 'on the file ' + path+ 'Error: ' + err
+            severity=3
+        PublishEvent(Severity=severity,Text=text,Persistent=True,Code='EditFile-'+key)
     
     @staticmethod
     def editUniqueKeyedFile(path,key,delimiter,newValue,endChar='',addKey=True):
