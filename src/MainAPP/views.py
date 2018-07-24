@@ -186,7 +186,7 @@ def viewUserUbication(request):
         return render(request, 'trackUsers.html',{'Users':users})
 
 @login_required
-def thermostat(request):
+def thermostats(request):
     THERMs=models.Thermostats.objects.all()
     return render(request, 'thermostats.html',{'THERMs':THERMs})
 

@@ -856,7 +856,8 @@ class Thermostats(models.Model):
         verbose_name_plural = _('Thermostats')
      
     RITM = models.OneToOneField('MainAPP.RuleItems',help_text=str(_('The rule item that the thermostat is linked to.')),
-                           on_delete=models.CASCADE,related_name='ruleitem2thermostat',unique=True,null=False,blank=False,limit_choices_to={'Var2__UserEditable': True})
+                           on_delete=models.CASCADE,related_name='ruleitem2thermostat',unique=True,null=False,blank=False,
+                           limit_choices_to={'Var2__UserEditable': True})
     
     def __str__(self):
         return str(self.RITM.Rule) + ' - ' + str(self.RITM.Var1) + ' VS ' + str(self.RITM.Var2)
@@ -893,9 +894,17 @@ class RuleItems(models.Model):
     def __str__(self):
         return str(self.Rule) + '.' + str(self.Order)
     
+    def save(self):
+        super().save()
+        self.createThermostat()
+        
     def store2DB(self):
         self.full_clean()
-        super().save()
+        self.save()
+        
+    def createThermostat(self):
+        if (self.Var1.Units=='\u00baC' or self.Var2.Units=='\u00baC') and self.IsConstant==False and self.Var2.UserEditable:
+            THRMST,created=Thermostats.objects.get_or_create(RITM=self)
         
     def evaluate(self):
         import datetime
