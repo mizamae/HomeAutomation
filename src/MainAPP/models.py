@@ -141,13 +141,20 @@ class SiteSettings(SingletonModel):
                     self.VERSION_CODE=revision
                     self.save(update_fields=['VERSION_CODE',])
     
+    def addressInNetwork(self,ip2check):
+        import ipaddress
+        "Is an address from the ETH network"
+        CIDR=sum([bin(int(x)).count("1") for x in self.ETH_MASK.split(".")])
+        host = ipaddress.ip_interface(self.ETH_IP+'/'+str(CIDR))
+        return ipaddress.ip_address(ip2check) in host.network.hosts()
+
     def checkDeniableIPs(self):
         if self.PROXY_AUTO_DENYIP:
             from utils.combinedLog import CombinedLogParser
             updated=False
             instance=CombinedLogParser()
             for element in instance.getNginxAccessIPs(hours=24,codemin=400):
-                if element['trials']>=self.AUTODENY_ATTEMPTS:
+                if element['trials']>=self.AUTODENY_ATTEMPTS and not self.addressInNetwork(ip2check=element['IP']):
                     from utils.Nginx import NginxManager
                     NGINX=NginxManager()
                     if NGINX.blockIP(IP=element['IP'])!=-1:
