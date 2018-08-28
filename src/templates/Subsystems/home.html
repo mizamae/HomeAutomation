@@ -27,15 +27,19 @@
 	<div class="apps-row">
 		{% trans "HEATING" as app_name %}
 		{% trans "" as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_heating_subsystem app_name=app_name app_description=app_description app_url="Subsystems:heating" app_icon='site/img/thermometer.png' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_heating_subsystem app_name=app_name app_description=app_description app_url="Subsystems:generic" filter="heating" app_icon='site/img/thermometer.png' %}
 		
 		{% trans "GARDEN" as app_name %}
 		{% trans "" as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_garden_subsystem app_name=app_name app_description=app_description app_url="Subsystems:garden" app_icon='site/img/garden.png' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_garden_subsystem app_name=app_name app_description=app_description app_url="Subsystems:generic" filter="garden" subsystem="?system=heating" app_icon='site/img/garden.png' %}
 		
 		{% trans "ACCESS" as app_name %}
 		{% trans "" as app_description %}
-		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_access_subsystem app_name=app_name app_description=app_description app_url="Subsystems:access" app_icon='site/img/access.png' %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_access_subsystem app_name=app_name app_description=app_description app_url="Subsystems:generic" filter="access" subsystem="?system=heating" app_icon='site/img/access.png' %}
+		
+		{% trans "ELECTRIC" as app_name %}
+		{% trans "" as app_description %}
+		{% include "_appDashboard.html" with app_permission=perms.MainAPP.view_access_subsystem app_name=app_name app_description=app_description app_url="Subsystems:generic" filter="electric" subsystem="?system=heating" app_icon='site/img/electric2.png' %}
 		
 	</div>
 

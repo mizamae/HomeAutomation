@@ -5,7 +5,11 @@
 	<p class="lead">{{app_description}}</p>
 	<div class="col-xs-12" style="text-align: center;vertical-align:bottom;">
 	{% if app_permission %}
+		{% if filter %}
+		<a class="btn btn-primary-outline" href="{% url app_url filter %}" role="button">
+		{% else %}
 		<a class="btn btn-primary-outline" href="{% url app_url %}" role="button">
+		{% endif %}
 			{% if size %}
 			<img src="{% static app_icon %}" alt="Not found" height="{{size}}%" width="{{size}}%">
 			{% else %}
