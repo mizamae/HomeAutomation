@@ -1065,7 +1065,7 @@ class Devices(models.Model):
                         elif DG.isCronned():
                             scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
                                           'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':10})
-                            request_callback(self,DG,id,**kwargs)
+                            #request_callback(self,DG,id,**kwargs)
                             
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 
