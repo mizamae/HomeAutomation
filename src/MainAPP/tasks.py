@@ -91,10 +91,13 @@ def updateWeekDay():
 
 def DailyTask():
     from MainAPP.models import SiteSettings
+    from utils.GitHub import checkUpdates
+    from MainAPP.constants import GIT_PATH
     updateWeekDay()
     checkReportAvailability()
     SETTINGS=SiteSettings.load()
     SETTINGS.dailyTasks()
+    checkUpdates(root=GIT_PATH)
         
 def start_DailyTask():
     id='DailyTask'

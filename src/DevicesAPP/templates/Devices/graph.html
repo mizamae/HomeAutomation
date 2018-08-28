@@ -284,7 +284,16 @@
 			    			var item = document.createElement('li');
 		    				if (!stats_labels[k].includes('on_') && !stats_labels[k].includes('off_'))
 		    				{
-                                   if (stats_data[stats_labels[k]][j-1]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2));}
+                                   if (stats_data[stats_labels[k]][j-1]!=null)
+                                   {
+                                	   if (stats_data[stats_labels[k]][j-1]>=10)
+                                	   {
+                            				text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2));
+                                	   }else
+                                		{
+                                			text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(3));
+                                		}
+                                   }
                                    else {text=text.concat(stats_labels[k],' value: ',null)}
 		    					item.appendChild(document.createTextNode(text));
 		    					stats_list.appendChild(item);
@@ -770,11 +779,14 @@
                                 .series[this.series.index + 1],
                             errorPoint = errorSeries && errorSeries.points[this.index];
 
-                        var s = Highcharts.dateFormat(dateformat,new Date(this.x))+appendix+'<br/>' + this.series.name + "= " + this.y.toFixed(2);
-
-                        if (HourlyData || DailyData) {
-                            s += ' (Max.: ' + errorPoint.low.toFixed(2) + ' - Min.:' + errorPoint.high.toFixed(2) + ')';
-                            
+                        if (this.y>=10){var s = Highcharts.dateFormat(dateformat,new Date(this.x))+appendix+'<br/>' + this.series.name + "= " + this.y.toFixed(2);}
+                        else{var s = Highcharts.dateFormat(dateformat,new Date(this.x))+appendix+'<br/>' + this.series.name + "= " + this.y.toFixed(3);}
+                        if (HourlyData || DailyData)
+                        {
+                            if (errorPoint.low>=10){s += ' (Max.: ' + errorPoint.low.toFixed(2);}
+                            else{s += ' (Max.: ' + errorPoint.low.toFixed(3);}
+                            if (errorPoint.high>=10){s+=' - Min.:' + errorPoint.high.toFixed(2) + ')';}
+                            else{s+=' - Min.:' + errorPoint.high.toFixed(3) + ')';}
                         }
                         return s;
                     }

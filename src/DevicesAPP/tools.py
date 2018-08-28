@@ -19,6 +19,11 @@ class PollingScheduler(BackgroundScheduler):
             
     def stop(self):
         self.shutdown()
+    
+    def add_cronjob(self,cronexpression,**kwargs):
+        super().add_job(second=cronexpression['seconds'],minute=cronexpression['minutes'],hour=cronexpression['hours'],day=cronexpression['dayofmonth'],
+                        month=cronexpression['month'],day_of_week=cronexpression['dayofweek'],
+                        **kwargs)
         
     def remove_job(self,jobId):
         initialState=self.running

@@ -133,8 +133,7 @@ class SiteSettings(SingletonModel):
         if self.VERSION_AUTO_DETECT:
             from utils.GitHub import checkUpdates
             from .constants import GIT_PATH
-            checkUpdates(root=GIT_PATH)
-            if self.VERSION_AUTO_UPDATE:
+            if checkUpdates(root=GIT_PATH) and self.VERSION_AUTO_UPDATE:
                 from utils.GitHub import update
                 revision=update(root=GIT_PATH)
                 if revision!=None:

@@ -28,7 +28,7 @@ from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
                         DEVICES_CONFIG_FILE,IP_OFFSET,POLLING_SCHEDULER_URL,\
                         STOPPED_STATE,RUNNING_STATE,\
-                        DATAGRAMTYPE_CHOICES,DATATYPE_CHOICES,PLOTTYPE_CHOICES,LINE_PLOT,SPLINE_PLOT,DG_SYNCHRONOUS,\
+                        DATAGRAMTYPE_CHOICES,DATATYPE_CHOICES,PLOTTYPE_CHOICES,LINE_PLOT,SPLINE_PLOT,DG_ASYNCHRONOUS,DG_SYNCHRONOUS,DG_CRONNED,\
                         DTYPE_DIGITAL,DTYPE_INTEGER,\
                         GPIO_DIRECTION_CHOICES,GPIO_OUTPUT,GPIO_INPUT,GPIO_SENSOR,GPIOVALUE_CHOICES,GPIO_HIGH,GPIO_LOW,\
                         GPIO_IN_DBTABLE,GPIO_OUT_DBTABLE,DECIMAL_POSITIONS
@@ -941,6 +941,7 @@ class Devices(models.Model):
                                             choices=STATE_CHOICES, default=0)
     Sampletime=models.PositiveSmallIntegerField(help_text=str(_('Elapsed time between two polls to the device.')),default=600)
     RTsampletime=models.PositiveSmallIntegerField(help_text=str(_('Elapsed time between two polls to the device on realtime polling.')),default=60)
+    
     LastUpdated= models.DateTimeField(blank = True,null=True)
     NextUpdate= models.DateTimeField(blank = True,null=True)
     Connected = models.BooleanField(default=False)  # defines if the device is properly detected and transmits OK
@@ -1015,7 +1016,7 @@ class Devices(models.Model):
         jobIDs=[]
         if DGs != []:
             for DG in DGs:
-                if DG.isSynchronous():
+                if not DG.isAsynchronous():
                     jobIDs.append({'id':str(self.pk) + '-' + str(DG.pk),'DG':DG})
         return jobIDs
     
@@ -1034,8 +1035,10 @@ class Devices(models.Model):
                 for i,job in enumerate(jobIDs):
                     id=job['id']
                     DG=job['DG']
+                    
                     start_date=now+datetime.timedelta(seconds=i*offset+self.Sampletime/2)
                     JOB=scheduler.getJobInStore(jobId=id)
+                    
                     
                     if JOB!=None:
                         scheduler.remove_job(id)
@@ -1043,15 +1046,27 @@ class Devices(models.Model):
                     callback="DevicesAPP.models:request_callback"
                     if self.DVT.Connection==LOCAL_CONNECTION: 
                         kwargs={'datagramId':DG.Identifier}
-                        scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
+                        if DG.isSynchronous():
+                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
-                    elif self.DVT.Connection==REMOTE_TCP_CONNECTION:   
-                        scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
+                        else:
+                            pass
+                    elif self.DVT.Connection==REMOTE_TCP_CONNECTION:  
+                        if DG.isSynchronous(): 
+                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
+                        else:
+                            pass
                     elif self.DVT.Connection==MEMORY_CONNECTION:
                         kwargs={'datagramId':DG.Identifier}
-                        scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
+                        if DG.isSynchronous():
+                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
+                        elif DG.isCronned():
+                            scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
+                                          'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':10})
+                            request_callback(self,DG,id,**kwargs)
+                            
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 
                         text=str(_('Polling for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
@@ -1736,6 +1751,76 @@ class DatagramItems(models.Model):
             kk=kk[1:]
             return kk
     
+class CronExpressions(models.Model):
+    
+    class Meta:
+        verbose_name = _('Cron expression')
+        verbose_name_plural = _('Cron expressions')
+    
+    Identifier = models.CharField(max_length=50,unique=True)
+    
+    DayOfWeek = models.CharField(max_length=20,blank=True,default='?',
+                           help_text=str(_('Days in the week that it would trigger. '
+                                             ' "1-3" would trigger it on Mon., Tue. and Wed. of the week,'
+                                             ' "1,3" would trigger it only on Mon. and Wed.,'
+                                             ' "*/2" would trigger every two days,'
+                                             ' leaving it blank or setting an "*" would trigger it every day.')))
+    Month = models.CharField(max_length=20,blank=True,default='*',
+                             help_text=str(_('Months that it would trigger. '
+                                             ' "1-3" would trigger it on Jan., Febr. and March,'
+                                             ' "1,3" would trigger it only on Jan. and March,'
+                                             ' "*/2" would trigger every two months,'
+                                             ' leaving it blank or setting an "*" would trigger it every month.')))
+    DayOfMonth = models.CharField(max_length=20,blank=True,default='*',
+                           help_text=str(_('Days that it would trigger. '
+                                             ' "1-3" would trigger it on the 1st, 2nd and 3rd day of the month,'
+                                             ' "1,3" would trigger it only on 1st and 3rd,'
+                                             ' "*/2" would trigger every two days,'
+                                             ' leaving it blank or setting an "*" would trigger it every day.')))
+    Hours = models.CharField(max_length=20,blank=True,default='0',
+                            help_text=str(_('Hours that it would trigger. '
+                                             ' "1-3" would trigger it at 1, 2 and 3 a.m.,'
+                                             ' "1,3" would trigger it only at 1 and 3 p.m.,'
+                                             ' "*/2" would trigger every two hours,'
+                                             ' leaving it blank or setting an "*" would trigger it every hour.')))
+    Minutes = models.CharField(max_length=20,blank=True,default='0',
+                            help_text=str(_('Minutes that it would trigger. '
+                                             ' "1-3" would trigger it at minutes 1, 2 and 3,'
+                                             ' "1,3" would trigger it only at minutes 1 and 3 ,'
+                                             ' "*/2" would trigger every two minutes,'
+                                             ' leaving it blank or setting an "*" would trigger it every minute.')))
+    Seconds = models.CharField(max_length=20,blank=True,default='0',
+                            help_text=str(_('Seconds that it would trigger. '
+                                             ' "1-3" would trigger it at seconds 1, 2 and 3,'
+                                             ' "1,3" would trigger it only at seconds 1 and 3 ,'
+                                             ' "*/2" would trigger every two seconds,'
+                                             ' Setting an "*" would trigger it every second.')))
+        
+    def __str__(self):
+        return self.Identifier
+    
+    def clean(self):
+        super().clean()
+        if self.Month=='':
+            self.Month='*'
+        if self.DayOfMonth=='':
+            self.DayOfMonth='*'
+        if self.DayOfWeek=='':
+            self.DayOfWeek='*'
+        if self.Hours=='':
+            self.Hours='*'
+        if self.Minutes=='':
+            self.Minutes='*'
+        if self.Seconds=='':
+            self.Minute='0'
+        
+    def store2DB(self):
+        self.full_clean()
+        super().save() 
+    
+    def getCronExpression(self):
+        return {'seconds':self.Seconds,'minutes':self.Minutes,'hours':self.Hours,'dayofmonth':self.DayOfMonth,'month':self.Month,'dayofweek':self.DayOfWeek}
+        
 class Datagrams(models.Model):
     
     class Meta:
@@ -1746,21 +1831,26 @@ class Datagrams(models.Model):
     Identifier = models.CharField(max_length=20)
     Code= models.PositiveSmallIntegerField(help_text='Identifier byte-type code')
     Type= models.PositiveSmallIntegerField(choices=DATAGRAMTYPE_CHOICES)
+    Cron = models.ForeignKey(CronExpressions,help_text=str(_('The cron expression that controls the polling. Only applies to cronned datagrams.')),
+                            on_delete=models.CASCADE,related_name='datagrams',null=True,blank=True)
     DVT = models.ForeignKey(DeviceTypes,on_delete=models.CASCADE)
     ITMs = models.ManyToManyField(DatagramItems, through='ItemOrdering')
     
     def __str__(self):
         return self.Identifier
-    
-    def clean(self):
-        pass
         
     def store2DB(self):
         self.full_clean()
         super().save() 
+    
+    def isAsynchronous(self):
+        return self.Type==DG_ASYNCHRONOUS
         
     def isSynchronous(self):
-        return int(self.Type==DG_SYNCHRONOUS)
+        return self.Type==DG_SYNCHRONOUS
+    
+    def isCronned(self):
+        return self.Type==DG_CRONNED
     
     def getDBTypes(self):
         types=[]

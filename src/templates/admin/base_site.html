@@ -13,5 +13,10 @@
 
 {% block extrahead %}{{ block.super }}
   <link href="{% static 'site/css/main.css' %}" rel="stylesheet">
+  <script>
+  $(document).ready(function() {
+    					$('.has-popover').popover({'trigger':'hover'});
+						});
+  </script>
 {% endblock %}
 

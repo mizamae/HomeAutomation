@@ -12,9 +12,9 @@ from django.utils.translation import ugettext_lazy as _
 from MainAPP.admin import SubsystemsInline
 
 from .constants import APP_TEMPLATE_NAMESPACE,GPIO_SENSOR
-from DevicesAPP.models import DeviceTypes,DatagramItems,Datagrams,ItemOrdering,DeviceCommands,Devices,Beacons,\
+from DevicesAPP.models import DeviceTypes,CronExpressions,DatagramItems,Datagrams,ItemOrdering,DeviceCommands,Devices,Beacons,\
                             MasterGPIOs,MainDeviceVars
-from DevicesAPP.forms import DeviceTypesForm, ItemOrderingForm,DevicesForm,BeaconsForm,MasterGPIOsForm,MainDeviceVarsForm
+from DevicesAPP.forms import DeviceTypesForm, CronExpressionsForm,ItemOrderingForm,DatagramsForm,DevicesForm,BeaconsForm,MasterGPIOsForm,MainDeviceVarsForm
 
 class MainDeviceVarsAdmin(admin.ModelAdmin):
     def printValue(self,instance):
@@ -93,9 +93,11 @@ class ItemOrderingInline(admin.TabularInline):
     
 class DatagramsAdmin(admin.ModelAdmin):
     #filter_horizontal = ('AnItems','DgItems')
-    list_display = ('pk','Type','Code','Identifier')
+    list_display = ('pk','Type','DVT','Identifier')
     ordering=('Type','Code')
     inlines = (ItemOrderingInline,)
+    
+    form=DatagramsForm
     
     def save_related(self, request, form, formsets, change):
         super(DatagramsAdmin, self).save_related(request, form, formsets, change)
@@ -105,7 +107,12 @@ class DatagramsAdmin(admin.ModelAdmin):
             for DV in DVs:
                 DV.setCustomLabels()
             
-
+class CronExpressionsAdmin(admin.ModelAdmin):
+    def printExpression(self,instance):
+        return str(instance.getCronExpression())
+    
+    list_display = ('Identifier','printExpression')
+    form=CronExpressionsForm
     
 class DeviceCommandsAdmin(admin.ModelAdmin):
     list_display = ('DVT','Identifier','HumanTag')
@@ -119,6 +126,7 @@ admin.site.register(MainDeviceVars,MainDeviceVarsAdmin)
 admin.site.register(MasterGPIOs,MasterGPIOsAdmin)
 admin.site.register(DeviceTypes,DeviceTypeAdmin)
 admin.site.register(Devices,DevicesAdmin)
+admin.site.register(CronExpressions,CronExpressionsAdmin)
 admin.site.register(DatagramItems,DatagramItemModelAdmin)
 admin.site.register(Datagrams,DatagramsAdmin)
 admin.site.register(DeviceCommands,DeviceCommandsAdmin)

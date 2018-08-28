@@ -334,6 +334,59 @@ class DevicesForm(ModelForm):
         
     class Media:
         js = ('DeviceFormAnimations.js',)
+
+class CronExpressionsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        instance=kwargs.get('instance',None)
+        super(CronExpressionsForm, self).__init__(*args, **kwargs)
+        # If you pass FormHelper constructor a form instance
+        # It builds a default layout with all its fields
+        self.helper = FormHelper(self)
+        self.helper.labels_uppercase = True
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
+#         self.helper.form_id = 'id-DeviceForm'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method = 'post'
+        
+        self.fields['Identifier'].label = _("Description")
+        self.fields['DayOfWeek'].label = _("Set the days of the week [1=MON, 7=SUN, ?=Ignore]")
+        self.fields['Month'].label = _("Set the months [1=JAN, 12=DEC, *=ALL]")
+        self.fields['DayOfMonth'].label = _("Set the days of the month [1-31, *=ALL]")
+        self.fields['Hours'].label = _("Set the hours of the day [0-23, *=ALL]")
+        self.fields['Minutes'].label = _("Set the minutes of the hour [0-59, *=ALL]")
+        self.fields['Seconds'].label = _("Set the seconds of the minute [0-59, *=ALL]")
+        
+        for field in self.fields:
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update({'class':'input-sm has-popover', 'data-content':help_text, 'data-placement':'right', 'data-container':'body'})
+            else:
+                self.fields[field].widget.attrs.update({'class':'input-sm '})
+                
+        self.helper.layout = Layout(
+            Field('Identifier'),
+            Field('DayOfWeek'),
+            Field('Month'),
+            Field('DayOfMonth'),
+            Field('Hours'),
+            Field('Minutes'),
+            Field('Seconds'),
+            Submit('submit', _('Submit'),css_class='btn-primary center-block'),
+            )
+        
+    class Meta:
+        model = models.CronExpressions
+        fields=['Identifier','DayOfWeek','Month','DayOfMonth','Hours','Minutes','Seconds']
+
+class DatagramsForm(ModelForm):
+    class Meta:
+        model = models.Datagrams
+        exclude=[]
+        
+    class Media:
+        js = ('CronFormAnimations.js',)
         
 class DatagramCustomLabelsForm(forms.Form):
     def __init__(self, *args, **kwargs):

@@ -71,9 +71,11 @@ STATE_CHOICES=(
 
 DG_SYNCHRONOUS=0
 DG_ASYNCHRONOUS=1
+DG_CRONNED=2
 DATAGRAMTYPE_CHOICES=(
-        (DG_SYNCHRONOUS,'Synchronous'),
-        (DG_ASYNCHRONOUS,'Asynchronous')
+        (DG_SYNCHRONOUS,_('Synchronous')),
+        (DG_ASYNCHRONOUS,_('Asynchronous')),
+        (DG_CRONNED,_('Cronned'))
     )
 
 DTYPE_INTEGER='integer'
@@ -106,6 +108,9 @@ DEVICES_SCAN_IP4BYTE='254'           # LAST BYTE OF IP ADDRESS FOR DEVICES IN SC
 DEVICES_CONFIG_FILE='Conf.xml'
 IP_OFFSET=1 # establishes the offset for IP addresses and DeviceCode. The IP of the first device will be XXX.XXX.XXX.(IP_OFFSET+1)
 # END
+
+# ENVIRON FILE
+ENVIRON_FILE=os.path.join(DEVICESAPP_ROOT,'..','MainAPP','settings','local.env')
 
 # CONSTANTS FOR THE TESTS
 FORM_FIRST_RENDER_MSG='form is first rendered'
