@@ -72,11 +72,19 @@ def update(root):
                     return
             
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
-            import os
-            os.system("python ../manage.py collectstatic --noinput")
+
+            process = Popen("python src/manage.py collectstatic --noinput", cwd=root, shell=True,
+                        stdout=PIPE, stderr=PIPE,universal_newlines=True)
+            stdout, err = process.communicate()
+            
+            if ' static files copied to' in stdout:
+                PublishEvent(Severity=0,Text=_("Static files copied"),Persistent=False,Code='MainAPPViews-9')
+            elif err:
+                PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
+                
         return revision
     else:
-        PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False,Code='MainAPPViews-9')
+        PublishEvent(Severity=2,Text=_("Problem occurred while updating program."),Persistent=False,Code='MainAPPViews-10')
         
         err = re.search(r"(?P<error>error:[^:]*files\swould\sbe\soverwritten"
                       r"\sby\smerge:(?:\n\t[^\n]+)*)", stderr)
