@@ -1,7 +1,7 @@
 var rows = document.getElementsByClassName("row");
 var i;
-var fieldIO,fieldDeviceCode,fieldType,fieldDeviceIP;
-var rowfieldIO,rowfieldDeviceCode,rowfieldType,rowfieldDeviceIP;
+var fieldIO,fieldDeviceCode,fieldType,fieldDeviceIP,fieldSampletime,fieldRTSampletime;
+var rowfieldIO,rowfieldDeviceCode,rowfieldType,rowfieldDeviceIP,rowfieldSampletime,rowfieldRTSampletime;
 // this function is executed on load
 $(function()
 {
@@ -35,6 +35,18 @@ $(function()
 		    	rowfieldDeviceIP=rows[i];
 		    	rowfieldDeviceIP.style.display = 'none';
 	    	}
+		    if (rows[i].getElementsByClassName("control-group  field-Sampletime").length>0)
+	    	{
+		    	fieldSampletime=document.getElementById("id_Sampletime");
+		    	rowfieldSampletime=rows[i];
+		    	rowfieldSampletime.style.display = 'block';
+	    	}
+		    if (rows[i].getElementsByClassName("control-group  field-RTsampletime").length>0)
+	    	{
+		    	fieldRTsampletime=document.getElementById("id_RTsampletime");
+		    	rowfieldRTSampletime=rows[i];
+		    	rowfieldRTSampletime.style.display = 'block';
+	    	}
 		    
 		}
 	}else
@@ -55,8 +67,8 @@ $(function()
 		fieldDeviceIP.readOnly = true;
 		rowfieldDeviceIP=document.getElementById("div_id_IP");
 		rowfieldDeviceIP.style.display = 'none';
-		TypeChange();
 	}
+	TypeChange();
 });
 
 function TypeChange()

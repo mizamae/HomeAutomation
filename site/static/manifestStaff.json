@@ -1,6 +1,7 @@
 {
   "short_name": "DIY4dot0 App",
   "name": "DIY4dot0 Application",
+  "gcm_sender_id": "103953800507",
   "icons": [
     {
       "src": "/static/site/ico/smart_home.jpg",
