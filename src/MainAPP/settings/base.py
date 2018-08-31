@@ -93,9 +93,17 @@ INSTALLED_APPS = (
     'DevicesAPP',
     'ReportingAPP',
     'EventsAPP',
-    #'TracksAPP',
+
     
 )
+
+ 
+ 
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY_PATH": join(STATICFILES_DIRS[0],'public_key.txt'),
+    "VAPID_PRIVATE_KEY_PATH":join(dirname(__file__),'private_key.txt'),
+    "VAPID_ADMIN_EMAIL": "mizamae@gmail.com"
+}
 
 
 MIDDLEWARE_CLASSES = (

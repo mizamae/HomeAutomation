@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views import generic
+from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
 
 from . import forms
 from . import models
@@ -61,3 +62,6 @@ class EditProfile(LoginRequiredMixin, generic.TemplateView):
         profile.save()
         messages.success(request, "Profile details saved!")
         return redirect("profiles:show_self")
+
+
+    

@@ -73,6 +73,9 @@
           <ul class="nav navbar-nav navbar-right">
             {% block navbar-right %}
             	{% if user.is_authenticated %}
+            	<button disabled class="js-push-btn btn btn-default">
+			        Enable Push Messaging
+			      </button>
             	<div class="btn-group nav navbar-nav language menu">
 				  <button class="btn btn-outline-secondary dropdown-toggle btn-link" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				    {% get_language_info for LANGUAGE_CODE as lang %}
@@ -186,6 +189,28 @@
     {% endblock scripts %}
   </body>
 </html>
+
+{% block motification_scripts %}
+<script>
+    var serviceworker = "{% static 'sw.js' %}";
+    var notification_page="{% url 'notifications' %}";
+    var applicationServerPublicKey;
+    $.ajax({
+	    url: "{% static 'public_key.txt' %}",
+	    type: 'get',
+	    processData: false,
+	    success: function( data, textStatus, jQxhr ){
+	        console.log("Got the public key " + data);
+	        applicationServerPublicKey=data;
+	    },
+	    error: function( jqXhr, textStatus, errorThrown ){
+	        console.log( errorThrown );
+	    }
+	});
+    
+</script>
+<script src="{% static 'notifications.js' %}"></script>
+{% endblock motification_scripts %}
 
 {% block system_scripts %}
 

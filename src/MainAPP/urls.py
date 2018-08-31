@@ -63,6 +63,7 @@ urlpatterns = [
     #url(r'^test/$', views.SoftReset,name='test'),
     
     url(r'^', include(accounts.urls, namespace='accounts')),
+    url(r'^set_notifications/$', views.Notifications, name='notifications'),
     
 ]
 

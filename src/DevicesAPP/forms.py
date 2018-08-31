@@ -573,16 +573,16 @@ class DeviceGraphs(forms.Form):
     
     def clean_fromDate(self):
         data = self.cleaned_data['fromDate']
-        now = timezone.localtime(timezone.now())
-        if (now<data):
-            data=now-datetime.timedelta(days=1)
+#         now = timezone.localtime(timezone.now())
+#         if (now<data):
+#             data=now-datetime.timedelta(days=1)
         return data
         
     def clean_toDate(self):
         data = self.cleaned_data['toDate']
-        now = timezone.localtime(timezone.now())
-        if (now<data):
-            data=now
+#         now = timezone.localtime(timezone.now())
+#         if (now<data):
+#             data=now
         return data   
 
 class BeaconsForm(ModelForm):

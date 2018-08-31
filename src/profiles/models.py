@@ -49,6 +49,9 @@ class BaseProfile(models.Model):
     Accuracy = models.FloatField(_("Last known position accuracy"),null=True,blank=True)
     LastUpdated= models.DateTimeField(help_text='Datetime of the last data',blank = True,null=True)
     
+    notifications = models.BooleanField(_("Activate web-push notifications"), default=False)
+    subscription_token = models.CharField(_("Web-push token"), max_length=500, blank=True, null=True)
+    
     def updateLocationData(self,Latitude,Longitude,Accuracy):
         if self.tracking:
             timestamp=timezone.now()
@@ -60,7 +63,10 @@ class BaseProfile(models.Model):
             timestamp=timezone.now()
             self.insertTrackRegister(TimeStamp=timestamp,Latitude=Latitude,Longitude=Longitude,Accuracy=Accuracy)
     
-    
+    def set_subscriptionToken(self,token):
+        self.subscription_token=token
+        self.save()
+        
     @staticmethod
     def createRegistersDBTable():
         import utils.BBDD
