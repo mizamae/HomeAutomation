@@ -268,7 +268,7 @@ def gdrive_authentication(request):
 
 def Notifications(request):
     if request.method == 'POST': # the form has been submited
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode('utf8'))
         user=request.user
         firstSubscription=user.profile.subscription_token==""
         
