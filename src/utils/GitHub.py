@@ -75,7 +75,7 @@ def update(root):
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
             stdout, err = process.communicate()
             
-            if ' static files copied to' in stdout:
+            if 'static files copied to' in stdout and stdout[0]!='0':
                 PublishEvent(Severity=0,Text=_("Static files copied"),Persistent=False,Code='MainAPPViews-9')
             elif err:
                 PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
