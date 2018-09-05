@@ -6,13 +6,13 @@
     <td class="hidden-sm hidden-xs">{{ row.DVT.Code }}</td>
    	{% if row.State == 0 %}
   	<td bgcolor= "#FF0000">{% trans "STOPPED" %}</td>
-       {% else %}
+    {% else %}
         {% if row.Error == '' %}
    	<td bgcolor="#00FF00">{% trans "RUNNING" %}</td>
         {% else %}
    	<td bgcolor="#FACC2E">{% trans "RUNNING" %} <b><font color="red">{% trans " Error: " %} {{ row.Error }}</font></b></td>
         {% endif %}
-       {% endif %}
+    {% endif %}
    <td>
        {% if perms.DevicesAPP.change_state_devices %}
            <a class="btn btn-toggle" style="width:100%;" href="{% url 'Devices:toggle' 'devices' row.pk %}" role="button">

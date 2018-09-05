@@ -63,13 +63,13 @@
                 // Handle different actions
                 if (payload.action == "create") {
                     // Create the new GPIO model
-					add_GPIO(payload.pk,payload.data.label,payload.data.value,payload.data.direction)
+					add_GPIO(payload.pk,payload.data.Label,payload.data.Value,payload.data.Direction)
                     console.log("New IO model created");
                 } else if (payload.action == "update") {
-					update_GPIO(payload.pk,payload.data.value,payload.data.label)
-                    console.log("Port ["+ String(payload.pk) + "] has changed to "+ payload.data.value);
+					update_GPIO(payload.pk,payload.data.Value,payload.data.Label,payload.data.Direction)
+                    console.log("Port ["+ String(payload.pk) + "] has changed to "+ payload.data.Value);
                 } else if (payload.action == "delete") {
-					delete_GPIO(parseInt(payload.pk))
+					delete_GPIO(parseInt(payload.pk),payload.data.Direction)
                 	console.log("IO model deleted");
                 } else {
                     console.log("Unknown action " + payload.action);
@@ -94,7 +94,9 @@
         });
 
 		function add_GPIO(pin,label,value,direction){
-			var table=document.getElementById('GPIOs_table');
+			if (direction==0){var table=document.getElementById('OUTsTable');}
+			else if (direction==1){var table=document.getElementById('INsTable');}
+			else {var table=document.getElementById('SENSORsTable');}
 			var row = table.insertRow(-1);
 			var cell1 = row.insertCell(0);
 			var cell2 = row.insertCell(1);
@@ -122,7 +124,10 @@
 		}
 		
 		function toggle_GPIO(pin) {
-			var table=document.getElementById('GPIOs_table');
+
+			var table=document.getElementById('OUTsTable');
+
+			
             var rownum=-1;
 			for (var i = 0, row; row = table.rows[i]; i++) {
 				if (parseInt(row.cells[0].innerHTML)==pin)
@@ -144,8 +149,11 @@
             }
 		}
 		
-		function update_GPIO(pin,value,label){
-			var table=document.getElementById('GPIOs_table');
+		function update_GPIO(pin,value,label,direction){
+			if (direction==0){var table=document.getElementById('OUTsTable');}
+			else if (direction==1){var table=document.getElementById('INsTable');}
+			else {return;}
+			
 			var rownum=-1;
 			for (var i = 0, row; row = table.rows[i]; i++) {
 				if (parseInt(row.cells[0].innerHTML)==pin)
@@ -162,8 +170,11 @@
 			}
 		}
 		
-		function delete_GPIO(pin) {
-            var table=document.getElementById('GPIOs_table');
+		function delete_GPIO(pin,direction) {
+			if (direction==0){var table=document.getElementById('OUTsTable');}
+			else if (direction==1){var table=document.getElementById('INsTable');}
+			else {var table=document.getElementById('SENSORsTable');}
+			
 			for (var i = 0, row; row = table.rows[i]; i++) {
 				if (parseInt(row.cells[0].innerHTML)==pin)
 				{
