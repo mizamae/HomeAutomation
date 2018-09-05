@@ -304,6 +304,13 @@ def DBBackup(request):
 @user_passes_test(lambda u: u.is_superuser)
 def SoftReset(request):
     import os
+    
+    os.system("sudo systemctl restart gunicorn")
+    PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False,Code='MainAPPViews-0')
+    id='Restarting-daphne worker'
+    from utils.asynchronous_tasks import BackgroundTimer
+    Timer=BackgroundTimer(interval=15,threadName=id,callable=os.system,kwargs={'command':"sudo systemctl restart daphne worker"})
+    
     from .constants import SOCKETS_PATH
     removed=False
     for socket in SOCKETS_PATH:
@@ -312,12 +319,7 @@ def SoftReset(request):
             removed=True
     if removed:
         PublishEvent(Severity=0,Text=_("Sockets removed"),Persistent=False,Code='MainAPPViews-Socket')
-    
-    os.system("sudo systemctl restart gunicorn")
-    PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False,Code='MainAPPViews-0')
-    id='Restarting-daphne worker'
-    from utils.asynchronous_tasks import BackgroundTimer
-    Timer=BackgroundTimer(interval=15,threadName=id,callable=os.system,kwargs={'command':"sudo systemctl restart daphne worker"})
+        
     return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
     
 @user_passes_test(lambda u: u.is_superuser)
