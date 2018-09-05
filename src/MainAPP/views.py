@@ -309,13 +309,15 @@ def SoftReset(request):
     PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False,Code='MainAPPViews-0')
     id='Restarting-daphne worker'
     from utils.asynchronous_tasks import BackgroundTimer
-    Timer=BackgroundTimer(interval=15,threadName=id,callable=os.system,kwargs={'command':"sudo systemctl restart daphne worker"})
+    Timer=[]
+    Timer.append(BackgroundTimer(interval=15,threadName=id,callable=os.system,kwargs={'command':"sudo systemctl restart daphne worker"}))
     
     from .constants import SOCKETS_PATH
     removed=False
     for socket in SOCKETS_PATH:
         if os.path.exists(socket):
-            os.remove(socket)
+            id='Delete-socket-'+socket
+            Timer.append(BackgroundTimer(interval=16,threadName=id,callable=os.remove,kwargs={'path':socket}))
             removed=True
     if removed:
         PublishEvent(Severity=0,Text=_("Sockets removed"),Persistent=False,Code='MainAPPViews-Socket')
