@@ -327,10 +327,6 @@ def GitUpdate(request):
         if ".git" in dirs:
             from utils.GitHub import update
             revision=update(root)
-            from utils.web_notifications import NotificationManager
-            timestamp=timezone.now()
-            NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0',timestamp=timestamp, tag='notifications-gitupdate',
-                          message_body="Se ha actualizado las version al codigo " + revision,url='http://mizamae2.ddns.net:8075')
             if revision!=None:
                 SETTINGS=models.SiteSettings.load()
                 SETTINGS.VERSION_CODE=revision
