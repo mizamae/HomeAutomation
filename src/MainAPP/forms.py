@@ -265,8 +265,8 @@ class AutomationRuleForm(ModelForm):
                                   label=_('Select the device to send the order to'),required = False)
     Order=forms.ModelChoiceField(queryset=DevicesAPP.models.DeviceCommands.objects.all(),
                                  label=_('Select the order to send'),required = False)
-    NotificationTrue=forms.NullBooleanField(label=_('Send notification when the rule evaluates to True'))
-    NotificationFalse=forms.NullBooleanField(label=_('Send notification when the rule evaluates to False'))
+    NotificationTrue=forms.BooleanField(label=_('Send notification when the rule evaluates to True'))
+    NotificationFalse=forms.BooleanField(label=_('Send notification when the rule evaluates to False'))
     
     def __init__(self, *args, **kwargs):
         initial_arguments = kwargs.get('initial', None)

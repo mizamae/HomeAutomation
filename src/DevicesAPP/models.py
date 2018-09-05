@@ -449,6 +449,9 @@ class MasterGPIOs(models.Model):
     Direction = models.PositiveSmallIntegerField(choices=GPIO_DIRECTION_CHOICES,help_text=str(_('Choose wether the GPIO is to be an output, an input or a sensor interface.')))
     Value = models.PositiveSmallIntegerField(default=0,choices=GPIOVALUE_CHOICES,help_text=str(_('Set the value of the GPIO (only applies to outputs)')))
     
+    NotificationTrue=models.BooleanField(default=False,help_text=str(_('Send notification when the rule evaluates to True')))
+    NotificationFalse=models.BooleanField(default=False,help_text=str(_('Send notification when the rule evaluates to False')))
+    
     Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='gpios')
     
     def __init__(self, *args, **kwargs):
@@ -543,8 +546,11 @@ class MasterGPIOs(models.Model):
                     self.insertRegister(TimeStamp=now-datetime.timedelta(seconds=1))
                 
             if newValue!=self.Value or force:
-                text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
-                PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0')
+                if not force:
+                    webpush=(self.NotificationFalse and newValue==False) or (self.NotificationTrue and newValue==True)
+                    text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
+                    PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0',Webpush=webpush)
+                    
                 self.Value=newValue
                 self.save(update_fields=['Value'])
             

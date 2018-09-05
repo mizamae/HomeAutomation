@@ -304,6 +304,15 @@ def DBBackup(request):
 @user_passes_test(lambda u: u.is_superuser)
 def SoftReset(request):
     import os
+    from .constants import SOCKETS_PATH
+    removed=False
+    for socket in SOCKETS_PATH:
+        if os.path.exists(socket):
+            os.remove(socket)
+            removed=True
+    if removed:
+        PublishEvent(Severity=0,Text=_("Sockets removed"),Persistent=False,Code='MainAPPViews-Socket')
+    
     os.system("sudo systemctl restart gunicorn")
     PublishEvent(Severity=0,Text=_("Gunicorn processes restarted"),Persistent=False,Code='MainAPPViews-0')
     id='Restarting-daphne worker'

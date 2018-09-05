@@ -11,7 +11,7 @@ def ws_add_events(message):
 def ws_disconnect_events(message):
     Group("Event-values").discard(message.reply_channel)
     
-def PublishEvent(Severity,Code,Text,Persistent=False):
+def PublishEvent(Severity,Code,Text,Persistent=False,Webpush=False):
     import json
     from tzlocal import get_localzone
     from django.utils import timezone
@@ -19,6 +19,15 @@ def PublishEvent(Severity,Code,Text,Persistent=False):
     local_tz=get_localzone()
     Timestamp=timezone.now()
     localdate = localizeTimestamp(Timestamp.replace(tzinfo=None))
+    if Webpush:
+        try:
+            from utils.web_notifications import NotificationManager
+            NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Events',
+                                              tag='notifications-'+Code,message_body=Text,
+                                              url='http://mizamae2.ddns.net:8075')
+        except:
+            pass
+        
     if Persistent:
         EVT=Events(Timestamp=Timestamp,Severity=Severity,Code=Code,Text=Text)
         EVT.store2DB()

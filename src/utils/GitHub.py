@@ -20,7 +20,7 @@ def checkUpdates(root):
         stdout, err = process.communicate()
         revision = (stdout[:7] if stdout and
                     re.search(r"(?i)[0-9a-f]{32}", stdout) else "-")
-        PublishEvent(Severity=10,Text=_("There is a new version to download. Version code: " + revision),Persistent=True,Code='GitHub-1')
+        PublishEvent(Severity=10,Text=_("There is a new version to download. Version code: " + revision),Persistent=True,Code='GitHub-1',Webpush=True)
         return True
     return False
 
@@ -71,8 +71,6 @@ def update(root):
                     logger.debug('MIGRATIONS APPLICATION ERROR: ' + str(err))
                     return
             
-            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
-
             process = Popen("python3 src/manage.py collectstatic --noinput", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
             stdout, err = process.communicate()
@@ -81,6 +79,8 @@ def update(root):
                 PublishEvent(Severity=0,Text=_("Static files copied"),Persistent=False,Code='MainAPPViews-9')
             elif err:
                 PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
+            
+            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
                 
         return revision
     else:

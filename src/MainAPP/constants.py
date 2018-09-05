@@ -16,6 +16,9 @@ now=datetime.datetime.now()
 # APPLICATION PATHS
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 GIT_PATH = os.path.join(PROJECT_PATH,'..','..')
+SOCKETS_PATH = [os.path.join(PROJECT_PATH,'..','..','..','run','HomeAutomation_RT.sock'),
+                os.path.join(PROJECT_PATH,'..','..','..','run','HomeAutomation_RT.sock.lock'),
+                os.path.join(PROJECT_PATH,'..','..','..','run','HomeAutomation.sock')]
 BLOCK_IPS_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','blockips.conf'))
 NGINX_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','sites-available','HomeAutomation.nginxconf'))
 APACHE_HTPASSWD_PATH=os.path.abspath(os.path.join(os.sep,'etc','apache2','.htpasswd'))

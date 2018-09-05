@@ -136,6 +136,8 @@ class MasterGPIOsForm(ModelForm):
         self.fields['Label'].label = _("Enter a label for the IO")
         self.fields['Direction'].label = _("Set the direction of the IO")
         self.fields['Value'].label = _("Set the current value for the IO")
+        self.fields['NotificationTrue'].label = _("Send a notification when value changes to True")
+        self.fields['NotificationFalse'].label = _("Send a notification when value changes to False")
         
         for field in self.fields:
             help_text = self.fields[field].help_text
@@ -150,6 +152,8 @@ class MasterGPIOsForm(ModelForm):
             Field('Label'),
             Field('Direction'),
             Field('Value'),
+            Field('NotificationTrue'),
+            Field('NotificationFalse'),
             buttons
             )
     
@@ -160,7 +164,7 @@ class MasterGPIOsForm(ModelForm):
     
     class Meta:
         model = models.MasterGPIOs
-        fields=['Pin','Label','Direction','Value']
+        fields=['Pin','Label','Direction','Value','NotificationTrue','NotificationFalse']
                                        
 class DeviceTypesForm(ModelForm):
     def __init__(self, *args, **kwargs):

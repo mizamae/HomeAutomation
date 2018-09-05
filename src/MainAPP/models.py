@@ -1119,16 +1119,8 @@ class AutomationRules(models.Model):
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             if result['ERROR']==[]:
-                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
-            
-            if not self.LastEval and Action.get('NotificationTrue')==True:
-                try:
-                    from utils.web_notifications import NotificationManager
-                    NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Automation rules',
-                                                      tag='notifications-'+self.Identifier,message_body=text,
-                                                      url='http://mizamae2.ddns.net:8075')
-                except:
-                    pass
+                webpush=not self.LastEval and Action.get('NotificationTrue')==True
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=webpush)
             
             self.setLastEval(value=True)
         elif (resultFALSE==True and (not self.EdgeExec or self.LastEval)):
@@ -1137,16 +1129,9 @@ class AutomationRules(models.Model):
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             if result['ERROR']==[]:
-                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
+                webpush=self.LastEval and Action.get('NotificationFalse')==True
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=webpush)
             
-            if self.LastEval and Action.get('NotificationFalse')==True:
-                try:
-                    from utils.web_notifications import NotificationManager
-                    NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Automation rules',
-                                                      tag='notifications-'+self.Identifier,message_body=text,
-                                                      url='http://mizamae2.ddns.net:8075')
-                except:
-                    pass
             self.setLastEval(value=False)
     
     @classmethod
