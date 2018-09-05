@@ -268,26 +268,17 @@ def gdrive_authentication(request):
 
 def Notifications(request):
     if request.method == 'POST': # the form has been submited
-        import ssl
-
-        try:
-            _create_unverified_https_context = ssl._create_unverified_context
-        except AttributeError:
-            # Legacy Python that doesn't verify HTTPS certificates by default
-            pass
-        else:
-            # Handle target environment that doesn't support HTTPS verification
-            ssl._create_default_https_context = _create_unverified_https_context
-        print(request.body)
         data = json.loads(request.body)
         user=request.user
+        firstSubscription=user.profile.subscription_token==""
+        
         if user.profile.notifications:
             user.profile.set_subscriptionToken(token=data)
-        
-        from utils.web_notifications import send_web_push
-        
-        if user.profile.notifications and user.profile.subscription_token!="":
-            send_web_push(subscription_information=user.profile.subscription_token, message_body="Se han activado las notificaciones para " + str(user))
+
+        if firstSubscription:
+            from utils.web_notifications import NotificationManager
+            NotificationManager.send_web_push(users=[user,], title='DIY4dot0 - New subscription', tag='notifications-subscription',
+                          message_body="Se han activado las notificaciones para " + str(user),url='http://mizamae2.ddns.net:8075')
         return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
     else:
         return HttpResponseNotFound() 
@@ -327,6 +318,10 @@ def GitUpdate(request):
         if ".git" in dirs:
             from utils.GitHub import update
             revision=update(root)
+            from utils.web_notifications import NotificationManager
+            timestamp=timezone.now()
+            NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0',timestamp=timestamp, tag='notifications-gitupdate',
+                          message_body="Se ha actualizado las version al codigo " + revision,url='http://mizamae2.ddns.net:8075')
             if revision!=None:
                 SETTINGS=models.SiteSettings.load()
                 SETTINGS.VERSION_CODE=revision

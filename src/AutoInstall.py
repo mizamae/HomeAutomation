@@ -81,9 +81,9 @@ os.system(cmd)
 cmd="sudo systemctl enable gunicorn"
 os.system(cmd)
 print(bcolors.BOLD +'##### Making and applying DB migrations #####'+bcolors.ENDC)
-cmd="python "+join(MANAGE_DIR,'utils','migrations_handler.py')+" make"
+cmd="python3 "+join(MANAGE_DIR,'utils','migrations_handler.py')+" make"
 os.system(cmd)
-cmd="python "+join(MANAGE_DIR,'utils','migrations_handler.py')+" migrate"
+cmd="python3 "+join(MANAGE_DIR,'utils','migrations_handler.py')+" migrate"
 os.system(cmd)
 print(bcolors.BOLD +'##### Installing and configuring Nginx #####'+bcolors.ENDC)
 cmd="sudo apt-get install nginx"

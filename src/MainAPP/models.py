@@ -637,8 +637,8 @@ class AutomationVariables(models.Model):
         if len(rules)>0:
             now=timezone.now()
             for rule in rules:
-                if not '"ActionType": "z"' in rule.Rule.Action:
-                    rule.Rule.execute()
+                #if not '"ActionType": "z"' in rule.Rule.Action:
+                rule.Rule.execute()
                     
 @receiver(post_save, sender=AutomationVariables, dispatch_uid="update_AutomationVariables")
 def update_AutomationVariables(sender, instance, update_fields,**kwargs):   
@@ -856,6 +856,7 @@ class inlineDaily(models.Model):
                     setattr(self,'Hour'+str(i),1)
                 else:
                     setattr(self,'Hour'+str(i),0)
+                    
 class Thermostats(models.Model):
     class Meta:
         verbose_name = _('Thermostat')
@@ -909,7 +910,14 @@ class RuleItems(models.Model):
         self.save()
         
     def createThermostat(self):
-        if (self.Var1.Units=='\u00baC' or self.Var2.Units=='\u00baC') and self.IsConstant==False and self.Var2.UserEditable:
+        
+        units1=self.Var1.Units
+        try:
+            units2=self.Var2.Units
+        except:
+            units2=None
+            
+        if (units1=='\u00baC' or units2=='\u00baC') and self.IsConstant==False and self.Var2.UserEditable:
             THRMST,created=Thermostats.objects.get_or_create(RITM=self)
         
     def evaluate(self):
@@ -1112,6 +1120,16 @@ class AutomationRules(models.Model):
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             if result['ERROR']==[]:
                 PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
+            
+            if not self.LastEval and Action.get('NotificationTrue')==True:
+                try:
+                    from utils.web_notifications import NotificationManager
+                    NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Automation rules',
+                                                      tag='notifications-'+self.Identifier,message_body=text,
+                                                      url='http://mizamae2.ddns.net:8075')
+                except:
+                    pass
+            
             self.setLastEval(value=True)
         elif (resultFALSE==True and (not self.EdgeExec or self.LastEval)):
             Action=json.loads(self.Action)
@@ -1120,6 +1138,15 @@ class AutomationRules(models.Model):
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             if result['ERROR']==[]:
                 PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode())
+            
+            if self.LastEval and Action.get('NotificationFalse')==True:
+                try:
+                    from utils.web_notifications import NotificationManager
+                    NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Automation rules',
+                                                      tag='notifications-'+self.Identifier,message_body=text,
+                                                      url='http://mizamae2.ddns.net:8075')
+                except:
+                    pass
             self.setLastEval(value=False)
     
     @classmethod

@@ -223,8 +223,8 @@ class RuleItemForm(ModelForm):
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
         self.fields['Order'].label = _("Execution order")
-        self.fields['PreVar1'].label = _("Prefix for the value")
-        self.fields['Var1'].label = _("Value")
+        self.fields['PreVar1'].label = _("Prefix for the variable")
+        self.fields['Var1'].label = _("Variable")
         self.fields['Operator12'].label = _("Operator")
         self.fields['PreVar2'].label = _("Prefix for the setpoint")
         self.fields['Var2'].label = _("Setpoint")
@@ -265,6 +265,8 @@ class AutomationRuleForm(ModelForm):
                                   label=_('Select the device to send the order to'),required = False)
     Order=forms.ModelChoiceField(queryset=DevicesAPP.models.DeviceCommands.objects.all(),
                                  label=_('Select the order to send'),required = False)
+    NotificationTrue=forms.NullBooleanField(label=_('Send notification when the rule evaluates to True'))
+    NotificationFalse=forms.NullBooleanField(label=_('Send notification when the rule evaluates to False'))
     
     def __init__(self, *args, **kwargs):
         initial_arguments = kwargs.get('initial', None)
@@ -277,6 +279,8 @@ class AutomationRuleForm(ModelForm):
             updated_initial['IOValue']=Action['IOValue']
             updated_initial['Device']=Action['Device']
             updated_initial['Order']=Action['Order']
+            updated_initial['NotificationTrue']=Action.get('NotificationTrue')
+            updated_initial['NotificationFalse']=Action.get('NotificationFalse')
             kwargs.update(initial=updated_initial)
         super(AutomationRuleForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
@@ -317,6 +321,8 @@ class AutomationRuleForm(ModelForm):
          Order = cleaned_data.get('Order')
          PreviousRule= cleaned_data.get('PreviousRule')
          OperatorPrev= cleaned_data.get('OperatorPrev')
+         NotificationTrue= cleaned_data.get('NotificationTrue')
+         NotificationFalse= cleaned_data.get('NotificationFalse')
          if PreviousRule!=None:
              if OperatorPrev==None:
                  raise ValidationError({'OperatorPrev':_("This field cannot be left empty if a previous rule has been selected")})
@@ -354,7 +360,7 @@ class AutomationRuleForm(ModelForm):
          if Order!=None:
              Order=Order.pk
              
-         data={'ActionType':ActionType,'IO':IO,'IOValue':IOValue,'Device':Device,'Order':Order}
+         data={'ActionType':ActionType,'IO':IO,'IOValue':IOValue,'Device':Device,'Order':Order,'NotificationTrue':NotificationTrue,'NotificationFalse':NotificationFalse}
          
          cleaned_data.update(Action=json.dumps(data))
          return cleaned_data

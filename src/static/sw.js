@@ -21,14 +21,19 @@
 
 'use strict';
 
+var notificationData;
+
 self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push Received.');
-  console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
+  console.log('[Service Worker] Push had this data: ' + event.data.text());
 
-  const title = 'DIY4dot0';
+  
+  notificationData = JSON.parse(event.data.text());
+  const title = notificationData['title'];
   const options = {
-    body: event.data.text(),
+    body: notificationData['body'],
     icon: "/static/site/ico/smart_home.jpg",
+    tag:notificationData['tag'],
     badge: "/static/site/ico/badge.png"
   };
 
@@ -41,6 +46,6 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
   event.waitUntil(
-    clients.openWindow('http://mizamae2.ddns.net:8075')
+    clients.openWindow(notificationData['url'])
   );
 });

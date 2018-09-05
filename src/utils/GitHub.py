@@ -47,7 +47,7 @@ def update(root):
         
         if updated:
             # CHECK IF THERE IS ANY UNAPPLIED MIGRATION
-            process = Popen("python src/manage.py showmigrations --list", cwd=root, shell=True,
+            process = Popen("python3 src/manage.py showmigrations --list", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
             stdout, err = process.communicate()
             if err:
@@ -60,7 +60,7 @@ def update(root):
                 logger.debug('MIGRATIONS: ' + str(stdout))
                 PublishEvent(Severity=0,Text=_("Updating DB with new migrations. Relax, it may take a while"),
                              Code='MainAPPViews-5',Persistent=False)
-                process = Popen("python src/manage.py migrate", cwd=root, shell=True,
+                process = Popen("python3 src/manage.py migrate", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
                 if not err:
@@ -73,7 +73,7 @@ def update(root):
             
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
 
-            process = Popen("python src/manage.py collectstatic --noinput", cwd=root, shell=True,
+            process = Popen("python3 src/manage.py collectstatic --noinput", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
             stdout, err = process.communicate()
             
