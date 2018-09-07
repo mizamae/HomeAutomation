@@ -297,8 +297,8 @@ class ESIOS(object):
             retries=self._MAX_RETRIES
             indicators_ = [10229, 10230, 10231]
             names = self.get_names(indicators_)
-            start_=(timezone.now()+datetime.timedelta(days=1)).replace(hour=0,minute=0,second=1)
-            end_=start_.replace(hour=23,minute=59,second=59)
+            start_=timezone.now().replace(hour=23,minute=59,second=59)
+            end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
             while retries>0:
                 try:
                     dfmul, df_list, names = self.get_multiple_series(indicators_, start_, end_)
