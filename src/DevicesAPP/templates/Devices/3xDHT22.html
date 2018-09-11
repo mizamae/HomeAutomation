@@ -60,6 +60,8 @@
                 </div>
                 {% if Device.DVT.Picture %}
                 <img class="img-responsive" src="{{ Device.DVT.Picture.url }}" alt="not found">
+                {% else %}
+                <img class="img-responsive" src="{% static 'site/logos/3xDHT22.png' %}" alt="not found">
                 {% endif %}
             </div>
 		</div>
@@ -76,17 +78,17 @@
               </tr>
             </thead>
 			<tbody>
-				<tr>
+				<tr id="Sensor1">
 					<td	width="25%"><span id="Label1">Sensor 1</span></td>
 					<td	width="25%"><span id="T1">NaN</span>&deg;C</td>
 					<td	width="25%"><span id="H1">NaN</span>&#37;</td>
 				</tr>
-				<tr>
+				<tr id="Sensor2">
 					<td	width="25%"><span id="Label2">Sensor 2</span></td>
 					<td	width="25%"><span id="T2">NaN</span>&deg;C</td>
 					<td	width="25%"><span id="H2">NaN</span>&#37;</td>
 				</tr>
-				<tr>
+				<tr id="Sensor3">
 					<td	width="25%"><span id="Label3">Sensor 3</span></td>
 					<td	width="25%"><span id="T3">NaN</span>&deg;C</td>
 					<td	width="25%"><span id="H3">NaN</span>&#37;</td>
@@ -119,7 +121,15 @@
 		var webSocketBridge = new channels.WebSocketBridge();
 		webSocketBridge.connect(ws_path);
 		webSocketBridge.listen();
-
+		
+		function	checkBit(number,n)
+		{	
+            if (number != null)
+            {
+                var	mask	=	1	<<	n;
+                if	((number	&	mask)	!=	0)	{return	1;}else	{return	0;}
+            }else{return null;}
+		}
         
         $(function () {
             
@@ -139,6 +149,12 @@
                 	var error=payload.data.Error;
                 	if (payload.data.values!=null){
 	                    var status=payload.data.values[0];
+	                    if (checkBit(status,0)){document.getElementById("Sensor1").classList.add('alert-warning');}
+	                    else {document.getElementById("Sensor1").classList.remove('alert-warning');}
+	                    if (checkBit(status,1)){document.getElementById("Sensor2").classList.add('alert-warning');}
+	                    else {document.getElementById("Sensor2").classList.remove('alert-warning');}
+	                    if (checkBit(status,2)){document.getElementById("Sensor3").classList.add('alert-warning');}
+	                    else {document.getElementById("Sensor3").classList.remove('alert-warning');}
 	                    try{var T1=payload.data.values[1].toFixed(1);}
 	                    catch(err){var T1="NaN";}
 	                    try{var H1=payload.data.values[2].toFixed(1);}
