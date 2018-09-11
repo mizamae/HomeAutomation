@@ -125,6 +125,12 @@
             
             var Labels = JSON.parse('{{ Device.CustomLabels|safe }}');
             var Values = JSON.parse('{{ Latest|safe }}');
+            var Order = JSON.parse('{{ Order|safe }}');
+			
+            document.getElementById("Label1").innerHTML=Labels[1][Order[1][1]];
+            document.getElementById("Label2").innerHTML=Labels[1][Order[1][3]];
+            document.getElementById("Label3").innerHTML=Labels[1][Order[1][5]];
+
             //document.getElementById("T1").innerHTML=T1;
             //label.innerHTML=
             webSocketBridge.demultiplex('Device_query', function(payload, streamName) {
@@ -133,12 +139,18 @@
                 	var error=payload.data.Error;
                 	if (payload.data.values!=null){
 	                    var status=payload.data.values[0];
-	                    var T1=payload.data.values[1];
-	                    var H1=payload.data.values[2];
-	                    var T2=payload.data.values[3];
-	                    var H2=payload.data.values[4];
-	                    var T3=payload.data.values[5];
-	                    var H3=payload.data.values[6];
+	                    try{var T1=payload.data.values[1].toFixed(1);}
+	                    catch(err){var T1="NaN";}
+	                    try{var H1=payload.data.values[2].toFixed(1);}
+	                    catch(err){var H1="NaN";}
+	                    try{var T2=payload.data.values[3].toFixed(1);}
+	                    catch(err){var T2="NaN";}
+	                    try{var H2=payload.data.values[4].toFixed(1);}
+	                    catch(err){var H2="NaN";}
+	                    try{var T3=payload.data.values[5].toFixed(1);}
+	                    catch(err){var T3="NaN";}
+	                    try{var H3=payload.data.values[6].toFixed(1);}
+	                    catch(err){var H3="NaN";}
                 	}else{
                 		var status=null;
                         var T1="NaN";
@@ -156,7 +168,7 @@
                 	document.getElementById("H2").innerHTML=H2;
                 	document.getElementById("T3").innerHTML=T3;
                 	document.getElementById("H3").innerHTML=H3;
-                    console.log("New measure arrived, T= " + T1.toString());
+                    //console.log("New measure arrived, T= " + T1.toString());
                 } else {
                     console.log("Unknown action " + payload.action);
                 }

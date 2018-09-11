@@ -419,12 +419,15 @@ def AdvancedDevicePage(request,pk):
     import json
     DV=models.Devices.objects.get(pk=pk)
     LatestData=DV.getLatestData()
+    Order={}
     for datagram in LatestData:
+        DG=models.Datagrams.objects.get(pk=datagram)
+        Order[datagram]=DG.getStructure()['names']
         for element in LatestData[datagram]:
             if isinstance(LatestData[datagram][element],datetime.datetime):
                 LatestData[datagram][element]=LatestData[datagram][element].timestamp()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
-                                                        {'Device':DV,'Latest':json.dumps(LatestData)})
+                                                        {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order)})
 
 
     
