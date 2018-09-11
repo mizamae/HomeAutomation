@@ -11,9 +11,9 @@ class NotificationManager(object):
     @staticmethod
     def send_web_push(users, title, message_body,timestamp=None,tag=None,url=None):
         if timestamp==None:
-            timestamp=timezone.now().strftime('%d/%m/%Y %H:%M:%S')
+            timestamp=timezone.now().strftime('%Y-%m-%dT%H:%M:%SZ')
         else:
-            timestamp=timestamp.strftime('%d/%m/%Y %H:%M:%S')
+            timestamp=timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
             
         try:
             for user in users:
