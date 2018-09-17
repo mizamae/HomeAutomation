@@ -137,7 +137,9 @@ class MasterGPIOsForm(ModelForm):
         self.fields['Direction'].label = _("Set the direction of the IO")
         self.fields['Value'].label = _("Set the current value for the IO")
         self.fields['NotificationTrue'].label = _("Send a notification when value changes to True")
+        self.fields['LabelTrue'].label = _("Text for the notification when changes to True")
         self.fields['NotificationFalse'].label = _("Send a notification when value changes to False")
+        self.fields['LabelFalse'].label = _("Text for the notification when changes to False")
         
         for field in self.fields:
             help_text = self.fields[field].help_text
@@ -148,12 +150,14 @@ class MasterGPIOsForm(ModelForm):
                 self.fields[field].widget.attrs.update({'class':'input-sm '})
                 
         self.helper.layout = Layout(
-            Field('Pin'),
-            Field('Label'),
+            Field('Pin',id='id_pin'),
+            Field('Label',id='id_label'),
             Field('Direction'),
             Field('Value'),
-            Field('NotificationTrue'),
-            Field('NotificationFalse'),
+            Field('NotificationTrue',id='id_NotificationTrue'),
+            Field('LabelTrue'),
+            Field('NotificationFalse',id='id_NotificationFalse'),
+            Field('LabelFalse'),
             buttons
             )
     
@@ -164,7 +168,10 @@ class MasterGPIOsForm(ModelForm):
     
     class Meta:
         model = models.MasterGPIOs
-        fields=['Pin','Label','Direction','Value','NotificationTrue','NotificationFalse']
+        fields=['Pin','Label','Direction','Value','NotificationTrue','LabelTrue','NotificationFalse','LabelFalse']
+    
+    class Media:
+        js = ('MasterGPIOsFormAnimations.js',)
                                        
 class DeviceTypesForm(ModelForm):
     def __init__(self, *args, **kwargs):

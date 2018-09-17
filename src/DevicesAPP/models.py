@@ -450,7 +450,9 @@ class MasterGPIOs(models.Model):
     Value = models.PositiveSmallIntegerField(default=0,choices=GPIOVALUE_CHOICES,help_text=str(_('Set the value of the GPIO (only applies to outputs)')))
     
     NotificationTrue=models.BooleanField(default=False,help_text=str(_('Send notification when the rule evaluates to True')))
+    LabelTrue = models.CharField(max_length=150,help_text=str(_('Label for the notification when the IO is True.')),blank=True,default="")
     NotificationFalse=models.BooleanField(default=False,help_text=str(_('Send notification when the rule evaluates to False')))
+    LabelFalse = models.CharField(max_length=150,help_text=str(_('Label for the notification when the IO is False.')),blank=True,default="")
     
     Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='gpios')
     
@@ -548,7 +550,12 @@ class MasterGPIOs(models.Model):
             if newValue!=self.Value or force:
                 if not force:
                     webpush=(self.NotificationFalse and newValue==False) or (self.NotificationTrue and newValue==True)
-                    text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
+                    if self.NotificationFalse and newValue==False and self.LabelFalse!="":
+                        text=self.LabelFalse
+                    elif self.NotificationTrue and newValue==True and self.LabelTrue!="":
+                        text=self.LabelTrue
+                    else:
+                        text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
                     PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0',Webpush=webpush)
                     
                 self.Value=newValue
