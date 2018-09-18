@@ -34,6 +34,178 @@ A class with the name of each of the DeviceTypes defined for local connection ne
 The method to be called when polling the device must be called "read_sensor"
 '''
 
+from requests import Session
+from json import dumps
+
+IBERDROLA_USER = env('IBERDROLA_USER')
+IBERDROLA_PASSW=env('IBERDROLA_PASSW')
+
+class IBERDROLA:
+    _MAX_RETRIES=3
+    __loginurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/login"
+    __miconsumourl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/consumoNew/obtenerDatosConsumo/fechaInicio/dateini/colectivo/USU/frecuencia/horas/acumular/false"
+    __watthourmeterurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/escenarioNew/obtenerMedicionOnline/12"
+    __icpstatusurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/rearmeICP/consultarEstado"
+    __contractsurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/cto/listaCtos/"
+    __contractdetailurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/detalleCto/detalle/"
+    __contractselectionurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/cto/seleccion/"
+    __headers = {
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0",
+        'accept': "application/json; charset=utf-8",
+        'content-type': "application/json; charset=utf-8",
+        'cache-control': "no-cache"
+    }
+
+    def __init__(self,DV):
+        """Iber class __init__ method."""
+        self.__session = None
+        self.sensor=DV
+        user=IBERDROLA_USER
+        password=IBERDROLA_PASSW
+        self.login(user, password)
+
+    def login(self, user, password):
+        """Create session with your credentials.
+           Inicia la session con tus credenciales."""
+        self.__session = Session()
+        logindata = self.__logindata(user, password)
+        response = self.__session.request("POST", self.__loginurl, data=logindata, headers=self.__headers)
+        if response.status_code != 200:
+            self.__session = None
+            raise ResponseException
+        jsonresponse = response.json()
+        if jsonresponse["success"] != "true":
+            self.__session = None
+            raise LoginException
+
+    def __logindata(self, user, password):
+        logindata = [user, password, "", "Windows -", "PC", "Firefox 54.0", "", "0", "0", "0", "", "s"]
+        return dumps(logindata)
+
+    def __checksession(self):
+        if not self.__session:
+            raise SessionException
+
+    def watthourmeter(self):
+        """Returns your current power consumption.
+           Devuelve tu consumo de energía actual."""
+        self.__checksession()
+        response = self.__session.request("GET", self.__watthourmeterurl, headers=self.__headers)
+        if response.status_code != 200:
+            raise ResponseException
+        if not response.text:
+            raise NoResponseException
+        jsonresponse = response.json()
+        return jsonresponse['valMagnitud']
+
+    def icpstatus(self):
+        """Returns the status of your ICP.
+           Devuelve el estado de tu ICP."""
+        self.__checksession()
+        response = self.__session.request("POST", self.__icpstatusurl, headers=self.__headers)
+        if response.status_code != 200:
+            raise ResponseException
+        if not response.text:
+            raise NoResponseException
+        jsonresponse = response.json()
+        if jsonresponse["icp"] == "trueConectado":
+            return True
+        else:
+            return False
+    
+    def miconsumodiario(self,date=None):
+        '''    OJO, EL CONSUMO DIARIO SE ACTUALIZA SOBRE LAS 12 A.M. CON UN DIA DE RETRASO
+        '''
+        import datetime
+        self.__checksession()
+        if date==None:
+            date=(datetime.datetime.now()+datetime.timedelta(days=-1)).replace(hour=0,minute=0,second=0,microsecond=0).strftime('%d-%m-%Y%H:%M:%S')
+            timestamp=(datetime.datetime.now()+datetime.timedelta(days=-1)).replace(hour=0,minute=0,second=0,microsecond=0).timestamp()
+        else:
+            timestamp=date.timestamp()
+            date=date.replace(hour=0,minute=0,second=0,microsecond=0).strftime('%d-%m-%Y%H:%M:%S')
+        response = self.__session.request("GET", self.__miconsumourl.replace('dateini',date), headers=self.__headers)
+        
+        if response.status_code != 200:
+            raise ResponseException
+        if not response.text:
+            raise NoResponseException
+        jsonresponse = response.json()
+        try:
+            datas=jsonresponse["y"]["data"][0]
+        except:
+            return None
+        
+        if datas!=[]:
+            for i,data in enumerate(datas):
+                data["timestamp"]=datetime.datetime.utcfromtimestamp(timestamp)+datetime.timedelta(hours=i)
+        else:
+            datas=None
+        return datas
+        
+    def contracts(self):
+        self.__checksession()
+        response = self.__session.request("GET", self.__contractsurl, headers=self.__headers)
+        if response.status_code != 200:
+            raise ResponseException
+        if not response.text:
+            raise NoResponseException
+        jsonresponse = response.json()
+        if jsonresponse["success"]:
+            return jsonresponse["contratos"]
+
+    def contract(self):
+        self.__checksession()
+        response = self.__session.request("GET", self.__contractdetailurl, headers=self.__headers)
+        if response.status_code != 200:
+            raise ResponseException
+        if not response.text:
+            raise NoResponseException
+        return response.json()
+
+    def contractselect(self, id):
+        self.__checksession()
+        response = self.__session.request("GET", self.__contractselectionurl + id, headers=self.__headers)
+        if response.status_code != 200:
+            raise ResponseException
+        if not response.text:
+            raise NoResponseException
+        jsonresponse = response.json()
+        if not jsonresponse["success"]:
+            raise SelectContractException
+    
+    def __call__(self,date=None,datagramId = 'dailyconsumption'):
+        Error=''
+        null=False
+        retries=self._MAX_RETRIES
+        while retries>0:
+            try:
+                if datagramId =='dailyconsumption':
+                    datas = self.miconsumodiario(date=date)
+                    if datas!=None:
+                        for data in datas:
+                            timestamp=data['timestamp']
+                            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data['valor'],],NULL=null)
+                            Error=''
+                    else:
+                        null=True
+                        Error='Empty dataframe'
+                
+                if Error!='':
+                    Error=Error+' - retrying'
+                    retries=retries-1
+                else:
+                    retries=0
+            except:
+                retries=retries-1
+                Error='APIError'
+                null=True
+        
+        if null==False:
+            LastUpdated=timezone.now()
+
+        return {'Error':Error,'LastUpdated':LastUpdated}
+    
 class ESIOS(object):
     _MAX_RETRIES=3
     

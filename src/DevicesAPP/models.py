@@ -1077,7 +1077,7 @@ class Devices(models.Model):
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
                         elif DG.isCronned():
                             scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
-                                          'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':10})
+                                          'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':20})
                             #request_callback(self,DG,id,**kwargs)
                             
                     JOB=scheduler.getJobInStore(jobId=id)
@@ -1772,7 +1772,7 @@ class CronExpressions(models.Model):
     
     Identifier = models.CharField(max_length=50,unique=True)
     
-    DayOfWeek = models.CharField(max_length=20,blank=True,default='?',
+    DayOfWeek = models.CharField(max_length=20,blank=True,default='*',
                            help_text=str(_('Days in the week that it would trigger. '
                                              ' "1-3" would trigger it on Mon., Tue. and Wed. of the week,'
                                              ' "1,3" would trigger it only on Mon. and Wed.,'
