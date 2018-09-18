@@ -174,6 +174,15 @@ class IBERDROLA:
         if not jsonresponse["success"]:
             raise SelectContractException
     
+    
+    def initializeDB(self,fromdate,datagramId = 'dailyconsumption'):
+        i=0
+        while fromdate+datetime.timedelta(days=i)<datetime.datetime.now():
+            date=fromdate+datetime.timedelta(days=i)
+            self.__call__(date=date,datagramId = datagramId)
+            i=i+1
+            print('Obtained data for ' + str(date))
+        
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
         Error=''
         null=False
@@ -203,6 +212,8 @@ class IBERDROLA:
         
         if null==False:
             LastUpdated=timezone.now()
+        else:
+            LastUpdated=None
 
         return {'Error':Error,'LastUpdated':LastUpdated}
     
@@ -462,15 +473,24 @@ class ESIOS(object):
         
         return df, df_list, names
 
-    def __call__(self,datagramId = 'energy_cost'):
+    def initializeDB(self,fromdate,datagramId = 'energy_cost'):
+        self.__call__(date=fromdate,datagramId = datagramId)
+        print('Obtained data from ' + str(fromdate) + ' to tomorrow')
+            
+    def __call__(self,datagramId = 'energy_cost',date=None):
         Error=''
         if datagramId =='energy_cost':
             # gets the hourly cost for the energy for the next day
             retries=self._MAX_RETRIES
             indicators_ = [10229, 10230, 10231]
             names = self.get_names(indicators_)
-            start_=timezone.now().replace(hour=23,minute=59,second=59)
-            end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
+            if date==None:
+                start_=timezone.now().replace(hour=23,minute=59,second=59)
+                end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
+            else:
+                start_=date.replace(hour=23,minute=59,second=59)
+                end_=(timezone.now()+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
+            
             while retries>0:
                 try:
                     dfmul, df_list, names = self.get_multiple_series(indicators_, start_, end_)
@@ -481,8 +501,6 @@ class ESIOS(object):
                         for timestamp,values in zip(df.index,df.values):
                             values=list(values)
                             timestamp=timestamp.to_pydatetime()
-                            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=null)
-                            timestamp=timestamp.replace(minute=59,second=59)
                             self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=null)
                     else:
                         null=True

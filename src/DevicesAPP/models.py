@@ -977,7 +977,7 @@ class Devices(models.Model):
             return self.Name+'-'
         else:
             return None
-        
+    
     def clean(self):
         if self.DVT.Connection==LOCAL_CONNECTION and self.IO==None:
             raise ValidationError(_('A locally connected device needs to have a GPIO defined'))
@@ -1078,7 +1078,6 @@ class Devices(models.Model):
                         elif DG.isCronned():
                             scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
                                           'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':20})
-                            #request_callback(self,DG,id,**kwargs)
                             
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 

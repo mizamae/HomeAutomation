@@ -152,4 +152,21 @@ def run_afterBoot():
     from DevicesAPP.models import initialize_polling_devices,MasterGPIOs
     initialize_polling_devices()
     MasterGPIOs.initializeIOs(declareInputEvent=True)
-    
+
+#     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
+#     from DevicesAPP.callbacks import ESIOS
+#     from DevicesAPP.models import Devices
+#     DV=Devices.objects.filter(DVT__Code='ESIOS')
+#     instance=ESIOS(DV[0])
+#     import datetime
+#     instance.initializeDB(fromdate=datetime.datetime(year=2017,month=12,day=31),datagramId = 'energy_cost')
+#      
+
+#     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
+#     from DevicesAPP.callbacks import IBERDROLA
+#     from DevicesAPP.models import Devices
+#     DV=Devices.objects.filter(DVT__Code='IBERDROLA')
+#     instance=IBERDROLA(DV[0])
+#     import datetime
+#     instance.initializeDB(fromdate=datetime.datetime(year=2018,month=1,day=1),datagramId = 'dailyconsumption')
+#     
