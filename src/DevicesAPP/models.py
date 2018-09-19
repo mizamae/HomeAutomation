@@ -1081,15 +1081,15 @@ class Devices(models.Model):
                             
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 
-                        text=str(_('Polling for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
-                        PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+'0')
+                        text=str(_('Polling '))+id+str(_(' for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
+                        PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+str(id))
                     else:
                         PublishEvent(Severity=4,
                                      Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.Name+' could not be started' ,
                                      Code=self.getEventsCode()+'100',Persistent=True)
                         self.State=STOPPED_STATE
                         self.save()
-                scheduler.wakeup()
+                    scheduler.wakeup()
             else:        
                 self.State=STOPPED_STATE
                 self.save()
