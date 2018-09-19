@@ -86,9 +86,9 @@ class IBERDROLA:
         if not self.__session:
             raise SessionException
 
-    def watthourmeter(self):
+    def wattmeter(self):
         """Returns your current power consumption.
-           Devuelve tu consumo de energía actual."""
+           Devuelve tu potencia actual."""
         self.__checksession()
         response = self.__session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
@@ -199,7 +199,15 @@ class IBERDROLA:
                     else:
                         null=True
                         Error='Empty dataframe'
-                
+                elif datagramId=='instantpower':
+                    data = self.wattmeter()
+                    if data!=None:
+                        timestamp=timezone.now()
+                        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data,],NULL=null)
+                        Error=''
+                    else:
+                        null=True
+                        Error='Empty dataframe'
                 if Error!='':
                     Error=Error+' - retrying'
                     retries=retries-1
