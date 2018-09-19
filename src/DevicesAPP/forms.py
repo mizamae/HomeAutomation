@@ -392,6 +392,15 @@ class CronExpressionsForm(ModelForm):
         fields=['Identifier','DayOfWeek','Month','DayOfMonth','Hours','Minutes','Seconds']
 
 class DatagramsForm(ModelForm):
+    
+    def save(self, commit=True):
+        instance = super(DatagramsForm, self).save(commit=False)
+        if commit:
+            instance.save()
+            
+        return instance
+
+            
     class Meta:
         model = models.Datagrams
         exclude=[]

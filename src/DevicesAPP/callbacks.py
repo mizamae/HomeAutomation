@@ -202,7 +202,7 @@ class IBERDROLA:
                 elif datagramId=='instantpower':
                     data = self.wattmeter()
                     if data!=None:
-                        timestamp=timezone.now()
+                        timestamp=timezone.now().replace(second=0)
                         self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data,],NULL=null)
                         Error=''
                     else:

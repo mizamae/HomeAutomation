@@ -1921,7 +1921,6 @@ class Datagrams(models.Model):
 
 @receiver(post_save, sender=Datagrams, dispatch_uid="update_Datagrams")
 def update_Datagrams(sender, instance, update_fields,**kwargs):
-    DVs=Devices.objects.filter(DVT=instance.DVT)
     
     if not kwargs['created']:   # an instance has been modified
         logger.info('Se ha modificado el datagram ' + str(instance.DVT)+"_"+str(instance))
@@ -1931,13 +1930,7 @@ def update_Datagrams(sender, instance, update_fields,**kwargs):
         logger.info('Tiene ' + str(instance.ITMs.count())+' ' + (DatagramItems._meta.verbose_name.title() if (instance.ITMs.count()==1) else DatagramItems._meta.verbose_name_plural.title()))
         for item in instance.ITMs.all():
             logger.info('   - ' + str(item.Tag))
-    
-    if DVs.count()>0:
-        for DV in DVs:
-            DV.updateAutomationVars()
-            from utils.BBDD import getRegistersDBInstance
-            DB=getRegistersDBInstance()
-            DV.checkRegistersDB(Database=DB)
+
 
     
 class ItemOrdering(models.Model):
