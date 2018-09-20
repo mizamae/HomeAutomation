@@ -212,7 +212,11 @@ class IBERDROLA:
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
         Error=''
         null=False
-        retries=self._MAX_RETRIES
+        if datagramId =='dailyconsumption':
+            retries=self._MAX_RETRIES
+        elif datagramId=='instantpower':
+            retries=1
+            
         while retries>0:
             try:
                 if datagramId =='dailyconsumption':
