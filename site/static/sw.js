@@ -29,7 +29,8 @@ self.addEventListener('push', function(event) {
 
   
   notificationData = JSON.parse(event.data.text());
-  const title = notificationData['title'];
+  var d = new Date(notificationData['timestamp']);
+  const title = d.toLocaleString() +'\n'+notificationData['title'];
   const options = {
     body: notificationData['body'],
     icon: "/static/site/ico/smart_home.jpg",

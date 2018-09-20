@@ -317,6 +317,7 @@ def SoftReset(request):
     for socket in SOCKETS_PATH:
         if os.path.exists(socket):
             id='Delete-socket-'+socket
+            print(id)
             Timer.append(BackgroundTimer(interval=16,threadName=id,callable=os.remove,kwargs={'path':socket}))
             removed=True
     if removed:

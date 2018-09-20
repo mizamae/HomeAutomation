@@ -40,6 +40,25 @@ from json import dumps
 IBERDROLA_USER = env('IBERDROLA_USER')
 IBERDROLA_PASSW=env('IBERDROLA_PASSW')
 
+class ResponseException(Exception):
+    pass
+
+
+class LoginException(Exception):
+    pass
+
+
+class SessionException(Exception):
+    pass
+
+
+class NoResponseException(Exception):
+    pass
+
+
+class SelectContractException(Exception):
+    pass
+    
 class IBERDROLA:
     _MAX_RETRIES=3
     __loginurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/login"
@@ -62,8 +81,15 @@ class IBERDROLA:
         self.sensor=DV
         user=IBERDROLA_USER
         password=IBERDROLA_PASSW
-        self.login(user, password)
-
+        try:
+            self.login(user, password)
+        except Exception as ex:
+            if type(ex) is LoginException:
+                Error='Login procedure failed'
+            elif type(ex) is ResponseException:
+                Error='Iberdrola server reported a failure in login'
+            return {'Error':'','LastUpdated':None}
+        
     def login(self, user, password):
         """Create session with your credentials.
            Inicia la session con tus credenciales."""
@@ -93,7 +119,7 @@ class IBERDROLA:
         response = self.__session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
-        if not response.text:
+        if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
         return jsonresponse['valMagnitud']
@@ -105,7 +131,7 @@ class IBERDROLA:
         response = self.__session.request("POST", self.__icpstatusurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
-        if not response.text:
+        if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
         if jsonresponse["icp"] == "trueConectado":
@@ -128,7 +154,7 @@ class IBERDROLA:
         
         if response.status_code != 200:
             raise ResponseException
-        if not response.text:
+        if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
         try:
@@ -213,9 +239,14 @@ class IBERDROLA:
                     retries=retries-1
                 else:
                     retries=0
-            except:
+            except Exception as ex:
                 retries=retries-1
-                Error='APIError'
+                if type(ex) is NoResponseException:
+                    Error='Empty dataframe received'
+                elif type(ex) is ResponseException:
+                    Error='Iberdrola server reported a failure on a data request for ' + datagramId
+                else:
+                    Error='Unknown APIError'
                 null=True
         
         if null==False:
