@@ -246,11 +246,11 @@ class IBERDROLA:
             except Exception as ex:
                 retries=retries-1
                 if type(ex) is NoResponseException:
-                    Error='Empty dataframe received'
+                    Error='Empty dataframe received for ' + datagramId
                 elif type(ex) is ResponseException:
                     Error='Iberdrola server reported a failure on a data request for ' + datagramId
                 else:
-                    Error='Unknown APIError'
+                    Error='Unknown APIError: ' + str(ex)
                 null=True
         
         if null==False:
