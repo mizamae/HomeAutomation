@@ -916,8 +916,13 @@ def request_callback(DV,DG,jobID,**kwargs):
     if (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
         import DevicesAPP.callbacks
         class_=getattr(DevicesAPP.callbacks, DV.DVT.Code)
-        instance=class_(DV)
-        status=instance(**kwargs)
+        try:
+            instance=class_(DV)
+            status=instance(**kwargs)
+        except:
+            status['LastUpdated']=None
+            status['Error']=instance.Error
+        
     elif DV.DVT.Connection==REMOTE_TCP_CONNECTION:
         status=DV.requestDatagram(DatagramId=DG.Identifier) 
     NextUpdate=DV.getNextUpdate(jobID=jobID) 

@@ -79,16 +79,16 @@ class IBERDROLA:
         """Iber class __init__ method."""
         self.__session = None
         self.sensor=DV
+        self.Error=''
         user=IBERDROLA_USER
         password=IBERDROLA_PASSW
         try:
             self.login(user, password)
         except Exception as ex:
             if type(ex) is LoginException:
-                Error='Login procedure failed'
+                self.Error='Login procedure failed'
             elif type(ex) is ResponseException:
-                Error='Iberdrola server reported a failure in login'
-            return {'Error':'','LastUpdated':None}
+                self.Error='Iberdrola server reported a failure in login'
         
     def login(self, user, password):
         """Create session with your credentials.
