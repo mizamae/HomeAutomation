@@ -1,6 +1,6 @@
 import os
 from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketConsumer
-from .models import Devices,Datagrams,DevicesBinding,MasterGPIOs,MasterGPIOsBinding
+from .models import Devices,Datagrams,DevicesBinding,MasterGPIOs,MasterGPIOsBinding,DeviceCommands
 from . import signals
 from .constants import LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,DG_SYNCHRONOUS
 import logging
@@ -40,6 +40,22 @@ class Devices_query(JsonWebsocketConsumer):
             data = getattr(DevicesAPP.callbacks, DV.DVT.Code)(DV).query_sensor()
             multiplexer.send({"action":"query","DeviceName":DV.Name,"data":data})
 
+class Devices_command(JsonWebsocketConsumer):
+    def connect(self, message, **kwargs):
+        pass
+    
+    def disconnect(self, message, **kwargs):
+        pass
+        
+    def receive(self, content, multiplexer, **kwargs):
+        CMD=DeviceCommands.objects.get(pk=int(content['pk']))
+        DV=Devices.objects.get(pk=int(content['data']['devicePK']))
+        payload=content['data']['payload']
+        DV.requestOrders(server=DV.IP,order=CMD.Identifier,payload=payload,timeout=1)
+        pass
+        
+
+
 class GPIO_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         logger.info("Received signal to toggle output " + str(content["pk"]))
@@ -53,6 +69,7 @@ class DevicesAPP_consumers(WebsocketDemultiplexer):
         "Device_update": Devices_updater,
         "Device_delete": Devices_delete,
         "Device_query": Devices_query,
+        "Device_command": Devices_command,
         "GPIO_values": MasterGPIOsBinding.consumer,
         "GPIO_update": GPIO_updater,
     }

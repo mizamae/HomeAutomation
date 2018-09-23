@@ -35,36 +35,11 @@
 <div class="container">
 		<h1>{{ Device.Name }}</h1>
 		<p></p>
-		<div class="row">
-	    	<div class="col-md-4">
-			    <div id="devicedata" class="table-responsive">
-				    <table id="devicedata_table" class="table table-striped table-bordered table-responsive ">
-							<thead class="thead-inverse">
-							    <tr>
-							        <th>{% trans "IP" %}</th>
-							        <th>{% trans "Type" %}</th>
-							    </tr>
-							 </thead>
-							 <tbody>
-                                <tr> 
-                                    <td>{{ Device.IP }}</td>
-                                    <td>{{ Device.DVT.Code }}</td>
-                                </tr>
-                            </tbody>
-				    </table>
-			    </div>
-			</div>
-            <div class="col-md-4">
-                <div class="caption">
-                  <p>{{ Device.DVT.Description }}</p>
-                </div>
-                {% if Device.DVT.Picture %}
-                <img class="img-responsive" src="{{ Device.DVT.Picture.url }}" alt="not found">
-                {% else %}
-                <img class="img-responsive" src="{% static 'site/logos/3xDHT22.png' %}" alt="not found">
-                {% endif %}
-            </div>
-		</div>
+		{% trans "IP" as first_header %}
+		{% trans "Type" as second_header %}
+       	{% with first_col=Device.IP second_col=Device.DVT.Code logo='site/logos/3xDHT22.png' %}
+        {% include "Devices/_devices_data.html" %}
+        {% endwith%}        
         <p></p>
         <div class="tab-content">       
           <h2>Real-time Measurements</h2>
@@ -209,6 +184,15 @@
             query();
         });
         
+        function sendCMD(payload,cmdPK,devicePK)
+        {
+        	webSocketBridge.stream('Device_command').send({
+                "pk": cmdPK,
+                "action": "command",
+                "data": {"payload":payload,"devicePK":devicePK}
+            });
+        	
+        }
         function query(){
             webSocketBridge.stream('Device_query').send({
                         "pk": {{ Device.pk }},

@@ -419,6 +419,7 @@ def AdvancedDevicePage(request,pk):
     import json
     DV=models.Devices.objects.get(pk=pk)
     LatestData=DV.getLatestData()
+    COMMANDS=models.DeviceCommands.objects.filter(DVT=DV.DVT)
     Order={}
     for datagram in LatestData:
         DG=models.Datagrams.objects.get(pk=datagram)
@@ -427,9 +428,19 @@ def AdvancedDevicePage(request,pk):
             if isinstance(LatestData[datagram][element],datetime.datetime):
                 LatestData[datagram][element]=LatestData[datagram][element].timestamp()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
-                                                        {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order)})
+                                                        {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order),
+                                                         'Commands':COMMANDS})
 
-
+# @login_required
+# @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
+# def sendCMD(request,CMD,DV,payload=''):
+#     import datetime
+#     import json
+#     DV=models.Devices.objects.get(pk=DV)
+#     COMMAND=models.DeviceCommands.objects.get(pk=CMD)
+#     DV.requestOrders(server=DV.IP,order=COMMAND.Identifier,payload=payload,timeout=1)
+#     #print("Sent command " + str(COMMAND)+ " to the device " + str(DV))
+#     return HttpResponse(status=204)
     
 # END
 

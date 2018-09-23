@@ -1405,17 +1405,20 @@ class Devices(models.Model):
         :callback       payload = {'key1': 'value1', 'key2': 'value2'}   
                         self.orders_request(server, 'orders', payload) 
         """
-        import requests
-        import random
-        try:
-            r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
-            if r.status_code==200:
-                return (200,r)
-            else:
-                return (r.status_code,None)
-        except:
-            logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
-            return (100,None)
+        if self.DVT.Connection==REMOTE_TCP_CONNECTION:
+            import requests
+            import random
+            try:
+                r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
+                if r.status_code==200:
+                    return (200,r)
+                else:
+                    return (r.status_code,None)
+            except:
+                logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
+                return (100,None)
+        elif self.DVT.Connection==MEMORY_CONNECTION:
+            self.execute(order=order,params=payload)
         
     @staticmethod
     def requestConfXML(server,xmlfile,timeout=1):
