@@ -164,7 +164,12 @@ class IBERDROLA:
         
         if datas!=[]:
             for i,data in enumerate(datas):
-                data["timestamp"]=datetime.datetime.utcfromtimestamp(timestamp)+datetime.timedelta(hours=i)
+                if data==None:
+                    datas[i]={}
+                    datas[i]["valor"]=None
+                    
+                datas[i]["timestamp"]=datetime.datetime.utcfromtimestamp(timestamp)+datetime.timedelta(hours=i)
+                
         else:
             datas=None
         return datas
@@ -207,7 +212,10 @@ class IBERDROLA:
             date=fromdate+datetime.timedelta(days=i)
             self.__call__(date=date,datagramId = datagramId)
             i=i+1
-            print('Obtained data for ' + str(date))
+            PublishEvent(Severity=0,Text='Obtained data for ' + str(date),
+                         Code=self.sensor.getEventsCode()+'init'+str(i),Persistent=True)
+
+        #print('Obtained data for ' + str(date))
         
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
         Error=''

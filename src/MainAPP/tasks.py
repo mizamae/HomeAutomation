@@ -163,10 +163,10 @@ def run_afterBoot():
 #      
 
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
-#     from DevicesAPP.callbacks import IBERDROLA
-#     from DevicesAPP.models import Devices
-#     DV=Devices.objects.filter(DVT__Code='IBERDROLA')
-#     instance=IBERDROLA(DV[0])
-#     import datetime
-#     instance.initializeDB(fromdate=datetime.datetime(year=2018,month=1,day=1),datagramId = 'dailyconsumption')
+# from DevicesAPP.callbacks import IBERDROLA
+# from DevicesAPP.models import Devices
+# DV=Devices.objects.filter(DVT__Code='IBERDROLA')
+# instance=IBERDROLA(DV[0])
+# import datetime
+# instance.initializeDB(fromdate=datetime.datetime(year=2018,month=9,day=21),datagramId = 'dailyconsumption')
 #     
