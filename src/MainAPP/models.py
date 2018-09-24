@@ -336,6 +336,10 @@ class Subsystems(models.Model):
         return self.get_Name_display()
     
 class AdditionalCalculations(models.Model):
+    class Meta:
+        verbose_name = _('Additional calculation')
+        verbose_name_plural = _('Additional calculations')
+        
     PERIODICITY_CHOICES=(
         (0,_('With every new value')),
         (1,_('Every hour')),

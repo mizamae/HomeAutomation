@@ -17,8 +17,13 @@ class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
         return str(instance)
      
     printCalculation.short_description = _("Description")
+    
+    def printPeriodicity(self,instance):
+        return instance.get_Periodicity_display()
      
-    list_display = ('printCalculation',)
+    printPeriodicity.short_description = _("Periodicity")
+    
+    list_display = ('printCalculation','printPeriodicity')
     form = AdditionalCalculationsForm
     
     def save_model(self, request, obj, form, change):
