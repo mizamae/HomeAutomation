@@ -339,7 +339,8 @@ class AdditionalCalculations(models.Model):
     PERIODICITY_CHOICES=(
         (0,_('With every new value')),
         (1,_('Every hour')),
-        (2,_('Every day')),
+        (2,_('Every day at 0h')),
+        (5,_('Every day at 12h')),
         (3,_('Every week')),
         (4,_('Every month'))
     )
@@ -358,7 +359,7 @@ class AdditionalCalculations(models.Model):
     SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
-      
+    
     def __init__(self,*args,**kwargs):
         try:
             self.df=kwargs.pop('df')
@@ -409,11 +410,17 @@ class AdditionalCalculations(models.Model):
                     return True
                 elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
                     return True
+            elif now.hour==12 and now.minute==0:
+                if self.Periodicity==5: # daily calculation launched on next day at 12:00
+                    return True
         return False
       
     def calculate(self):
         import datetime
         import calendar
+        
+        toDate=timezone.now() 
+        
         if self.Periodicity==1: # Every hour
             offset=datetime.timedelta(hours=1)
         elif self.Periodicity==2: # Every day
@@ -424,9 +431,12 @@ class AdditionalCalculations(models.Model):
             now=datetime.datetime.now()
             days=calendar.monthrange(now.year, now.month)[1]
             offset=datetime.timedelta(hours=days*24)
+        elif self.Periodicity==5:
+            offset=datetime.timedelta(hours=24)
+            toDate=toDate-datetime.timedelta(hours=12)
         else:
             return
-        toDate=timezone.now() 
+            
         fromDate=toDate-offset
         DBDate=toDate-offset/2
         toDate=toDate-datetime.timedelta(minutes=1)
