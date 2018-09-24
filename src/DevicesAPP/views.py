@@ -418,6 +418,7 @@ def AdvancedDevicePage(request,pk):
     import datetime
     import json
     DV=models.Devices.objects.get(pk=pk)
+    firmware=DV.getFirmwareWeb()
     LatestData=DV.getLatestData()
     COMMANDS=models.DeviceCommands.objects.filter(DVT=DV.DVT)
     Order={}
@@ -429,7 +430,7 @@ def AdvancedDevicePage(request,pk):
                 LatestData[datagram][element]=LatestData[datagram][element].timestamp()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
                                                         {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order),
-                                                         'Commands':COMMANDS})
+                                                         'Commands':COMMANDS,'Firmware':firmware})
 
 # @login_required
 # @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))

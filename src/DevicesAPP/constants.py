@@ -106,6 +106,7 @@ DEVICES_PROTOCOL='http://'
 DEVICES_SUBNET='10.10.10.'      # IP SUBNET FOR THE REMOTE DEVICES
 DEVICES_SCAN_IP4BYTE='254'           # LAST BYTE OF IP ADDRESS FOR DEVICES IN SCAN MODE
 DEVICES_CONFIG_FILE='Conf.xml'
+DEVICES_FIRMWARE_WEB='firmwareupdate'
 IP_OFFSET=1 # establishes the offset for IP addresses and DeviceCode. The IP of the first device will be XXX.XXX.XXX.(IP_OFFSET+1)
 # END
 

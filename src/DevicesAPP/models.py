@@ -26,7 +26,7 @@ import MainAPP.models
 from .signals import SignalVariableValueUpdated
 from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
-                        DEVICES_CONFIG_FILE,IP_OFFSET,POLLING_SCHEDULER_URL,\
+                        DEVICES_CONFIG_FILE,DEVICES_FIRMWARE_WEB,IP_OFFSET,POLLING_SCHEDULER_URL,\
                         STOPPED_STATE,RUNNING_STATE,\
                         DATAGRAMTYPE_CHOICES,DATATYPE_CHOICES,PLOTTYPE_CHOICES,LINE_PLOT,SPLINE_PLOT,DG_ASYNCHRONOUS,DG_SYNCHRONOUS,DG_CRONNED,\
                         DTYPE_DIGITAL,DTYPE_INTEGER,\
@@ -1399,6 +1399,23 @@ class Devices(models.Model):
             form=FormModel(action='scan',initial={'Name':'','Type':'','Code':'','IP':''})
         return {'devicetype':DEVICE_TYPE,'Form':form,'errors':errors}
     
+    def getFirmwareWeb(self,timeout=1):
+        if self.DVT.Connection==REMOTE_TCP_CONNECTION:
+            import requests
+            import random
+            server=DEVICES_PROTOCOL+str(self.IP)
+            try:
+                r = requests.get(server+'/'+DEVICES_FIRMWARE_WEB+'?t='+str(random.random()),timeout=timeout)
+            except Exception as ex:
+                if type(ex) is requests.ConnectTimeout:
+                    return "Device did not respond to firmware update feature"
+            if r.status_code==200:
+                return r.text
+            else:
+                return "No remote firmware update feature is present"
+        else:
+            return ""
+        
     def requestCMD(self,serverIP,order,payload,timeout=1):
         """
         :callback       payload = {'key1': 'value1', 'key2': 'value2'}   
@@ -1413,12 +1430,15 @@ class Devices(models.Model):
                 if r.status_code==200:
                     return (200,r)
                 else:
-                    return (r.status_code,None)
-            except:
-                logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
-                return (100,None)
+                    return (r.status_code,_("Device responded with HTTP code ") + str(r.status_code))
+            except Exception as ex:
+                if type(ex) is requests.ConnectTimeout:
+                    return (504,_("The device did not respond. Check connections and retry."))
+                else:
+                    logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
+                    return (100,str(sys.exc_info()[1]))
         elif self.DVT.Connection==MEMORY_CONNECTION:
-            self.execute(order=order,params=payload)
+            return self.execute(order=order,params=payload)
         
     @staticmethod
     def requestConfXML(server,xmlfile,timeout=1):
@@ -1959,6 +1979,7 @@ class DeviceCommands(models.Model):
     DVT = models.ForeignKey(DeviceTypes,on_delete=models.CASCADE)
     Identifier = models.CharField(max_length=10)
     HumanTag = models.CharField(max_length=50)
+    #Parameters = models.PositiveSmallIntegerField(help_text='Number of parameters needed to execute the command',default=0)
     
     def __str__(self):
         return self.HumanTag

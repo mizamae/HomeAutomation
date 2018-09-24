@@ -164,7 +164,29 @@
                     console.log("Unknown action " + payload.action);
                 }
             });
-
+			
+            webSocketBridge.demultiplex('Device_command', function(payload, streamName) {
+                // Handle different actions
+                if (payload.action == "command") {
+                	var CMD=payload.CMD;
+                	var status=payload.data[0];
+                	var statusSemaphore=document.getElementById("CMD_status"+CMD);
+                	if (status=="200")
+               		{
+                		$(statusSemaphore).removeClass("alert-danger");
+                		$(statusSemaphore).addClass("alert-success");
+                		statusSemaphore.innerHTML="Command confirmed";
+               		}else{
+               			var error=payload.data[1];
+               			$(statusSemaphore).removeClass("alert-success");
+               			$(statusSemaphore).addClass("alert-danger");
+               			statusSemaphore.innerHTML="Error: " + error;
+               		}
+                	
+                }else {
+                    console.log("Unknown action " + payload.action);
+                }
+            });
             // Helpful debugging
             webSocketBridge.socket.addEventListener('open', 
                 function() { 
@@ -186,6 +208,10 @@
         
         function sendCMD(payload,cmdPK,devicePK)
         {
+        	var statusSemaphore=document.getElementById("CMD_status"+cmdPK.toString());
+        	$(statusSemaphore).removeClass("alert-success");
+        	$(statusSemaphore).removeClass("alert-danger");
+        	statusSemaphore.innerHTML="";
         	webSocketBridge.stream('Device_command').send({
                 "pk": cmdPK,
                 "action": "command",

@@ -205,18 +205,32 @@ class IBERDROLA:
         if not jsonresponse["success"]:
             raise SelectContractException
     
-    
     def initializeDB(self,fromdate,datagramId = 'dailyconsumption'):
         i=0
         while fromdate+datetime.timedelta(days=i)<datetime.datetime.now():
             date=fromdate+datetime.timedelta(days=i)
             self.__call__(date=date,datagramId = datagramId)
             i=i+1
-            PublishEvent(Severity=0,Text='Obtained data for ' + str(date),
-                         Code=self.sensor.getEventsCode()+'init'+str(i),Persistent=True)
-
-        #print('Obtained data for ' + str(date))
+            PublishEvent(Severity=0,Text='Initializing DB for '+str(self.sensor)+'. Obtained data for ' + str(date),
+                         Code=self.sensor.getEventsCode()+'init',Persistent=True)
+    
+    def execute(self,order,params={}):
+        if order=='initializeDB':
+            code=self.sensor.getEventsCode()+'init'
+            if not "fromdate" in params:
+                text=_("Failed to execute order ")+order+_(" on device ")+str(self.sensor)+_(". The parameters passed ")+str(params) + _(" are not adequate.")
+                return (100,"Wrong or not enough parameters passed")
+            else:
+                try:
+                    fromdate=datetime.datetime(params['fromdate'])
+                except:
+                    return (100,"Wrong parameters passed. " + params['fromdate'] + " should be a datetime conversible string.")
+                self.initializeDB(fromdate=fromdate,datagramId = 'dailyconsumption')
+                return (200,None)
         
+        PublishEvent(Severity=0,Text=text,
+                         Code=code,Persistent=True)
+    
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
         Error=''
         null=False
