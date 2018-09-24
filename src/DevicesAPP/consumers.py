@@ -51,7 +51,7 @@ class Devices_command(JsonWebsocketConsumer):
         CMD=DeviceCommands.objects.get(pk=int(content['pk']))
         DV=Devices.objects.get(pk=int(content['data']['devicePK']))
         payload=content['data']['payload']
-        DV.requestOrders(server=DV.IP,order=CMD.Identifier,payload=payload,timeout=1)
+        DV.requestCMD(serverIP=DV.IP,order=CMD.Identifier,payload=payload,timeout=1)
         pass
         
 

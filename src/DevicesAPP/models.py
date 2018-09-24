@@ -1363,7 +1363,7 @@ class Devices(models.Model):
     def scan(cls,FormModel,IP=None):
         if IP==None:
             IP=DEVICES_SUBNET+DEVICES_SCAN_IP4BYTE
-        server=DEVICES_PROTOCOL + IP
+        #server=DEVICES_PROTOCOL + IP
         #server='http://127.0.0.1'
         (status,root)=cls.requestConfXML(server=server,xmlfile=DEVICES_CONFIG_FILE)
         errors=[]
@@ -1382,7 +1382,7 @@ class Devices(models.Model):
             DEVICE_CODE=lastRow+1+IP_OFFSET
             DeviceIP=DEVICES_SUBNET+str(DEVICE_CODE)
             payload={'DEVC':str(DEVICE_CODE)}
-            (status,r)=cls.requestOrders(server=server,order='SetConf.htm',payload=payload)
+            (status,r)=cls.requestOrders(serverIP=IP,order='SetConf.htm',payload=payload)
             if status==200 and Type!=None:
                 form=FormModel(action='add',initial={'Name':DeviceName,'DVT':Type,'Code':DEVICE_CODE,'IP':DeviceIP})
                 state='ConfigOK'
@@ -1399,8 +1399,7 @@ class Devices(models.Model):
             form=FormModel(action='scan',initial={'Name':'','Type':'','Code':'','IP':''})
         return {'devicetype':DEVICE_TYPE,'Form':form,'errors':errors}
     
-    @staticmethod
-    def requestOrders(server,order,payload,timeout=1):
+    def requestCMD(self,serverIP,order,payload,timeout=1):
         """
         :callback       payload = {'key1': 'value1', 'key2': 'value2'}   
                         self.orders_request(server, 'orders', payload) 
@@ -1408,6 +1407,7 @@ class Devices(models.Model):
         if self.DVT.Connection==REMOTE_TCP_CONNECTION:
             import requests
             import random
+            server=DEVICES_PROTOCOL+str(serverIP)
             try:
                 r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
                 if r.status_code==200:
@@ -1619,7 +1619,7 @@ class Devices(models.Model):
                                 self.insertRegister(TimeStamp=timestamp, DatagramId=DatagramId, 
                                                                   year=timestamp.year, values=datagram,NULL=False)
                                 if resetOrder:
-                                    (code,x) = self.requestOrders(server=server,order='resetStatics',payload={})
+                                    (code,x) = self.requestCMD(serverIP=str(self.IP),order='resetStatics',payload={})
                                     if code==200:
                                         Error=''
                                     else:

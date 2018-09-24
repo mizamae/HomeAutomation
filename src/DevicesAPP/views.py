@@ -438,7 +438,7 @@ def AdvancedDevicePage(request,pk):
 #     import json
 #     DV=models.Devices.objects.get(pk=DV)
 #     COMMAND=models.DeviceCommands.objects.get(pk=CMD)
-#     DV.requestOrders(server=DV.IP,order=COMMAND.Identifier,payload=payload,timeout=1)
+#     DV.requestCMD(server=DV.IP,order=COMMAND.Identifier,payload=payload,timeout=1)
 #     #print("Sent command " + str(COMMAND)+ " to the device " + str(DV))
 #     return HttpResponse(status=204)
     
