@@ -395,9 +395,16 @@ class DatagramsForm(ModelForm):
     
     def save(self, commit=True):
         instance = super(DatagramsForm, self).save(commit=False)
-        if commit:
-            instance.save()
-            
+        if not instance.pk:
+            created=True
+        else:
+            created=False
+        instance.store2DB(update_fields=self.changed_data)
+        
+        if 'Enable' in self.changed_data or created:
+            DVs=models.Devices.objects.filter(DVT=instance.DVT)
+            for DV in DVs:
+                DV.updateRequests()
         return instance
 
             
@@ -406,7 +413,7 @@ class DatagramsForm(ModelForm):
         exclude=[]
         
     class Media:
-        js = ('CronFormAnimations.js',)
+        js = ('DatagramsFormAnimations.js',)
         
 class DatagramCustomLabelsForm(forms.Form):
     def __init__(self, *args, **kwargs):

@@ -93,7 +93,7 @@ class ItemOrderingInline(admin.TabularInline):
     
 class DatagramsAdmin(admin.ModelAdmin):
     #filter_horizontal = ('AnItems','DgItems')
-    list_display = ('pk','Type','DVT','Identifier')
+    list_display = ('pk','Type','DVT','Identifier','Enable')
     ordering=('Type','Code')
     inlines = (ItemOrderingInline,)
     

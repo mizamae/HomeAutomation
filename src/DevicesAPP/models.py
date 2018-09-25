@@ -1057,43 +1057,51 @@ class Devices(models.Model):
                     start_date=now+datetime.timedelta(seconds=i*offset+self.Sampletime/2)
                     JOB=scheduler.getJobInStore(jobId=id)
                     
-                    
                     if JOB!=None:
                         scheduler.remove_job(id)
                         
                     callback="DevicesAPP.models:request_callback"
+                    kwargs={'datagramId':DG.Identifier}
                     if self.DVT.Connection==LOCAL_CONNECTION: 
-                        kwargs={'datagramId':DG.Identifier}
-                        if DG.isSynchronous():
-                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
+                        if DG.isSynchronous() :
+                            if DG.Enable:
+                                scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id),kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
-                        else:
-                            pass
+                        elif DG.isCronned() :
+                            if DG.Enable:
+                                scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
+                                          'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':20})
+                            
                     elif self.DVT.Connection==REMOTE_TCP_CONNECTION:  
-                        if DG.isSynchronous(): 
-                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
+                        if DG.isSynchronous() :
+                            if DG.Enable: 
+                                scheduler.add_job(func=callback,trigger='interval',id=id,args=(self, DG, id),seconds=self.Sampletime,start_date=start_date,
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
-                        else:
-                            pass
+                        elif DG.isCronned() :
+                            if DG.Enable:
+                                scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
+                                          'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':20})
+                            
                     elif self.DVT.Connection==MEMORY_CONNECTION:
-                        kwargs={'datagramId':DG.Identifier}
-                        if DG.isSynchronous():
-                            scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
+                        if DG.isSynchronous() : 
+                            if DG.Enable:
+                                scheduler.add_job(func=callback,trigger='interval',id=id,args=(self,DG,id), kwargs=kwargs,seconds=self.Sampletime,start_date=start_date,
                                           replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*self.Sampletime))
-                        elif DG.isCronned():
-                            scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
+                        elif DG.isCronned() :
+                            if DG.Enable:
+                                scheduler.add_cronjob(cronexpression=DG.Cron.getCronExpression(),**{'trigger':'cron','func':callback,'id':id,'args':(self,DG,id),'kwargs':kwargs,
                                           'replace_existing':True,'max_instances':1,'coalesce':True,'misfire_grace_time':20})
                             
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 
                         text=str(_('Polling '))+id+str(_(' for the device '))+self.Name+str(_(' is started with sampletime= ')) + str(self.Sampletime) + str(_(' [s]. Next request at ') + str(JOB.next_run_time))
                         PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode()+str(id))
-                    else:
+                    elif DG.Enable:
                         PublishEvent(Severity=4,
                                      Text='Error adding job '+id+ ' to scheduler. Polling for device ' +self.Name+' could not be started' ,
                                      Code=self.getEventsCode()+'100',Persistent=True)
-                        self.State=STOPPED_STATE
-                        self.save()
+                        #self.State=STOPPED_STATE
+                        #self.save()
                     scheduler.wakeup()
             else:        
                 self.State=STOPPED_STATE
@@ -1106,7 +1114,10 @@ class Devices(models.Model):
                     id=job['id']
                     JOB=scheduler.getJobInStore(jobId=id)
                     if JOB!=None: 
-                        scheduler.remove_job(id)
+                        try:
+                            scheduler.remove_job(id)
+                        except:
+                            pass
                         JOBs=scheduler.getJobsInStore()
                         if JOB in JOBs:
                             self.State=RUNNING_STATE
@@ -1118,7 +1129,7 @@ class Devices(models.Model):
                             severity=0
                     else:
                         text=str(_('Job ')) + str(id) + str(_(' did not exist. The device ') + self.Name + str(_(' was already stopped.'))) 
-                        severity=5  
+                        severity=2  
             else:
                 text='Unhandled error on updateRequests for device ' + str(self.Name) 
                 severity=5  
@@ -1876,12 +1887,17 @@ class Datagrams(models.Model):
     DVT = models.ForeignKey(DeviceTypes,on_delete=models.CASCADE)
     ITMs = models.ManyToManyField(DatagramItems, through='ItemOrdering')
     
+    Enable=models.BooleanField(default=True,help_text=str(_('Enables the datagram to be queried')))
+    
     def __str__(self):
         return self.Identifier
         
-    def store2DB(self):
+    def store2DB(self,update_fields=[]):
         self.full_clean()
-        super().save() 
+        if self.pk:
+            super().save(update_fields=update_fields) 
+        else:
+            super().save() 
     
     def isAsynchronous(self):
         return self.Type==DG_ASYNCHRONOUS
