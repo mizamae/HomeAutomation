@@ -209,7 +209,7 @@ class MainDeviceVars(models.Model):
     
     def getUpdateRegisterSQL(self,pk):
         sql=self.SQLupdateRegister
-        #SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE id=? ''' # the * will be replaced by the column name,the ? by the value and the $ by the pk 
+        #SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE timestamp=? ''' # the * will be replaced by the column name,the $ by the value and the ? by the pk 
         sql=sql.replace('%s','"'+self.getRegistersDBTable()+'"').replace('*','"'+self.getRegistersDBTag()+'"').replace('$',str(self.Value))
         return {'query':sql}
     

@@ -247,7 +247,7 @@ class IBERDROLA:
                         for data in datas:
                             timestamp=data['timestamp']
                             self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data['valor'],],NULL=null)
-                            Error=''
+                        Error=''
                     else:
                         null=True
                         Error='Empty dataframe'
