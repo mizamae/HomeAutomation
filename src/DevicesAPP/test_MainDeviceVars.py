@@ -191,23 +191,27 @@ class MainDeviceVarsModelTests(TestCase):
         now=timezone.now()
         instance.updateValue(newValue=newValue1,timestamp=now,writeDB=True,force=False)
         instance2.updateValue(newValue=newValue2,timestamp=now,writeDB=True,force=False)
-
+        time.sleep(1)
+        instance2.updateValue(newValue=newValue2-1,timestamp=timezone.now(),writeDB=True,force=False)
         dateEnd=(timezone.now()+datetime.timedelta(seconds=4)).replace(microsecond=0)
           
         chart=MainDeviceVars.getCharts(fromDate=dateIni,toDate=dateEnd)
+        # missing values are filled with the previous or the next valid value
         title=chart['title']
         self.assertTrue('MainVariables' in title)
         self.assertEqual(chart['cols'][0][0]['label'],'timestamp') # first column is timestamp
         self.assertEqual(chart['cols'][0][1]['label'],MainDeviceVarDict['Label']) # second column is the first var
         self.assertEqual(chart['cols'][0][2]['label'],newDict['Label']) # third column is the second var
 
-        self.assertEqual(len(chart['rows']),3) # there are 3 rows with data
+        self.assertEqual(len(chart['rows']),4) # there are 3 rows with data
         self.assertEqual(chart['rows'][0][1],MainDeviceVarDict['Value'])
-        self.assertEqual(chart['rows'][0][2],None)
-        self.assertEqual(chart['rows'][1][1],None)
+        self.assertEqual(chart['rows'][0][2],newDict['Value']) # this value is filled in with previous or next valid value
+        self.assertEqual(chart['rows'][1][1],MainDeviceVarDict['Value'])
         self.assertEqual(chart['rows'][1][2],newDict['Value'])
         self.assertEqual(chart['rows'][2][1],newValue1)
         self.assertEqual(chart['rows'][2][2],newValue2)
+        self.assertEqual(chart['rows'][3][1],newValue1)
+        self.assertEqual(chart['rows'][3][2],newValue2-1)
           
         print('    -> Tested with no records in the solicited timespan but yes in the DB')
         ''' creates two registers dated in dateIni and dateEnd with the last value from the registers DB
