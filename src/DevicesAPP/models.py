@@ -247,8 +247,8 @@ class MainDeviceVars(models.Model):
                 logger.info('Succeded in creating the table "'+TableName+'"') 
         except:
             text = str(_("Error in create_MainVars_table: ")) + str(sys.exc_info()[1]) 
-            raise DevicesAppException(text)
             PublishEvent(Severity=5,Text=text + 'SQL: ' + sql,Persistent=True,Code=self.getEventsCode()+'100')
+            raise DevicesAppException(text)
             
     def insertRegister(self,TimeStamp,NULL=False):
         """
@@ -265,11 +265,13 @@ class MainDeviceVars(models.Model):
             self.checkRegistersDB(Database=DB)
             result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
             if result==INTEGRITY_ERROR:
+                logger.warning('Integrity error with MainVar '+str(self)+' and query '+sql)
                 query=self.getUpdateRegisterSQL(pk=TimeStamp)
                 sql=query['query']
+                logger.warning('Trying to update with query '+sql)
                 result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=[TimeStamp,])
         except:
-            raise DevicesAppException("Unexpected error in insert_MainVars_register:" + str(sys.exc_info()[1]))
+            raise DevicesAppException("Unexpected error in insert_MainVars_register for variable "+self.Label+":" + str(sys.exc_info()[1]))
     
     def insertAllRegisters(self,TimeStamp,NULL=False):
         """
@@ -916,6 +918,7 @@ def request_callback(DV,DG,jobID,**kwargs):
     if (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
         import DevicesAPP.callbacks
         class_=getattr(DevicesAPP.callbacks, DV.DVT.Code)
+        status={}
         try:
             instance=class_(DV)
             status=instance(**kwargs)
@@ -1604,7 +1607,7 @@ class Devices(models.Model):
             DB.executeTransactionWithCommit(SQLstatement=sql, arg=roundvalues)
             self.sendUpdateSignals(DG_id=DatagramId,values=roundvalues)
         except:
-            raise DevicesAppException("Unexpected error in insert_device_register:" + str(sys.exc_info()[1]))
+            raise DevicesAppException("Unexpected error in insert_device_register for device "+str(self)+":" + str(sys.exc_info()[1]))
             
     def sendUpdateSignals(self,DG_id,values):
         DG=Datagrams.objects.get(Identifier=DG_id,DVT=self.DVT)
