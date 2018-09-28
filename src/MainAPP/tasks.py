@@ -168,5 +168,5 @@ def run_afterBoot():
     # DV=Devices.objects.filter(DVT__Code='IBERDROLA')
     # instance=IBERDROLA(DV[0])
     # import datetime
-    # instance.initializeDB(fromdate=datetime.datetime(year=2018,month=9,day=25),datagramId = 'dailyconsumption')
-#     
+    # instance.initializeDB(fromdate=datetime.datetime(year=2018,month=9,day=27),datagramId = 'dailyconsumption')
+    
