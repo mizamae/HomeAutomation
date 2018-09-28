@@ -101,7 +101,7 @@ def DailyTask():
         
 def start_DailyTask():
     id='DailyTask'
-    scheduler.add_job(func=DailyTask,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    scheduler.add_job(func=DailyTask,trigger='cron',id=id,hour=0,max_instances=1,coalesce=True,misfire_grace_time=60*60*6,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-D')
 
@@ -135,11 +135,11 @@ def HourlyTask():
 
 def start_HourlyTask():
     id='HourlyTask'
-    scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=30,replace_existing=True)
+    scheduler.add_job(func=HourlyTask,trigger='cron',id=id,minute=0,max_instances=1,coalesce=True,misfire_grace_time=40*60,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-H')
     id='afterBoot'
-    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=5,replace_existing=True)
+    scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=10,replace_existing=True)
 
 def run_afterBoot():
     id='afterBoot'
@@ -163,10 +163,10 @@ def run_afterBoot():
 #      
 
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
-# from DevicesAPP.callbacks import IBERDROLA
-# from DevicesAPP.models import Devices
-# DV=Devices.objects.filter(DVT__Code='IBERDROLA')
-# instance=IBERDROLA(DV[0])
-# import datetime
-# instance.initializeDB(fromdate=datetime.datetime(year=2018,month=9,day=21),datagramId = 'dailyconsumption')
+    # from DevicesAPP.callbacks import IBERDROLA
+    # from DevicesAPP.models import Devices
+    # DV=Devices.objects.filter(DVT__Code='IBERDROLA')
+    # instance=IBERDROLA(DV[0])
+    # import datetime
+    # instance.initializeDB(fromdate=datetime.datetime(year=2018,month=9,day=25),datagramId = 'dailyconsumption')
 #     
