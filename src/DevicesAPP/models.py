@@ -1147,10 +1147,10 @@ class Devices(models.Model):
         if LastUpdated!= None:
             self.LastUpdated=LastUpdated
             updateFields.append('LastUpdated')
-            PublishEvent(Severity=0,Text=self.Name+str(_(' updated OK')),Persistent=True,Code=self.getEventsCode()+'1')
+            PublishEvent(Severity=0,Text=self.Name+str(_(' updated OK')),Persistent=True,Code=self.getEventsCode()+str(DG.pk))
         self.Error=Error
         if Error!='':
-            PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True,Code=self.getEventsCode()+'105')
+            PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True,Code=self.getEventsCode()+str(DG.pk))
             
         self.save(update_fields=updateFields)
         

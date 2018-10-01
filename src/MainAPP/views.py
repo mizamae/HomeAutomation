@@ -140,6 +140,8 @@ def SiteSettings(request):
             greenmessages.append(_('Changes updated OK'))
         elif not form.is_valid():
             redmessages.append(_('Something is wrong with the data provided'))
+        SETTINGS=models.SiteSettings.load()
+        form=forms.SiteSettingsForm(instance=SETTINGS)
         return render(request, 'sitesettings.html', {'Form': form,
                                                      'GreenMessages':greenmessages,
                                                      'RedMessages':redmessages,
@@ -330,12 +332,8 @@ def GitUpdate(request):
     from os import walk
     for root, dirs, n in walk(GIT_PATH):
         if ".git" in dirs:
-            from utils.GitHub import update
-            revision=update(root)
-            if revision!=None:
-                SETTINGS=models.SiteSettings.load()
-                SETTINGS.VERSION_CODE=revision
-                SETTINGS.save(update_fields=['VERSION_CODE',])
+            SETTINGS=models.SiteSettings.load()
+            SETTINGS.checkRepository(force=True)
             break
     return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
 
