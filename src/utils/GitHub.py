@@ -177,7 +177,7 @@ def updateRelease(root,tag):
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
         stdout, err = process.communicate()
         
-        if 'Previous HEAD position was ' in err:
+        if 'Previous HEAD position was' in err or 'HEAD is now at' in err:
             # CHECK IF THERE IS ANY UNAPPLIED MIGRATION
             process = Popen("python src/manage.py showmigrations --list", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
