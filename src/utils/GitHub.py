@@ -20,17 +20,18 @@ def checkDeveloperUpdates(root):
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
     stdout, err = process.communicate()
 
-    if "local out of date" in stdout:
-        process = Popen("git rev-parse --verify HEAD", cwd=root, shell=True,
+    process = Popen("git rev-parse --verify HEAD", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
-        stdout, err = process.communicate()
-        revision = (stdout[:7] if stdout and
-                    re.search(r"(?i)[0-9a-f]{32}", stdout) else "-")
+    dout, err = process.communicate()
+    revision = (dout[:7] if dout and
+                re.search(r"(?i)[0-9a-f]{32}", dout) else "-")
+        
+    if "local out of date" in stdout:
         PublishEvent(Severity=10,Text=_("There is a new development version to download. Version code: " + revision),Persistent=True,Code='GitHub-1',Webpush=True)
-        return {'update':True}
+        return {'update':True,'tag':None}
     else:
-        PublishEvent(Severity=1,Text=_("You are already on the latest development version"),Persistent=True,Code='GitHub-1')
-    return {'update':False}
+        PublishEvent(Severity=1,Text=_("You are already on the latest development version " + revision),Persistent=True,Code='GitHub-1')
+    return {'update':False,'tag':revision}
 
 def checkReleaseUpdates(root,currentVersion):
     # SYNCHRONIZES THE TAGS FROM THE REMOTE

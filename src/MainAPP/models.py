@@ -139,6 +139,9 @@ class SiteSettings(SingletonModel):
                 release=checkDeveloperUpdates(root=GIT_PATH)
             else:
                 release=checkReleaseUpdates(root=GIT_PATH,currentVersion=self.VERSION_CODE)
+            if release['tag']!=None:
+                self.VERSION_CODE=release['tag']
+                self.save(update_fields=['VERSION_CODE',])
             if release['update'] and (self.VERSION_AUTO_UPDATE or force):
                 if self.VERSION_DEVELOPER:
                     revision=updateDeveloper(root=GIT_PATH)

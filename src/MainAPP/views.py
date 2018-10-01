@@ -140,6 +140,8 @@ def SiteSettings(request):
             greenmessages.append(_('Changes updated OK'))
         elif not form.is_valid():
             redmessages.append(_('Something is wrong with the data provided'))
+        SETTINGS=models.SiteSettings.load()
+        form=forms.SiteSettingsForm(instance=SETTINGS)
         return render(request, 'sitesettings.html', {'Form': form,
                                                      'GreenMessages':greenmessages,
                                                      'RedMessages':redmessages,
