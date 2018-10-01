@@ -29,7 +29,7 @@ def checkDeveloperUpdates(root):
         PublishEvent(Severity=10,Text=_("There is a new development version to download. Version code: " + revision),Persistent=True,Code='GitHub-1',Webpush=True)
         return {'update':True}
     else:
-        PublishEvent(Severity=1,Text=_("You are already on the latest development version: " + revision),Persistent=True,Code='GitHub-1')
+        PublishEvent(Severity=1,Text=_("You are already on the latest development version"),Persistent=True,Code='GitHub-1')
     return {'update':False}
 
 def checkReleaseUpdates(root,currentVersion):
