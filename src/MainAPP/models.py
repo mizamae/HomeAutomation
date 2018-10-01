@@ -360,7 +360,6 @@ class AdditionalCalculations(models.Model):
         (2,_('Every day at 0h')),
         (3,_('Every week')),
         (4,_('Every month')),
-        (5,_('After new data from a device arrives')),
     )
       
     CALCULATION_CHOICES=(
@@ -427,9 +426,6 @@ class AdditionalCalculations(models.Model):
                 elif self.Periodicity==3 and now.weekday()==0: # weekly calculation launched on Monday at 00:00
                     return True
                 elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
-                    return True
-            elif now.hour==12 and now.minute==0:
-                if self.Periodicity==5: # daily calculation launched on next day at 12:00
                     return True
         return False
       
@@ -577,6 +573,12 @@ class AutomationVariables(models.Model):
         self.full_clean()
         super().save() 
     
+    def checkAdditionalCalculations(self):
+        ACALCs=AdditionalCalculations.objects.filter(SourceVar=self)
+        for ACALC in ACALCs:
+            if ACALC.checkTrigger():
+                ACALC.calculate()
+        
     def updateValue(self,newValue=None,overrideTime=None,**kwargs):
         if self.UserEditable:
             MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,**kwargs)

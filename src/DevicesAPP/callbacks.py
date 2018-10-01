@@ -270,7 +270,6 @@ class IBERDROLA:
                     retries=retries-1
                 else:
                     retries=0
-                    self.sensor.sendNewDataSignals(DG_id=datagramId)
             except Exception as ex:
                 retries=retries-1
                 if type(ex) is NoResponseException:
@@ -589,7 +588,6 @@ class ESIOS(object):
         
         if null==False:
             LastUpdated=timezone.now()
-            self.sensor.sendNewDataSignals(DG_id=datagramId)
         else:
             LastUpdated=None
             timestamp=timezone.now()
@@ -686,7 +684,6 @@ class OpenWeatherMap(object):
             
             if null==False:
                 LastUpdated=timezone.now()
-                self.sensor.sendNewDataSignals(DG_id=datagramId)
             else:
                 LastUpdated=None
                 timestamp=timezone.now()
@@ -960,7 +957,6 @@ class DHT22(object):
         }
         if null==False:
             LastUpdated=timestamp
-            self.sensor.sendNewDataSignals(DG_id=datagramId)
         else:
             LastUpdated=None
         

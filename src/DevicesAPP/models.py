@@ -1147,7 +1147,8 @@ class Devices(models.Model):
         if LastUpdated!= None:
             self.LastUpdated=LastUpdated
             updateFields.append('LastUpdated')
-            PublishEvent(Severity=0,Text=self.Name+str(_(' updated OK')),Persistent=True,Code=self.getEventsCode()+str(DG.pk))
+            self.sendNewDataSignals(DG_id=DG.Identifier)
+            PublishEvent(Severity=0,Text=str(_('Datagram "'))+str(DG)+str(_('" for device "'))+self.Name+str(_('" updated OK')),Persistent=True,Code=self.getEventsCode()+str(DG.pk))
         self.Error=Error
         if Error!='':
             PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True,Code=self.getEventsCode()+str(DG.pk))

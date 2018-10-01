@@ -29,3 +29,11 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
 def NewDataFromDevice_handler(sender, **kwargs):
     DV=kwargs['DV']
     DG=kwargs['DG']
+    Tags=DG.getStructure()['names']
+    for Tag in Tags:
+        try:
+            AVAR=AutomationVariables.objects.get(Tag=Tag,Device=DV.pk)
+            AVAR.checkAdditionalCalculations()
+        except:
+            pass
+    
