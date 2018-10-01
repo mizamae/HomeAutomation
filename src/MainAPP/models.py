@@ -576,7 +576,7 @@ class AutomationVariables(models.Model):
     def checkAdditionalCalculations(self):
         ACALCs=AdditionalCalculations.objects.filter(SourceVar=self)
         for ACALC in ACALCs:
-            if ACALC.checkTrigger():
+            if ACALC.Periodicity==0:
                 ACALC.calculate()
         
     def updateValue(self,newValue=None,overrideTime=None,**kwargs):
