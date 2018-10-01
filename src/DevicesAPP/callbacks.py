@@ -212,6 +212,11 @@ class IBERDROLA:
             self.__call__(date=date,datagramId = datagramId)
             i=i+1
             PublishEvent(Severity=0,Text='Initializing DB for '+str(self.sensor)+'. Obtained data for ' + str(date),
+                         Code=self.sensor.getEventsCode()+'singleDay',Persistent=True)
+    
+    def getSingleDay(self,date,datagramId = 'dailyconsumption'):
+        self.__call__(date=date,datagramId = datagramId)
+        PublishEvent(Severity=0,Text='Got single day data for '+str(self.sensor)+'. Obtained data for ' + str(date),
                          Code=self.sensor.getEventsCode()+'init',Persistent=True)
     
     def execute(self,order,params={}):
