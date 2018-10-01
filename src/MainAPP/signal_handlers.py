@@ -24,3 +24,8 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
                                       immediately=True)
         except:
             pass
+
+@receiver(DevicesAPP.signals.SignalNewDataFromDevice, dispatch_uid="SignalNewDataFromDevice_MainAPP_receiver")
+def NewDataFromDevice_handler(sender, **kwargs):
+    DV=kwargs['DV']
+    DG=kwargs['DG']

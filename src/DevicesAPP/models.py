@@ -23,7 +23,7 @@ import utils.BBDD
 from MainAPP.constants import REGISTERS_DB_PATH
 import MainAPP.models
 
-from .signals import SignalVariableValueUpdated
+from .signals import SignalVariableValueUpdated,SignalNewDataFromDevice
 from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
                         DEVICES_CONFIG_FILE,DEVICES_FIRMWARE_WEB,IP_OFFSET,POLLING_SCHEDULER_URL,\
@@ -1616,7 +1616,11 @@ class Devices(models.Model):
         SignalVariableValueUpdated.send(sender=None, timestamp=timestamp,
                                                     Tags=datagram['names'],
                                                     Values=values[1:],Types=datagram['datatypes'])
-        
+    
+    def sendNewDataSignals(self,DG_id):
+        DG=Datagrams.objects.get(Identifier=DG_id,DVT=self.DVT)
+        SignalNewDataFromDevice.send(sender=None,DV=self,DG=DG)
+            
     def requestDatagram(self,DatagramId,timeout=1,writeToDB=True,resetOrder=True,retries=1):
         """
         Requests a xml file from a server

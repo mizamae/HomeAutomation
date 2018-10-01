@@ -344,9 +344,9 @@ class AdditionalCalculations(models.Model):
         (0,_('With every new value')),
         (1,_('Every hour')),
         (2,_('Every day at 0h')),
-        (5,_('Every day at 12h')),
         (3,_('Every week')),
-        (4,_('Every month'))
+        (4,_('Every month')),
+        (5,_('After new data from a device arrives')),
     )
       
     CALCULATION_CHOICES=(
