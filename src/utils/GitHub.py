@@ -9,6 +9,12 @@ import logging
 logger = logging.getLogger("project")
 
 def checkDeveloperUpdates(root):
+    PublishEvent(Severity=0,Text=_("Checking-out to the development branch"),Persistent=False,Code='GitHub-1')
+
+    process = Popen("git checkout redesign", cwd=root, shell=True,
+                    stdout=PIPE, stderr=PIPE,universal_newlines=True)
+    stdout, err = process.communicate()
+        
     cmd='git remote show origin'
     process = Popen(cmd, cwd=root, shell=True,
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
