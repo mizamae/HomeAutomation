@@ -56,6 +56,7 @@ class SiteSettingsForm(ModelForm):
                      Field('VERSION_AUTO_DETECT'),
                      Field('VERSION_AUTO_UPDATE'),
                      Field('VERSION_CODE'),
+                     Field('VERSION_DEVELOPER'),
                      AppendedText('NTPSERVER_RESTART_TIMEDELTA', 'min'),
                 ),
             Fieldset(_('Slaves WIFI network'),

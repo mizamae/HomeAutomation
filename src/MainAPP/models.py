@@ -76,6 +76,8 @@ class SiteSettings(SingletonModel):
                                 help_text=_('Automatically updates to (and applies) the latest software'),default=False)
     VERSION_CODE= models.CharField(verbose_name=_('Code of the version of the application framework'),
                                 max_length=100,default='')
+    VERSION_DEVELOPER=models.BooleanField(verbose_name=_('Update with the new software development versions'),
+                                help_text=_('Tracks the development versions (may result in unstable behaviour)'),default=False)
     NTPSERVER_RESTART_TIMEDELTA=models.PositiveSmallIntegerField(verbose_name=_('NTP server restart time delta'),
                                 help_text=_('Time difference in minutes that will trigger a restart of the NTP server'),default=5)
     
@@ -129,13 +131,20 @@ class SiteSettings(SingletonModel):
         self.checkRepository()
         self.checkDeniableIPs()
         
-    def checkRepository(self):
-        if self.VERSION_AUTO_DETECT:
-            from utils.GitHub import checkUpdates
+    def checkRepository(self,force=False):
+        if self.VERSION_AUTO_DETECT or force:
+            from utils.GitHub import checkDeveloperUpdates,checkReleaseUpdates,updateDeveloper,updateRelease
             from .constants import GIT_PATH
-            if checkUpdates(root=GIT_PATH) and self.VERSION_AUTO_UPDATE:
-                from utils.GitHub import update
-                revision=update(root=GIT_PATH)
+            if self.VERSION_DEVELOPER:
+                release=checkDeveloperUpdates(root=GIT_PATH)
+            else:
+                release=checkReleaseUpdates(root=GIT_PATH,currentVersion=self.VERSION_CODE)
+            if release['update'] and (self.VERSION_AUTO_UPDATE or force):
+                if self.VERSION_DEVELOPER:
+                    revision=updateDeveloper(root=GIT_PATH)
+                else:
+                    revision=updateRelease(root=GIT_PATH,tag=release['tag'])
+                    
                 if revision!=None:
                     self.VERSION_CODE=revision
                     self.save(update_fields=['VERSION_CODE',])
@@ -215,6 +224,8 @@ class SiteSettings(SingletonModel):
                     NGINX.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
                     NGINX.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
                     NGINX.reload()
+            if field in ['VERSION_DEVELOPER',]:
+                self.checkRepository(force=True)
     
     @staticmethod
     def editKeyedFile(path,key,newValue,endChar=' ',nextLine=True):
