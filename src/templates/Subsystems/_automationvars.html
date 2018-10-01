@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load staticfiles %}
-{% load get_at_index %}
+{% load mainapp_tags %}
 <tr> 
     <td>{{ row.Label }}</td>
     <td class="hidden-sm hidden-xs"><span id="timestamp">{{ VARs_values|get_at_index:index|get_at_index:0 }}</span></td>

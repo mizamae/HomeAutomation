@@ -4,6 +4,7 @@
     {% load thumbnail %}
     {% load i18n %}
     {% load tz %}
+    {% load mainapp_tags %}
   <head>
 
     <meta charset="utf-8">
@@ -68,7 +69,8 @@
         {% block navbar-menu %}
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            {% block navbar-left %}{% endblock %}
+            {% block navbar-left %}
+            {% endblock %}
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% block navbar-right %}
@@ -100,7 +102,11 @@
 				              {% endfor %}
 				      </form>
 				  </div>
-				</div>  
+				</div>
+				{% is_development as develop_version %}
+	            {% if develop_version %}
+	            <li><a>DEVELOPMENT VERSION!</a></li>
+	            {% endif %}
                 <li><a id="RT_status"></a></li>
               	{% get_current_timezone as TIME_ZONE %}
                 <li><a>TZ: {{ TIME_ZONE }}</a></li>
