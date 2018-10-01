@@ -70,7 +70,7 @@ def updateDeveloper(root):
         revision = (stdout[:7] if stdout and
                     re.search(r"(?i)[0-9a-f]{32}", stdout) else "-")
         PublishEvent(Severity=0,Text=_("%s the latest development revision '%s'.") %
-              (_("Already at") if not updated else _("Updated to"), revision),Persistent=False,Code='GitHub-2')
+              (_("Already at") if not updated else _("Updated to"), revision),Persistent=updated,Code='GitHub-2')
         
         if updated:
             # CHECK IF THERE IS ANY UNAPPLIED MIGRATION
@@ -107,7 +107,7 @@ def updateDeveloper(root):
             elif err:
                 PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
             
-            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
+            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=True,Code='MainAPPViews-8')
                 
         return revision
     else:
@@ -177,7 +177,7 @@ def updateRelease(root,tag):
     success = not process.returncode
 
     if success:
-        PublishEvent(Severity=0,Text=_("Checking-out to the release version ") + tag,Persistent=False,Code='GitHub-1')
+        PublishEvent(Severity=0,Text=_("Checking-out to the release version ") + tag,Persistent=True,Code='GitHub-1')
 
         process = Popen("git checkout refs/tags/"+tag, cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
@@ -218,7 +218,7 @@ def updateRelease(root,tag):
             elif err:
                 PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
              
-            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=False,Code='MainAPPViews-8')
+            PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=True,Code='MainAPPViews-8')
                  
             return tag
         else:
