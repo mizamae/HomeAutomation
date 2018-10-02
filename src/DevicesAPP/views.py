@@ -432,6 +432,18 @@ def AdvancedDevicePage(request,pk):
                                                         {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order),
                                                          'Commands':COMMANDS,'Firmware':firmware})
 
+@login_required
+@user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
+def firmwareUpdate(request,devicePK):
+    DV=get_object_or_404(models.Devices,pk=int(devicePK))
+    if request.method == 'POST' and request.FILES['file']:
+        from django.core.files.storage import FileSystemStorage
+        firmwareFile = request.FILES['file']
+        fs = FileSystemStorage()
+        firmwareFile = fs.save(firmwareFile.name, firmwareFile)
+        uploaded_file_url = fs.url(firmwareFile)
+        DV.uploadFirmware(file=uploaded_file_url)
+    
 # @login_required
 # @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
 # def sendCMD(request,CMD,DV,payload=''):

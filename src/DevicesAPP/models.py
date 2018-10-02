@@ -23,6 +23,7 @@ import utils.BBDD
 from MainAPP.constants import REGISTERS_DB_PATH
 import MainAPP.models
 
+
 from .signals import SignalVariableValueUpdated,SignalNewDataFromDevice
 from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
@@ -1414,7 +1415,29 @@ class Devices(models.Model):
             form=FormModel(action='scan',initial={'Name':'','Type':'','Code':'','IP':''})
         return {'devicetype':DEVICE_TYPE,'Form':form,'errors':errors}
     
+    def uploadFirmware(self,file):
+        import requests
+        from django.core.files.storage import FileSystemStorage
+        try:
+            server=DEVICES_PROTOCOL+str(self.IP)
+            fs = FileSystemStorage()
+            r = requests.post(server+'/'+DEVICES_FIRMWARE_WEB,files={'file':fs.open(file,'rb')},timeout=timeout)
+            return r.status_code
+        except Exception as ex:
+            if type(ex) is requests.ConnectTimeout:
+                return "Device did not respond to firmware update feature"
+        
     def getFirmwareWeb(self,timeout=1):
+        """
+        ARDUINO RESPONSE: "<html><body><form method='POST' action='' enctype='multipart/form-data'>
+                              <input type='file' name='update'>
+                              <input type='submit' value='Update'>
+                           </form>
+                         </body></html>"
+        """
+        from .forms import FileUpload
+        FORM=FileUpload(DV=self)
+        return FORM
         if self.DVT.Connection==REMOTE_TCP_CONNECTION:
             import requests
             import random

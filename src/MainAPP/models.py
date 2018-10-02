@@ -574,10 +574,9 @@ class AutomationVariables(models.Model):
         super().save() 
     
     def checkAdditionalCalculations(self):
-        ACALCs=AdditionalCalculations.objects.filter(SourceVar=self)
+        ACALCs=AdditionalCalculations.objects.filter(SourceVar=self,Periodicity=0)
         for ACALC in ACALCs:
-            if ACALC.Periodicity==0:
-                ACALC.calculate()
+            ACALC.calculate()
         
     def updateValue(self,newValue=None,overrideTime=None,**kwargs):
         if self.UserEditable:

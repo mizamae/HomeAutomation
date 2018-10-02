@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 <div class="row">
    	<div class="col-md-8">
 	    <div id="devicedata" class="table-responsive">
@@ -49,7 +50,7 @@
 	        {% endif %}
         </div>
         <div class="row" id="firmware_span">
-        	{{ Firmware|safe }}
+        	{% crispy Firmware %}
         </div>
     </div>
 </div>

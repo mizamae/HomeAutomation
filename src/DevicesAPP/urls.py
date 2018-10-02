@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^graph/(?P<model>.+)/$',views.viewGraphs, name='graph'),
     url(r'^advanceddevicepage/(?P<pk>.+)/$',views.AdvancedDevicePage, name='devicepage'),
 #     url(r'^sendcommandtodevice/(?P<CMD>.+)/(?P<DV>.+)/(?P<payload>.+)/$',views.sendCMD, name='sendCMD'),
+    url(r'^firmwareUpdate/(?P<devicePK>.+)/$',views.firmwareUpdate, name='firmwareUpdate'),
     url(r'^async_post/$', views.asynchronous_datagram, name='asynchronous_datagram'),
     url(r'^ajax_get_orders_for_device/(?P<devicePK>.+)/$', views.ajax_get_orders_for_device, name='ajax_get_orders_for_device'),
     url(r'^ajax_get_data_for_devicetype/(?P<devicetypePK>.+)/$', views.ajax_get_data_for_devicetype, name='ajax_get_data_for_devicetype'),

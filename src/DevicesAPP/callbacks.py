@@ -212,16 +212,15 @@ class IBERDROLA:
             self.__call__(date=date,datagramId = datagramId)
             i=i+1
             PublishEvent(Severity=0,Text='Initializing DB for '+str(self.sensor)+'. Obtained data for ' + str(date),
-                         Code=self.sensor.getEventsCode()+'singleDay',Persistent=True)
+                         Code=self.sensor.getEventsCode()+'init',Persistent=True)
     
     def getSingleDay(self,date,datagramId = 'dailyconsumption'):
         self.__call__(date=date,datagramId = datagramId)
         PublishEvent(Severity=0,Text='Got single day data for '+str(self.sensor)+'. Obtained data for ' + str(date),
-                         Code=self.sensor.getEventsCode()+'init',Persistent=True)
+                         Code=self.sensor.getEventsCode()+'singleDay',Persistent=True)
     
     def execute(self,order,params={}):
         if order=='initializeDB':
-            code=self.sensor.getEventsCode()+'init'
             if not "fromdate" in params:
                 text=_("Failed to execute order ")+order+_(" on device ")+str(self.sensor)+_(". The parameters passed ")+str(params) + _(" are not adequate.")
                 return (100,"Wrong or not enough parameters passed")
@@ -232,9 +231,17 @@ class IBERDROLA:
                     return (100,"Wrong parameters passed. " + params['fromdate'] + " should be a datetime conversible string.")
                 self.initializeDB(fromdate=fromdate,datagramId = 'dailyconsumption')
                 return (200,None)
-        
-        PublishEvent(Severity=0,Text=text,
-                         Code=code,Persistent=True)
+        elif order=='singleDay':
+            if not "date" in params:
+                text=_("Failed to execute order ")+order+_(" on device ")+str(self.sensor)+_(". The parameters passed ")+str(params) + _(" are not adequate.")
+                return (100,"Wrong or not enough parameters passed")
+            else:
+                try:
+                    date=datetime.datetime(params['date'])
+                except:
+                    return (100,"Wrong parameters passed. " + params['date'] + " should be a datetime conversible string.")
+                self.getSingleDay(date=date,datagramId = 'dailyconsumption')
+                return (200,None)
     
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
         Error=''

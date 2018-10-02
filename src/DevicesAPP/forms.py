@@ -643,3 +643,22 @@ class BeaconsForm(ModelForm):
         
     class Media:
         js = ('GoogleMapsLatLong.js',)
+
+class FileUpload(forms.Form):
+    file = forms.FileField(label=_('Select the firmware file'))
+    
+    def __init__(self, *args, **kwargs):
+        DV = kwargs.pop('DV')
+        super(FileUpload, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method = 'post'
+        self.helper.label_class = FORMS_LABEL_CLASS
+        self.helper.field_class = FORMS_FIELD_CLASS
+        self.helper.form_action = reverse(APP_TEMPLATE_NAMESPACE+':firmwareUpdate',args=[DV.pk,])
+        
+        self.helper.layout = Layout(
+            Field('file', autofocus="",css_class='input-sm',id='firmwareFile'),
+            Submit('submit', _('Submit'),css_class='btn-primary center-block'),
+            )
+    
