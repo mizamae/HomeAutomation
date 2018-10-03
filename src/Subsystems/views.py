@@ -81,8 +81,8 @@ def generic(request,system):
         storage = get_messages(request)
         accordion1=False
         accordion2=True
-        accordion3=False
-        accordion4=True
+        accordion3=True
+        accordion4=False
         accordion5=False
         for message in storage:
             if 'accordion1' == message.message:
