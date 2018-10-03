@@ -23,6 +23,9 @@
 				{% if model == 'automationvars' %}
 					{% include "Subsystems/_automationvars_table.html" with tableId=model %}
 				{% endif %}
+				{% if model == 'thermostats' %}
+					{% include "_thermostats.html" with tableId=model %}
+				{% endif %}
 				{% if model == 'automationvarweeklyschedule' %}
 					{% include "Subsystems/_automationvarweeklyschedules_table.html" with tableId=model %}
 				{% endif %}

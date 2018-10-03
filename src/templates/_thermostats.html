@@ -1,10 +1,9 @@
-{% extends "base.html" %}
+
 {% load i18n %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 {% load thumbnail %}
 
-{% block title %}{{ block.super }}{{ title }}{% endblock %}
 
 {% block extrahead %}
 	<meta http-equiv="refresh" content="600"/>
@@ -14,18 +13,14 @@
 
 
 
-{% block container %}
-<div class="container home-container">
-	<div class="row">
-	{% for THERM in THERMs %}
-		<div class="col-md-4 col-sm-12">
-       		<h2 style="text-align: center;">{{ THERM.RITM.Var1.Label }}</h2>
-			<div id='thermostat{{ forloop.counter }}' class='row'></div>
-		</div>
-   {% endfor %}
+<div class="row">
+{% for THERM in THERMs %}
+	<div class="col-md-4 col-sm-12">
+      		<h2 style="text-align: center;">{{ THERM.RITM.Var1.Label }}</h2>
+		<div id='thermostat{{ forloop.counter }}' class='row'></div>
 	</div>
+  {% endfor %}
 </div>
-{% endblock container %}
 
 {% block scripts %}
 <script src="{% static 'AvarsRT.js' %}"></script>	

@@ -41,8 +41,17 @@
 		{% endwith %}
 	{% endif %}
 	
-	{% if SCHs %}
+	{% if THERMs %}
 		{% with panelID="accordion3" collapseID="collapse3" displayed=accordion3 %}
+        {% trans "THERMOSTATS" as var_header %}
+		{% with rows=THERMs model='thermostats' %}
+		{% include "Subsystems/_subsystems_acordion.html" %}
+		{% endwith %}
+		{% endwith %}
+	{% endif %}
+	
+	{% if SCHs %}
+		{% with panelID="accordion4" collapseID="collapse4" displayed=accordion4 %}
         {% trans "SCHEDULES" as var_header %}
 		{% with rows=SCHs model='automationvarweeklyschedule' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
@@ -51,7 +60,7 @@
 	{% endif %}
 	
 	{% if GPIOs %}
-		{% with panelID="accordion4" collapseID="collapse4" displayed=accordion4 %}
+		{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}
         {% trans "MASTER UNIT I/Os" as var_header %}
 		{% with rows=GPIOs model='mastergpios' %}
 		{% include "Subsystems/_subsystems_acordion.html" %}
@@ -59,7 +68,7 @@
 		{% endwith %}
 	{% endif %}
 	
-	{% with panelID="accordion5" collapseID="collapse5" displayed=accordion5 %}
+	{% with panelID="accordion100" collapseID="collapse100" displayed=accordion100 %}
     {% trans "EVENTS AND ALARMS" as var_header %}
 	{% with rows=EVTs model='events' %}
 	{% include "Subsystems/_subsystems_acordion.html" %}
