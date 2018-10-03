@@ -27,7 +27,7 @@ def checkDeveloperUpdates(root):
                 re.search(r"(?i)[0-9a-f]{32}", dout) else "-")
         
     if "local out of date" in stdout:
-        PublishEvent(Severity=10,Text=_("There is a new development version to download. Version code: " + revision),Persistent=True,Code='GitHub-1',Webpush=True)
+        PublishEvent(Severity=10,Text=_("There is a new development version to download."),Persistent=True,Code='GitHub-1',Webpush=True)
         return {'update':True,'tag':None}
     else:
         PublishEvent(Severity=1,Text=_("You are already on the latest development version " + revision),Persistent=True,Code='GitHub-1')

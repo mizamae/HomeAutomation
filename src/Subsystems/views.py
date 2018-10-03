@@ -82,7 +82,7 @@ def generic(request,system):
         accordion1=False
         accordion2=True
         accordion3=False
-        accordion4=False
+        accordion4=True
         accordion5=False
         for message in storage:
             if 'accordion1' == message.message:
@@ -91,11 +91,12 @@ def generic(request,system):
                 accordion2=True # defines if the accordion 2 is initially displayed or collapsed
             elif 'accordion3' == message.message:
                 accordion2=True # defines if the accordion 2 is initially displayed or collapsed
-                accordion4=True # defines if the accordion 3 is initially displayed or collapsed
+                accordion3=True # defines if the accordion 3 is initially displayed or collapsed
+                accordion4=True # defines if the accordion 4 is initially displayed or collapsed
             elif 'accordion4' == message.message:
                 accordion4=True # defines if the accordion 4 is initially displayed or collapsed
             elif 'accordion5' == message.message:
-                accordion5=True # defines if the accordion 4 is initially displayed or collapsed
+                accordion5=True # defines if the accordion 5 is initially displayed or collapsed
             
         
         from EventsAPP.models import Events
