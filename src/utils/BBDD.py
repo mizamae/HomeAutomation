@@ -57,12 +57,16 @@ class Database(object):
     def getConn(self):
         return self.conn
     
-    def _execute(self,SQLstatement,arg):
+    def _execute(self,SQLstatement,arg,many=False):
         ''' THIS FUNCTION IS REQUIERED TO AVOID INTEGRITY ERROR WHEN TWO GPIOs ARE CHANGED AT THE SAME TIME
         '''
         try:
             cur=self.conn.cursor()
-            cur.execute(SQLstatement,arg)
+            if not many:
+                cur.execute(SQLstatement,arg)
+            else:
+                cur.executemany(SQLstatement,arg)
+                
             self.conn.commit()
             cur.close()
             return COMMITED_OK
@@ -70,16 +74,17 @@ class Database(object):
             cur.close()
             return INTEGRITY_ERROR
                 
-    def executeTransactionWithCommit(self,SQLstatement,arg=[]):
+    def executeTransactionWithCommit(self,SQLstatement,arg=[],many=False):
         with redis_lock.Lock(lock_table, "commitRegisterDB",expire=10, auto_renewal=True):            
             name = multiprocessing.current_process().name
             if DEBUGGING: print('The process ' + name + ' has the lock.')
-            result=self._execute(SQLstatement=SQLstatement,arg=arg)
+            result=self._execute(SQLstatement=SQLstatement,arg=arg,many=many)
             if DEBUGGING:print('The process ' + name + ' executed: ' + SQLstatement)
             if DEBUGGING:print('The process ' + name + ' releases the lock.')
             return result
         return -1
-            
+        
+    
     def executeTransaction(self,SQLstatement,arg=[]):
         cur=self.conn.cursor()
         try:

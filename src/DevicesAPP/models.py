@@ -1602,6 +1602,24 @@ class Devices(models.Model):
             
         for DG in required_DGs:
             self._createRegistersTable(DG=DG,Database=Database)
+    
+    def insertManyRegisters(self,DatagramId,year,values,NULL=False):
+        """
+        INSERTS A REGISTER IN THE registersDB INTO THE APPROPIATE TABLE.
+        """
+        try:                              
+            
+            query=self.getInsertRegisterSQL(DatagramId=DatagramId)
+            sql=query['query']
+            num_args=query['num_args']
+                    
+            from utils.BBDD import getRegistersDBInstance
+            DB=getRegistersDBInstance(year=year)
+            self.checkRegistersDB(Database=DB)
+            DB.executeTransactionWithCommit(SQLstatement=sql, arg=values,many=True)
+            self.sendUpdateSignals(DG_id=DatagramId,values=values,many=True)
+        except:
+            raise DevicesAppException("Unexpected error in insertManyRegisters for device "+str(self)+":" + str(sys.exc_info()[1]))
             
     def insertRegister(self,TimeStamp,DatagramId,year,values,NULL=False):
         """
@@ -1633,13 +1651,19 @@ class Devices(models.Model):
         except:
             raise DevicesAppException("Unexpected error in insert_device_register for device "+str(self)+":" + str(sys.exc_info()[1]))
             
-    def sendUpdateSignals(self,DG_id,values):
+    def sendUpdateSignals(self,DG_id,values,many=False):
         DG=Datagrams.objects.get(Identifier=DG_id,DVT=self.DVT)
         datagram=DG.getStructure()
-        timestamp=values[0]
+        if not many:
+            timestamp=values[0]
+            Values=values[1:]
+        else:
+            timestamp=values[0][0]
+            Values=values[0][1:]
+            
         SignalVariableValueUpdated.send(sender=None, timestamp=timestamp,
                                                     Tags=datagram['names'],
-                                                    Values=values[1:],Types=datagram['datatypes'])
+                                                    Values=Values,Types=datagram['datatypes'])
     
     def sendNewDataSignals(self,DG_id):
         DG=Datagrams.objects.get(Identifier=DG_id,DVT=self.DVT)
