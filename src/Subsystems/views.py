@@ -73,14 +73,17 @@ def generic(request,system):
         
         GPIOs=DevicesAPP.models.MasterGPIOs.objects.filter(Subsystem__Name=SUBSYSTEM)
         
+        THERMs=MainAPP.models.Thermostats.objects.filter(RITM__Var1__Subsystem__Name=SUBSYSTEM)
+        
         import datetime
         now=datetime.datetime.now()
         from django.contrib.messages import get_messages
         storage = get_messages(request)
         accordion1=False
         accordion2=True
-        accordion3=False
+        accordion3=True
         accordion4=False
+        accordion5=False
         for message in storage:
             if 'accordion1' == message.message:
                 accordion1=True # defines if the accordion 1 is initially displayed or collapsed
@@ -89,8 +92,11 @@ def generic(request,system):
             elif 'accordion3' == message.message:
                 accordion2=True # defines if the accordion 2 is initially displayed or collapsed
                 accordion3=True # defines if the accordion 3 is initially displayed or collapsed
+                accordion4=True # defines if the accordion 4 is initially displayed or collapsed
             elif 'accordion4' == message.message:
                 accordion4=True # defines if the accordion 4 is initially displayed or collapsed
+            elif 'accordion5' == message.message:
+                accordion5=True # defines if the accordion 5 is initially displayed or collapsed
             
         
         from EventsAPP.models import Events
@@ -100,6 +106,7 @@ def generic(request,system):
                                                                         'DVs':DVs,
                                                                        'VARs':VARs,
                                                                        'VARs_values':VARs_values,
+                                                                       'THERMs':THERMs,
                                                                        'SCHs':SCHs,
                                                                        'DJNGO_HOUR':now.hour,
                                                                        'accordion1':accordion1,
