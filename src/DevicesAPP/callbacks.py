@@ -256,9 +256,12 @@ class IBERDROLA:
                 if datagramId =='dailyconsumption':
                     datas = self.miconsumodiario(date=date)
                     if datas!=None:
+                        values=[]
                         for data in datas:
-                            timestamp=data['timestamp']
-                            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data['valor'],],NULL=null)
+                            values.append([data['timestamp'],data['valor']])
+
+                        self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
+
                         Error=''
                     else:
                         null=True
@@ -575,10 +578,13 @@ class ESIOS(object):
                         null=False
                         Error=''
                         df = dfmul[names]/1000
-                        for timestamp,values in zip(df.index,df.values):
-                            values=list(values)
-                            timestamp=timestamp.to_pydatetime()
-                            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=null)
+                        values=[]
+                        for timestamp,row in zip(df.index,df.values):
+                            temp=list(row)
+                            temp.insert(0,timestamp.to_pydatetime())
+                            values.append(temp)
+                        self.sensor.insertManyRegisters(DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
+
                     else:
                         null=True
                         Error='Empty dataframe'
@@ -588,7 +594,7 @@ class ESIOS(object):
                         retries=retries-1
                     else:
                         retries=0
-                except:
+                except Exception as ex:
                     retries=retries-1
                     Error='APIError'
                     null=True

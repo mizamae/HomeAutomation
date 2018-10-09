@@ -157,15 +157,17 @@ def run_afterBoot():
 #     DV=Devices.objects.filter(DVT__Code='ESIOS')
 #     instance=ESIOS(DV[0])
 #     import datetime
+#     instance(datagramId = 'energy_cost',date=datetime.datetime(year=2018,month=10,day=8))
 #     instance.initializeDB(fromdate=datetime.datetime(year=2017,month=12,day=31),datagramId = 'energy_cost')
 #      
 
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
-    # from DevicesAPP.callbacks import IBERDROLA
-    # from DevicesAPP.models import Devices
-    # DV=Devices.objects.filter(DVT__Code='IBERDROLA')
-    # instance=IBERDROLA(DV[0])
-    # import datetime
+    from DevicesAPP.callbacks import IBERDROLA
+    from DevicesAPP.models import Devices
+    DV=Devices.objects.filter(DVT__Code='IBERDROLA')
+    instance=IBERDROLA(DV[0])
+    import datetime
+    instance(date=datetime.datetime(year=2018,month=10,day=7),datagramId = 'dailyconsumption')
     # instance.getSingleDay(date=datetime.datetime(year=2018,month=9,day=27),datagramId = 'dailyconsumption')
     #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=9,day=27),datagramId = 'dailyconsumption')
     
