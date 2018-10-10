@@ -66,7 +66,9 @@ def generic(request,system):
         VARs=MainAPP.models.AutomationVariables.objects.filter(Subsystem__Name=SUBSYSTEM).exclude(Table='outputs')
         VARs_values=[]
         for VAR in VARs:
-            data=VAR.getLatestData()[str(VAR.Tag)]
+            data=VAR.getCurrentData()[str(VAR.Tag)]
+            if data['value']==None:
+                data=VAR.getLatestData()[str(VAR.Tag)]
             VARs_values.append([data['timestamp'],data['value']])
         
         SCHs=MainAPP.models.AutomationVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM).order_by('Var','-Active')

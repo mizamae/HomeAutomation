@@ -630,6 +630,39 @@ class AutomationVariables(models.Model):
         Data[name]['label']=self.Label
         return Data
     
+    def getCurrentData(self,localized=True):
+        Data={}
+        name=self.Tag
+        Data[name]={}
+        now=timezone.now()
+        rows=self.getValues(fromDate=now-datetime.timedelta(hours=1),
+                           toDate=now,localized=False)
+
+        if type(rows) is list and rows!=[]:
+            row=rows[-1]
+        else:
+            row=[]
+            
+        if row != []:
+            timestamp=row[0]
+            if self.BitPos!=None:
+                from utils.dataMangling import checkBit
+                row=checkBit(number=row[1],position=self.BitPos)
+            else:
+                row=row[1]
+        else:
+            timestamp=None
+            row=None
+        if localized and timestamp!=None:
+            from tzlocal import get_localzone
+            local_tz=get_localzone()
+            timestamp = local_tz.localize(timestamp)
+            timestamp=timestamp+timestamp.utcoffset() 
+        Data[name]['timestamp']=timestamp
+        Data[name]['value']=row
+        Data[name]['label']=self.Label
+        return Data
+    
     def getLatestValue(self):
         data=self.getLatestData()
         return data[self.Tag]['value']
