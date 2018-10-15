@@ -828,7 +828,7 @@ class AutomationVarWeeklySchedules(models.Model):
         if value:
             id='Overriding-'+str(var.pk)
             from utils.asynchronous_tasks import BackgroundTimer
-            Timer=BackgroundTimer(interval=duration,threadName=id,callable=cls.overrideTimeout,kwargs={'var':var})
+            Timer=BackgroundTimer(interval=duration,threadName=id,callable=cls.overrideTimeout,callablekwargs={'var':var})
 
     @classmethod
     def overrideTimeout(cls,var):

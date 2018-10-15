@@ -159,7 +159,7 @@ def updateDeveloper(root):
                 PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False,Code='MainAPPViews-11')
                 return
 
-            update(root)
+            updateDeveloper(root)
         else:
             #print("Please make sure that you have a 'git' package installed.")
             PublishEvent(Severity=5,Text=_("Please make sure that you have a 'git' package installed. Error: ") + str(stderr),
@@ -250,7 +250,7 @@ def updateRelease(root,tag):
                 PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False,Code='MainAPPViews-11')
                 return
  
-            update(root,tag)
+            updateRelease(root,tag)
         else:
             #print("Please make sure that you have a 'git' package installed.")
             PublishEvent(Severity=5,Text=_("Please make sure that you have a 'git' package installed. Error: ") + str(stderr),
