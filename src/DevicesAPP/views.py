@@ -421,6 +421,12 @@ def AdvancedDevicePage(request,pk):
     firmware=DV.getFirmwareWeb()
     LatestData=DV.getLatestData()
     COMMANDS=models.DeviceCommands.objects.filter(DVT=DV.DVT)
+    from django.contrib.messages import get_messages
+    storage = get_messages(request)
+    firmware_data=None
+    for message in storage:
+        if 'Firmware updated OK' == message.message or 'Firmware update FAILED'== message.message:
+            firmware_data=message.message
     Order={}
     for datagram in LatestData:
         DG=models.Datagrams.objects.get(pk=datagram)
@@ -430,7 +436,8 @@ def AdvancedDevicePage(request,pk):
                 LatestData[datagram][element]=LatestData[datagram][element].timestamp()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
                                                         {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order),
-                                                         'Commands':COMMANDS,'Firmware':firmware})
+                                                         'Commands':COMMANDS,'Firmware':firmware,
+                                                         'firmware_data':firmware_data})
 
 @login_required
 @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
@@ -442,7 +449,14 @@ def firmwareUpdate(request,devicePK):
         fs = FileSystemStorage()
         firmwareFile = fs.save(firmwareFile.name, firmwareFile)
         uploaded_file_url = fs.url(firmwareFile)
-        DV.uploadFirmware(file=uploaded_file_url)
+        status= DV.uploadFirmware(file=uploaded_file_url)
+        if status==200:
+            messages.info(request, 'Firmware updated OK')
+        else:
+            messages.info(request, 'Firmware update FAILED')
+            
+    return redirect(request.META['HTTP_REFERER'])
+            
     
 # @login_required
 # @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))

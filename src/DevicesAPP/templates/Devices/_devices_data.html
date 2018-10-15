@@ -51,6 +51,9 @@
         </div>
         <div class="row" id="firmware_span">
         	{% crispy Firmware %}
+        	{% if firmware_data %}
+        	<h3 class="alert-warning">{{ firmware_data }}</h3>
+        	{% endif %}
         </div>
     </div>
 </div>
