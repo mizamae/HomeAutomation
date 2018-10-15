@@ -22,6 +22,7 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
             Group('AVAR-values').send({'text':json.dumps({'Timestamp': timestamp.strftime("%d %B %Y %H:%M:%S"),'pk':AVAR.pk,
                                                           'Label':AVAR.Label,'Value':Values[i],'Type':Types[i]})},
                                       immediately=True)
+            AVAR.checkAdditionalCalculations()
         except:
             pass
 

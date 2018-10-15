@@ -30,15 +30,20 @@ class StoppableThread(threading.Thread):
     
 class BackgroundTimer(object):
 
-    def __init__(self, callable,threadName,interval=1,kwargs={},
-                 repeat=False,triggered=False,lifeSpan=None,onThreadInit=None):
+    def __init__(self, callable,threadName,interval=1,callablekwargs={},
+                 repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={}):
         """ Constructor
         :type interval: int
         :param interval: Check interval, in seconds
         """
         self.interval = interval
-        self.callable=callable
-        self.kwargs=kwargs
+        if hasattr(callable, "__call__"):
+            self.callable=callable
+        else:
+            self.callable=self._dummycallable
+            
+        self.callablekwargs=callablekwargs
+        self.onInitkwargs=onInitkwargs
         self.threadName=threadName
         self.initiatedOn=datetime.datetime.now()
         self.lifeSpan=lifeSpan
@@ -88,33 +93,36 @@ class BackgroundTimer(object):
                 exists=True
                 break
         return exists
-        
+    
+    def _dummycallable(self):
+        pass
+    
     def run(self):
         """ Method that runs only once """
         if hasattr(self.onThreadInit, "__call__"):
-            self.onThreadInit()
+            self.onThreadInit(**self.onInitkwargs)
             
         time.sleep(self.interval)
-        self.callable(**self.kwargs)
+        self.callable(**self.callablekwargs)
     
     def runForever(self):
         """ Method that runs forever """
         if hasattr(self.onThreadInit, "__call__"):
-            self.onThreadInit()
+            self.onThreadInit(**self.onInitkwargs)
             
         while not self.thread._stop_event.isSet():
             if not self.thread.pause_event.isSet():
                 time.sleep(self.interval)
-                self.callable(**self.kwargs)
+                self.callable(**self.callablekwargs)
             self.checkSurvival()
                 
     def runTriggered(self):
         """ Method that runs forever """
         if hasattr(self.onThreadInit, "__call__"):
-            self.onThreadInit()
+            self.onThreadInit(**self.onInitkwargs)
             
         while not self.thread._stop_event.isSet():
             if self.thread.trigger_event.isSet():
                 self.thread.trigger_event.clear()
-                self.callable(**self.kwargs)
+                self.callable(**self.callablekwargs)
             self.checkSurvival()

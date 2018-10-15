@@ -43,18 +43,14 @@ IBERDROLA_PASSW=env('IBERDROLA_PASSW')
 class ResponseException(Exception):
     pass
 
-
 class LoginException(Exception):
     pass
-
 
 class SessionException(Exception):
     pass
 
-
 class NoResponseException(Exception):
     pass
-
 
 class SelectContractException(Exception):
     pass
@@ -86,17 +82,23 @@ class IBERDROLA:
         'content-type': "application/json; charset=utf-8",
         'cache-control': "no-cache"
     }
-
+    
+    _session=None
+    
     def __init__(self,DV):
         """Iber class __init__ method."""
-        self.__session = None
+        #self.__session = None
         self.sensor=DV
         self.Error=''
         user=IBERDROLA_USER
         password=IBERDROLA_PASSW
-        self.setUserAgent()
+        #self.setUserAgent()
         try:
-            self.login(user, password)
+            from utils.asynchronous_tasks import BackgroundTimer
+            BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
+                            repeat=False,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
+                            onInitkwargs={'user':user,'password':password})
+            #self.login(user, password)
         except Exception as ex:
             if type(ex) is LoginException:
                 self.Error='Login procedure failed'
@@ -112,30 +114,38 @@ class IBERDROLA:
     def login(self, user, password):
         """Create session with your credentials.
            Inicia la session con tus credenciales."""
-        self.__session = Session()
+        IBERDROLA._session = Session()
+        self.setUserAgent()
         logindata = self.__logindata(user, password)
-        response = self.__session.request("POST", self.__loginurl, data=logindata, headers=self.__headers)
+        response = IBERDROLA._session.request("POST", self.__loginurl, data=logindata, headers=self.__headers)
         if response.status_code != 200:
-            self.__session = None
+            IBERDROLA._session = None
             raise ResponseException
         jsonresponse = response.json()
-        if jsonresponse["success"] != "true":
-            self.__session = None
+        if not "success" in jsonresponse: # captcha is raised!!
+            IBERDROLA._session = None
             raise LoginException
+        if jsonresponse["success"] != "true":
+            IBERDROLA._session = None
+            raise LoginException
+        logger.info('Logged in to Iberdrola')
 
     def __logindata(self, user, password):
         logindata = [user, password, "", "Windows -", "PC", "Firefox 54.0", "", "0", "0", "0", "", "s"]
         return dumps(logindata)
 
     def __checksession(self):
-        if not self.__session:
+        if not IBERDROLA._session:
             raise SessionException
 
     def wattmeter(self):
         """Returns your current power consumption.
            Devuelve tu potencia actual."""
         self.__checksession()
-        response = self.__session.request("GET", self.__watthourmeterurl, headers=self.__headers)
+        from random import randint
+        from time import sleep
+        sleep(randint(0,10))
+        response = IBERDROLA._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
         if not response.text or response.text=='{}':
@@ -305,6 +315,8 @@ class IBERDROLA:
                     Error='Empty dataframe received for ' + datagramId
                 elif type(ex) is ResponseException:
                     Error='Iberdrola server reported a failure on a data request for ' + datagramId
+                elif type(ex) is SessionException:
+                    Error=''
                 else:
                     Error='Unknown APIError: ' + str(ex)
                 null=True

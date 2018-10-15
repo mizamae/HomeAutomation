@@ -118,12 +118,13 @@ class AdditionalCalculationsForm(ModelForm):
         self.helper.form_method = 'post'
          
         self.fields['SourceVar'].label = _("Select the source variable")        
+        self.fields['Timespan'].label = _("Select the time-span for the calculation")
         self.fields['Periodicity'].label = _("Select the calculation update frequency")
         self.fields['Calculation'].label = _("Select the calculation")
          
         self.helper.layout = Layout(
             Field('SourceVar', css_class='input-sm'),
-            #Field('MainVar', css_class='input-sm'),
+            Field('Timespan', css_class='input-sm'),
             Field('Periodicity', css_class='input-sm'),
             Field('Calculation', css_class='input-sm'),
             Submit('submit', _('Submit'),css_class='btn-primary'),
@@ -137,13 +138,14 @@ class AdditionalCalculationsForm(ModelForm):
     def clean(self):
         cleaned_data=super().clean() # to use the validation of the fields from the model
         Periodicity = cleaned_data['Periodicity']
+        Timespan = cleaned_data['Timespan']
         SourceVar = cleaned_data['SourceVar']
         Calculation = cleaned_data['Calculation']
         return cleaned_data
      
     class Meta:
         model = models.AdditionalCalculations
-        fields=['SourceVar','Periodicity','Calculation']
+        fields=['SourceVar','Timespan','Periodicity','Calculation']
         
 class inlineDailyForm(ModelForm):  
     def __init__(self, *args, **kwargs):

@@ -353,7 +353,14 @@ class AdditionalCalculations(models.Model):
     class Meta:
         verbose_name = _('Additional calculation')
         verbose_name_plural = _('Additional calculations')
-        
+    
+    TIMESPAN_CHOICES=(
+        (0,_('An hour')),
+        (1,_('A day')),
+        (2,_('A week')),
+        (3,_('A month')),
+    )
+    
     PERIODICITY_CHOICES=(
         (0,_('With every new value')),
         (1,_('Every hour')),
@@ -374,6 +381,7 @@ class AdditionalCalculations(models.Model):
       
     SinkVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sinkvar',blank=True,null=True) # variable that holds the calculation
     SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
+    Timespan= models.PositiveSmallIntegerField(help_text=_('What is the time span for the calculation'),choices=TIMESPAN_CHOICES,default=1)
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
     
@@ -414,7 +422,7 @@ class AdditionalCalculations(models.Model):
       
     def checkTrigger(self):
         if self.Periodicity==0:
-            return True
+            return False
         else:
             import datetime
             now=datetime.datetime.now()
@@ -429,30 +437,29 @@ class AdditionalCalculations(models.Model):
                     return True
         return False
       
-    def calculate(self):
+    def calculate(self,DBDate=None):
         import datetime
         import calendar
         
         toDate=timezone.now() 
         
-        if self.Periodicity==1: # Every hour
+        if self.Timespan==0: # Every hour
             offset=datetime.timedelta(hours=1)
-        elif self.Periodicity==2: # Every day
+        elif self.Timespan==1: # Every day
             offset=datetime.timedelta(hours=24)
-        elif self.Periodicity==3: # Every week
+        elif self.Timespan==2: # Every week
             offset=datetime.timedelta(weeks=1)
-        elif self.Periodicity==4: # Every month
+        elif self.Timespan==3: # Every month
             now=datetime.datetime.now()
             days=calendar.monthrange(now.year, now.month)[1]
             offset=datetime.timedelta(hours=days*24)
-        elif self.Periodicity==5:
-            offset=datetime.timedelta(hours=24)
-            toDate=toDate-datetime.timedelta(hours=12)
         else:
             return
             
         fromDate=toDate-offset
-        DBDate=toDate-offset/2
+        if DBDate==None:
+            DBDate=toDate-offset/2
+        
         toDate=toDate-datetime.timedelta(minutes=1)
         query=self.SourceVar.getQuery(fromDate=fromDate,toDate=toDate)
         self.df=pd.read_sql_query(sql=query['sql'],con=query['conn'],index_col='timestamp')
@@ -575,8 +582,9 @@ class AutomationVariables(models.Model):
     
     def checkAdditionalCalculations(self):
         ACALCs=AdditionalCalculations.objects.filter(SourceVar=self,Periodicity=0)
+        now=timezone.now()
         for ACALC in ACALCs:
-            ACALC.calculate()
+            ACALC.calculate(DBDate=now)
         
     def updateValue(self,newValue=None,overrideTime=None,**kwargs):
         if self.UserEditable:
