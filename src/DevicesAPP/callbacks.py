@@ -244,8 +244,12 @@ class IBERDROLA:
                          Code=self.sensor.getEventsCode()+'init',Persistent=True)
     
     def getSingleDay(self,date,datagramId = 'dailyconsumption'):
-        self.__call__(date=date,datagramId = datagramId)
-        PublishEvent(Severity=0,Text='Got single day data for '+str(self.sensor)+'. Obtained data for ' + str(date),
+        returned =self.__call__(date=date,datagramId = datagramId)
+        if returned['Error']=='':
+            texto='Got single day data for '+str(self.sensor)+'. Obtained data for ' + str(date)
+        else:
+            texto='Error getting data for '+str(self.sensor)+'. Error ' + returned['Error']
+        PublishEvent(Severity=0,Text=texto,
                          Code=self.sensor.getEventsCode()+'singleDay',Persistent=True)
     
     def execute(self,order,params={}):
