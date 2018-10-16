@@ -52,7 +52,7 @@ class SessionException(Exception):
 class NoResponseException(Exception):
     pass
 
-class SelectContractException(Exception):
+class EnableException(Exception):
     pass
     
 class IBERDROLA:
@@ -84,68 +84,91 @@ class IBERDROLA:
     }
     
     _session=None
+    _disabled=False
     
     def __init__(self,DV):
-        """Iber class __init__ method."""
-        #self.__session = None
         self.sensor=DV
         self.Error=''
         user=IBERDROLA_USER
         password=IBERDROLA_PASSW
-        #self.setUserAgent()
-        try:
-            from utils.asynchronous_tasks import BackgroundTimer
-            BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
-                            repeat=False,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
-                            onInitkwargs={'user':user,'password':password})
-            #self.login(user, password)
-        except Exception as ex:
-            if type(ex) is LoginException:
-                self.Error='Login procedure failed'
-            elif type(ex) is ResponseException:
-                self.Error='Iberdrola server reported a failure in login'
+        if not IBERDROLA._disabled:
+            try:
+                from utils.asynchronous_tasks import BackgroundTimer
+                login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
+                                repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
+                                onInitkwargs={'user':user,'password':password})
+            except Exception as ex:
+                login_thread.kill()
+                if type(ex) is LoginException:
+                    self.Error='Login procedure failed'
+                elif type(ex) is ResponseException:
+                    self.Error='Iberdrola server reported a failure in login'
     
-    def setUserAgent(self):
+    @staticmethod
+    def disable():
+        """ Sets an internal flag that inhibits the queries """
+        IBERDROLA._disabled=True
+        from utils.asynchronous_tasks import BackgroundTimer
+        enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=24*60*60,callablekwargs={},
+                            repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={})
+        PublishEvent(Severity=5,Text='Iberdrola devices have been disabled at ' + str(datetime.datetime.now())+'. It will be '+
+                                    'automatically enabled in 24h.',
+                     Code='IBERDROLA_disable',Persistent=True)
+    
+    @staticmethod
+    def enable():
+        """ Resets an internal flag that inhibits the queries """
+        IBERDROLA._disabled=False
+        PublishEvent(Severity=2,Text='Iberdrola devices have been enabled at ' + str(datetime.datetime.now()),
+                     Code='IBERDROLA_disable',Persistent=True)
+        
+    @staticmethod
+    def setUserAgent():
         """ Sets a randomly chosen user-agent to minimize bot trace """
         from random import randint
-        agent=randint(0, self._NUM_AGENTS-1)
-        self.__headers['User-Agent']=self.__useragents[agent]
-        
-    def login(self, user, password):
+        agent=randint(0, IBERDROLA._NUM_AGENTS-1)
+        IBERDROLA.__headers['User-Agent']=IBERDROLA.__useragents[agent]
+    
+    def login(self,user, password):
         """Create session with your credentials.
            Inicia la session con tus credenciales."""
-        IBERDROLA._session = Session()
-        self.setUserAgent()
-        logindata = self.__logindata(user, password)
-        response = IBERDROLA._session.request("POST", self.__loginurl, data=logindata, headers=self.__headers)
+        self._session = Session()
+        IBERDROLA.setUserAgent()
+        logindata = IBERDROLA.__logindata(user, password)
+        response = self._session.request("POST", IBERDROLA.__loginurl, data=logindata, headers=IBERDROLA.__headers)
         if response.status_code != 200:
             IBERDROLA._session = None
             raise ResponseException
         jsonresponse = response.json()
-        if not "success" in jsonresponse: # captcha is raised!!
+        if not "success" in jsonresponse or "captcha" in jsonresponse: # captcha is raised!!
             IBERDROLA._session = None
+            IBERDROLA.disable()
             raise LoginException
         if jsonresponse["success"] != "true":
             IBERDROLA._session = None
             raise LoginException
         logger.info('Logged in to Iberdrola')
 
-    def __logindata(self, user, password):
+    @staticmethod
+    def __logindata(user, password):
         logindata = [user, password, "", "Windows -", "PC", "Firefox 54.0", "", "0", "0", "0", "", "s"]
         return dumps(logindata)
 
     def __checksession(self):
-        if not IBERDROLA._session:
+        if not self._session:
             raise SessionException
+        if self._disabled:
+            raise EnableException
 
     def wattmeter(self):
         """Returns your current power consumption.
            Devuelve tu potencia actual."""
-        self.__checksession()
+        
         from random import randint
         from time import sleep
         sleep(randint(0,10))
-        response = IBERDROLA._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
+        self.__checksession()
+        response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
         if not response.text or response.text=='{}':
@@ -157,7 +180,7 @@ class IBERDROLA:
         """Returns the status of your ICP.
            Devuelve el estado de tu ICP."""
         self.__checksession()
-        response = self.__session.request("POST", self.__icpstatusurl, headers=self.__headers)
+        response = self._session.request("POST", self.__icpstatusurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
         if not response.text or response.text=='{}':
@@ -179,7 +202,7 @@ class IBERDROLA:
         else:
             timestamp=date.timestamp()
             date=date.replace(hour=0,minute=0,second=0,microsecond=0).strftime('%d-%m-%Y%H:%M:%S')
-        response = self.__session.request("GET", self.__miconsumourl.replace('dateini',date), headers=self.__headers)
+        response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), headers=self.__headers)
         
         if response.status_code != 200:
             raise ResponseException
@@ -198,14 +221,13 @@ class IBERDROLA:
                     datas[i]["valor"]=None
                     
                 datas[i]["timestamp"]=datetime.datetime.utcfromtimestamp(timestamp)+datetime.timedelta(hours=i+1)
-                
         else:
             datas=None
         return datas
         
     def contracts(self):
         self.__checksession()
-        response = self.__session.request("GET", self.__contractsurl, headers=self.__headers)
+        response = self._session.request("GET", self.__contractsurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
         if not response.text:
@@ -216,7 +238,7 @@ class IBERDROLA:
 
     def contract(self):
         self.__checksession()
-        response = self.__session.request("GET", self.__contractdetailurl, headers=self.__headers)
+        response = self._session.request("GET", self.__contractdetailurl, headers=self.__headers)
         if response.status_code != 200:
             raise ResponseException
         if not response.text:
@@ -321,6 +343,9 @@ class IBERDROLA:
                     Error='Iberdrola server reported a failure on a data request for ' + datagramId
                 elif type(ex) is SessionException:
                     Error=''
+                elif type(ex) is EnableException:
+                    Error=''
+                    retries=0
                 else:
                     Error='Unknown APIError: ' + str(ex)
                 null=True
@@ -329,6 +354,8 @@ class IBERDROLA:
             LastUpdated=timezone.now()
         else:
             LastUpdated=None
+            PublishEvent(Severity=5,Text='Missed request to ' +str(self.sensor)+' for the datagram ' + datagramId,
+                         Code=self.sensor.getEventsCode()+datagramId,Persistent=True)
 
         return {'Error':Error,'LastUpdated':LastUpdated}
     
