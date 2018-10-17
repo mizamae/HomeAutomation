@@ -31,7 +31,8 @@ class StoppableThread(threading.Thread):
 class BackgroundTimer(object):
 
     def __init__(self, callable,threadName,interval=1,callablekwargs={},
-                 repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={}):
+                 repeat=False,triggered=False,lifeSpan=None,
+                 onThreadInit=None,onInitkwargs={}):
         """ Constructor
         :type interval: int
         :param interval: Check interval, in seconds

@@ -57,7 +57,7 @@ class EnableException(Exception):
     
 class IBERDROLA:
     _MAX_RETRIES=3
-    _NUM_AGENTS=10
+
     __loginurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/login"
     __miconsumourl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/consumoNew/obtenerDatosConsumo/fechaInicio/dateini/colectivo/USU/frecuencia/horas/acumular/false"
     __watthourmeterurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/escenarioNew/obtenerMedicionOnline/12"
@@ -85,6 +85,7 @@ class IBERDROLA:
     
     _session=None
     _disabled=False
+    _login_thread=None
     
     def __init__(self,DV):
         self.sensor=DV
@@ -94,11 +95,11 @@ class IBERDROLA:
         if not IBERDROLA._disabled:
             try:
                 from utils.asynchronous_tasks import BackgroundTimer
-                login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
+                IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
                                 repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
                                 onInitkwargs={'user':user,'password':password})
             except Exception as ex:
-                login_thread.kill()
+                IBERDROLA.kill_thread()
                 if type(ex) is LoginException:
                     self.Error='Login procedure failed'
                 elif type(ex) is ResponseException:
@@ -126,16 +127,28 @@ class IBERDROLA:
     def setUserAgent():
         """ Sets a randomly chosen user-agent to minimize bot trace """
         from random import randint
-        agent=randint(0, IBERDROLA._NUM_AGENTS-1)
+        agent=randint(0, len(IBERDROLA.__useragents)-1)
         IBERDROLA.__headers['User-Agent']=IBERDROLA.__useragents[agent]
+    
+    @staticmethod
+    def kill_thread():
+        if IBERDROLA._login_thread!=None:
+            IBERDROLA._login_thread.kill()
+        IBERDROLA._login_thread=None
     
     def login(self,user, password):
         """Create session with your credentials.
            Inicia la session con tus credenciales."""
-        self._session = Session()
+        IBERDROLA._session = Session()
         IBERDROLA.setUserAgent()
         logindata = IBERDROLA.__logindata(user, password)
-        response = self._session.request("POST", IBERDROLA.__loginurl, data=logindata, headers=IBERDROLA.__headers)
+        try:
+            response = IBERDROLA._session.request("POST", IBERDROLA.__loginurl, data=logindata, headers=IBERDROLA.__headers)
+        except Exception as ex:
+            IBERDROLA._session = None
+            self.Error='Error in log in request: ' + str(ex)
+            return
+            
         if response.status_code != 200:
             IBERDROLA._session = None
             raise ResponseException
@@ -146,6 +159,7 @@ class IBERDROLA:
             raise LoginException
         if jsonresponse["success"] != "true":
             IBERDROLA._session = None
+            IBERDROLA.kill_thread()
             raise LoginException
         logger.info('Logged in to Iberdrola')
 
@@ -299,7 +313,7 @@ class IBERDROLA:
                 return (200,None)
     
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
-        Error=''
+
         null=False
         if datagramId =='dailyconsumption':
             retries=self._MAX_RETRIES
@@ -317,21 +331,21 @@ class IBERDROLA:
 
                         self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
 
-                        Error=''
+                        self.Error=''
                     else:
                         null=True
-                        Error='Empty dataframe'
+                        self.Error='Empty dataframe'
                 elif datagramId=='instantpower':
                     data = self.wattmeter()
                     if data!=None:
                         timestamp=timezone.now().replace(second=0)
                         self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data,],NULL=null)
-                        Error=''
+                        self.Error=''
                     else:
                         null=True
-                        Error='Empty dataframe'
-                if Error!='':
-                    Error=Error+' - retrying'
+                        self.Error='Empty dataframe'
+                if self.Error!='':
+                    self.Error=self.Error+' - retrying'
                     retries=retries-1
                 else:
                     retries=0
@@ -342,7 +356,7 @@ class IBERDROLA:
                 elif type(ex) is ResponseException:
                     Error='Iberdrola server reported a failure on a data request for ' + datagramId
                 elif type(ex) is SessionException:
-                    Error=''
+                    Error='Session object not properly defined'
                 elif type(ex) is EnableException:
                     Error=''
                     retries=0
@@ -357,7 +371,7 @@ class IBERDROLA:
             PublishEvent(Severity=5,Text='Missed request to ' +str(self.sensor)+' for the datagram ' + datagramId,
                          Code=self.sensor.getEventsCode()+datagramId,Persistent=True)
 
-        return {'Error':Error,'LastUpdated':LastUpdated}
+        return {'Error':self.Error,'LastUpdated':LastUpdated}
     
 class ESIOS(object):
     _MAX_RETRIES=3
