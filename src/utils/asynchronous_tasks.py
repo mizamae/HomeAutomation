@@ -53,6 +53,7 @@ class BackgroundTimer(object):
         exists=self.isAlive()
         if not exists: 
             self.initThread(repeat=repeat,triggered=triggered)
+            time.sleep(1)   # to leave time for the thread to properly initiate
             
     def initThread(self,repeat,triggered):
         if not repeat:

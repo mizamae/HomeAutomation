@@ -140,7 +140,7 @@ class IBERDROLA:
         """Create session with your credentials.
            Inicia la session con tus credenciales."""
         IBERDROLA._session = Session()
-        IBERDROLA.setUserAgent()
+        #IBERDROLA.setUserAgent()
         logindata = IBERDROLA.__logindata(user, password)
         try:
             response = IBERDROLA._session.request("POST", IBERDROLA.__loginurl, data=logindata, headers=IBERDROLA.__headers)
@@ -274,10 +274,14 @@ class IBERDROLA:
         i=0
         while fromdate+datetime.timedelta(days=i)<datetime.datetime.now():
             date=fromdate+datetime.timedelta(days=i)
-            self.__call__(date=date,datagramId = datagramId)
+            returned=self.__call__(date=date,datagramId = datagramId)
             i=i+1
-            PublishEvent(Severity=0,Text='Initializing DB for '+str(self.sensor)+'. Obtained data for ' + str(date),
-                         Code=self.sensor.getEventsCode()+'init',Persistent=True)
+            if returned['Error']=='':
+                texto='Initializing data for '+str(self.sensor)+'. Obtained data for ' + str(date)
+            else:
+                texto='Error getting data for '+str(self.sensor)+'. Error ' + returned['Error']
+            PublishEvent(Severity=0,Text=texto,
+                             Code=self.sensor.getEventsCode()+'init',Persistent=True)
     
     def getSingleDay(self,date,datagramId = 'dailyconsumption'):
         returned =self.__call__(date=date,datagramId = datagramId)
@@ -358,7 +362,7 @@ class IBERDROLA:
                 elif type(ex) is SessionException:
                     Error='Session object not properly defined'
                 elif type(ex) is EnableException:
-                    Error=''
+                    Error='Iberdrola is not enabled'
                     retries=0
                 else:
                     Error='Unknown APIError: ' + str(ex)
