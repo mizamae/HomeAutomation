@@ -98,6 +98,8 @@ class IBERDROLA:
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
                                 repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
                                 onInitkwargs={'user':user,'password':password})
+                from time import sleep
+                sleep(1)    # to allow to initialize the thread properly
             except Exception as ex:
                 IBERDROLA.kill_thread()
                 if type(ex) is LoginException:
@@ -110,10 +112,10 @@ class IBERDROLA:
         """ Sets an internal flag that inhibits the queries """
         IBERDROLA._disabled=True
         from utils.asynchronous_tasks import BackgroundTimer
-        enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=24*60*60,callablekwargs={},
+        enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=1*60*60,callablekwargs={},
                             repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={})
         PublishEvent(Severity=5,Text='Iberdrola devices have been disabled at ' + str(datetime.datetime.now())+'. It will be '+
-                                    'automatically enabled in 24h.',
+                                    'automatically enabled in 1h.',
                      Code='IBERDROLA_disable',Persistent=True)
     
     @staticmethod
@@ -135,6 +137,7 @@ class IBERDROLA:
         if IBERDROLA._login_thread!=None:
             IBERDROLA._login_thread.kill()
         IBERDROLA._login_thread=None
+        IBERDROLA._session =None
     
     def login(self,user, password):
         """Create session with your credentials.
@@ -145,20 +148,19 @@ class IBERDROLA:
         try:
             response = IBERDROLA._session.request("POST", IBERDROLA.__loginurl, data=logindata, headers=IBERDROLA.__headers)
         except Exception as ex:
-            IBERDROLA._session = None
+            IBERDROLA.kill_thread()
             self.Error='Error in log in request: ' + str(ex)
             return
             
         if response.status_code != 200:
-            IBERDROLA._session = None
+            IBERDROLA.kill_thread()
             raise ResponseException
         jsonresponse = response.json()
         if not "success" in jsonresponse or "captcha" in jsonresponse: # captcha is raised!!
-            IBERDROLA._session = None
+            IBERDROLA.kill_thread()
             IBERDROLA.disable()
             raise LoginException
         if jsonresponse["success"] != "true":
-            IBERDROLA._session = None
             IBERDROLA.kill_thread()
             raise LoginException
         logger.info('Logged in to Iberdrola')
@@ -169,10 +171,12 @@ class IBERDROLA:
         return dumps(logindata)
 
     def __checksession(self):
-        if not self._session:
-            raise SessionException
         if self._disabled:
             raise EnableException
+        
+        if not self._session:
+            raise SessionException
+        
 
     def wattmeter(self):
         """Returns your current power consumption.
