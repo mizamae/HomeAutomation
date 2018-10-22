@@ -95,7 +95,6 @@ class IBERDROLA:
         password=IBERDROLA_PASSW
         if not IBERDROLA._disabled:
             try:
-                IBERDROLA.disable() # disables to avoid requests before logging in
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
                                 repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
@@ -105,7 +104,6 @@ class IBERDROLA:
                 while IBERDROLA._loggedin==False and i<10:
                     sleep(1)    # to allow to initialize the thread properly
                     i=i+1
-                IBERDROLA.enable()
                 if not IBERDROLA._loggedin:
                     raise LoginException
             except Exception as ex:
@@ -117,13 +115,14 @@ class IBERDROLA:
                     self.Error='Iberdrola server reported a failure in login'
     
     @staticmethod
-    def disable():
+    def disable(auto_enable=False):
         """ Sets an internal flag that inhibits the queries """
         IBERDROLA._disabled=True
         logger.error('IBERDROLA: Disabled')
-        from utils.asynchronous_tasks import BackgroundTimer
-        enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=1*60*60,callablekwargs={},
-                            repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={})
+        if auto_enable:
+            from utils.asynchronous_tasks import BackgroundTimer
+            enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=1*60*60,callablekwargs={},
+                                repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={})
 #         PublishEvent(Severity=5,Text='Iberdrola devices have been disabled at ' + str(datetime.datetime.now())+'. It will be '+
 #                                     'automatically enabled in 1h.',
 #                      Code='IBERDROLA_disable',Persistent=True)
@@ -176,7 +175,7 @@ class IBERDROLA:
         if not "success" in jsonresponse or "captcha" in jsonresponse: # captcha is raised!!
             logger.error('IBERDROLA: Login failure, jsonresponse error. JSON: ' + str(jsonresponse))
             IBERDROLA.kill_thread()
-            IBERDROLA.disable()
+            IBERDROLA.disable(auto_enable=True)
             raise LoginException
         if jsonresponse["success"] != "true":
             logger.error('IBERDROLA: Login failure, not success')
