@@ -249,12 +249,21 @@ class IBERDROLA:
             return None
         
         if datas!=[]:
+            mean=0
+            sum=0
             for i,data in enumerate(datas):
                 if data==None:
                     datas[i]={}
                     datas[i]["valor"]=None
+                else:
+                    sum=sum+val(datas[i]["valor"])
                     
                 datas[i]["timestamp"]=datetime.datetime.utcfromtimestamp(timestamp)+datetime.timedelta(hours=i+1)
+                datas[i]["mean"]=None
+                datas[i]["sum"]=None
+            mean=sum/len(datas)
+            datas[i]["mean"]=mean
+            datas[i]["sum"]=sum
         else:
             datas=None
         return datas
@@ -379,7 +388,7 @@ class IBERDROLA:
                 elif type(ex) is ResponseException:
                     self.Error='Iberdrola server reported a failure on a data request for ' + datagramId
                 elif type(ex) is SessionException:
-                    self.Error='Session object not properly defined'
+                    self.Error='Login failure'
                 elif type(ex) is EnableException:
                     self.Error='Iberdrola is not enabled'
                 else:
