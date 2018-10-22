@@ -102,7 +102,9 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             df = pd.DataFrame(data=values,index=[ts_ini,ts_end],columns=df.columns)
             df_int=df
                 
-        tempStats={'number':5,'num_rows':df.count().tolist(),'mean':[],'max':df.max().tolist(),'min':df.min().tolist(),'on_time':[],'off_time':[]}
+        tempStats={'number':5,'num_rows':df.count().tolist(),'mean':[],
+                    'max':[None if pd.isnull(x) else x for x in df.max().tolist()],'min':[None if pd.isnull(x) else x for x in df.min().tolist()],
+                    'on_time':[],'off_time':[]}
         
         # INTRODUCED TO TEST INTERPOLATION ACROSS NULLS
         try:

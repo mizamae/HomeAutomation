@@ -190,13 +190,17 @@ class IBERDROLA:
         return dumps(logindata)
 
     def __checksession(self):
-        logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session))
+        logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
         if self._disabled:
             raise EnableException
         
         if not self._session:
             raise SessionException
         
+        try:
+            logger.info(str(self._session.cookies))
+        except:
+            pass
 
     def wattmeter(self):
         """Returns your current power consumption.
