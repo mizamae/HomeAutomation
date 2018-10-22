@@ -86,6 +86,7 @@ class IBERDROLA:
     _session=None
     _disabled=False
     _login_thread=None
+    _loggedin=False
     
     def __init__(self,DV):
         self.sensor=DV
@@ -100,8 +101,13 @@ class IBERDROLA:
                                 repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
                                 onInitkwargs={'user':user,'password':password})
                 from time import sleep
-                sleep(1)    # to allow to initialize the thread properly
+                i=0
+                while IBERDROLA._loggedin==False and i<10:
+                    sleep(1)    # to allow to initialize the thread properly
+                    i=i+1
                 IBERDROLA.enable()
+                if not IBERDROLA._loggedin:
+                    raise LoginException
             except Exception as ex:
                 logger.error('IBERDROLA: Login failed : ' + str(ex))
                 IBERDROLA.kill_thread()
@@ -143,6 +149,7 @@ class IBERDROLA:
             IBERDROLA._login_thread.kill()
         IBERDROLA._login_thread=None
         IBERDROLA._session =None
+        IBERDROLA._loggedin=False
         IBERDROLA.enable()
         logger.error('IBERDROLA: Killed the thread')
     
@@ -175,6 +182,7 @@ class IBERDROLA:
             logger.error('IBERDROLA: Login failure, not success')
             IBERDROLA.kill_thread()
             raise LoginException
+        IBERDROLA._loggedin=True
         logger.info('Logged in to Iberdrola')
 
     @staticmethod
@@ -243,6 +251,7 @@ class IBERDROLA:
         if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
+        logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
         try:
             datas=jsonresponse["y"]["data"][0]
         except:
