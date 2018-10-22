@@ -259,19 +259,26 @@ class IBERDROLA:
         if datas!=[]:
             mean=0
             sum=0
+            valid_data=0
             for i,data in enumerate(datas):
                 if data==None:
                     datas[i]={}
                     datas[i]["valor"]=None
                 else:
-                    sum=sum+val(datas[i]["valor"])
+                    sum=sum+float(datas[i]["valor"])
+                    valid_data=valid_data+1
                     
                 datas[i]["timestamp"]=datetime.datetime.utcfromtimestamp(timestamp)+datetime.timedelta(hours=i+1)
                 datas[i]["mean"]=None
                 datas[i]["sum"]=None
-            mean=sum/len(datas)
-            datas[i]["mean"]=mean
-            datas[i]["sum"]=sum
+            if valid_data>0:
+                mean=sum/valid_data
+            else:
+                mean=None
+                sum=None
+            datas[0]["mean"]=round(mean,1)
+            datas[i]["mean"]=round(mean,1)
+            datas[i]["sum"]=round(sum,1)
         else:
             datas=None
         return datas
@@ -368,7 +375,7 @@ class IBERDROLA:
                     if datas!=None:
                         values=[]
                         for data in datas:
-                            values.append([data['timestamp'],data['valor']])
+                            values.append([data['timestamp'],data['valor'],data['mean'],data['sum']])
                         self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
                         self.Error=''
                     else:
@@ -387,7 +394,7 @@ class IBERDROLA:
                     self.Error=self.Error+' - retrying'
                     retries=retries-1
                     from time import sleep
-                    sleep(5)    # to avoid sucessive requests
+                    sleep(5)    # to avoid too frequent sucessive requests
                 else:
                     retries=0
             except Exception as ex:

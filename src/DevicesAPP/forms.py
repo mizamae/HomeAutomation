@@ -498,7 +498,10 @@ class DatagramCustomLabelsForm(forms.Form):
                     self.units.append(data['units'][i])
                     fieldName='analog_variable'+'_'+field
                     self.FieldMapping[str(DG.pk)][fieldName]=field
-                    self.fields[fieldName] = forms.CharField(label=IT.Tag,required=True,initial = initial[fieldName])
+                    if fieldName in initial:
+                        self.fields[fieldName] = forms.CharField(label=IT.Tag,required=True,initial = initial[fieldName])
+                    else:
+                        self.fields[fieldName] = forms.CharField(label=IT.Tag,required=True,initial = str(IT))
                     self.helper.layout.append(
                                     AppendedText(fieldName, data['units'][i]))
                 else:
@@ -508,7 +511,10 @@ class DatagramCustomLabelsForm(forms.Form):
                     for k in range(0,8):
                         self.fields[fieldName+'_bit%s' % k] = forms.CharField(label=IT.Tag+ ' bit%s' % k,required=True)
                         self.FieldMapping[str(DG.pk)][fieldName+'_bit%s' % k]=field
-                        self.fields[fieldName+'_bit%s' % k].initial = initial[fieldName+'_bit%s' % k]
+                        if (fieldName+'_bit%s' % k) in initial:
+                            self.fields[fieldName+'_bit%s' % k].initial = initial[fieldName+'_bit%s' % k]
+                        else:
+                            self.fields[fieldName+'_bit%s' % k].initial = str(IT)+'_bit%s' % k
                         self.helper.layout.append(fieldName+'_bit%s' % k)
                     self.helper.layout.append(HTML("<hr>"))
             

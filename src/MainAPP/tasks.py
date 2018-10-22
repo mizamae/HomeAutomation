@@ -169,6 +169,6 @@ def run_afterBoot():
     instance=IBERDROLA(DV[0])
     
     #instance(date=datetime.datetime(year=2018,month=10,day=7),datagramId = 'dailyconsumption')
-    #instance.getSingleDay(date=datetime.datetime(year=2018,month=10,day=17),datagramId = 'dailyconsumption')
+    #instance.getSingleDay(date=datetime.datetime(year=2018,month=10,day=21),datagramId = 'dailyconsumption')
     #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=10,day=17),datagramId = 'dailyconsumption')
     
