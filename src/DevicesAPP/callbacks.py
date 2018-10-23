@@ -365,7 +365,7 @@ class IBERDROLA:
                 return (200,None)
     
     def __call__(self,date=None,datagramId = 'dailyconsumption'):
-
+        from time import sleep
         null=False
         if datagramId =='dailyconsumption':
             retries=self._MAX_RETRIES
@@ -394,11 +394,14 @@ class IBERDROLA:
                     else:
                         null=True
                         self.Error='Empty dataframe'
-                if self.Error!='':
-                    self.Error=self.Error+' - retrying'
-                    retries=retries-1
-                    from time import sleep
-                    sleep(5)    # to avoid too frequent sucessive requests
+                if self.Error!='': 
+                    if retries>1:
+                        self.Error=self.Error+' - retrying'
+                        sleep(5)    # to avoid too frequent sucessive requests
+                    else:
+                        self.Error='Error: Finished retrying'
+                    retries=retries-1 
+                    
                 else:
                     retries=0
             except Exception as ex:
