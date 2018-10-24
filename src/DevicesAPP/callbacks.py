@@ -359,6 +359,7 @@ class IBERDROLA:
                 mean=None
                 sum=None
             datas[0]["mean"]=round(mean,1)
+            datas[0]["sum"]=round(sum,1)
             datas[i]["mean"]=round(mean,1)
             datas[i]["sum"]=round(sum,1)
         else:
