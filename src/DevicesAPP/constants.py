@@ -112,7 +112,8 @@ IP_OFFSET=1 # establishes the offset for IP addresses and DeviceCode. The IP of 
 
 # ENVIRON FILE
 ENVIRON_FILE=os.path.join(DEVICESAPP_ROOT,'..','MainAPP','settings','local.env')
-
+# PICKLE FILE FOR IBERDROLA MISSED DATAGRAMS
+IBERDROLA_PENDING_DB=os.path.join(DEVICESAPP_ROOT,'Iberdrola.sqlite')
 # CONSTANTS FOR THE TESTS
 FORM_FIRST_RENDER_MSG='form is first rendered'
 FORM_ISVALID_MSG='form is valid'

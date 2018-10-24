@@ -40,24 +40,21 @@ from json import dumps
 IBERDROLA_USER = env('IBERDROLA_USER')
 IBERDROLA_PASSW=env('IBERDROLA_PASSW')
 
-class ResponseException(Exception):
-    pass
-
-class LoginException(Exception):
-    pass
-
-class SessionException(Exception):
-    pass
-
-class NoResponseException(Exception):
-    pass
-
-class EnableException(Exception):
-    pass
     
 class IBERDROLA:
     _MAX_RETRIES=3
-
+    
+    SQLcreateRegisterTable = ''' 
+                                CREATE TABLE IF NOT EXISTS pending_jobs (
+                                    date DATE,
+                                    datagramID TEXT,
+                                    dv_pk INTEGER,
+                                    UNIQUE (date,datagramID,dv_pk)                    
+                                ); '''  # the * will be replaced by the column names and types
+    SQLinsertRegister = ''' INSERT INTO pending_jobs(date,dv_pk,datagramID) VALUES(?,?,?) '''
+    SQLselectAllRegisters = ''' SELECT * FROM pending_jobs '''
+    SQLdeleteRegister = ''' DELETE FROM pending_jobs WHERE date=? AND datagramID=?'''
+                           
     __loginurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/login"
     __miconsumourl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/consumoNew/obtenerDatosConsumo/fechaInicio/dateini/colectivo/USU/frecuencia/horas/acumular/false"
     __watthourmeterurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/escenarioNew/obtenerMedicionOnline/12"
@@ -87,17 +84,54 @@ class IBERDROLA:
     _disabled=False
     _login_thread=None
     _loggedin=False
+    Error=''
     
+    class _ResponseException(Exception):
+        pass
+
+    class _LoginException(Exception):
+        pass
+    
+    class _SessionException(Exception):
+        pass
+    
+    class _NoResponseException(Exception):
+        pass
+    
+    class _EnableException(Exception):
+        pass
+
     def __init__(self,DV):
         self.sensor=DV
-        self.Error=''
+        IBERDROLA.Error=''
+        IBERDROLA.init_login_thread()
+    
+    @staticmethod
+    def runOnInit():
+        # CREATES THE PENDING JOBS DATABASE
+        from .constants import IBERDROLA_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
+        try:
+            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLcreateRegisterTable)
+        except Exception as ex:
+            Error='Error creating the pending requests DB: ' + str(ex)
+            logger.error(Error)
+        
+        IBERDROLA.init_login_thread()
+        
+        if IBERDROLA._loggedin:
+            IBERDROLA.execute_pending_jobs()
+        
+    @staticmethod
+    def init_login_thread():
         user=IBERDROLA_USER
         password=IBERDROLA_PASSW
         if not IBERDROLA._disabled:
             try:
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
-                                repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=self.login,
+                                repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=IBERDROLA.login,
                                 onInitkwargs={'user':user,'password':password})
                 from time import sleep
                 i=0
@@ -105,15 +139,25 @@ class IBERDROLA:
                     sleep(1)    # to allow to initialize the thread properly
                     i=i+1
                 if not IBERDROLA._loggedin:
-                    raise LoginException
+                    raise IBERDROLA._LoginException
             except Exception as ex:
                 logger.error('IBERDROLA: Login failed : ' + str(ex))
-                IBERDROLA.kill_thread()
-                if type(ex) is LoginException:
-                    self.Error='Login procedure failed'
-                elif type(ex) is ResponseException:
-                    self.Error='Iberdrola server reported a failure in login'
+                IBERDROLA.kill_login_thread()
+                if type(ex) is IBERDROLA._LoginException:
+                    IBERDROLA.Error='Login procedure failed'
+                elif type(ex) is IBERDROLA._ResponseException:
+                    IBERDROLA.Error='Iberdrola server reported a failure in login'
     
+    @staticmethod
+    def kill_login_thread():
+        if IBERDROLA._login_thread!=None:
+            IBERDROLA._login_thread.kill()
+        IBERDROLA._login_thread=None
+        IBERDROLA._session =None
+        IBERDROLA._loggedin=False
+        IBERDROLA.enable()
+        logger.error('IBERDROLA: Killed the thread')
+        
     @staticmethod
     def disable(auto_enable=False):
         """ Sets an internal flag that inhibits the queries """
@@ -123,17 +167,12 @@ class IBERDROLA:
             from utils.asynchronous_tasks import BackgroundTimer
             enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=1*60*60,callablekwargs={},
                                 repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={})
-#         PublishEvent(Severity=5,Text='Iberdrola devices have been disabled at ' + str(datetime.datetime.now())+'. It will be '+
-#                                     'automatically enabled in 1h.',
-#                      Code='IBERDROLA_disable',Persistent=True)
     
     @staticmethod
     def enable():
         """ Resets an internal flag that inhibits the queries """
         IBERDROLA._disabled=False
         logger.error('IBERDROLA: Enabled')
-#         PublishEvent(Severity=2,Text='Iberdrola devices have been enabled at ' + str(datetime.datetime.now()),
-#                      Code='IBERDROLA_disable',Persistent=True)
         
     @staticmethod
     def setUserAgent():
@@ -143,16 +182,7 @@ class IBERDROLA:
         IBERDROLA.__headers['User-Agent']=IBERDROLA.__useragents[agent]
     
     @staticmethod
-    def kill_thread():
-        if IBERDROLA._login_thread!=None:
-            IBERDROLA._login_thread.kill()
-        IBERDROLA._login_thread=None
-        IBERDROLA._session =None
-        IBERDROLA._loggedin=False
-        IBERDROLA.enable()
-        logger.error('IBERDROLA: Killed the thread')
-    
-    def login(self,user, password):
+    def login(user, password):
         """Create session with your credentials.
            Inicia la session con tus credenciales."""
         logger.error('IBERDROLA: Enters login')
@@ -162,25 +192,25 @@ class IBERDROLA:
         try:
             response = IBERDROLA._session.request("POST", IBERDROLA.__loginurl, data=logindata, headers=IBERDROLA.__headers)
         except Exception as ex:
-            IBERDROLA.kill_thread()
-            self.Error='Error in log in request: ' + str(ex)
-            logger.error('IBERDROLA: Login error: ' + self.Error)
+            IBERDROLA.kill_login_thread()
+            IBERDROLA.Error='Error in log in request: ' + str(ex)
+            logger.error('IBERDROLA: Login error: ' + IBERDROLA.Error)
             return
             
         if response.status_code != 200:
-            IBERDROLA.kill_thread()
+            IBERDROLA.kill_login_thread()
             logger.error('IBERDROLA: Login failure, status code!=200. Code ' + str(response.status_code))
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         jsonresponse = response.json()
         if not "success" in jsonresponse or "captcha" in jsonresponse: # captcha is raised!!
             logger.error('IBERDROLA: Login failure, jsonresponse error. JSON: ' + str(jsonresponse))
-            IBERDROLA.kill_thread()
+            IBERDROLA.kill_login_thread()
             IBERDROLA.disable(auto_enable=True)
-            raise LoginException
+            raise IBERDROLA._LoginException
         if jsonresponse["success"] != "true":
             logger.error('IBERDROLA: Login failure, not success')
-            IBERDROLA.kill_thread()
-            raise LoginException
+            IBERDROLA.kill_login_thread()
+            raise IBERDROLA._LoginException
         IBERDROLA._loggedin=True
         logger.info('Logged in to Iberdrola')
 
@@ -188,14 +218,62 @@ class IBERDROLA:
     def __logindata(user, password):
         logindata = [user, password, "", "Windows -", "PC", "Firefox 54.0", "", "0", "0", "0", "", "s"]
         return dumps(logindata)
-
+            
+    @staticmethod
+    def __add_pending_request(DV,datagramID,date):
+        from .constants import IBERDROLA_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
+        try:
+            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLinsertRegister,arg=[date,DV.pk,datagramID])
+        except Exception as ex:
+            IBERDROLA.Error='Error adding a pending request: ' + str(ex)
+            logger.error(IBERDROLA.Error)
+            
+    @staticmethod
+    def __retrieve_pending_requests():
+        from .constants import IBERDROLA_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
+        try:
+            reqs=DB.executeTransaction(SQLstatement=IBERDROLA.SQLselectAllRegisters)
+        except Exception as ex:
+            reqs=[]
+            Error='Error reading the pending requests: ' + str(ex)
+            logger.error(Error)
+        return reqs
+    
+    @staticmethod
+    def __delete_pending_request(DV_pk,datagramID,date):
+        from .constants import IBERDROLA_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
+        try:
+            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLdeleteRegister,arg=[date,datagramID])
+        except Exception as ex:
+            self.Error='Error deleting a pending request: ' + str(ex)
+            logger.error(self.Error)
+    
+    @staticmethod
+    def execute_pending_jobs():
+        from .models import Devices
+        jobs=IBERDROLA.__retrieve_pending_requests()
+        for job in jobs:
+            date=job[0]
+            DV_pk=job[1]
+            datagramID=job[2]
+            instance=IBERDROLA(DV=Devices.objects.get(pk=DV_pk))
+            result=instance(date=date,datagramId = datagramId)
+            if result['Error']=='':
+                self.__delete_pending_request(DV_pk=DV_pk,datagramID=datagramID,date=date)
+        
     def __checksession(self):
         logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
         if self._disabled:
-            raise EnableException
+            raise IBERDROLA._EnableException
         
         if not self._session:
-            raise SessionException
+            raise IBERDROLA._SessionException
         
         try:
             logger.info(str(self._session.cookies))
@@ -213,7 +291,7 @@ class IBERDROLA:
         self.__checksession()
         response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
@@ -225,7 +303,7 @@ class IBERDROLA:
         self.__checksession()
         response = self._session.request("POST", self.__icpstatusurl, headers=self.__headers)
         if response.status_code != 200:
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
@@ -250,7 +328,7 @@ class IBERDROLA:
         
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code. Code: ' + str(response.status_code))
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
@@ -291,7 +369,7 @@ class IBERDROLA:
         self.__checksession()
         response = self._session.request("GET", self.__contractsurl, headers=self.__headers)
         if response.status_code != 200:
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         if not response.text:
             raise NoResponseException
         jsonresponse = response.json()
@@ -302,7 +380,7 @@ class IBERDROLA:
         self.__checksession()
         response = self._session.request("GET", self.__contractdetailurl, headers=self.__headers)
         if response.status_code != 200:
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         if not response.text:
             raise NoResponseException
         return response.json()
@@ -311,7 +389,7 @@ class IBERDROLA:
         self.__checksession()
         response = self.__session.request("GET", self.__contractselectionurl + id, headers=self.__headers)
         if response.status_code != 200:
-            raise ResponseException
+            raise IBERDROLA._ResponseException
         if not response.text:
             raise NoResponseException
         jsonresponse = response.json()
@@ -369,8 +447,10 @@ class IBERDROLA:
         null=False
         if datagramId =='dailyconsumption':
             retries=self._MAX_RETRIES
+            add2pending=True
         elif datagramId=='instantpower':
             retries=1
+            add2pending=False
             
         while retries>0:
             try:
@@ -407,11 +487,11 @@ class IBERDROLA:
             except Exception as ex:
                 if type(ex) is NoResponseException:
                     self.Error='Empty dataframe received for ' + datagramId
-                elif type(ex) is ResponseException:
+                elif type(ex) is IBERDROLA._ResponseException:
                     self.Error='Iberdrola server reported a failure on a data request for ' + datagramId
-                elif type(ex) is SessionException:
+                elif type(ex) is IBERDROLA._SessionException:
                     self.Error='Login failure'
-                elif type(ex) is EnableException:
+                elif type(ex) is IBERDROLA._EnableException:
                     self.Error='Iberdrola is not enabled'
                 else:
                     self.Error='Unknown APIError: ' + str(ex)
@@ -422,6 +502,8 @@ class IBERDROLA:
             LastUpdated=timezone.now()
         else:
             LastUpdated=None
+            if add2pending:
+                self.__add_pending_request(DV=self.sensor, datagramID=datagramID, date=date)
 
         return {'Error':self.Error,'LastUpdated':LastUpdated}
     

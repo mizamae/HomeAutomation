@@ -46,10 +46,11 @@ class RegistersDBException(Exception):
     pass
         
 class Database(object):
-    def __init__(self,location=''):  
+    
+    def __init__(self,location='',DB_id="commitRegisterDB"):  
         if location != '':
             self.conn = sqlite3.connect(location,detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
-            
+            self.DB_id=DB_id
         else:
             self.conn= None
             print ("Incorrect argument, missing location: ", sys.exc_info()[1])            
@@ -75,7 +76,7 @@ class Database(object):
             return INTEGRITY_ERROR
                 
     def executeTransactionWithCommit(self,SQLstatement,arg=[],many=False):
-        with redis_lock.Lock(lock_table, "commitRegisterDB",expire=10, auto_renewal=True):            
+        with redis_lock.Lock(lock_table, self.DB_id,expire=10, auto_renewal=True):            
             name = multiprocessing.current_process().name
             if DEBUGGING: print('The process ' + name + ' has the lock.')
             result=self._execute(SQLstatement=SQLstatement,arg=arg,many=many)
