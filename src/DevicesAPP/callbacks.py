@@ -503,7 +503,7 @@ class IBERDROLA:
         else:
             LastUpdated=None
             if add2pending:
-                self.__add_pending_request(DV=self.sensor, datagramID=datagramID, date=date)
+                self.__add_pending_request(DV=self.sensor, datagramID=datagramId, date=date)
 
         return {'Error':self.Error,'LastUpdated':LastUpdated}
     
