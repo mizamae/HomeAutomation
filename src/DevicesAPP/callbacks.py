@@ -116,7 +116,7 @@ class IBERDROLA:
             DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLcreateRegisterTable)
         except Exception as ex:
             Error='Error creating the pending requests DB: ' + str(ex)
-            logger.error(Error)
+            #logger.error(Error)
         
         IBERDROLA.init_login_thread()
         
@@ -260,25 +260,26 @@ class IBERDROLA:
         jobs=IBERDROLA.__retrieve_pending_requests()
         for job in jobs:
             date=job[0]
-            DV_pk=job[1]
-            datagramID=job[2]
+            datagramID=job[1]
+            DV_pk=job[2]
             instance=IBERDROLA(DV=Devices.objects.get(pk=DV_pk))
             result=instance(date=date,datagramId = datagramId)
             if result['Error']=='':
                 self.__delete_pending_request(DV_pk=DV_pk,datagramID=datagramID,date=date)
         
     def __checksession(self):
-        logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
+        #logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
         if self._disabled:
             raise IBERDROLA._EnableException
         
         if not self._session:
             raise IBERDROLA._SessionException
         
-        try:
-            logger.info(str(self._session.cookies))
-        except:
-            pass
+        # try:
+            # logger.info(str(self._session.cookies))
+            # pass
+        # except:
+            # pass
 
     def wattmeter(self):
         """Returns your current power consumption.
@@ -286,7 +287,7 @@ class IBERDROLA:
         
         from random import randint
         from time import sleep
-        logger.error('IBERDROLA: Enters wattmeter')
+        #logger.error('IBERDROLA: Enters wattmeter')
         sleep(randint(0,10))
         self.__checksession()
         response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
@@ -332,7 +333,7 @@ class IBERDROLA:
         if not response.text or response.text=='{}':
             raise NoResponseException
         jsonresponse = response.json()
-        logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
+        #logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
         try:
             datas=jsonresponse["y"]["data"][0]
         except:

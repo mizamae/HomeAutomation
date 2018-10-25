@@ -72,9 +72,11 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             
             # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
             
-            
-            df_res=df.fillna(method='ffill').fillna(method='bfill').resample('1T').mean()
-            df_int=df_res.interpolate(method='zero')
+            try:
+                df_res=df.fillna(method='ffill').fillna(method='bfill').resample('1T').mean()
+                df_int=df_res.interpolate(method='zero')
+            except:
+                df_int=df
         else:
             sql='SELECT '+vars+' FROM "'+ table +'" ORDER BY timestamp DESC LIMIT 1'
             df=pd.read_sql_query(sql=sql,con=DB.getConn(),index_col='timestamp')

@@ -90,7 +90,7 @@ class BackgroundTimer(object):
         exists=False
         for t in threading.enumerate():
             if t.name==self.threadName:
-                print("A thread with the name " + self.threadName + " exists")
+                #print("A thread with the name " + self.threadName + " exists")
                 self.thread=t
                 exists=True
                 break
