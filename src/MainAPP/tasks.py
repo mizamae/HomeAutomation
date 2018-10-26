@@ -172,11 +172,11 @@ def run_afterBoot():
         if callable(getattr(class_, "runOnInit", None)):
             class_.runOnInit()
     
-    # import datetime
-    # from DevicesAPP.models import Devices
-    # DV=Devices.objects.filter(DVT__Code='IBERDROLA')
-    # instance=DevicesAPP.callbacks.IBERDROLA(DV[0])
+    #import datetime
+    #from DevicesAPP.models import Devices
+    #DV=Devices.objects.filter(DVT__Code='IBERDROLA')
+    #instance=DevicesAPP.callbacks.IBERDROLA(DV[0])
     #instance(date=datetime.datetime(year=2018,month=10,day=7),datagramId = 'dailyconsumption')
     #instance.getSingleDay(date=datetime.datetime(year=2018,month=10,day=22),datagramId = 'dailyconsumption')
-    #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=10,day=22),datagramId = 'dailyconsumption')
+    #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=1,day=1),datagramId = 'dailyconsumption')
     

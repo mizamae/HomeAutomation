@@ -400,7 +400,7 @@ class IBERDROLA:
     
     def initializeDB(self,fromdate,datagramId = 'dailyconsumption'):
         i=0
-        while fromdate+datetime.timedelta(days=i)<datetime.datetime.now():
+        while fromdate+datetime.timedelta(days=i)<datetime.date.now()-datetime.timedelta(days=1):
             date=fromdate+datetime.timedelta(days=i)
             returned=self.__call__(date=date,datagramId = datagramId)
             i=i+1
