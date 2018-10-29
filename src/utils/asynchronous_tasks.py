@@ -106,6 +106,7 @@ class BackgroundTimer(object):
             
         time.sleep(self.interval)
         self.callable(**self.callablekwargs)
+        self.kill()
     
     def runForever(self):
         """ Method that runs forever """
