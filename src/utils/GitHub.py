@@ -117,30 +117,6 @@ def updateDeveloper(root):
         err = re.search(r"(?P<error>error:[^:]*files\swould\sbe\soverwritten"
                       r"\sby\smerge:(?:\n\t[^\n]+)*)", stderr)
         if err:
-            def question():
-                """Asks question until a valid answer of y or n is provided."""
-                print("\nWould you like to overwrite your changes and set "
-                      "your local copy to the latest commit?")
-                sys_stdout.write("ALL of your local changes will be deleted"
-                                 " [Y/n]: ")
-                ans = raw_input()
-
-                if not ans:
-                    ans = "y"
-
-                if ans.lower() == "n":
-                    return False
-                elif ans.lower() == "y":
-                    return True
-                else:
-                    #print("Did not understand your answer! Try again.")
-                    question()
-
-            #print("%s" % err.group("error"))
-
-            # if not question():
-                # return
-
             if "untracked" in stderr:
                 cmd = "git clean -df"
             else:
@@ -153,7 +129,7 @@ def updateDeveloper(root):
             if "HEAD is now at" in stdout:
                 #print("\nLocal copy reset to current git branch.")
                 #print("Attemping to run update again...\n")
-                PublishEvent(Severity=0,Text=_("Attemping to run update again..."),Persistent=False,Code='MainAPPViews-10')
+                PublishEvent(Severity=0,Text=_("Attempting to run update again..."),Persistent=False,Code='MainAPPViews-10')
             else:
                 #print("Unable to reset local copy to current git branch.")
                 PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False,Code='MainAPPViews-11')
