@@ -268,8 +268,8 @@ class AutomationRuleForm(ModelForm):
                                   label=_('Select the device to send the order to'),required = False)
     Order=forms.ModelChoiceField(queryset=DevicesAPP.models.DeviceCommands.objects.all(),
                                  label=_('Select the order to send'),required = False)
-    NotificationTrue=forms.BooleanField(label=_('Send notification when the rule evaluates to True'))
-    NotificationFalse=forms.BooleanField(label=_('Send notification when the rule evaluates to False'))
+    NotificationTrue=forms.BooleanField(label=_('Send notification when the rule evaluates to True'),required = False)
+    NotificationFalse=forms.BooleanField(label=_('Send notification when the rule evaluates to False'),required = False)
     
     def __init__(self, *args, **kwargs):
         initial_arguments = kwargs.get('initial', None)
@@ -282,8 +282,8 @@ class AutomationRuleForm(ModelForm):
             updated_initial['IOValue']=Action['IOValue']
             updated_initial['Device']=Action['Device']
             updated_initial['Order']=Action['Order']
-            updated_initial['NotificationTrue']=Action.get('NotificationTrue')
-            updated_initial['NotificationFalse']=Action.get('NotificationFalse')
+            updated_initial['NotificationTrue']=Action.get('NotificationTrue',False)
+            updated_initial['NotificationFalse']=Action.get('NotificationFalse',False)
             kwargs.update(initial=updated_initial)
         super(AutomationRuleForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
@@ -311,6 +311,8 @@ class AutomationRuleForm(ModelForm):
         self.helper.layout.append(Field('IOValue', css_class='input-sm'))
         self.helper.layout.append(Field('Device', css_class='input-sm'))
         self.helper.layout.append(Field('Order', css_class='input-sm'))
+        self.helper.layout.append(Field('NotificationTrue', css_class='input-sm'))
+        self.helper.layout.append(Field('NotificationFalse', css_class='input-sm'))
         self.helper.layout.append(Submit('submit', _('Save'),css_class='btn-primary'))
     
     def clean(self):
@@ -324,8 +326,9 @@ class AutomationRuleForm(ModelForm):
          Order = cleaned_data.get('Order')
          PreviousRule= cleaned_data.get('PreviousRule')
          OperatorPrev= cleaned_data.get('OperatorPrev')
-         NotificationTrue= cleaned_data.get('NotificationTrue')
-         NotificationFalse= cleaned_data.get('NotificationFalse')
+         NotificationTrue= cleaned_data.get('NotificationTrue',False)
+         NotificationFalse= cleaned_data.get('NotificationFalse',False)
+         cleaned_data.update(NotificationFalse=NotificationFalse)
          if PreviousRule!=None:
              if OperatorPrev==None:
                  raise ValidationError({'OperatorPrev':_("This field cannot be left empty if a previous rule has been selected")})
