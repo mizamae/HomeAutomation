@@ -852,7 +852,8 @@ class AutomationVarWeeklySchedules(models.Model):
         schedules=cls.objects.all()
         for schedule in schedules:
             schedule.Overriden=False
-            
+            schedule.save()
+                        
     @classmethod
     def checkAll(cls,init=False):
         schedules=cls.objects.filter(Active=True)
