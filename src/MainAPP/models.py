@@ -586,9 +586,8 @@ class AutomationVariables(models.Model):
         for ACALC in ACALCs:
             ACALC.calculate(DBDate=now)
         
-    def updateValue(self,newValue=None,overrideTime=None,**kwargs):
+    def updateValue(self,newValue=None,overrideTime=None,force=None):
         if self.UserEditable:
-            force=kwargs.get('force',None)
             MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,force=force)
             if overrideTime!=None:
                 AutomationVarWeeklySchedules.override(var=self,value=True,duration=overrideTime)

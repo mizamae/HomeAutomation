@@ -244,7 +244,7 @@ class IBERDROLA:
         return reqs
     
     @staticmethod
-    def __delete_pending_request(DV_pk,datagramID,date):
+    def __delete_pending_request(DV_pk,datagramId,date):
         from .constants import IBERDROLA_PENDING_DB
         from utils.BBDD import Database
         DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
@@ -260,12 +260,12 @@ class IBERDROLA:
         jobs=IBERDROLA.__retrieve_pending_requests()
         for job in jobs:
             date=job[0]
-            datagramID=job[1]
+            datagramId=job[1]
             DV_pk=job[2]
             instance=IBERDROLA(DV=Devices.objects.get(pk=DV_pk))
             result=instance(date=date,datagramId = datagramId)
             if result['Error']=='':
-                self.__delete_pending_request(DV_pk=DV_pk,datagramID=datagramID,date=date)
+                self.__delete_pending_request(DV_pk=DV_pk,datagramId=datagramId,date=date)
         
     def __checksession(self):
         #logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
