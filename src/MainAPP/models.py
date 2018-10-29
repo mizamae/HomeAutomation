@@ -588,7 +588,8 @@ class AutomationVariables(models.Model):
         
     def updateValue(self,newValue=None,overrideTime=None,**kwargs):
         if self.UserEditable:
-            MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,**kwargs)
+            force=kwargs.get('force',None)
+            MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,force=force)
             if overrideTime!=None:
                 AutomationVarWeeklySchedules.override(var=self,value=True,duration=overrideTime)
         
@@ -655,7 +656,10 @@ class AutomationVariables(models.Model):
             timestamp=row[0]
             if self.BitPos!=None:
                 from utils.dataMangling import checkBit
-                row=checkBit(number=row[1],position=self.BitPos)
+                try:
+                    row=checkBit(number=row[1],position=self.BitPos)
+                except:
+                    row=None
             else:
                 row=row[1]
         else:
