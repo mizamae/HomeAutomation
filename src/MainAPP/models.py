@@ -780,14 +780,14 @@ class AutomationVarWeeklySchedules(models.Model):
                 self.LValue-=decimal.Decimal.from_float(0.5)
             else:
                 self.LValue+=decimal.Decimal.from_float(0.5)
-            self.save(update_fields=['LValue'])
+            self.save(update_fields=['LValue',])
             self.checkThis()
         elif value=='HValue':
             if sense=='-':
                 self.HValue-=decimal.Decimal.from_float(0.5)
             else:
                 self.HValue+=decimal.Decimal.from_float(0.5)
-            self.save(update_fields=['HValue'])
+            self.save(update_fields=['HValue',])
             self.checkThis()
         elif value=='REFValue':
             if self.Var.getLatestValue()==self.HValue:
@@ -834,18 +834,20 @@ class AutomationVarWeeklySchedules(models.Model):
             Timer=BackgroundTimer(interval=duration,threadName=id,callable=cls.overrideTimeout,callablekwargs={'var':var})
 
     @classmethod
-    def overrideTimeout(cls,var):
-        SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
-        for SCH in SCHs:
-            SCH.Overriden=False
-            SCH.save()
-            try:
-                SCHu=cls.objects.get(pk=SCH.pk)    # refreshing the instance
-                SCHu.checkThis()
-            except:
-                e = sys.exc_info()[0]
-                PublishEvent(Severity=0,Text="Schedule " + str(SCH)+" failed to be checked. Error: " + str(e),Persistent=True,Code=str(SCH)+'r')
-            PublishEvent(Severity=0,Text="Schedule " + str(SCH)+" is now released at time "+str(datetime.datetime.now()),Persistent=True,Code=str(SCH)+'r')
+    def overrideTimeout(cls,**kwargs):
+        var=kwargs.get('var',None)
+        if var:
+            SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
+            for SCH in SCHs:
+                SCH.Overriden=False
+                SCH.save()
+                try:
+                    SCHu=cls.objects.get(pk=SCH.pk)    # refreshing the instance
+                    SCHu.checkThis()
+                except:
+                    e = sys.exc_info()[0]
+                    PublishEvent(Severity=0,Text="Schedule " + str(SCH)+" failed to be checked. Error: " + str(e),Persistent=True,Code=str(SCH)+'r')
+                PublishEvent(Severity=0,Text="Schedule " + str(SCH)+" is now released at time "+str(datetime.datetime.now()),Persistent=True,Code=str(SCH)+'r')
         
     @classmethod
     def initialize(cls):
