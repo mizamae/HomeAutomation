@@ -226,6 +226,8 @@ class IBERDROLA:
         DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
         try:
             DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLinsertRegister,arg=[date,DV.pk,datagramID])
+            PublishEvent(Severity=3,Text=_("The datagram '" + datagramID + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
+                         Code=self.sensor.getEventsCode()+'pending'+str(date),Persistent=True)
         except Exception as ex:
             IBERDROLA.Error='Error adding a pending request: ' + str(ex)
             logger.error(IBERDROLA.Error)
@@ -250,6 +252,8 @@ class IBERDROLA:
         DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
         try:
             DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLdeleteRegister,arg=[date,datagramID])
+            PublishEvent(Severity=0,Text=_("The datagram '" + datagramID + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
+                         Code=self.sensor.getEventsCode()+'pending'+str(date),Persistent=True)
         except Exception as ex:
             self.Error='Error deleting a pending request: ' + str(ex)
             logger.error(self.Error)
@@ -504,7 +508,7 @@ class IBERDROLA:
             LastUpdated=timezone.now()
         else:
             LastUpdated=None
-            if add2pending:
+            if add2pending and date!=None:
                 self.__add_pending_request(DV=self.sensor, datagramID=datagramId, date=date)
 
         return {'Error':self.Error,'LastUpdated':LastUpdated}
