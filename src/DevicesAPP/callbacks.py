@@ -269,7 +269,7 @@ class IBERDROLA:
             instance=IBERDROLA(DV=Devices.objects.get(pk=DV_pk))
             result=instance(date=date,datagramId = datagramId)
             if result['Error']=='':
-                self.__delete_pending_request(DV_pk=DV_pk,datagramId=datagramId,date=date)
+                IBERDROLA.__delete_pending_request(DV_pk=DV_pk,datagramId=datagramId,date=date)
         
     def __checksession(self):
         #logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
