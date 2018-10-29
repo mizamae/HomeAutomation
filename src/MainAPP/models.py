@@ -818,7 +818,7 @@ class AutomationVarWeeklySchedules(models.Model):
                         PublishEvent(Severity=2,Text=text,Persistent=True,Code=self.getEventsCode()+'101')
                         break
                     if self.Var.getLatestValue()!=Value or init:
-                        self.Var.updateValue(newValue=Value,writeDB=True,force=init)
+                        self.Var.updateValue(newValue=Value,force=init)
                     break
     
     @classmethod
