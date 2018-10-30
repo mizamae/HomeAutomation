@@ -266,10 +266,10 @@ class MainDeviceVars(models.Model):
             self.checkRegistersDB(Database=DB)
             result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=values)
             if result==INTEGRITY_ERROR:
-                logger.warning('Integrity error with MainVar '+str(self)+' and query '+sql)
+                #logger.warning('Integrity error with MainVar '+str(self)+' and query '+sql)
                 query=self.getUpdateRegisterSQL(pk=TimeStamp)
                 sql=query['query']
-                logger.warning('Trying to update with query '+sql)
+                #logger.warning('Trying to update with query '+sql)
                 result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=[TimeStamp,])
         except:
             raise DevicesAppException("Unexpected error in insert_MainVars_register for variable "+self.Label+":" + str(sys.exc_info()[1]))
@@ -285,7 +285,7 @@ class MainDeviceVars(models.Model):
             num_args=query['num_args']
             values=query['values']
             if NULL==True:
-                logger.info('Inserted NULL values on MainVars ' + self.Label)
+                #logger.info('Inserted NULL values on MainVars ' + self.Label)
                 values=[]
                 for i in range(0,num_args):  
                     values.append(None)

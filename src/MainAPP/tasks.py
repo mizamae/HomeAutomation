@@ -142,15 +142,14 @@ def start_HourlyTask():
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    HourlyTask()
-    updateWeekDay()
     from MainAPP.models import AutomationRules,AutomationVarWeeklySchedules
     AutomationRules.initAll()
     AutomationVarWeeklySchedules.initialize()
     from DevicesAPP.models import initialize_polling_devices,MasterGPIOs
     initialize_polling_devices()
     MasterGPIOs.initializeIOs(declareInputEvent=True)
-
+    HourlyTask()
+    updateWeekDay()
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
 #     from DevicesAPP.callbacks import ESIOS
 #     from DevicesAPP.models import Devices

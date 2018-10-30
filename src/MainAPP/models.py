@@ -589,6 +589,7 @@ class AutomationVariables(models.Model):
     def updateValue(self,newValue=None,overrideTime=None,force=None):
         if self.UserEditable:
             MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,force=force)
+            logger.info("About to Override variable "+ str(self) + " for " + str(overrideTime) + " seconds to the value " + str(newValue))
             if overrideTime!=None:
                 AutomationVarWeeklySchedules.override(var=self,value=True,duration=overrideTime)
         
@@ -821,17 +822,20 @@ class AutomationVarWeeklySchedules(models.Model):
                         self.Var.updateValue(newValue=Value,force=init)
                     break
     
-    @classmethod
-    def override(cls,var,value,duration=3600):
-        SCHs=cls.objects.filter(Var=var)
+    @staticmethod
+    def override(var,value,duration=3600):
+        logger.info('Enters Override for var ' + str(var) + ' with duration ' + str(duration) +' and value '+str(value))
+        SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
         for SCH in SCHs:
             SCH.Overriden=value
             SCH.save()
             PublishEvent(Severity=3,Text="Schedule " + str(SCH)+" is now overriden at time "+str(datetime.datetime.now()),Persistent=True,Code=str(SCH)+'o')
         if value:
             id='Overriding-'+str(var.pk)
+            logger.info('Enters Overriding thread ' + id)
             from utils.asynchronous_tasks import BackgroundTimer
-            Timer=BackgroundTimer(interval=duration,threadName=id,callable=cls.overrideTimeout,callablekwargs={'var':var})
+            
+            Timer=BackgroundTimer(interval=duration,threadName=id,callable=AutomationVarWeeklySchedules.overrideTimeout,callablekwargs={'var':var})
 
     @staticmethod
     def overrideTimeout(var):
