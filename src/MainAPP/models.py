@@ -833,16 +833,15 @@ class AutomationVarWeeklySchedules(models.Model):
             from utils.asynchronous_tasks import BackgroundTimer
             Timer=BackgroundTimer(interval=duration,threadName=id,callable=cls.overrideTimeout,callablekwargs={'var':var})
 
-    @classmethod
-    def overrideTimeout(cls,**kwargs):
-        var=kwargs.get('var',None)
+    @staticmethod
+    def overrideTimeout(var):
         if var:
             SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
             for SCH in SCHs:
                 SCH.Overriden=False
                 SCH.save()
                 try:
-                    SCHu=cls.objects.get(pk=SCH.pk)    # refreshing the instance
+                    SCHu=AutomationVarWeeklySchedules.objects.get(pk=SCH.pk)    # refreshing the instance
                     SCHu.checkThis()
                 except:
                     e = sys.exc_info()[0]
