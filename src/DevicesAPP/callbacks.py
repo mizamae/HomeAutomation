@@ -319,11 +319,17 @@ class IBERDROLA:
         logger.error('IBERDROLA: Enters miconsumodiario')
         self.__checksession()
         if date==None:
-            date=(datetime.datetime.now()+datetime.timedelta(days=-1)).replace(hour=0,minute=0,second=0,microsecond=0).strftime('%d-%m-%Y%H:%M:%S')
-            timestamp=(datetime.datetime.now()+datetime.timedelta(days=-1)).replace(hour=0,minute=0,second=0,microsecond=0).timestamp()
+            date=(datetime.datetime.now()+datetime.timedelta(days=-1)).replace(hour=0,minute=0,second=0,microsecond=0)
+        elif type(date) is datetime.datetime:
+            date=date.replace(hour=0,minute=0,second=0,microsecond=0)
+        elif type(date) is datetime.date:
+            date=datetime.datetime(day=date.day,month=date.month,year=date.year)
         else:
-            timestamp=date.timestamp()
-            date=date.replace(hour=0,minute=0,second=0,microsecond=0).strftime('%d-%m-%Y%H:%M:%S')
+            logger.error('IBERDROLA: Error date. Date: ' + str(date))
+            raise IBERDROLA._ResponseException
+        timestamp=date.timestamp()
+        date=date.strftime('%d-%m-%Y%H:%M:%S')
+        
         response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), headers=self.__headers)
         
         if response.status_code != 200:
