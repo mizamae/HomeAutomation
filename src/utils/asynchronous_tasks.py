@@ -35,12 +35,13 @@ class BackgroundTimer(object):
 
     def __init__(self, callable,threadName,interval=1,callablekwargs={},
                  repeat=False,triggered=False,lifeSpan=None,
-                 onThreadInit=None,onInitkwargs={}):
+                 onThreadInit=None,onInitkwargs={},log=False):
         """ Constructor
         :type interval: int
         :param interval: Check interval, in seconds
         """
         self.interval = interval
+        self.log=log
         if hasattr(callable, "__call__"):
             self.callable=callable
         else:
@@ -109,6 +110,8 @@ class BackgroundTimer(object):
             
         time.sleep(self.interval)
         self.callable(**self.callablekwargs)
+        if self.log:
+            logger.info("Executed function " + str(self.callable) + " with kwargs " + str(self.callablekwargs))
         self.kill()
     
     def runForever(self):

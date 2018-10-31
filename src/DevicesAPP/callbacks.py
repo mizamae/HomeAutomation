@@ -540,7 +540,11 @@ class ESIOS(object):
         self.__indicators_name__ = dict()
         self.available_series = dict()
         self.available_series = self.get_indicators()
-
+    
+    @staticmethod
+    def runOnInit():
+        pass
+    
     def __get_headers__(self):
         """
         Prepares the CURL headers
