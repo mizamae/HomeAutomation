@@ -241,8 +241,8 @@ class IBERDROLA:
             reqs=DB.executeTransaction(SQLstatement=IBERDROLA.SQLselectAllRegisters)
         except Exception as ex:
             reqs=[]
-            Error='Error reading the pending requests: ' + str(ex)
-            logger.error(Error)
+            IBERDROLA.Error='Error reading the pending requests: ' + str(ex)
+            logger.error(IBERDROLA.Error)
         return reqs
     
     @staticmethod
@@ -255,8 +255,8 @@ class IBERDROLA:
             PublishEvent(Severity=0,Text=_("The datagram '" + datagramID + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
                          Code='IBERDROLApending'+str(date),Persistent=True)
         except Exception as ex:
-            self.Error='Error deleting a pending request: ' + str(ex)
-            logger.error(self.Error)
+            IBERDROLA.Error='Error deleting a pending request: ' + str(ex)
+            logger.error(IBERDROLA.Error)
     
     @staticmethod
     def execute_pending_jobs():
