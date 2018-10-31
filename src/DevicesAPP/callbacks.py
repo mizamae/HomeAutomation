@@ -278,12 +278,6 @@ class IBERDROLA:
         
         if not self._session:
             raise IBERDROLA._SessionException
-        
-        # try:
-            # logger.info(str(self._session.cookies))
-            # pass
-        # except:
-            # pass
 
     def wattmeter(self):
         """Returns your current power consumption.
@@ -298,8 +292,9 @@ class IBERDROLA:
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
-            raise NoResponseException
+            raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
+        #logger.error('IBERDROLA: responded ' + str(jsonresponse))
         return jsonresponse['valMagnitud']
 
     def icpstatus(self):
@@ -310,7 +305,7 @@ class IBERDROLA:
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
-            raise NoResponseException
+            raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
         if jsonresponse["icp"] == "trueConectado":
             return True
@@ -335,7 +330,7 @@ class IBERDROLA:
             logger.error('IBERDROLA: Error status_code. Code: ' + str(response.status_code))
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
-            raise NoResponseException
+            raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
         #logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
         try:
@@ -376,8 +371,8 @@ class IBERDROLA:
         response = self._session.request("GET", self.__contractsurl, headers=self.__headers)
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
-        if not response.text:
-            raise NoResponseException
+        if not response.text or response.text=='{}':
+            raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
         if jsonresponse["success"]:
             return jsonresponse["contratos"]
@@ -387,8 +382,8 @@ class IBERDROLA:
         response = self._session.request("GET", self.__contractdetailurl, headers=self.__headers)
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
-        if not response.text:
-            raise NoResponseException
+        if not response.text or response.text=='{}':
+            raise IBERDROLA._NoResponseException
         return response.json()
 
     def contractselect(self, id):
@@ -396,11 +391,11 @@ class IBERDROLA:
         response = self.__session.request("GET", self.__contractselectionurl + id, headers=self.__headers)
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
-        if not response.text:
-            raise NoResponseException
+        if not response.text or response.text=='{}':
+            raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
         if not jsonresponse["success"]:
-            raise SelectContractException
+            raise Exception
     
     def initializeDB(self,fromdate,datagramId = 'dailyconsumption'):
         i=0
@@ -491,7 +486,7 @@ class IBERDROLA:
                 else:
                     retries=0
             except Exception as ex:
-                if type(ex) is NoResponseException:
+                if type(ex) is IBERDROLA._NoResponseException:
                     self.Error='Empty dataframe received for ' + datagramId
                 elif type(ex) is IBERDROLA._ResponseException:
                     self.Error='Iberdrola server reported a failure on a data request for ' + datagramId
