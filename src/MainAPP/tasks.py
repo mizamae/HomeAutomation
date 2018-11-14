@@ -176,6 +176,6 @@ def run_afterBoot():
     #DV=Devices.objects.filter(DVT__Code='IBERDROLA')
     #instance=DevicesAPP.callbacks.IBERDROLA(DV[0])
     #instance(date=datetime.datetime(year=2018,month=10,day=7),datagramId = 'dailyconsumption')
-    #instance.getSingleDay(date=datetime.datetime(year=2018,month=10,day=22),datagramId = 'dailyconsumption')
-    #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=1,day=1),datagramId = 'dailyconsumption')
+    #instance.getSingleDay(date=datetime.datetime(year=2018,month=11,day=5),datagramId = 'dailyconsumption')
+    #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=11,day=2),datagramId = 'dailyconsumption')
     

@@ -149,11 +149,13 @@ var thermostatDial = (function() {
 			away: false,
 			acknowledged:null,
 			is_true:false,
+			tendency:0,
 		};
 		
 		/*
 		 * Property getter / setters
 		 */
+		
 		Object.defineProperty(this,'hysteresis',{
 			get: function() {
 				return options.hysteresis;
@@ -180,6 +182,15 @@ var thermostatDial = (function() {
 			},
 			set: function(val) {
 				state.acknowledged = val;
+			}
+		});
+		Object.defineProperty(this,'tendency',{
+			get: function() {
+				return state.tendency;
+			},
+			set: function(val) {
+				state.tendency = val;
+				render();
 			}
 		});
 		Object.defineProperty(this,'valueVARpk',{
@@ -385,7 +396,20 @@ var thermostatDial = (function() {
 			transform: 'translate('+translate[0]+','+translate[1]+')',
 		},svg);
 		
-				
+		var icoTendencyX=18*leafScale;
+		var icoTendencyY=-2*leafScale;
+		var icoTendencySide=10*leafScale;
+		var icoTendencyDOWN=createSVGElement('polygon',{
+			class: 'ico_tendency',
+			points: icoTendencyX.toString()+','+icoTendencyY.toString()+' '+(icoTendencyX+icoTendencySide).toString()+','+icoTendencyY.toString()+' '+(icoTendencyX+0.5*icoTendencySide).toString()+','+(icoTendencyY+0.5*icoTendencySide).toString()+' ',
+			transform: 'translate('+translate[0]+','+translate[1]+')',
+			//transform: 'translate('+translate[0]+','+translate[1]+') rotate(180,'+(icoTendencyX+0.5*icoTendencySide).toString()+','+icoTendencyY.toString()+')',
+		},svg);
+		var icoTendencyUP=createSVGElement('polygon',{
+			class: 'ico_tendency',
+			points: icoTendencyX.toString()+','+icoTendencyY.toString()+' '+(icoTendencyX+icoTendencySide).toString()+','+icoTendencyY.toString()+' '+(icoTendencyX+0.5*icoTendencySide).toString()+','+(icoTendencyY+0.5*icoTendencySide).toString()+' ',
+			transform: 'translate('+translate[0]+','+translate[1]+') rotate(180,'+(icoTendencyX+0.5*icoTendencySide).toString()+','+icoTendencyY.toString()+')',
+		},svg);		
 		/*
 		 * RENDER
 		 */
@@ -397,6 +421,7 @@ var thermostatDial = (function() {
 			renderAmbientTemperature();
 			renderLeaf();
 			renderIsTrue();
+			renderTendency();
 		}
 		render();
 		
@@ -455,7 +480,7 @@ var thermostatDial = (function() {
 			lblAmbient_text.nodeValue = Math.floor(self.ambient_temperature);
 			var shiftX=0;
 			if (self.ambient_temperature%1!=0) {
-				var decimalPart = (self.ambient_temperature - Math.floor(self.ambient_temperature)).toFixed(1)*10;
+				var decimalPart = Math.floor(10*(self.ambient_temperature - Math.floor(self.ambient_temperature))).toFixed(0);
 				lblAmbientHalf_text.nodeValue = decimalPart.toString();//'⁵'
 				shiftX=4;
 			}else
@@ -479,7 +504,15 @@ var thermostatDial = (function() {
 				y: pos[1]-4
 			});
 		}
-
+		
+		/*
+		 * RENDER - tendency arrows
+		 */
+		function renderTendency() {
+			setClass(icoTendencyUP,'up',self.tendency>=0);
+			setClass(icoTendencyDOWN,'down',self.tendency<=0);
+		}
+		
 		/*
 		 * RENDER - target temperature
 		 */
@@ -514,7 +547,7 @@ var thermostatDial = (function() {
 		}
 		
 		/*
-		 * RENDER - awau
+		 * RENDER - away
 		 */
 		function renderAway() {
 			svg.classList[self.away ? 'add' : 'remove']('away');

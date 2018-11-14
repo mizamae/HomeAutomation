@@ -51,6 +51,18 @@
   display: block;
   pointer-events: initial;
 }
+.ico_tendency {
+  opacity: 0.5;
+  display: block;
+  pointer-events: initial;
+}
+.ico_tendency.up{
+	fill: #FF0000;
+}
+.ico_tendency.down{
+	fill: #0000FF;
+}
+
 .dial_ico_isTrue.is-true{
   opacity: 1;
   -webkit-transition: opacity 1s;

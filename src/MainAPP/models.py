@@ -589,7 +589,7 @@ class AutomationVariables(models.Model):
     def updateValue(self,newValue=None,overrideTime=None,force=None):
         if self.UserEditable:
             MainAPP.signals.SignalToggleAVAR.send(sender=None,Tag=self.Tag,Device=self.Device,newValue=newValue,force=force)
-            logger.info("About to Override variable "+ str(self) + " for " + str(overrideTime) + " seconds to the value " + str(newValue))
+            #logger.info("About to Override variable "+ str(self) + " for " + str(overrideTime) + " seconds to the value " + str(newValue))
             if overrideTime!=None:
                 AutomationVarWeeklySchedules.override(var=self,value=True,duration=overrideTime)
         

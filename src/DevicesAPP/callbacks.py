@@ -131,7 +131,7 @@ class IBERDROLA:
             try:
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
-                                repeat=True,triggered=False,lifeSpan=24*60*60,onThreadInit=IBERDROLA.login,
+                                repeat=True,triggered=False,lifeSpan=8*60*60,onThreadInit=IBERDROLA.login,
                                 onInitkwargs={'user':user,'password':password})
                 from time import sleep
                 i=0
@@ -180,6 +180,7 @@ class IBERDROLA:
         from random import randint
         agent=randint(0, len(IBERDROLA.__useragents)-1)
         IBERDROLA.__headers['User-Agent']=IBERDROLA.__useragents[agent]
+        logger.error('IBERDROLA: User-Agent= ' + str(IBERDROLA.__headers['User-Agent']))
     
     @staticmethod
     def login(user, password):
@@ -220,13 +221,13 @@ class IBERDROLA:
         return dumps(logindata)
             
     @staticmethod
-    def __add_pending_request(DV,datagramID,date):
+    def __add_pending_request(DV,datagramId,date):
         from .constants import IBERDROLA_PENDING_DB
         from utils.BBDD import Database
         DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
         try:
-            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLinsertRegister,arg=[date,DV.pk,datagramID])
-            PublishEvent(Severity=3,Text=_("The datagram '" + datagramID + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
+            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLinsertRegister,arg=[date,DV.pk,datagramId])
+            PublishEvent(Severity=3,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
                          Code='IBERDROLApending'+str(date),Persistent=True)
         except Exception as ex:
             IBERDROLA.Error='Error adding a pending request: ' + str(ex)
@@ -239,6 +240,7 @@ class IBERDROLA:
         DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
         try:
             reqs=DB.executeTransaction(SQLstatement=IBERDROLA.SQLselectAllRegisters)
+            logger.info('Pending requests: '+str(reqs))
         except Exception as ex:
             reqs=[]
             IBERDROLA.Error='Error reading the pending requests: ' + str(ex)
@@ -249,10 +251,12 @@ class IBERDROLA:
     def __delete_pending_request(DV_pk,datagramId,date):
         from .constants import IBERDROLA_PENDING_DB
         from utils.BBDD import Database
+        from .models import Devices
         DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
         try:
-            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLdeleteRegister,arg=[date,datagramID])
-            PublishEvent(Severity=0,Text=_("The datagram '" + datagramID + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
+            DV=Devices.objects.get(pk=DV_pk)
+            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLdeleteRegister,arg=[date,datagramId])
+            PublishEvent(Severity=0,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
                          Code='IBERDROLApending'+str(date),Persistent=True)
         except Exception as ex:
             IBERDROLA.Error='Error deleting a pending request: ' + str(ex)
@@ -266,6 +270,7 @@ class IBERDROLA:
             date=job[0]
             datagramId=job[1]
             DV_pk=job[2]
+            logger.info('Executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV_pk))
             instance=IBERDROLA(DV=Devices.objects.get(pk=DV_pk))
             result=instance(date=date,datagramId = datagramId)
             if result['Error']=='':
@@ -290,6 +295,7 @@ class IBERDROLA:
         self.__checksession()
         response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
+            logger.error('IBERDROLA: Error status_code for wattmeter. Code: ' + str(response.status_code))
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise IBERDROLA._NoResponseException
@@ -312,15 +318,14 @@ class IBERDROLA:
         else:
             return False
     
-    def miconsumodiario(self,date=None):
+    def miconsumodiario(self,date):
         '''    OJO, EL CONSUMO DIARIO SE ACTUALIZA SOBRE LAS 12 A.M. CON UN DIA DE RETRASO
         '''
         import datetime
         logger.error('IBERDROLA: Enters miconsumodiario')
         self.__checksession()
-        if date==None:
-            date=(datetime.datetime.now()+datetime.timedelta(days=-1)).replace(hour=0,minute=0,second=0,microsecond=0)
-        elif type(date) is datetime.datetime:
+        
+        if type(date) is datetime.datetime:
             date=date.replace(hour=0,minute=0,second=0,microsecond=0)
         elif type(date) is datetime.date:
             date=datetime.datetime(day=date.day,month=date.month,year=date.year)
@@ -333,12 +338,12 @@ class IBERDROLA:
         response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), headers=self.__headers)
         
         if response.status_code != 200:
-            logger.error('IBERDROLA: Error status_code. Code: ' + str(response.status_code))
+            logger.error('IBERDROLA: Error status_code for miconsumodiario. Code: ' + str(response.status_code))
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
-        #logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
+        logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
         try:
             datas=jsonresponse["y"]["data"][0]
         except:
@@ -405,7 +410,7 @@ class IBERDROLA:
     
     def initializeDB(self,fromdate,datagramId = 'dailyconsumption'):
         i=0
-        while fromdate+datetime.timedelta(days=i)<datetime.date.now()-datetime.timedelta(days=1):
+        while fromdate+datetime.timedelta(days=i)<datetime.datetime.now().replace(hour=0)-datetime.timedelta(days=1):
             date=fromdate+datetime.timedelta(days=i)
             returned=self.__call__(date=date,datagramId = datagramId)
             i=i+1
@@ -458,50 +463,54 @@ class IBERDROLA:
         elif datagramId=='instantpower':
             retries=1
             add2pending=False
-            
+        if type(date) is datetime.datetime:
+            date=date.date()
         while retries>0:
             try:
                 if datagramId =='dailyconsumption':
+                    if date==None:
+                        date=(datetime.datetime.now()+datetime.timedelta(days=-1)).date()
                     datas = self.miconsumodiario(date=date)
                     if datas!=None:
                         values=[]
                         for data in datas:
                             values.append([data['timestamp'],data['valor'],data['mean'],data['sum']])
                         self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
-                        self.Error=''
+                        IBERDROLA.Error=''
                     else:
                         null=True
-                        self.Error='Empty dataframe'
+                        IBERDROLA.Error='Empty dataframe'
                 elif datagramId=='instantpower':
                     data = self.wattmeter()
                     if data!=None:
                         timestamp=timezone.now().replace(second=0)
                         self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data,],NULL=null)
-                        self.Error=''
+                        IBERDROLA.Error=''
                     else:
                         null=True
-                        self.Error='Empty dataframe'
-                if self.Error!='': 
+                        IBERDROLA.Error='Empty dataframe'
+                if IBERDROLA.Error!='': 
                     if retries>1:
-                        self.Error=self.Error+' - retrying'
+                        IBERDROLA.Error=IBERDROLA.Error+' - retrying'
                         sleep(5)    # to avoid too frequent sucessive requests
                     else:
-                        self.Error='Error: Finished retrying'
+                        IBERDROLA.Error='Error: Finished retrying'
                     retries=retries-1 
                     
                 else:
                     retries=0
             except Exception as ex:
                 if type(ex) is IBERDROLA._NoResponseException:
-                    self.Error='Empty dataframe received for ' + datagramId
+                    IBERDROLA.Error='Empty dataframe received for ' + datagramId
                 elif type(ex) is IBERDROLA._ResponseException:
-                    self.Error='Iberdrola server reported a failure on a data request for ' + datagramId
+                    IBERDROLA.Error='Iberdrola server reported a failure on a data request for ' + datagramId
                 elif type(ex) is IBERDROLA._SessionException:
-                    self.Error='Login failure'
+                    IBERDROLA.Error='Login failure'
                 elif type(ex) is IBERDROLA._EnableException:
-                    self.Error='Iberdrola is not enabled'
+                    IBERDROLA.Error='Iberdrola is not enabled'
                 else:
-                    self.Error='Unknown APIError: ' + str(ex)
+                    IBERDROLA.Error='Unknown APIError: ' + str(ex)
+                logger.error(IBERDROLA.Error)
                 retries=0
                 null=True
         
@@ -510,9 +519,9 @@ class IBERDROLA:
         else:
             LastUpdated=None
             if add2pending and date!=None:
-                self.__add_pending_request(DV=self.sensor, datagramID=datagramId, date=date)
+                self.__add_pending_request(DV=self.sensor, datagramId=datagramId, date=date)
 
-        return {'Error':self.Error,'LastUpdated':LastUpdated}
+        return {'Error':IBERDROLA.Error,'LastUpdated':LastUpdated}
     
 class ESIOS(object):
     _MAX_RETRIES=3
