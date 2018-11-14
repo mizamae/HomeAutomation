@@ -35,6 +35,22 @@ except BaseException as e:
 
 
 ### MONTHLY FUNCTIONS
+def renewSSLCertificate():  
+    try:
+        # Switch to Python2
+        os.system("sudo ln -sf /usr/bin/python2 /usr/bin/python")
+        os.system("sudo certbot renew")
+        message="SSL certificates renewed OK"
+        s=0
+    except Exception as e:
+        logger.error('Exception Tasks RenewSSL: ' + str(e))
+        message="Error renewing SSL certificates: " + str(e)
+        s=10
+    # Switch to Python3
+    os.system("sudo ln -sf /usr/bin/python3 /usr/bin/python")
+    PublishEvent(Severity=s,Text=message,
+                 Code='Tasks-SSL',Persistent=True)
+    
 def compactRegistersDB():
     import datetime
     now=datetime.datetime.now()-datetime.timedelta(hours=1)
@@ -55,6 +71,8 @@ def MonthlyTask():
         PublishEvent(Severity=0,Text=_("DBs uploaded to GDrive"),Persistent=True,Code='Tasks-1_1')
     else:
         PublishEvent(Severity=0,Text=_("Unable to autenticate to GDrive"),Persistent=True,Code='Tasks-M_1')
+    
+    renewSSLCertificate()
             
 def start_MonthlyTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
