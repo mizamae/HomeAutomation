@@ -905,11 +905,24 @@ class DeviceTypes(models.Model):
 def delete_DeviceType(sender, instance,**kwargs):
     instance.Picture.delete(False)
         
-
+def watchdog():
+    from django.core.cache import cache
+    from .constants import POLLING_WATCHDOG_TIMER,POLLING_WATCHDOG_VAR
+    value=cache.get(POLLING_WATCHDOG_VAR)
+    if value==None:
+        value=True
+    else:
+        value=not value
+    cache.set(POLLING_WATCHDOG_VAR, value, POLLING_WATCHDOG_TIMER*3)
+    
 def initialize_polling_devices():
     from .tools import PollingScheduler
+    from .constants import POLLING_WATCHDOG_TIMER
     scheduler=PollingScheduler(jobstoreUrl=POLLING_SCHEDULER_URL)
     scheduler.run()
+    watchdog()
+    scheduler.add_job(func=watchdog,trigger='interval',seconds=POLLING_WATCHDOG_TIMER,id="watchdog",
+                        replace_existing=True,max_instances=1,coalesce=True,misfire_grace_time=int(0.5*POLLING_WATCHDOG_TIMER))
     DVs=Devices.objects.all()
     if DVs.count()>0:
         for DV in DVs:
