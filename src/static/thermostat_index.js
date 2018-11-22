@@ -7,6 +7,7 @@ function updateThermostat(data)
 		if (ThermostatInstances[index].valueVARpk == data.pk)
 		{
 			ThermostatInstances[index].ambient_temperature=data.Value;
+			ThermostatInstances[index].tendency=data.Tendency;
 		}
 		if (ThermostatInstances[index].targetVARpk == data.pk)
 		{
@@ -119,6 +120,7 @@ var thermostatDial = (function() {
 			valueVARpk: options.valueVARpk,
 			hysteresis: options.hysteresis,
 			operator: options.operator,
+			tendency: options.tendency||0,
 		};
 		
 		/*
@@ -149,7 +151,7 @@ var thermostatDial = (function() {
 			away: false,
 			acknowledged:null,
 			is_true:false,
-			tendency:0,
+			tendency:options.tendency,
 		};
 		
 		/*
@@ -190,7 +192,7 @@ var thermostatDial = (function() {
 			},
 			set: function(val) {
 				state.tendency = val;
-				render();
+				renderTendency();
 			}
 		});
 		Object.defineProperty(this,'valueVARpk',{
@@ -510,7 +512,9 @@ var thermostatDial = (function() {
 		 */
 		function renderTendency() {
 			setClass(icoTendencyUP,'up',self.tendency>=0);
+			setClass(icoTendencyUP,'off',self.tendency<0);
 			setClass(icoTendencyDOWN,'down',self.tendency<=0);
+			setClass(icoTendencyDOWN,'off',self.tendency>0);
 		}
 		
 		/*

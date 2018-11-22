@@ -570,7 +570,7 @@ class AutomationVariables(models.Model):
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
     UserEditable = models.BooleanField(default=True)
     OverrideTime = models.PositiveSmallIntegerField(default=3600)
-    
+    Tendency = models.PositiveSmallIntegerField(null=True,blank=True)
     Subsystem = GenericRelation(Subsystems,related_query_name='automationvariables')
     
     def __str__(self):
@@ -686,10 +686,15 @@ class AutomationVariables(models.Model):
         else:
             return str(5)
          
-    def getValues(self,fromDate,toDate,localized=True):
+    def getValues(self,fromDate=None,toDate=None,number=None,localized=True):
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance()
-        sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
+        if fromDate!=None and toDate!=None:
+            sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE timestamp BETWEEN "' + str(fromDate).split('+')[0]+'" AND "'+str(toDate).split('+')[0] + '" ORDER BY timestamp ASC'
+        elif number!=None:
+            sql='SELECT timestamp,"'+self.Tag+'" FROM "'+ self.Table +'" WHERE "'+self.Tag +'" not null ORDER BY timestamp DESC LIMIT '+ str(number)
+        else:
+            return None
         data_rows=DB.executeTransaction(SQLstatement=sql)
         if localized and len(data_rows)>0:
             from tzlocal import get_localzone
@@ -947,6 +952,21 @@ class Thermostats(models.Model):
     
     def __str__(self):
         return str(self.RITM.Rule) + ' - ' + str(self.RITM.Var1) + ' VS ' + str(self.RITM.Var2)
+    
+    def setTendency(self):
+        values=self.RITM.Var1.getValues(number=2)
+        if len(values)==2:
+            last=round(values[0][1],1)
+            first=round(values[1][1],1)
+            if last>first:
+                self.RITM.Var1.Tendency=1
+            elif first>last:
+                self.RITM.Var1.Tendency=-1
+            else:
+                self.RITM.Var1.Tendency=0
+            self.RITM.Var1.store2DB()
+            
+        
     
 class RuleItems(models.Model):
     PREFIX_CHOICES=(

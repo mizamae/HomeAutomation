@@ -43,7 +43,8 @@
 		targetVARpk: {{ THERM.RITM.Var2.pk }},	// pk for the setpoint AVAR 
 		valueVARpk: {{ THERM.RITM.Var1.pk }},	// pk for the value AVAR 
 		hysteresis: parseFloat("{{ THERM.RITM.Var2Hyst }}".split(",").join(".")),	// hysteresis for the setpoint
-		operator: "{{ THERM.RITM.Operator12 }}"
+		operator: "{{ THERM.RITM.Operator12 }}",
+		tendency:{{THERM.RITM.Var1.Tendency}}
 	});
 	ThermostatInstances.push(nest{{ forloop.counter }});
 </script>

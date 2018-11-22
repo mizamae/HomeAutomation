@@ -4,7 +4,7 @@ import json
 
 import logging
 logger = logging.getLogger("project")
-from .models import AutomationVariables
+from .models import AutomationVariables,Thermostats
 import DevicesAPP.signals
 
 @receiver(DevicesAPP.signals.SignalVariableValueUpdated, dispatch_uid="SignalVariableValueUpdated_MainAPP_receiver")
@@ -20,9 +20,13 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
             AVAR=AutomationVariables.objects.get(Tag=Tag)
             AVAR.executeAutomationRules()
             Group('AVAR-values').send({'text':json.dumps({'Timestamp': timestamp.strftime("%d %B %Y %H:%M:%S"),'pk':AVAR.pk,
-                                                          'Label':AVAR.Label,'Value':Values[i],'Type':Types[i]})},
+                                                          'Label':AVAR.Label,'Value':Values[i],'Type':Types[i],'Tendency':AVAR.Tendency})},
                                       immediately=True)
             AVAR.checkAdditionalCalculations()
+            
+            THRMs=Thermostats.objects.filter(RITM__Var1=AVAR)
+            for THRM in THRMs:
+                THRM.setTendency()
         except:
             pass
 
