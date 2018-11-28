@@ -157,30 +157,30 @@ def start_HourlyTask():
     id='afterBoot'
     scheduler.add_job(func=run_afterBoot,trigger='interval',id=id,seconds=10,max_instances=1,coalesce=True,misfire_grace_time=10,replace_existing=True)
 
-def WatchDog():
-    from django.core.cache import cache
-    from DevicesAPP.constants import POLLING_WATCHDOG_TIMER,POLLING_WATCHDOG_VAR
-    value=cache.get(POLLING_WATCHDOG_VAR)
-    Restart=False
-    if value==None:
-        Restart=True
-    else:
-        value_ant=cache.get(POLLING_WATCHDOG_VAR+"_ant")
-        cache.set(POLLING_WATCHDOG_VAR+"_ant", value, POLLING_WATCHDOG_TIMER*3)
-        if value==value_ant:
-            fails=cache.get("POLLING_WATCHDOG_FAILS") # number of consecutive failures
-            if fails==None:
-                fails=0
-            cache.set("POLLING_WATCHDOG_FAILS", fails+1, POLLING_WATCHDOG_TIMER*10)
-            if fails>=3:
-                Restart=True
-        else:
-            cache.set("POLLING_WATCHDOG_FAILS", 0, POLLING_WATCHDOG_TIMER*10)
-            
-    if Restart:
-        import os
-        PublishEvent(Severity=10,Text=_("Devices polling watchdog forced a reset"),Persistent=True,Code='WatchDog')
-        os.system("sudo systemctl restart gunicorn")
+# def WatchDog():
+#     from django.core.cache import cache
+#     from DevicesAPP.constants import POLLING_WATCHDOG_TIMER,POLLING_WATCHDOG_VAR
+#     value=cache.get(POLLING_WATCHDOG_VAR)
+#     Restart=False
+#     if value==None:
+#         Restart=True
+#     else:
+#         value_ant=cache.get(POLLING_WATCHDOG_VAR+"_ant")
+#         cache.set(POLLING_WATCHDOG_VAR+"_ant", value, POLLING_WATCHDOG_TIMER*3)
+#         if value==value_ant:
+#             fails=cache.get("POLLING_WATCHDOG_FAILS") # number of consecutive failures
+#             if fails==None:
+#                 fails=0
+#             cache.set("POLLING_WATCHDOG_FAILS", fails+1, POLLING_WATCHDOG_TIMER*10)
+#             if fails>=3:
+#                 Restart=True
+#         else:
+#             cache.set("POLLING_WATCHDOG_FAILS", 0, POLLING_WATCHDOG_TIMER*10)
+#             
+#     if Restart:
+#         import os
+#         PublishEvent(Severity=10,Text=_("Devices polling watchdog forced a reset"),Persistent=True,Code='WatchDog')
+#         os.system("sudo systemctl restart gunicorn")
         
                 
     
@@ -196,8 +196,11 @@ def run_afterBoot():
     HourlyTask()
     updateWeekDay()
     from utils.asynchronous_tasks import BackgroundTimer
-    from DevicesAPP.constants import POLLING_WATCHDOG_TIMER
-    process=BackgroundTimer(callable=WatchDog,threadName='WatchDog',interval=POLLING_WATCHDOG_TIMER,repeat=True)
+    from DevicesAPP.constants import POLLING_WATCHDOG_TIMER,POLLING_WATCHDOG_VAR
+    #process=BackgroundTimer(callable=WatchDog,threadName='WatchDog',interval=POLLING_WATCHDOG_TIMER,repeat=True)
+    from utils.Watchdogs import WATCHDOG
+    process=WATCHDOG(name='PollingWatchdog',interval=POLLING_WATCHDOG_TIMER,cachevar=POLLING_WATCHDOG_VAR)
+
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
 #     from DevicesAPP.callbacks import ESIOS
 #     from DevicesAPP.models import Devices

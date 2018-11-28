@@ -32,7 +32,9 @@ class StoppableThread(threading.Thread):
         return self._stop_event.is_set()
     
 class BackgroundTimer(object):
-
+    
+    thread=None
+    
     def __init__(self, callable,threadName,interval=1,callablekwargs={},
                  repeat=False,triggered=False,lifeSpan=None,
                  onThreadInit=None,onInitkwargs={},log=False):
@@ -73,6 +75,7 @@ class BackgroundTimer(object):
             
     def kill(self):
         self.thread.kill()
+        self.thread=None
     
     def checkSurvival(self):
         if self.lifeSpan!=None and (datetime.datetime.now()-self.initiatedOn>datetime.timedelta(seconds=self.lifeSpan)):
@@ -120,8 +123,8 @@ class BackgroundTimer(object):
             self.onThreadInit(**self.onInitkwargs)
             
         while not self.thread._stop_event.isSet():
+            time.sleep(self.interval)
             if not self.thread.pause_event.isSet():
-                time.sleep(self.interval)
                 self.callable(**self.callablekwargs)
             self.checkSurvival()
                 
