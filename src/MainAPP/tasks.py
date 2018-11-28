@@ -179,8 +179,9 @@ def WatchDog():
             
     if Restart:
         import os
-        os.system("sudo systemctl restart gunicorn")
         PublishEvent(Severity=10,Text=_("Devices polling watchdog forced a reset"),Persistent=True,Code='WatchDog')
+        os.system("sudo systemctl restart gunicorn")
+        
                 
     
 def run_afterBoot():

@@ -82,3 +82,4 @@ coverage.xml
 =======
 ./src/Adafruit_DHT/
 >>>>>>> 77b6e2ebe66333f797debc544a1fde538c633f3a
+src/MainAPP/apps.py
