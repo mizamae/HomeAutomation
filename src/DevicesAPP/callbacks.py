@@ -296,6 +296,8 @@ class IBERDROLA:
         response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for wattmeter. Code: ' + str(response.status_code))
+            if response.status_code==403: # Forbidden
+                IBERDROLA.kill_login_thread()
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise IBERDROLA._NoResponseException
