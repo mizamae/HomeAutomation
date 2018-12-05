@@ -66,6 +66,14 @@ Or use this Shell script
 	| python HomeAutomation/src/manage.py shell
 	# create_superuser(name,email,password)
 
+Deploy the Gunicorn config file
+
+    sudo nano /etc/systemd/system/gunicorn.service
+
+If everything went fine, a socket file 'HomeAutomation.sock' should have been created at the path setup in the gunicorn.service file ('/home/pi/run/' in this case). Additionally, the status of the Gunicorn process can be monitored using the following command:
+	
+	sudo journalctl -u gunicorn				
+	
 Install Nginx
 	
 	sudo apt-get install nginx
@@ -99,5 +107,6 @@ Install bluetooth handler
 
 	sudo apt-get install libbluetooth-dev
 	sudo pip install pybluez
+
 
 

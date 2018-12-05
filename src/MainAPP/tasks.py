@@ -39,7 +39,7 @@ def renewSSLCertificate():
     try:
         # Switch to Python2
         os.system("sudo ln -sf /usr/bin/python2 /usr/bin/python")
-        os.system("sudo certbot renew")
+        os.system("sudo /home/pi/HomeAutomation/src/utils/certbot-auto renew")
         message="SSL certificates renewed OK"
         s=0
     except Exception as e:
