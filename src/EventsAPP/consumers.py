@@ -25,7 +25,9 @@ def PublishEvent(Severity,Code,Text,Persistent=False,Webpush=False):
             NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Events',
                                               tag='notifications-'+Code,message_body=Text,
                                               url='http://mizamae2.ddns.net:8075')
-        except:
+            from utils.Telegram import TelegramManager
+            TelegramManager().sendMessage(text=Text)
+        except Exception as exc:
             pass
         
     if Persistent:
