@@ -1165,7 +1165,7 @@ class Devices(models.Model):
             PublishEvent(Severity=0,Text=str(_('Datagram "'))+str(DG)+str(_('" for device "'))+self.Name+str(_('" updated OK')),Persistent=True,Code=self.getEventsCode()+str(DG.pk))
         self.Error=Error
         if Error!='':
-            PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True,Code=self.getEventsCode()+str(DG.pk))
+            PublishEvent(Severity=3,Text=self.Name+' '+Error,Persistent=True,Code=self.getEventsCode()+str(DG.pk),Webpush=True)
             
         self.save(update_fields=updateFields)
         
