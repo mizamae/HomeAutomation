@@ -91,13 +91,12 @@ def updateDeveloper(root):
                 process = Popen("python src/manage.py migrate", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
-                if not err:
+                if ('Operations to perform' in err) or (not err):
                     PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False,Code='MainAPPViews-6')
                 else:
                     PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),
                                  Code='MainAPPViews-7',Persistent=False)
                     logger.debug('MIGRATIONS APPLICATION ERROR: ' + str(err))
-                    return
             
             process = Popen("python src/manage.py collectstatic --noinput", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
@@ -133,7 +132,7 @@ def updateDeveloper(root):
             else:
                 #print("Unable to reset local copy to current git branch.")
                 PublishEvent(Severity=5,Text=_("Unable to reset local copy to current git branch."),Persistent=False,Code='MainAPPViews-11')
-                return
+                
 
             updateDeveloper(root)
         else:

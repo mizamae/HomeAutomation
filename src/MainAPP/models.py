@@ -320,6 +320,7 @@ class SiteSettings(SingletonModel):
         file.close()
         from subprocess import Popen, PIPE
         cmd="echo '"+fileString+"' | sudo tee "+ path
+        #logger.info(cmd)
         process = Popen(cmd, shell=True,
                     stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
         stdout, err = process.communicate()
@@ -327,7 +328,7 @@ class SiteSettings(SingletonModel):
             text='The key '+key+' on the file ' + path+ ' has been modified to ' +newValue
             severity=0
         else:
-            text='Error updating key ' + key+ 'on the file ' + path+ 'Error: ' + err
+            text='Error updating key ' + key+ ' on the file ' + path+ 'Error: ' + err
             severity=3
         PublishEvent(Severity=severity,Text=text,Persistent=True,Code='EditFile-'+key)
 
