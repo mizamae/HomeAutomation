@@ -24,9 +24,7 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
                                       immediately=True)
             AVAR.checkAdditionalCalculations()
             
-            THRMs=Thermostats.objects.filter(RITM__Var1=AVAR)
-            for THRM in THRMs:
-                THRM.setTendency()
+            AVAR.setTendency()
         except:
             pass
 

@@ -729,6 +729,20 @@ class AutomationVariables(models.Model):
                 row[0]=row[0]+row[0].utcoffset() 
         return data_rows
     
+    def setTendency(self):
+        if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs':   # the variable is not DIGITAL
+            values=self.getValues(number=4)
+            if len(values)==4:
+                last=round((values[0][1]+values[1][1])/2,1)
+                first=round((values[2][1]+values[3][1])/2,1)
+                if last>first:
+                    self.Tendency=1
+                elif first>last:
+                    self.Tendency=-1
+                else:
+                    self.Tendency=0
+                self.store2DB()
+            
     def getQuery(self,fromDate,toDate):
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance()
@@ -976,19 +990,6 @@ class Thermostats(models.Model):
     
     def __str__(self):
         return str(self.RITM.Rule) + ' - ' + str(self.RITM.Var1) + ' VS ' + str(self.RITM.Var2)
-    
-    def setTendency(self):
-        values=self.RITM.Var1.getValues(number=2)
-        if len(values)==2:
-            last=round(values[0][1],1)
-            first=round(values[1][1],1)
-            if last>first:
-                self.RITM.Var1.Tendency=1
-            elif first>last:
-                self.RITM.Var1.Tendency=-1
-            else:
-                self.RITM.Var1.Tendency=0
-            self.RITM.Var1.store2DB()
             
         
     
