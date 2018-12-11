@@ -80,6 +80,19 @@ class SiteSettingsForm(ModelForm):
                      Field('PROXY_USER2'),
                      Field('PROXY_PASSW2'),
                 ),
+            Fieldset(_('Telegram Features'),
+                     Field('TELEGRAM_TOKEN'),
+                ),
+            Fieldset(_('OpenWeatherMap Features'),
+                     Field('OWM_TOKEN'),
+                ),
+            Fieldset(_('REE ESIOS Features'),
+                     Field('ESIOS_TOKEN'),
+                ),
+            Fieldset(_('Iberdrola Features'),
+                     Field('IBERDROLA_USER'),
+                     Field('IBERDROLA_PASSW')
+                ),
             Submit('submit', _('Save'),css_class='btn-primary'),
             )
      

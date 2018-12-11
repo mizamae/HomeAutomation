@@ -122,6 +122,20 @@ class SiteSettings(SingletonModel):
     PROXY_PASSW2=models.CharField(verbose_name=_('Password for username 2'),
                                 max_length=10,help_text=_('First username password.'),default='DIY4dot0')
     
+    TELEGRAM_TOKEN=models.CharField(verbose_name=_('Token for the telegram bot'),blank=True,
+                                max_length=50,help_text=_('The token assigned by the BothFather'),default='')
+    
+    IBERDROLA_USER=models.CharField(verbose_name=_('Iberdrola username'),blank=True,
+                                max_length=50,help_text=_('Username registered into the Iberdrola Distribucion webpage'),default='')
+    IBERDROLA_PASSW=models.CharField(verbose_name=_('Iberdrola password'),blank=True,
+                                max_length=50,help_text=_('Password registered on the Iberdrola Distribucion webpage'),default='')
+    
+    OWM_TOKEN=models.CharField(verbose_name=_('Token for the openweathermap page'),blank=True,
+                                max_length=50,help_text=_('The token assigned by the OpenWeatherMap service. You should ask yours following https://openweathermap.org/appid'),default='')
+    
+    ESIOS_TOKEN=models.CharField(verbose_name=_('Token for the ESIOS page'),blank=True,
+                                max_length=50,help_text=_('The token assigned by the ESIOS service. You should ask for yours to: Consultas Sios <consultasios@ree.es>'),default='')
+    
     def store2DB(self,update_fields=None):
         self.save(update_fields=update_fields)
         if update_fields!=None:
@@ -229,7 +243,16 @@ class SiteSettings(SingletonModel):
                     NGINX.reload()
             if field in ['VERSION_DEVELOPER',]:
                 self.checkRepository(force=True)
-    
+                
+            if field in ['TELEGRAM_TOKEN','IBERDROLA_USER','IBERDROLA_PASSW','OWM_TOKEN','ESIOS_TOKEN']:
+                value=getattr(self,field).strip()
+                if value!='':
+                    # update TELEGRAM_TOKEN in settings.local.env
+                    from .constants import LOCALENV_PATH
+                    self.editUniqueKeyedFile(path=LOCALENV_PATH,key=field,delimiter='=',
+                                             newValue=value,
+                                             endChar='\n',addKey=True)
+            
     @staticmethod
     def editKeyedFile(path,key,newValue,endChar=' ',nextLine=True):
         '''
