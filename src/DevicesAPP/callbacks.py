@@ -37,13 +37,7 @@ The method to be called when polling the device must be called "read_sensor"
 from requests import Session
 from json import dumps
 
-IBERDROLA_USER = env('IBERDROLA_USER')
-IBERDROLA_PASSW=env('IBERDROLA_PASSW')
-
-    
-class IBERDROLA:
-    _MAX_RETRIES=3
-    
+class PENDING_DB(object):
     SQLcreateRegisterTable = ''' 
                                 CREATE TABLE IF NOT EXISTS pending_jobs (
                                     date DATE,
@@ -52,8 +46,84 @@ class IBERDROLA:
                                     UNIQUE (date,datagramID,dv_pk)                    
                                 ); '''  # the * will be replaced by the column names and types
     SQLinsertRegister = ''' INSERT INTO pending_jobs(date,dv_pk,datagramID) VALUES(?,?,?) '''
-    SQLselectAllRegisters = ''' SELECT * FROM pending_jobs '''
+    SQLselectAllRegisters = ''' SELECT * FROM pending_jobs WHERE dv_pk=?'''
     SQLdeleteRegister = ''' DELETE FROM pending_jobs WHERE date=? AND datagramID=?'''
+    
+    @staticmethod
+    def runOnInit():
+    # CREATES THE PENDING JOBS DATABASE
+        from .constants import POLLING_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=POLLING_PENDING_DB,DB_id='Init_pending')
+        try:
+            DB.executeTransactionWithCommit(SQLstatement=PENDING_DB.SQLcreateRegisterTable)
+        except Exception as ex:
+            Error='Error creating the pending requests DB: ' + str(ex)
+            logger.error(Error)
+            
+    @staticmethod
+    def add_pending_job(DV,datagramId,date):
+        from .constants import POLLING_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=POLLING_PENDING_DB,DB_id=str(DV)+'_pending')
+        try:
+            DB.executeTransactionWithCommit(SQLstatement=PENDING_DB.SQLinsertRegister,arg=[date,DV.pk,datagramId])
+            PublishEvent(Severity=3,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
+                         Code=str(DV)+'_pending'+str(date),Persistent=True)
+        except Exception as ex:
+            DV.SetError(Error='Error adding a pending request: ' + str(ex))
+            logger.error(DV.Error)
+            
+    @staticmethod
+    def __retrieve_pending_jobs(DV):
+        from .constants import POLLING_PENDING_DB
+        from utils.BBDD import Database
+        DB=Database(location=POLLING_PENDING_DB,DB_id=str(DV)+'_pending')
+        try:
+            reqs=DB.executeTransaction(SQLstatement=PENDING_DB.SQLselectAllRegisters,arg=[DV.pk,])
+            logger.info('Pending requests: '+str(reqs))
+        except Exception as ex:
+            reqs=[]
+            DV.SetError(Error='Error reading the pending requests: ' + str(ex))
+            logger.error(DV.Error)
+        return reqs
+    
+    @staticmethod
+    def __delete_pending_job(DV,datagramId,date):
+        from .constants import POLLING_PENDING_DB
+        from utils.BBDD import Database
+        from .models import Devices
+        DB=Database(location=POLLING_PENDING_DB,DB_id=str(DV)+'_pending')
+        try:
+            DV=Devices.objects.get(pk=DV_pk)
+            DB.executeTransactionWithCommit(SQLstatement=PENDING_DB.SQLdeleteRegister,arg=[date,datagramId])
+            PublishEvent(Severity=0,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
+                         Code=str(DV)+'pending'+str(date),Persistent=True)
+        except Exception as ex:
+            DV.SetError(Error='Error deleting a pending request: ' + str(ex))
+            logger.error(DV.Error)
+    
+    @staticmethod
+    def execute_pending_jobs(sender,DV):
+        from .models import Devices
+        jobs=PENDING_DB.__retrieve_pending_jobs(DV=DV)
+        for job in jobs:
+            date=job[0]
+            datagramId=job[1]
+            logger.info('Executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk))
+            instance=sender(DV=DV)
+            result=instance(date=date,datagramId = datagramId)
+            if result['Error']=='':
+                PENDING_DB.__delete_pending_job(DV=DV,datagramId=datagramId,date=date)
+                
+    
+    
+IBERDROLA_USER = env('IBERDROLA_USER')
+IBERDROLA_PASSW=env('IBERDROLA_PASSW')
+
+    
+class IBERDROLA:
+    _MAX_RETRIES=3
                            
     __loginurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/login"
     __miconsumourl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/consumoNew/obtenerDatosConsumo/fechaInicio/dateini/colectivo/USU/frecuencia/horas/acumular/false"
@@ -107,21 +177,11 @@ class IBERDROLA:
         IBERDROLA.init_login_thread()
     
     @staticmethod
-    def runOnInit():
-        # CREATES THE PENDING JOBS DATABASE
-        from .constants import IBERDROLA_PENDING_DB
-        from utils.BBDD import Database
-        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
-        try:
-            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLcreateRegisterTable)
-        except Exception as ex:
-            Error='Error creating the pending requests DB: ' + str(ex)
-            #logger.error(Error)
-        
+    def runOnInit(DV):
         IBERDROLA.init_login_thread()
         
         if IBERDROLA._loggedin:
-            IBERDROLA.execute_pending_jobs()
+            PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=DV)
         
     @staticmethod
     def init_login_thread():
@@ -220,61 +280,13 @@ class IBERDROLA:
         logindata = [user, password, "", "Windows -", "PC", "Firefox 54.0", "", "0", "0", "0", "", "s"]
         return dumps(logindata)
             
-    @staticmethod
-    def __add_pending_request(DV,datagramId,date):
-        from .constants import IBERDROLA_PENDING_DB
-        from utils.BBDD import Database
-        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
-        try:
-            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLinsertRegister,arg=[date,DV.pk,datagramId])
-            PublishEvent(Severity=3,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
-                         Code='IBERDROLApending'+str(date),Persistent=True)
-        except Exception as ex:
-            IBERDROLA.Error='Error adding a pending request: ' + str(ex)
-            logger.error(IBERDROLA.Error)
-            
-    @staticmethod
-    def __retrieve_pending_requests():
-        from .constants import IBERDROLA_PENDING_DB
-        from utils.BBDD import Database
-        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
-        try:
-            reqs=DB.executeTransaction(SQLstatement=IBERDROLA.SQLselectAllRegisters)
-            logger.info('Pending requests: '+str(reqs))
-        except Exception as ex:
-            reqs=[]
-            IBERDROLA.Error='Error reading the pending requests: ' + str(ex)
-            logger.error(IBERDROLA.Error)
-        return reqs
+
+    def add_pending_request(self,datagramId,date):
+        PENDING_DB.add_pending_jobs(DV=self.sensor,datagramId=datagramId,date=date)
+        
     
-    @staticmethod
-    def __delete_pending_request(DV_pk,datagramId,date):
-        from .constants import IBERDROLA_PENDING_DB
-        from utils.BBDD import Database
-        from .models import Devices
-        DB=Database(location=IBERDROLA_PENDING_DB,DB_id='Iberdrola_pending')
-        try:
-            DV=Devices.objects.get(pk=DV_pk)
-            DB.executeTransactionWithCommit(SQLstatement=IBERDROLA.SQLdeleteRegister,arg=[date,datagramId])
-            PublishEvent(Severity=0,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
-                         Code='IBERDROLApending'+str(date),Persistent=True)
-        except Exception as ex:
-            IBERDROLA.Error='Error deleting a pending request: ' + str(ex)
-            logger.error(IBERDROLA.Error)
-    
-    @staticmethod
-    def execute_pending_jobs():
-        from .models import Devices
-        jobs=IBERDROLA.__retrieve_pending_requests()
-        for job in jobs:
-            date=job[0]
-            datagramId=job[1]
-            DV_pk=job[2]
-            logger.info('Executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV_pk))
-            instance=IBERDROLA(DV=Devices.objects.get(pk=DV_pk))
-            result=instance(date=date,datagramId = datagramId)
-            if result['Error']=='':
-                IBERDROLA.__delete_pending_request(DV_pk=DV_pk,datagramId=datagramId,date=date)
+    def execute_pending_jobs(self):
+        PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=self.sensor)
         
     def __checksession(self):
         #logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
@@ -521,7 +533,7 @@ class IBERDROLA:
         else:
             LastUpdated=None
             if add2pending and date!=None:
-                self.__add_pending_request(DV=self.sensor, datagramId=datagramId, date=date)
+                self.add_pending_request(datagramId=datagramId, date=date)
 
         return {'Error':IBERDROLA.Error,'LastUpdated':LastUpdated}
     
@@ -554,9 +566,16 @@ class ESIOS(object):
         self.available_series = self.get_indicators()
     
     @staticmethod
-    def runOnInit():
-        pass
+    def runOnInit(DV):
+        PENDING_DB.execute_pending_jobs(sender=ESIOS,DV=DV)
     
+    def add_pending_request(self,datagramId,date):
+        PENDING_DB.add_pending_jobs(DV=self.sensor,datagramId=datagramId,date=date)
+    
+    def execute_pending_jobs(self):
+        PENDING_DB.execute_pending_jobs(sender=ESIOS,DV=self.sensor)
+        
+                
     def __get_headers__(self):
         """
         Prepares the CURL headers
@@ -798,10 +817,9 @@ class ESIOS(object):
             names = self.get_names(indicators_)
             if date==None:
                 start_=timezone.now().replace(hour=23,minute=59,second=59)
-                end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
             else:
                 start_=date.replace(hour=23,minute=59,second=59)
-                end_=(timezone.now()+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
+            end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
             
             while retries>0:
                 try:
@@ -833,6 +851,7 @@ class ESIOS(object):
         
         if null==False:
             LastUpdated=timezone.now()
+            self.add_pending_request(datagramId=datagramId,date=start_)
         else:
             LastUpdated=None
             timestamp=timezone.now()
