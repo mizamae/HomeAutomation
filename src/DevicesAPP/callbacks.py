@@ -815,10 +815,13 @@ class ESIOS(object):
             retries=self._MAX_RETRIES
             indicators_ = [10229, 10230, 10231]
             names = self.get_names(indicators_)
-            if date==None:
+            if type(date) is datetime.datetime:
+                start_=date.replace(hour=0,minute=0,second=0,microsecond=0)
+            elif type(date) is datetime.date:
+                start_=datetime.datetime(day=date.day,month=date.month,year=date.year)
+            elif date==None:
                 start_=timezone.now().replace(hour=23,minute=59,second=59)
-            else:
-                start_=date.replace(hour=23,minute=59,second=59)
+
             end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
             
             while retries>0:
@@ -846,12 +849,12 @@ class ESIOS(object):
                         retries=0
                 except Exception as ex:
                     retries=retries-1
-                    Error='APIError'
+                    Error='APIError:' + str(ex)
                     null=True
         
         if null==False:
             LastUpdated=timezone.now()
-            self.add_pending_request(datagramId=datagramId,date=start_)
+            self.add_pending_request(datagramId=datagramId,date=start_.date())
         else:
             LastUpdated=None
             timestamp=timezone.now()

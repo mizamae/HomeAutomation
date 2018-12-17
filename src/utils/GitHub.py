@@ -78,7 +78,7 @@ def updateDeveloper(root):
             process = Popen("python src/manage.py showmigrations --list", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
             stdout, err = process.communicate()
-            if err:
+            if err and (not 'UserWarning: ' in err):
                 logger.debug('MIGRATIONS CHECK ERROR: ' + str(err))
                 PublishEvent(Severity=5,Text=_("Error checking migrations: " + str(err)),Persistent=True,Code='MainAPPViews-4')
                 
