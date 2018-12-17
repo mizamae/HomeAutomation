@@ -123,7 +123,7 @@ class SiteSettings(SingletonModel):
                                 max_length=10,help_text=_('First username password.'),default='DIY4dot0')
     
     TELEGRAM_TOKEN=models.CharField(verbose_name=_('Token for the telegram bot'),blank=True,
-                                max_length=50,help_text=_('The token assigned by the BothFather'),default='')
+                                max_length=100,help_text=_('The token assigned by the BothFather'),default='')
     
     IBERDROLA_USER=models.CharField(verbose_name=_('Iberdrola username'),blank=True,
                                 max_length=50,help_text=_('Username registered into the Iberdrola Distribucion webpage'),default='')
@@ -131,10 +131,10 @@ class SiteSettings(SingletonModel):
                                 max_length=50,help_text=_('Password registered on the Iberdrola Distribucion webpage'),default='')
     
     OWM_TOKEN=models.CharField(verbose_name=_('Token for the openweathermap page'),blank=True,
-                                max_length=50,help_text=_('The token assigned by the OpenWeatherMap service. You should ask yours following https://openweathermap.org/appid'),default='')
+                                max_length=100,help_text=_('The token assigned by the OpenWeatherMap service. You should ask yours following https://openweathermap.org/appid'),default='')
     
     ESIOS_TOKEN=models.CharField(verbose_name=_('Token for the ESIOS page'),blank=True,
-                                max_length=50,help_text=_('The token assigned by the ESIOS service. You should ask for yours to: Consultas Sios <consultasios@ree.es>'),default='')
+                                max_length=100,help_text=_('The token assigned by the ESIOS service. You should ask for yours to: Consultas Sios <consultasios@ree.es>'),default='')
     
     def store2DB(self,update_fields=None):
         self.save(update_fields=update_fields)
