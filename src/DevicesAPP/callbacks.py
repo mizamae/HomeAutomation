@@ -71,7 +71,7 @@ class PENDING_DB(object):
             PublishEvent(Severity=3,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
                          Code=str(DV)+'_pending'+str(date),Persistent=True)
         except Exception as ex:
-            DV.SetError(Error='Error adding a pending request: ' + str(ex))
+            DV.SetError(error='Error adding a pending request: ' + str(ex))
             logger.error(DV.Error)
             
     @staticmethod
@@ -84,7 +84,7 @@ class PENDING_DB(object):
             logger.info('Pending requests: '+str(reqs))
         except Exception as ex:
             reqs=[]
-            DV.SetError(Error='Error reading the pending requests: ' + str(ex))
+            DV.SetError(error='Error reading the pending requests: ' + str(ex))
             logger.error(DV.Error)
         return reqs
     
@@ -95,12 +95,12 @@ class PENDING_DB(object):
         from .models import Devices
         DB=Database(location=POLLING_PENDING_DB,DB_id=str(DV)+'_pending')
         try:
-            DV=Devices.objects.get(pk=DV_pk)
+            DV=Devices.objects.get(pk=DV.pk)
             DB.executeTransactionWithCommit(SQLstatement=PENDING_DB.SQLdeleteRegister,arg=[date,datagramId])
             PublishEvent(Severity=0,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been removed from pending jobs"),
                          Code=str(DV)+'pending'+str(date),Persistent=True)
         except Exception as ex:
-            DV.SetError(Error='Error deleting a pending request: ' + str(ex))
+            DV.SetError(error='Error deleting a pending request: ' + str(ex))
             logger.error(DV.Error)
     
     @staticmethod
@@ -533,7 +533,10 @@ class IBERDROLA:
         else:
             LastUpdated=None
             if add2pending and date!=None:
-                self.add_pending_request(datagramId=datagramId, date=date)
+                try:
+                    self.add_pending_request(datagramId=datagramId, date=date)
+                except:
+                    pass
 
         return {'Error':IBERDROLA.Error,'LastUpdated':LastUpdated}
     
@@ -712,7 +715,7 @@ class ESIOS(object):
 
         #  https://www.esios.ree.es/es/analisis/1293?vis=2&start_date=21-06-2016T00%3A00&end_date=21-06-2016T23%3A50&compare_start_date=20-06-2016T00%3A00&groupby=minutes10&compare_indicators=545,544#JSON
         url = 'https://api.esios.ree.es/indicators/' + indicator + '?start_date=' + start + '&end_date=' + end
-
+        #logger.info("URL: " + url)
         # Perform the call
         req = urllib.request.Request(url, headers=self.__get_headers__())
         with urllib.request.urlopen(req) as response:
@@ -785,7 +788,7 @@ class ESIOS(object):
 
             name = self.__indicators_name__[indicators[i]]
             names.append(name)
-            print('Parsing ' + name)
+            logger.info('Parsing ' + name)
             if i == 0:
                 # Assign the first indicator
                 df = self.get_data(indicators[i], start, end)
@@ -810,32 +813,38 @@ class ESIOS(object):
             
     def __call__(self,datagramId = 'energy_cost',date=None):
         Error=''
+        #logger.info('Type date: '+str(type(date)))
+        #logger.info('DatagramId: '+str(datagramId))
         if datagramId =='energy_cost':
             # gets the hourly cost for the energy for the next day
             retries=self._MAX_RETRIES
             indicators_ = [10229, 10230, 10231]
             names = self.get_names(indicators_)
             if type(date) is datetime.datetime:
-                start_=date.replace(hour=0,minute=0,second=0,microsecond=0)
+                start_=date.replace(hour=23,minute=59,second=59)
             elif type(date) is datetime.date:
-                start_=datetime.datetime(day=date.day,month=date.month,year=date.year)
+                start_=datetime.datetime(day=date.day,month=date.month,year=date.year).replace(hour=23,minute=59,second=59)
             elif date==None:
                 start_=timezone.now().replace(hour=23,minute=59,second=59)
-
-            end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
             
+            #logger.info('start_ '+str(start_))
+            end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
+            #logger.info('end_ '+str(end_))
             while retries>0:
                 try:
                     dfmul, df_list, names = self.get_multiple_series(indicators_, start_, end_)
+                    #logger.info("returned: " + str(dfmul))
                     if dfmul is not None:
                         null=False
                         Error=''
+                        #logger.info("returned: " + str(dfmul[names]))
                         df = dfmul[names]/1000
                         values=[]
                         for timestamp,row in zip(df.index,df.values):
                             temp=list(row)
                             temp.insert(0,timestamp.to_pydatetime())
                             values.append(temp)
+                        #logger.info("returned values: " + str(values))
                         self.sensor.insertManyRegisters(DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
 
                     else:
@@ -854,13 +863,12 @@ class ESIOS(object):
         
         if null==False:
             LastUpdated=timezone.now()
-            self.add_pending_request(datagramId=datagramId,date=start_.date())
         else:
             LastUpdated=None
-            timestamp=timezone.now()
-            values=(None,None,None)
-            self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=values,NULL=null)
-        
+            try:
+                self.add_pending_request(datagramId=datagramId,date=start_.date())
+            except:
+                pass
         return {'Error':Error,'LastUpdated':LastUpdated}
         
 
