@@ -82,6 +82,7 @@ class SiteSettingsForm(ModelForm):
                 ),
             Fieldset(_('Telegram Features'),
                      Field('TELEGRAM_TOKEN'),
+                     Field('TELEGRAM_CHATID'),
                 ),
             Fieldset(_('OpenWeatherMap Features'),
                      Field('OWM_TOKEN'),

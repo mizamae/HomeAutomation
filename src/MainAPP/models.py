@@ -125,6 +125,9 @@ class SiteSettings(SingletonModel):
     TELEGRAM_TOKEN=models.CharField(verbose_name=_('Token for the telegram bot'),blank=True,
                                 max_length=100,help_text=_('The token assigned by the BothFather'),default='')
     
+    TELEGRAM_CHATID=models.CharField(verbose_name=_('Chat ID'),blank=True,
+                                max_length=100,help_text=_('The ID of the chat to use'),default='')
+    
     IBERDROLA_USER=models.CharField(verbose_name=_('Iberdrola username'),blank=True,
                                 max_length=50,help_text=_('Username registered into the Iberdrola Distribucion webpage'),default='')
     IBERDROLA_PASSW=models.CharField(verbose_name=_('Iberdrola password'),blank=True,
@@ -144,6 +147,10 @@ class SiteSettings(SingletonModel):
     def dailyTasks(self):
         self.checkRepository()
         self.checkDeniableIPs()
+    
+    def set_TELEGRAM_CHATID(self,value):
+        self.TELEGRAM_CHATID=value.strip()
+        self.store2DB()
         
     def checkRepository(self,force=False):
         if self.VERSION_AUTO_DETECT or force:

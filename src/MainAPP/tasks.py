@@ -215,6 +215,7 @@ def run_afterBoot():
     import DevicesAPP.callbacks
     DevicesAPP.callbacks.PENDING_DB.runOnInit()
     from DevicesAPP.models import DeviceTypes,Devices
+    from DevicesAPP.constants import RUNNING_STATE
     # EXECUTES THE METHOD ON INIT ON EVERY CLASS THAT PROVIDES IT ON DEVICES.CALLBACKS
     import inspect
     classes=[m[0] for m in inspect.getmembers(DevicesAPP.callbacks, inspect.isclass) if m[1].__module__ == 'DevicesAPP.callbacks']
@@ -227,7 +228,7 @@ def run_afterBoot():
                 DVT = None
             
             if DVT!=None:
-                DVs=Devices.objects.filter(DVT=DVT)
+                DVs=Devices.objects.filter(DVT=DVT,State=RUNNING_STATE)
                 for DV in DVs:
                     class_.runOnInit(DV=DV)
     
