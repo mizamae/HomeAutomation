@@ -43,20 +43,22 @@ class WATCHDOG(object):
         Restart=False
         if value==None:
             logger.error('Watchdog: Cache value of '+WATCHDOG_VAR+' was None')
-            Restart=True
+            value=True
+            value_ant=True
         else:
             value_ant=cache.get(WATCHDOG_VAR+"_ant")
-            cache.set(WATCHDOG_VAR+"_ant", value, self.interval*3)
-            if value==value_ant:
-                logger.error('Watchdog: Cache values of '+WATCHDOG_VAR+' coincide')
-                fails=cache.get(WATCHDOG_VAR+"_FAILS") # number of consecutive failures
-                if fails==None:
-                    fails=0
-                cache.set(WATCHDOG_VAR+"_FAILS", fails+1, self.interval*10)
-                if fails>=3:
-                    Restart=True
-            else:
-                cache.set(WATCHDOG_VAR+"_FAILS", 0, self.interval*10)
+            
+        cache.set(WATCHDOG_VAR+"_ant", value, self.interval*3)
+        if value==value_ant:
+            logger.error('Watchdog: Cache values of '+WATCHDOG_VAR+' coincide')
+            fails=cache.get(WATCHDOG_VAR+"_FAILS") # number of consecutive failures
+            if fails==None:
+                fails=0
+            cache.set(WATCHDOG_VAR+"_FAILS", fails+1, self.interval*10)
+            if fails>=3:
+                Restart=True
+        else:
+            cache.set(WATCHDOG_VAR+"_FAILS", 0, self.interval*10)
                 
         if Restart:
             import os

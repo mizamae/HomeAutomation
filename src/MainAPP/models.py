@@ -76,7 +76,7 @@ class SiteSettings(SingletonModel):
                                 help_text=_('Automatically updates to (and applies) the latest software'),default=False)
     VERSION_CODE= models.CharField(verbose_name=_('Code of the version of the application framework'),
                                 max_length=100,default='')
-    VERSION_DEVELOPER=models.BooleanField(verbose_name=_('Update with the new software development versions'),
+    VERSION_DEVELOPER=models.BooleanField(verbose_name=_('Follow the beta development versions'),
                                 help_text=_('Tracks the development versions (may result in unstable behaviour)'),default=False)
     NTPSERVER_RESTART_TIMEDELTA=models.PositiveSmallIntegerField(verbose_name=_('NTP server restart time delta'),
                                 help_text=_('Time difference in minutes that will trigger a restart of the NTP server'),default=5)
@@ -164,14 +164,22 @@ class SiteSettings(SingletonModel):
                 self.VERSION_CODE=release['tag']
                 self.save(update_fields=['VERSION_CODE',])
             if release['update'] and (self.VERSION_AUTO_UPDATE or force):
-                if self.VERSION_DEVELOPER:
-                    revision=updateDeveloper(root=GIT_PATH)
-                else:
-                    revision=updateRelease(root=GIT_PATH,tag=release['tag'])
-                    
-                if revision!=None:
-                    self.VERSION_CODE=revision
-                    self.save(update_fields=['VERSION_CODE',])
+                from utils.Watchdogs import WATCHDOG
+                from DevicesAPP.constants import POLLING_WATCHDOG_TIMER,POLLING_WATCHDOG_VAR
+                #process=WATCHDOG(name='PollingWatchdog',interval=POLLING_WATCHDOG_TIMER,cachevar=POLLING_WATCHDOG_VAR)
+                #process.pause()
+                try:
+                    if self.VERSION_DEVELOPER:
+                        revision=updateDeveloper(root=GIT_PATH)
+                    else:
+                        revision=updateRelease(root=GIT_PATH,tag=release['tag'])
+                        
+                    if revision!=None:
+                        self.VERSION_CODE=revision
+                        self.save(update_fields=['VERSION_CODE',])
+                except:
+                    pass
+                #process.resume()
     
     def addressInNetwork(self,ip2check):
         import ipaddress
