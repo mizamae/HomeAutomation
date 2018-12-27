@@ -30,7 +30,7 @@ class TelegramManager(object):
             SETTINGS=SiteSettings.load()
             SETTINGS.set_TELEGRAM_CHATID(value=self.chatID)
     
-    @static_method
+    @staticmethod
     def getChatID():
         chatID=cache.get(TELEGRAM_CHNID_VAR)
         if chatID==None:

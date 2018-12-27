@@ -6,7 +6,7 @@ from .constants import DTYPE_DIGITAL,PLOTTYPE_CHOICES
 
 def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime):
     
-    DB=getRegistersDBInstance()
+    DB=getRegistersDBInstance(year=fromDate.year)
     
     chart={}
     chart['title']=table
