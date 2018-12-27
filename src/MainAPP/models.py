@@ -351,6 +351,7 @@ class Permissions(models.Model):
             ("view_reportingapp", "Can view the reportingAPP"),
             ("view_subsystemsapp", "Can view the subsystemsAPP"),
             ("view_configurationapp", "Can access to the configurationAPP"),
+            ("change_automationvar", "Can change the value of an automation variable"),
         )
         
 class Subsystems(models.Model):
@@ -730,7 +731,7 @@ class AutomationVariables(models.Model):
         return data_rows
     
     def setTendency(self):
-        if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs':   # the variable is not DIGITAL
+        if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs' and self.UserEditable:   # the variable is not DIGITAL
             values=self.getValues(number=4)
             if len(values)==4:
                 last=round((values[0][1]+values[1][1])/2,1)
