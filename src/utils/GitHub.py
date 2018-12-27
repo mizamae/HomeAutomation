@@ -91,7 +91,7 @@ def updateDeveloper(root):
                 process = Popen("python src/manage.py migrate", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
-                if ('Operations to perform' in err) or (not err):
+                if ('UserWarning' in err) or (not err):
                     PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False,Code='MainAPPViews-6')
                 else:
                     PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),
@@ -177,7 +177,7 @@ def updateRelease(root,tag):
                 process = Popen("python src/manage.py migrate", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
-                if not err:
+                if ('UserWarning' in err) or (not err):
                     PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False,Code='MainAPPViews-6')
                 else:
                     PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),
