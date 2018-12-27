@@ -213,14 +213,24 @@ def run_afterBoot():
 
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
     import DevicesAPP.callbacks
-    
+    DevicesAPP.callbacks.PENDING_DB.runOnInit()
+    from DevicesAPP.models import DeviceTypes,Devices
+    from DevicesAPP.constants import RUNNING_STATE
     # EXECUTES THE METHOD ON INIT ON EVERY CLASS THAT PROVIDES IT ON DEVICES.CALLBACKS
     import inspect
     classes=[m[0] for m in inspect.getmembers(DevicesAPP.callbacks, inspect.isclass) if m[1].__module__ == 'DevicesAPP.callbacks']
     for object in classes:
         class_=getattr(DevicesAPP.callbacks,object)
         if callable(getattr(class_, "runOnInit", None)):
-            class_.runOnInit()
+            try:
+                DVT=DeviceTypes.objects.get(Code=class_.__name__)
+            except DeviceTypes.DoesNotExist:
+                DVT = None
+            
+            if DVT!=None:
+                DVs=Devices.objects.filter(DVT=DVT,State=RUNNING_STATE)
+                for DV in DVs:
+                    class_.runOnInit(DV=DV)
     
     #import datetime
     #from DevicesAPP.models import Devices

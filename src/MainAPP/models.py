@@ -123,7 +123,10 @@ class SiteSettings(SingletonModel):
                                 max_length=10,help_text=_('First username password.'),default='DIY4dot0')
     
     TELEGRAM_TOKEN=models.CharField(verbose_name=_('Token for the telegram bot'),blank=True,
-                                max_length=50,help_text=_('The token assigned by the BothFather'),default='')
+                                max_length=100,help_text=_('The token assigned by the BothFather'),default='')
+    
+    TELEGRAM_CHATID=models.CharField(verbose_name=_('Chat ID'),blank=True,
+                                max_length=100,help_text=_('The ID of the chat to use'),default='')
     
     IBERDROLA_USER=models.CharField(verbose_name=_('Iberdrola username'),blank=True,
                                 max_length=50,help_text=_('Username registered into the Iberdrola Distribucion webpage'),default='')
@@ -131,10 +134,10 @@ class SiteSettings(SingletonModel):
                                 max_length=50,help_text=_('Password registered on the Iberdrola Distribucion webpage'),default='')
     
     OWM_TOKEN=models.CharField(verbose_name=_('Token for the openweathermap page'),blank=True,
-                                max_length=50,help_text=_('The token assigned by the OpenWeatherMap service. You should ask yours following https://openweathermap.org/appid'),default='')
+                                max_length=100,help_text=_('The token assigned by the OpenWeatherMap service. You should ask yours following https://openweathermap.org/appid'),default='')
     
     ESIOS_TOKEN=models.CharField(verbose_name=_('Token for the ESIOS page'),blank=True,
-                                max_length=50,help_text=_('The token assigned by the ESIOS service. You should ask for yours to: Consultas Sios <consultasios@ree.es>'),default='')
+                                max_length=100,help_text=_('The token assigned by the ESIOS service. You should ask for yours to: Consultas Sios <consultasios@ree.es>'),default='')
     
     def store2DB(self,update_fields=None):
         self.save(update_fields=update_fields)
@@ -144,6 +147,10 @@ class SiteSettings(SingletonModel):
     def dailyTasks(self):
         self.checkRepository()
         self.checkDeniableIPs()
+    
+    def set_TELEGRAM_CHATID(self,value):
+        self.TELEGRAM_CHATID=value.strip()
+        self.store2DB()
         
     def checkRepository(self,force=False):
         if self.VERSION_AUTO_DETECT or force:

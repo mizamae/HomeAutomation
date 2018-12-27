@@ -1014,6 +1014,11 @@ class Devices(models.Model):
     
     def __init__(self, *args, **kwargs):
         super(Devices, self).__init__(*args, **kwargs)
+    
+    def setError(self,error):
+        self.Error=error
+        self.full_clean()
+        super().save(update_fields=['Error',]) 
         
     def store2DB(self):
         self.full_clean()
