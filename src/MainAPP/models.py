@@ -610,7 +610,7 @@ class AutomationVariables(models.Model):
     Units = models.CharField(max_length=10,help_text=str(_('Units of the variable.')),blank=True,null=True)
     UserEditable = models.BooleanField(default=True)
     OverrideTime = models.PositiveSmallIntegerField(default=3600)
-    Tendency = models.PositiveSmallIntegerField(null=True,blank=True,default=0)
+    Tendency = models.SmallIntegerField(null=True,blank=True,default=0)
     Subsystem = GenericRelation(Subsystems,related_query_name='automationvariables')
     
     def __str__(self):
