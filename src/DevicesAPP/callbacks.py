@@ -63,9 +63,11 @@ class PENDING_DB(object):
             
     @staticmethod
     def add_pending_job(DV,datagramId,date):
+        #logger.info("Adding pending requesto " + str(DV)+" " + str(datagramId)+" " + str(date))
         from .constants import POLLING_PENDING_DB
         from utils.BBDD import Database
         DB=Database(location=POLLING_PENDING_DB,DB_id=str(DV)+'_pending')
+        #logger.info("Pending DB instantiated " + str(DB))
         try:
             DB.executeTransactionWithCommit(SQLstatement=PENDING_DB.SQLinsertRegister,arg=[date,DV.pk,datagramId])
             PublishEvent(Severity=3,Text=_("The datagram '" + datagramId + "' for the device " + str(DV) + " at " + str(date)+ " has been added to pending jobs"),
@@ -282,7 +284,8 @@ class IBERDROLA:
             
 
     def add_pending_request(self,datagramId,date):
-        PENDING_DB.add_pending_jobs(DV=self.sensor,datagramId=datagramId,date=date)
+        #logger.info("Adding pending requesto " + str(self.sensor)+" " + str(datagramId)+" " + str(date))
+        PENDING_DB.add_pending_job(DV=self.sensor,datagramId=datagramId,date=date)
         
     
     def execute_pending_jobs(self):
@@ -489,8 +492,13 @@ class IBERDROLA:
                         values=[]
                         for data in datas:
                             values.append([data['timestamp'],data['valor'],data['mean'],data['sum']])
-                        self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
-                        IBERDROLA.Error=''
+                        #logger.info('Values: ' + str(values))
+                        returned=self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
+                        if returned==0:
+                            IBERDROLA.Error=''
+                        else:
+                            IBERDROLA.Error='Failure accessing the DB'
+                            raise Exception
                     else:
                         null=True
                         IBERDROLA.Error='Empty dataframe'
@@ -536,7 +544,7 @@ class IBERDROLA:
                 try:
                     self.add_pending_request(datagramId=datagramId, date=date)
                 except:
-                    pass
+                    logger.error("Failed but could not be added to pending_jobs with date: " + str(date) + " and datagramID: " + str(datagramId))
 
         return {'Error':IBERDROLA.Error,'LastUpdated':LastUpdated}
     

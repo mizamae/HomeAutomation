@@ -16,10 +16,13 @@ TELEGRAM_CHNID_VAR='TELEGRAM_CHANNEL_ID'
 
 class TelegramManager(object):
     def __init__(self):
+        #logger.info('Bot TOKEN: ' + str(TELEGRAM_BOT_TOKEN))
         self.bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
         self.chatID=TelegramManager.getChatID()
+        #logger.info('ChatID: ' + str(self.chatID))
         if self.chatID==None:
             response = self.bot.getUpdates()
+            #logger.info('Bot response: ' + str(response))
             if response!=[]:
                 self.chatID=response[0]['channel_post']['chat']['id']
             else:

@@ -149,7 +149,7 @@ class SiteSettings(SingletonModel):
         self.checkDeniableIPs()
     
     def set_TELEGRAM_CHATID(self,value):
-        self.TELEGRAM_CHATID=value.strip()
+        self.TELEGRAM_CHATID=str(value)
         self.store2DB()
         
     def checkRepository(self,force=False):
@@ -746,7 +746,7 @@ class AutomationVariables(models.Model):
         return data_rows
     
     def setTendency(self):
-        if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs' and self.UserEditable:   # the variable is not DIGITAL
+        if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs': #and self.UserEditable:   # the variable is not DIGITAL
             values=self.getValues(number=4)
             if len(values)==4:
                 last=round((values[0][1]+values[1][1])/2,1)

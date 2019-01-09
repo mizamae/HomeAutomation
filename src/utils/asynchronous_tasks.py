@@ -59,7 +59,7 @@ class BackgroundTimer(object):
         exists=self.isAlive()
         if not exists: 
             self.initThread(repeat=repeat,triggered=triggered)
-            time.sleep(1)   # to leave time for the thread to properly initiate
+            time.sleep(3)   # to leave time for the thread to properly initiate
             
     def initThread(self,repeat,triggered):
         if not repeat:
@@ -75,7 +75,7 @@ class BackgroundTimer(object):
             
     def kill(self):
         self.thread.kill()
-        self.thread=None
+        logger.info("A thread with the ident " + str(self.thread.ident) + " has been killed")
     
     def checkSurvival(self):
         if self.lifeSpan!=None and (datetime.datetime.now()-self.initiatedOn>datetime.timedelta(seconds=self.lifeSpan)):
@@ -97,8 +97,8 @@ class BackgroundTimer(object):
         exists=False
         for t in threading.enumerate():
             if t.name==self.threadName:
-                #print("A thread with the name " + self.threadName + " exists")
                 self.thread=t
+                logger.info("A thread with the name " + self.threadName + " and ident " + str(self.thread.ident) +" exists")
                 exists=True
                 break
         return exists
@@ -115,7 +115,7 @@ class BackgroundTimer(object):
         self.callable(**self.callablekwargs)
         if self.log:
             logger.info("Executed function " + str(self.callable) + " with kwargs " + str(self.callablekwargs))
-        self.kill()
+        self.thread=None
     
     def runForever(self):
         """ Method that runs forever """
@@ -127,6 +127,7 @@ class BackgroundTimer(object):
             if not self.thread.pause_event.isSet():
                 self.callable(**self.callablekwargs)
             self.checkSurvival()
+        self.thread=None
                 
     def runTriggered(self):
         """ Method that runs forever """
@@ -138,3 +139,4 @@ class BackgroundTimer(object):
                 self.thread.trigger_event.clear()
                 self.callable(**self.callablekwargs)
             self.checkSurvival()
+        self.thread=None

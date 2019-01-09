@@ -28,7 +28,7 @@ def PublishEvent(Severity,Code,Text,Persistent=False,Webpush=False):
             from utils.Telegram import TelegramManager
             TelegramManager().sendMessage(text=Text)
         except Exception as exc:
-            pass
+            logger.error('Error: ' + str(exc))
         
     if Persistent:
         EVT=Events(Timestamp=Timestamp,Severity=Severity,Code=Code,Text=Text)

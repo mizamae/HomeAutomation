@@ -70,18 +70,23 @@ class Database(object):
                 
             self.conn.commit()
             cur.close()
+            if DEBUGGING and many: logger.info('The instruction '+ SQLstatement+' executed OK')
             return COMMITED_OK
-        except sqlite3.IntegrityError:
+        except Exception as exc:
+            logger.info('Exception executing: ' + SQLstatement + '. Exc: ' + str(exc))
             cur.close()
-            return INTEGRITY_ERROR
+            if type(exc) is sqlite3.IntegrityError:
+                return INTEGRITY_ERROR
+            else:
+                return INTEGRITY_ERROR
                 
     def executeTransactionWithCommit(self,SQLstatement,arg=[],many=False):
         with redis_lock.Lock(lock_table, self.DB_id,expire=10, auto_renewal=True):            
             name = multiprocessing.current_process().name
-            if DEBUGGING: print('The process ' + name + ' has the lock.')
+            if DEBUGGING: logger.info('The process ' + name + ' has the lock.')
             result=self._execute(SQLstatement=SQLstatement,arg=arg,many=many)
-            if DEBUGGING:print('The process ' + name + ' executed: ' + SQLstatement)
-            if DEBUGGING:print('The process ' + name + ' releases the lock.')
+            if DEBUGGING:logger.info('The process ' + name + ' executed: ' + SQLstatement + ' with result ' + str(result))
+            if DEBUGGING:logger.info('The process ' + name + ' releases the lock.')
             return result
         return -1
         
