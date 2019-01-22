@@ -1397,7 +1397,7 @@ class Devices(models.Model):
     def scan(cls,FormModel,IP=None):
         if IP==None:
             IP=DEVICES_SUBNET+DEVICES_SCAN_IP4BYTE
-        #server=DEVICES_PROTOCOL + IP
+        server=DEVICES_PROTOCOL + IP
         #server='http://127.0.0.1'
         (status,root)=cls.requestConfXML(server=server,xmlfile=DEVICES_CONFIG_FILE)
         errors=[]
@@ -1416,10 +1416,13 @@ class Devices(models.Model):
             DEVICE_CODE=lastRow+1+IP_OFFSET
             DeviceIP=DEVICES_SUBNET+str(DEVICE_CODE)
             payload={'DEVC':str(DEVICE_CODE)}
-            (status,r)=cls.requestOrders(serverIP=IP,order='SetConf.htm',payload=payload)
+            (status,r)=cls.requestOrders(serverIP=IP,order='SetConf',payload=payload)
             if status==200 and Type!=None:
                 form=FormModel(action='add',initial={'Name':DeviceName,'DVT':Type,'Code':DEVICE_CODE,'IP':DeviceIP})
                 state='ConfigOK'
+                (status,r)=cls.requestOrders(serverIP=IP,order='reset',payload=None)
+                if status!=200:
+                    errors.append(_('Device did not responded OK to reset order. Reset it manually to apply the new configuration.'))
             else:
                 DEVICE_CODE=0
                 DeviceIP=IP
@@ -1436,14 +1439,24 @@ class Devices(models.Model):
     def uploadFirmware(self,file):
         import requests
         from django.core.files.storage import FileSystemStorage
+        __headers = {
+            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0",
+            'Accept':"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+            'Authorization':"Basic ZGl5NGRvdDA6ZGl5NGRvdDA="
+            }
         try:
             server=DEVICES_PROTOCOL+str(self.IP)
-            fs = FileSystemStorage()
-            r = requests.post(server+'/'+DEVICES_FIRMWARE_WEB,files={'file':fs.open(file,'rb')},timeout=timeout)
+            r = requests.get(server+'/'+DEVICES_FIRMWARE_WEB,timeout=5,headers=__headers)
+            logger.info('Upload GET firmware returned code ' + str(r.status_code))
+            if r.status_code==200:
+                fs = FileSystemStorage()
+                r = requests.post(server+'/'+DEVICES_FIRMWARE_WEB,files={'file':fs.open(file,'rb')},timeout=20,headers=__headers)
             return r.status_code
         except Exception as ex:
             if type(ex) is requests.ConnectTimeout:
                 return "Device did not respond to firmware update feature"
+            else:
+                return "Exception: "+ str(ex)
         
     def getFirmwareWeb(self,timeout=1):
         """
@@ -1471,30 +1484,32 @@ class Devices(models.Model):
                 return "No remote firmware update feature is present"
         else:
             return ""
-        
-    def requestCMD(self,serverIP,order,payload,timeout=1):
+    
+    @staticmethod
+    def requestOrders(serverIP,order,payload,timeout=1):
         """
         :callback       payload = {'key1': 'value1', 'key2': 'value2'}   
                         self.orders_request(server, 'orders', payload) 
         """
-        if self.DVT.Connection==REMOTE_TCP_CONNECTION:
-            import requests
-            import random
-            server=DEVICES_PROTOCOL+str(serverIP)
-            try:
+        import requests
+        import random
+        server=DEVICES_PROTOCOL+str(serverIP)
+        try:
+            if payload!=None:
                 r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
-                if r.status_code==200:
-                    return (200,r)
-                else:
-                    return (r.status_code,_("Device responded with HTTP code ") + str(r.status_code))
-            except Exception as ex:
-                if type(ex) is requests.ConnectTimeout:
-                    return (504,_("The device did not respond. Check connections and retry."))
-                else:
-                    logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
-                    return (100,str(sys.exc_info()[1]))
-        elif self.DVT.Connection==MEMORY_CONNECTION:
-            return self.execute(order=order,params=payload)
+            else:
+                r = requests.post(server+'/orders/'+order,timeout=timeout)
+            if r.status_code==200:
+                return (200,r)
+            else:
+                return (r.status_code,_("Device responded with HTTP code ") + str(r.status_code))
+        except Exception as ex:
+            if type(ex) is requests.ConnectTimeout:
+                return (504,_("The device did not respond. Check connections and retry."))
+            else:
+                logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
+                return (100,str(sys.exc_info()[1]))
+
         
     @staticmethod
     def requestConfXML(server,xmlfile,timeout=1):
@@ -1634,8 +1649,9 @@ class Devices(models.Model):
             from utils.BBDD import getRegistersDBInstance
             DB=getRegistersDBInstance(year=year)
             self.checkRegistersDB(Database=DB)
-            DB.executeTransactionWithCommit(SQLstatement=sql, arg=values,many=True)
+            result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=values,many=True)
             self.sendUpdateSignals(DG_id=DatagramId,values=values,many=True)
+            return result
         except:
             raise DevicesAppException("Unexpected error in insertManyRegisters for device "+str(self)+":" + str(sys.exc_info()[1]))
             
@@ -1664,8 +1680,9 @@ class Devices(models.Model):
             from utils.BBDD import getRegistersDBInstance
             DB=getRegistersDBInstance(year=TimeStamp.year)
             self.checkRegistersDB(Database=DB)
-            DB.executeTransactionWithCommit(SQLstatement=sql, arg=roundvalues)
+            result=DB.executeTransactionWithCommit(SQLstatement=sql, arg=roundvalues)
             self.sendUpdateSignals(DG_id=DatagramId,values=roundvalues)
+            return result
         except:
             raise DevicesAppException("Unexpected error in insert_device_register for device "+str(self)+":" + str(sys.exc_info()[1]))
             
@@ -1723,7 +1740,7 @@ class Devices(models.Model):
                                 self.insertRegister(TimeStamp=timestamp, DatagramId=DatagramId, 
                                                                   year=timestamp.year, values=datagram,NULL=False)
                                 if resetOrder:
-                                    (code,x) = self.requestCMD(serverIP=str(self.IP),order='resetStatics',payload={})
+                                    (code,x) = self.requestOrders(serverIP=str(self.IP),order='resetStatics',payload={})
                                     if code==200:
                                         Error=''
                                     else:

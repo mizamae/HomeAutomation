@@ -439,6 +439,14 @@ def AdvancedDevicePage(request,pk):
                                                          'Commands':COMMANDS,'Firmware':firmware,
                                                          'firmware_data':firmware_data})
 
+def handle_uploaded_file(f):
+    import os
+    path=os.path.join(settings.MEDIA_ROOT,f.name)
+    with open(path, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return path
+            
 @login_required
 @user_passes_test(lambda u: u.has_perm('DevicesAPP.view_devices'))
 def firmwareUpdate(request,devicePK):
@@ -446,10 +454,10 @@ def firmwareUpdate(request,devicePK):
     if request.method == 'POST' and request.FILES['file']:
         from django.core.files.storage import FileSystemStorage
         firmwareFile = request.FILES['file']
-        fs = FileSystemStorage()
-        firmwareFile = fs.save(firmwareFile.name, firmwareFile)
-        uploaded_file_url = fs.url(firmwareFile)
-        status= DV.uploadFirmware(file=uploaded_file_url)
+        filepath=handle_uploaded_file(f=firmwareFile)
+        logger.info('Upload firmware stored at ' + str(filepath))
+        status= DV.uploadFirmware(file=filepath)
+        logger.info('Upload firmware returned code ' + str(status))
         if status==200:
             messages.info(request, 'Firmware updated OK')
         else:

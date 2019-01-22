@@ -74,8 +74,11 @@ class BackgroundTimer(object):
         self.start()                                  # Start the execution
             
     def kill(self):
-        self.thread.kill()
-        logger.info("A thread with the ident " + str(self.thread.ident) + " has been killed")
+        try:
+            self.thread.kill()
+            logger.info("A thread with the ident " + str(self.thread.ident) + " has been killed")
+        except:
+            pass
     
     def checkSurvival(self):
         if self.lifeSpan!=None and (datetime.datetime.now()-self.initiatedOn>datetime.timedelta(seconds=self.lifeSpan)):

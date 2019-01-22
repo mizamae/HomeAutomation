@@ -159,7 +159,8 @@ class IBERDROLA:
     Error=''
     
     class _ResponseException(Exception):
-        pass
+        def __init__(self):
+            IBERDROLA.kill_login_thread()
 
     class _LoginException(Exception):
         pass
@@ -171,6 +172,9 @@ class IBERDROLA:
         pass
     
     class _EnableException(Exception):
+        pass
+    
+    class _DBException(Exception):
         pass
 
     def __init__(self,DV):
@@ -234,7 +238,6 @@ class IBERDROLA:
     def enable():
         """ Resets an internal flag that inhibits the queries """
         IBERDROLA._disabled=False
-        logger.error('IBERDROLA: Enabled')
         
     @staticmethod
     def setUserAgent():
@@ -261,7 +264,6 @@ class IBERDROLA:
             return
             
         if response.status_code != 200:
-            IBERDROLA.kill_login_thread()
             logger.error('IBERDROLA: Login failure, status code!=200. Code ' + str(response.status_code))
             raise IBERDROLA._ResponseException
         jsonresponse = response.json()
@@ -291,6 +293,14 @@ class IBERDROLA:
     def execute_pending_jobs(self):
         PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=self.sensor)
         
+    def __checkconnection(self):
+        # try:
+            # self.contract()
+        # except Exception as exc:
+            # IBERDROLA.kill_login_thread()
+            # IBERDROLA.init_login_thread()
+        self.__checksession()
+        
     def __checksession(self):
         #logger.error('IBERDROLA: enters check session. Disabled: ' + str(self._disabled)+'. Session: ' + str(self._session)+'. Loggedin: ' + str(self._loggedin))
         if self._disabled:
@@ -307,12 +317,10 @@ class IBERDROLA:
         from time import sleep
         #logger.error('IBERDROLA: Enters wattmeter')
         sleep(randint(0,10))
-        self.__checksession()
+        self.__checkconnection()
         response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for wattmeter. Code: ' + str(response.status_code))
-            if response.status_code==403: # Forbidden
-                IBERDROLA.kill_login_thread()
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
             raise IBERDROLA._NoResponseException
@@ -323,7 +331,7 @@ class IBERDROLA:
     def icpstatus(self):
         """Returns the status of your ICP.
            Devuelve el estado de tu ICP."""
-        self.__checksession()
+        self.__checkconnection()
         response = self._session.request("POST", self.__icpstatusurl, headers=self.__headers)
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
@@ -340,7 +348,7 @@ class IBERDROLA:
         '''
         import datetime
         logger.error('IBERDROLA: Enters miconsumodiario')
-        self.__checksession()
+        self.__checkconnection()
         
         if type(date) is datetime.datetime:
             date=date.replace(hour=0,minute=0,second=0,microsecond=0)
@@ -494,11 +502,10 @@ class IBERDROLA:
                             values.append([data['timestamp'],data['valor'],data['mean'],data['sum']])
                         #logger.info('Values: ' + str(values))
                         returned=self.sensor.insertManyRegisters(DatagramId=datagramId,year=data['timestamp'].year,values=values,NULL=False)
-                        if returned==0:
-                            IBERDROLA.Error=''
-                        else:
-                            IBERDROLA.Error='Failure accessing the DB'
-                            raise Exception
+                        logger.info('Insert many registers returned code : ' + str(returned))
+                        if returned==None or returned!=0:
+                            raise IBERDROLA._DBException
+                        IBERDROLA.Error=''
                     else:
                         null=True
                         IBERDROLA.Error='Empty dataframe'
@@ -506,7 +513,9 @@ class IBERDROLA:
                     data = self.wattmeter()
                     if data!=None:
                         timestamp=timezone.now().replace(second=0)
-                        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data,],NULL=null)
+                        returned=self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[data,],NULL=null)
+                        if returned==None or returned!=0:
+                            raise IBERDROLA._DBException
                         IBERDROLA.Error=''
                     else:
                         null=True
@@ -530,6 +539,8 @@ class IBERDROLA:
                     IBERDROLA.Error='Login failure'
                 elif type(ex) is IBERDROLA._EnableException:
                     IBERDROLA.Error='Iberdrola is not enabled'
+                elif type(ex) is IBERDROLA._DBException:
+                    IBERDROLA.Error='DB raised and error'
                 else:
                     IBERDROLA.Error='Unknown APIError: ' + str(ex)
                 logger.error(IBERDROLA.Error)
