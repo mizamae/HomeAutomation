@@ -50,8 +50,7 @@ class Devices_command(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         CMD=DeviceCommands.objects.get(pk=int(content['pk']))
         DV=Devices.objects.get(pk=int(content['data']['devicePK']))
-        payload=content['data']['payload']
-        data=DV.requestCMD(serverIP=DV.IP,order=CMD.Identifier,payload=payload,timeout=1)
+        data=DV.requestOrders(serverIP=DV.IP,order=CMD.Identifier,payload=CMD.getPayload(),timeout=1)
         multiplexer.send({"action":"command","DeviceName":DV.Name,"CMD":CMD.pk,"data":data})
         pass
         

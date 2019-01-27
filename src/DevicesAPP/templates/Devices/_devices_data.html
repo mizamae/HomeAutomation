@@ -27,9 +27,8 @@
 					 <tbody>
 					 	{% for CMD in Commands %}
                         <tr> 
-                            <td style="width:25%;">{{ CMD.HumanTag }}</td>
-                            <td style="width:25%;"><input type="text" id="payload{{ CMD.pk }}"></td>
-                            <td style="width:15%;"><div class="btn btn-primary" style="width:100%;" onclick="sendCMD(document.getElementById('payload{{ CMD.pk }}').value,{{ CMD.pk }},{{ Device.pk }})" role="button"></div>
+                            <td style="width:25%;">{{ CMD.Label }}</td>
+                            <td style="width:15%;"><div class="btn btn-primary" style="width:100%;" onclick="sendCMD({{ CMD.pk }},{{ Device.pk }})" role="button">SEND</div>
                             </td>
                             <td style="width:35%;" id="CMD_status{{ CMD.pk }}"></td>
                         </tr>

@@ -2079,16 +2079,42 @@ class ItemOrdering(models.Model):
         verbose_name = _('Item')
         verbose_name_plural = _('Items')
         ordering = ('Order',)
-        
 
-class DeviceCommands(models.Model):
-    DVT = models.ForeignKey(DeviceTypes,on_delete=models.CASCADE)
-    Identifier = models.CharField(max_length=10)
-    HumanTag = models.CharField(max_length=50)
-    #Parameters = models.PositiveSmallIntegerField(help_text='Number of parameters needed to execute the command',default=0)
+class ParameterValues(models.Model):
+    Command = models.ForeignKey('DevicesAPP.DeviceCommands', on_delete=models.CASCADE)
+    Parameter = models.ForeignKey('DevicesAPP.CommandParameters', on_delete=models.CASCADE)
+    Value = models.CharField(max_length=20)
     
     def __str__(self):
-        return self.HumanTag
+        return str(self.Command) + ':' +str(self.Parameter)
+        
+    class Meta:
+        verbose_name = _('Parameter')
+        verbose_name_plural = _('Parameters') 
+        unique_together = ('Parameter', 'Command',)    
+
+class CommandParameters(models.Model):
+    Tag = models.CharField(max_length=10)
+    def __str__(self):
+        return self.Tag
+    
+class DeviceCommands(models.Model):
+    DVT = models.ForeignKey(DeviceTypes,on_delete=models.CASCADE)
+    Label = models.CharField(max_length=20,null=True,blank=True)
+    Identifier = models.CharField(max_length=20)
+    Parameters = models.ManyToManyField(CommandParameters, through='ParameterValues')
+
+    def __str__(self):
+        if self.Label:
+            return self.Label
+        else:
+            return self.Identifier
+        
+    def getPayload(self):
+        payload={}
+        for PARAM in self.parametervalues_set.all():
+            payload[PARAM.Parameter.Tag]=PARAM.Value
+        return payload
         
     class Meta:
         verbose_name = _('Command')

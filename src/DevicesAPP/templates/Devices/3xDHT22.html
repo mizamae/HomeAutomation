@@ -206,7 +206,7 @@
             query();
         });
         
-        function sendCMD(payload,cmdPK,devicePK)
+        function sendCMD(cmdPK,devicePK)
         {
         	var statusSemaphore=document.getElementById("CMD_status"+cmdPK.toString());
         	$(statusSemaphore).removeClass("alert-success");
@@ -215,7 +215,7 @@
         	webSocketBridge.stream('Device_command').send({
                 "pk": cmdPK,
                 "action": "command",
-                "data": {"payload":payload,"devicePK":devicePK}
+                "data": {"devicePK":devicePK}
             });
         	
         }

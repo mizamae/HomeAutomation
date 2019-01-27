@@ -13,7 +13,7 @@ from MainAPP.admin import SubsystemsInline
 
 from .constants import APP_TEMPLATE_NAMESPACE,GPIO_SENSOR
 from DevicesAPP.models import DeviceTypes,CronExpressions,DatagramItems,Datagrams,ItemOrdering,DeviceCommands,Devices,Beacons,\
-                            MasterGPIOs,MainDeviceVars
+                            MasterGPIOs,MainDeviceVars,ParameterValues,CommandParameters
 from DevicesAPP.forms import DeviceTypesForm, CronExpressionsForm,ItemOrderingForm,DatagramsForm,DevicesForm,BeaconsForm,MasterGPIOsForm,MainDeviceVarsForm
 
 class MainDeviceVarsAdmin(admin.ModelAdmin):
@@ -118,9 +118,17 @@ class CronExpressionsAdmin(admin.ModelAdmin):
     
     list_display = ('Identifier','printExpression')
     form=CronExpressionsForm
-    
+
+class ParameterValuesInline(admin.TabularInline):
+    model = ParameterValues
+    extra = 1 # how many rows to show
+
+class CommandParametersAdmin(admin.ModelAdmin):
+    pass
+        
 class DeviceCommandsAdmin(admin.ModelAdmin):
-    list_display = ('DVT','Identifier','HumanTag')
+    list_display = ('DVT','Label',)
+    inlines=(ParameterValuesInline,)
     pass  
 
 class BeaconsAdmin(admin.ModelAdmin):
@@ -134,5 +142,6 @@ admin.site.register(Devices,DevicesAdmin)
 admin.site.register(CronExpressions,CronExpressionsAdmin)
 admin.site.register(DatagramItems,DatagramItemModelAdmin)
 admin.site.register(Datagrams,DatagramsAdmin)
+admin.site.register(CommandParameters,CommandParametersAdmin)
 admin.site.register(DeviceCommands,DeviceCommandsAdmin)
 admin.site.register(Beacons,BeaconsAdmin)
