@@ -274,10 +274,13 @@ def Notifications(request):
         user=request.user
         firstSubscription=user.profile.subscription_token==""
         
-        if user.profile.notifications:
+        if user.profile.notifications and firstSubscription and data!="":
             user.profile.set_subscriptionToken(token=data)
+            subscribed=True
+        else:
+            subscribed=False
 
-        if firstSubscription:
+        if firstSubscription and subscribed:
             from utils.web_notifications import NotificationManager
             NotificationManager.send_web_push(users=[user,], title='DIY4dot0 - New subscription', tag='notifications-subscription',
                           message_body="Se han activado las notificaciones para " + str(user),url='http://mizamae2.ddns.net:8075')
