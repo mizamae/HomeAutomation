@@ -41,6 +41,34 @@
         {% include "Devices/_devices_data.html" %}
         {% endwith%}        
         <p></p>
+        <div class="tab-content">
+          <div class="table-responsive">
+            <table id="tab_relays" class="table" >
+				<thead>
+				  <tr>
+					<th data-align="left" >{% trans "Relay" %}</th>
+					<th data-align="center" colspan=2 >{% trans "Status" %}</th>
+				  </tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td	width="20%" >Relay 1</td>
+						<td	width="25%" ><div class="btn btn-primary"	id="R1ON"	>ON</div></td>
+						<td	width="25%" ><div class="btn btn-primary"	id="R1OFF"	>OFF</div></td>
+					</tr>
+                    <tr>
+						<td	width="20%" >Relay 2</td>
+						<td	width="25%" ><div class="btn btn-primary"	id="R2ON"	>ON</div></td>
+						<td	width="25%" ><div class="btn btn-primary"	id="R2OFF"	>OFF</div></td>
+					</tr>
+                    <tr>
+						<td	width="20%" >Relay 3</td>
+						<td	width="25%" ><div class="btn btn-primary"	id="R3ON"	>ON</div></td>
+						<td	width="25%" ><div class="btn btn-primary"	id="R3OFF"	>OFF</div></td>
+					</tr>
+                </tbody>
+            </table>
+          </div>
         <div class="tab-content">       
           <h2>Real-time Measurements</h2>
 		  <h3>Last data retrieved at <span id="timestamp"></span></h3>
@@ -130,6 +158,34 @@
 	                    else {document.getElementById("Sensor2").classList.remove('alert-warning');}
 	                    if (checkBit(status,2)){document.getElementById("Sensor3").classList.add('alert-warning');}
 	                    else {document.getElementById("Sensor3").classList.remove('alert-warning');}
+	                    
+	                    var relay1=checkBit(status,3);
+	                    if (relay1)
+	                    {
+	                        document.getElementById("R1ON").style.backgroundColor = "Red";
+	                        document.getElementById("R1OFF").style.backgroundColor = "DarkGray";
+	                    }else{
+	                        document.getElementById("R1ON").style.backgroundColor = "DarkGray";
+	                        document.getElementById("R1OFF").style.backgroundColor = "Red";
+	                    }
+	        			var relay2=checkBit(status,4);
+	                    if (relay2)
+	                    {
+	                        document.getElementById("R2ON").style.backgroundColor = "Red";
+	                        document.getElementById("R2OFF").style.backgroundColor = "DarkGray";
+	                    }else{
+	                        document.getElementById("R2ON").style.backgroundColor = "DarkGray";
+	                        document.getElementById("R2OFF").style.backgroundColor = "Red";
+	                    }
+	        			var relay3=checkBit(status,5);
+	                    if (relay3)
+	                    {
+	                        document.getElementById("R3ON").style.backgroundColor = "Red";
+	                        document.getElementById("R3OFF").style.backgroundColor = "DarkGray";
+	                    }else{
+	                        document.getElementById("R3ON").style.backgroundColor = "DarkGray";
+	                        document.getElementById("R3OFF").style.backgroundColor = "Red";
+	                    }
 	                    try{var T1=payload.data.values[1].toFixed(1);}
 	                    catch(err){var T1="NaN";}
 	                    try{var H1=payload.data.values[2].toFixed(1);}
@@ -211,13 +267,12 @@
         	var statusSemaphore=document.getElementById("CMD_status"+cmdPK.toString());
         	$(statusSemaphore).removeClass("alert-success");
         	$(statusSemaphore).removeClass("alert-danger");
-        	statusSemaphore.innerHTML="";
+        	statusSemaphore.innerHTML="Sending command...";
         	webSocketBridge.stream('Device_command').send({
                 "pk": cmdPK,
                 "action": "command",
                 "data": {"devicePK":devicePK}
-            });
-        	
+            });     	
         }
         function query(){
             webSocketBridge.stream('Device_query').send({

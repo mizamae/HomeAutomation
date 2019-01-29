@@ -1486,29 +1486,37 @@ class Devices(models.Model):
             return ""
     
     @staticmethod
-    def requestOrders(serverIP,order,payload,timeout=1):
+    def requestOrders(serverIP,order,payload,timeout=1,retries=3):
         """
         :callback       payload = {'key1': 'value1', 'key2': 'value2'}   
                         self.orders_request(server, 'orders', payload) 
         """
         import requests
         import random
+        import time
         server=DEVICES_PROTOCOL+str(serverIP)
-        try:
-            if payload!=None:
-                r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
-            else:
-                r = requests.post(server+'/orders/'+order,timeout=timeout)
-            if r.status_code==200:
-                return (200,r)
-            else:
-                return (r.status_code,_("Device responded with HTTP code ") + str(r.status_code))
-        except Exception as ex:
-            if type(ex) is requests.ConnectTimeout:
-                return (504,_("The device did not respond. Check connections and retry."))
-            else:
-                logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
-                return (100,str(sys.exc_info()[1]))
+        while retries>0: 
+            try:
+                if payload!=None:
+                    r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
+                else:
+                    r = requests.post(server+'/orders/'+order,timeout=timeout)
+                if r.status_code==200:
+                    retries=0
+                    return (200,r)
+                else:
+                    retries=retries-1
+                    if retries==0:
+                        return (r.status_code,_("Device responded with HTTP code ") + str(r.status_code))
+            except Exception as ex:
+                retries=retries-1
+                if retries==0:
+                    if type(ex) is requests.ConnectTimeout:
+                        return (504,_("The device did not respond. Check connections and retry."))
+                    else:
+                        logger.error("Unexpected error in orders_request:"+ str(sys.exc_info()[1])) 
+                        return (100,str(sys.exc_info()[1]))
+            time.sleep(1)
 
         
     @staticmethod
@@ -2119,7 +2127,6 @@ class DeviceCommands(models.Model):
     class Meta:
         verbose_name = _('Command')
         verbose_name_plural = _('Commands')
-        unique_together = ('DVT', 'Identifier',)
         
 class Beacons(models.Model):
     Identifier = models.CharField(max_length=20,unique=True,error_messages={'unique':_("Invalid Beacon name - This name already exists in the DB.")})
