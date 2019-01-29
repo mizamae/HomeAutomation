@@ -884,7 +884,7 @@ class AutomationVarWeeklySchedules(models.Model):
     @staticmethod
     def override(var,value,duration=3600):
         logger.info('Enters Override for var ' + str(var) + ' with duration ' + str(duration) +' and value '+str(value))
-        SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
+        SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var,Active=True)
         for SCH in SCHs:
             SCH.Overriden=value
             SCH.save()
@@ -899,7 +899,7 @@ class AutomationVarWeeklySchedules(models.Model):
     @staticmethod
     def overrideTimeout(var):
         if var:
-            SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var)
+            SCHs=AutomationVarWeeklySchedules.objects.filter(Var=var,Active=True)
             for SCH in SCHs:
                 SCH.Overriden=False
                 SCH.save()
