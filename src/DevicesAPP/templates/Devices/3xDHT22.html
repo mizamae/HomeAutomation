@@ -232,6 +232,7 @@
                 		$(statusSemaphore).removeClass("alert-danger");
                 		$(statusSemaphore).addClass("alert-success");
                 		statusSemaphore.innerHTML="Command confirmed";
+                        query();
                		}else{
                			var error=payload.data[1];
                			$(statusSemaphore).removeClass("alert-success");

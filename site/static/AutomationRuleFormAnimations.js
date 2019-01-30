@@ -298,7 +298,7 @@ function DeviceChange()
 		    	}
 		    	for (i=0;i<response.length;i++)
 		    	{
-		    		fieldOrder.append(response[i].HumanTag);
+		    		fieldOrder.append(response[i].Label);
 		    	}
 		        console.log(response)
 		    },

@@ -525,7 +525,7 @@ def ajax_get_orders_for_device(request,devicePK):
         info=[]
         if len(orders)>0:
             for order in orders:
-                info.append({'Identifier':order.Identifier,'HumanTag':order.HumanTag})
+                info.append({'Identifier':order.Identifier,'HumanTag':order.Label})
                 
         return HttpResponse(json.dumps(info))
     else:

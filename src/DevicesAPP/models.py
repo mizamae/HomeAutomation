@@ -1495,6 +1495,7 @@ class Devices(models.Model):
         import random
         import time
         server=DEVICES_PROTOCOL+str(serverIP)
+        #logger.info('Requested order ' + order + ' to IP ' + str(serverIP) + ' with payload ' +str(payload))
         while retries>0: 
             try:
                 if payload!=None:
