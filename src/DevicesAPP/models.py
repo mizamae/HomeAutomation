@@ -1502,9 +1502,10 @@ class Devices(models.Model):
                     r = requests.post(server+'/orders/'+order,params=payload,timeout=timeout)
                 else:
                     r = requests.post(server+'/orders/'+order,timeout=timeout)
+                
                 if r.status_code==200:
                     retries=0
-                    return (200,r)
+                    return (200,_("Order confirmed by device"))
                 else:
                     retries=retries-1
                     if retries==0:

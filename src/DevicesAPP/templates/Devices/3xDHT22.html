@@ -229,9 +229,10 @@
                 	var statusSemaphore=document.getElementById("CMD_status"+CMD);
                 	if (status=="200")
                		{
+                        var msg=payload.data[1];
                 		$(statusSemaphore).removeClass("alert-danger");
                 		$(statusSemaphore).addClass("alert-success");
-                		statusSemaphore.innerHTML="Command confirmed";
+                		statusSemaphore.innerHTML=msg;
                         query();
                		}else{
                			var error=payload.data[1];
@@ -263,11 +264,20 @@
             query();
         });
         
+        function clearCMDStatus()
+        {
+            var statuses=document.getElementsByName("CMD_status");
+            for (i = 0; i < statuses.length; i++) 
+	    	{
+                $(statuses[i]).removeClass("alert-danger");
+                $(statuses[i]).removeClass("alert-success");
+                statuses[i].innerHTML="";
+            }
+        }
         function sendCMD(cmdPK,devicePK)
         {
+            clearCMDStatus();
         	var statusSemaphore=document.getElementById("CMD_status"+cmdPK.toString());
-        	$(statusSemaphore).removeClass("alert-success");
-        	$(statusSemaphore).removeClass("alert-danger");
         	statusSemaphore.innerHTML="Sending command...";
         	webSocketBridge.stream('Device_command').send({
                 "pk": cmdPK,

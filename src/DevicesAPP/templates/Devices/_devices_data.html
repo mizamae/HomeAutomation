@@ -30,7 +30,7 @@
                             <td style="width:25%;">{{ CMD.Label }}</td>
                             <td style="width:15%;"><div class="btn btn-primary" style="width:100%;" onclick="sendCMD({{ CMD.pk }},{{ Device.pk }})" role="button">SEND</div>
                             </td>
-                            <td style="width:35%;" id="CMD_status{{ CMD.pk }}"></td>
+                            <td style="width:35%;" name="CMD_status" id="CMD_status{{ CMD.pk }}"></td>
                         </tr>
                         {% endfor %}
                      </tbody>

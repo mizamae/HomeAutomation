@@ -159,9 +159,8 @@ class IBERDROLA:
     Error=''
     
     class _ResponseException(Exception):
-        def __init__(self):
-            IBERDROLA.kill_login_thread()
-
+        pass
+        
     class _LoginException(Exception):
         pass
     

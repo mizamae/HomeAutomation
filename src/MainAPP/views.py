@@ -306,6 +306,13 @@ def DBBackup(request):
             return redirect(instance.AUTH_URL)
     return redirect(reverse('configuration'))
 
+def restart_daphne(**kwargs):
+    import os
+    logger.info("Daphne is about to be restarted")
+    n=os.system("sudo systemctl restart daphne worker")
+    if n==0:
+        logger.info("Daphne has been restarted")
+    
 @user_passes_test(lambda u: u.is_superuser)
 def SoftReset(request):
     import os
@@ -315,14 +322,14 @@ def SoftReset(request):
     id='Restarting_daphne_worker'
     from utils.asynchronous_tasks import BackgroundTimer
     Timer=[]
-    Timer.append(BackgroundTimer(interval=15,threadName=id,callable=os.system,callablekwargs={'command':"sudo systemctl restart daphne worker"}))
+    #Timer.append(BackgroundTimer(interval=15,threadName=id,callable=restart_daphne,callablekwargs={'function':"os.system",'command':"sudo systemctl restart daphne worker"}))
+    os.system("sudo systemctl restart daphne worker")
     
     from .constants import SOCKETS_PATH
     removed=False
     for socket in SOCKETS_PATH:
         if os.path.exists(socket):
             id='Delete_socket_'+socket
-            print(id)
             Timer.append(BackgroundTimer(interval=16,threadName=id,callable=os.remove,callablekwargs={'path':socket}))
             removed=True
     if removed:
