@@ -12,12 +12,12 @@ function updateThermostat(data)
 		}
 		if (ThermostatInstances[index].targetVARpk == data.pk)
 		{
-			check=ThermostatInstances[index].is_true;
 			clearInterval(ThermostatInstances[index].acknowledged);
 			ThermostatInstances[index].target_temperature=data.Value;
 		}
 		if (ThermostatInstances[index].statusVARpk == data.pk)
 		{
+			ThermostatInstances[index].statusVAR=data.Value;
 			check=ThermostatInstances[index].is_true;
 		}
 	}
@@ -171,6 +171,8 @@ var thermostatDial = (function() {
 			},
 			set: function(val) {
 				options.statusVAR = val;
+				checkIsTrue();
+				render();
 			}
 		});
 		Object.defineProperty(this,'inverted',{
