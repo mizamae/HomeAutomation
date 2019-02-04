@@ -42,7 +42,7 @@
 		initialValue:{{ THERM.RITM.Var1.getLatestValueString }},
 		targetVARpk: {{ THERM.RITM.Var2.pk }},	// pk for the setpoint AVAR 
 		valueVARpk: {{ THERM.RITM.Var1.pk }},	// pk for the value AVAR 
-		statusVARpk: {{ THERM.statusVAR.pk }},	// pk for the statusVAR AVAR 
+		statusVARpk: {{ THERM.StatusVar.pk }},	// pk for the statusVAR AVAR 
 		statusVAR: {{ THERM.StatusVar.getLatestValue }},	// value for the status AVAR 
 		inverted: "{{ THERM.Inverted }}",
 		tendency:{{THERM.RITM.Var1.Tendency}}
