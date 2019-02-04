@@ -178,7 +178,8 @@ class MainDeviceVars(models.Model):
             
             SignalVariableValueUpdated.send(sender=None, timestamp=now,
                                                             Tags=[self.getRegistersDBTag(),],
-                                                            Values=[newValue,],Types=[self.DataType,])
+                                                            Values=[newValue,],Types=[None,],
+                                                            DataTypes=[self.DataType,])
     
     def getEventsCode(self):
         return 'VAR'+str(self.pk)+'-'
@@ -577,7 +578,8 @@ class MasterGPIOs(models.Model):
             
             SignalVariableValueUpdated.send(sender=None, timestamp=now,
                                                             Tags=[self.getRegistersDBTag(),],
-                                                            Values=[newValue,],Types=[DTYPE_DIGITAL,])
+                                                            Values=[newValue,],Types=[None,],
+                                                            DataTypes=[DTYPE_DIGITAL,])
                 
     def getRegistersDBTable(self):
         if self.Direction==GPIO_INPUT:
@@ -1704,9 +1706,10 @@ class Devices(models.Model):
             timestamp=values[0][0]
             Values=values[0][1:]
             
-        SignalVariableValueUpdated.send(sender=None, timestamp=timestamp,
+        SignalVariableValueUpdated.send(sender=self.pk, timestamp=timestamp,
                                                     Tags=datagram['names'],
-                                                    Values=Values,Types=datagram['datatypes'])
+                                                    Values=Values,Types=datagram['types'],
+                                                    DataTypes=datagram['datatypes'])
     
     def sendNewDataSignals(self,DG_id):
         DG=Datagrams.objects.get(Identifier=DG_id,DVT=self.DVT)

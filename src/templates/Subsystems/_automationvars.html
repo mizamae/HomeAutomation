@@ -11,11 +11,7 @@
 	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}  &#8681;</td>
    		{% endif %}
    	{% else %}
-   		{% if row.Tendency == 1 %}
-   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }} &#8679;</span></td>
-   		{% else %}
-   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }} &#8681;</span></td>
-   		{% endif %}
+   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span></td>
    	{% endif %}
    	<td style="text-align: center;">
    	{% if not row.Units and row.UserEditable and perms.MainAPP.change_automationvar %}
