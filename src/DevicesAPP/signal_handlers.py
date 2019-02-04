@@ -13,6 +13,7 @@ def SignalSetGPIO_handler(sender, **kwargs):
     pk=kwargs['pk']
     Value=kwargs['Value']
     IO=MasterGPIOs.objects.get(pk=pk)
+    #logger.info("Received signal to set GPIO to " + str(Value))
     if IO.Direction==GPIO_OUTPUT:
         if Value==0:
             IO.setLow()

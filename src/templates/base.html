@@ -193,6 +193,7 @@
     <script>function onload_func(){}</script>
     
     {% endblock scripts %}
+    <div class="modal"></div>
   </body>
 </html>
 
@@ -251,11 +252,13 @@
             webSocketSystemBridge.socket.addEventListener('open', 
                 function() { 
                     console.log("Connected to system socket"); 
+                    $("body").removeClass("loading");
                     query_system_datetime();
             });
             webSocketSystemBridge.socket.addEventListener('close', 
                 function() { 
                     console.log("Disconnected to system socket"); 
+                    $("body").addClass("loading");
             });
             
         });

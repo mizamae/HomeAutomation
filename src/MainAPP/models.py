@@ -1256,6 +1256,7 @@ class AutomationRules(models.Model):
         if (resultTRUE==True and (not self.EdgeExec or not self.LastEval)):
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
+                #logger.info("Rule evaluated True: Signal to set GPIO sent")
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
             if result['ERROR']==[]:
@@ -1266,6 +1267,7 @@ class AutomationRules(models.Model):
         elif (resultFALSE==True and (not self.EdgeExec or self.LastEval)):
             Action=json.loads(self.Action)
             if Action['IO']!=None and Action['ActionType']=='a':
+                #logger.info("Rule evaluated False: Signal to set GPIO sent")
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
             if result['ERROR']==[]:

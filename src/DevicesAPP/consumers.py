@@ -32,7 +32,7 @@ class Devices_query(JsonWebsocketConsumer):
         if DV.DVT.Connection==REMOTE_TCP_CONNECTION:
             DGs=Datagrams.objects.filter(DVT=DV.DVT).filter(Type=DG_SYNCHRONOUS)
             for DG in DGs:
-                status=DV.requestDatagram(DatagramId=DG.Identifier)
+                status=DV.requestDatagram(DatagramId=DG.Identifier,writeToDB=False,resetOrder=False)
                 data=status['values']
                 multiplexer.send({"action":"query","DeviceName":DV.Name,"Datagram":DG.Identifier,"data":status})
         elif (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):

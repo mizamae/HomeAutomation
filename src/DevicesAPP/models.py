@@ -551,6 +551,8 @@ class MasterGPIOs(models.Model):
                     self.insertRegister(TimeStamp=now-datetime.timedelta(seconds=1))
                 
             if newValue!=self.Value or force:
+                self.Value=newValue
+                self.save(update_fields=['Value'])
                 if not force:
                     webpush=(self.NotificationFalse and newValue==False) or (self.NotificationTrue and newValue==True)
                     if self.NotificationFalse and newValue==False and self.LabelFalse!="":
@@ -560,10 +562,6 @@ class MasterGPIOs(models.Model):
                     else:
                         text=str(_('The value of the GPIO "')) +self.Label+str(_('" has changed. Now it is ')) + str(newValue)
                     PublishEvent(Severity=0,Text=text,Code=self.getEventsCode()+'0',Webpush=webpush)
-                    
-                self.Value=newValue
-                self.save(update_fields=['Value'])
-            
             if writeDB :
                 if timestamp==None:
                     self.insertRegister(TimeStamp=now)

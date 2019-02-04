@@ -38,12 +38,8 @@ class NotificationManager(object):
                         vapid_claims={"sub":"mailto:"+settings.WEBPUSH_SETTINGS["VAPID_ADMIN_EMAIL"]},
                     )
         except WebPushException as ex:
-            logger.debug("I'm sorry honey, but I can't do that: {}", repr(ex))
+            logger.debug("I'm sorry honey, but I can't do that: "+str(ex))
             # Mozilla returns additional information in the body of the response.
             if ex.response and ex.response.json():
                 extra = ex.response.json()
-                logger.debug("Remote service replied with a {}:{}, {}",
-                      extra.code,
-                      extra.errno,
-                      extra.message
-                      )
+                logger.debug("Remote service replied with a "+str(extra.code)+" " + str(extra.errno)+" " +str(extra.message))
