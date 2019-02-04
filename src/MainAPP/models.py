@@ -1003,6 +1003,8 @@ class Thermostats(models.Model):
     RITM = models.OneToOneField('MainAPP.RuleItems',help_text=str(_('The rule item that the thermostat is linked to.')),
                            on_delete=models.CASCADE,related_name='ruleitem2thermostat',unique=True,null=False,blank=False,
                            limit_choices_to={'Var2__UserEditable': True})
+    StatusVar = models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,limit_choices_to={'Units': None})
+    Inverted = models.BooleanField(default=False)
     
     def __str__(self):
         return str(self.RITM.Rule) + ' - ' + str(self.RITM.Var1) + ' VS ' + str(self.RITM.Var2)

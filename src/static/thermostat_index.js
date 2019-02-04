@@ -2,6 +2,7 @@ var ThermostatInstances=[];
 
 function updateThermostat(data)
 {
+	var check;
 	for (index in ThermostatInstances)
 	{
 		if (ThermostatInstances[index].valueVARpk == data.pk)
@@ -11,9 +12,13 @@ function updateThermostat(data)
 		}
 		if (ThermostatInstances[index].targetVARpk == data.pk)
 		{
-			var check=ThermostatInstances[index].is_true;
+			check=ThermostatInstances[index].is_true;
 			clearInterval(ThermostatInstances[index].acknowledged);
 			ThermostatInstances[index].target_temperature=data.Value;
+		}
+		if (ThermostatInstances[index].statusVARpk == data.pk)
+		{
+			check=ThermostatInstances[index].is_true;
 		}
 	}
 }
@@ -118,8 +123,9 @@ var thermostatDial = (function() {
 			initialValue: options.initialValue||0,
 			targetVARpk: options.targetVARpk,
 			valueVARpk: options.valueVARpk,
-			hysteresis: options.hysteresis,
-			operator: options.operator,
+			statusVARpk: options.statusVARpk,
+			statusVAR: options.statusVAR,
+			inverted: options.inverted,
 			tendency: options.tendency||0,
 		};
 		
@@ -144,6 +150,7 @@ var thermostatDial = (function() {
 		var state = {
 			valueVARpk: options.valueVARpk,
 			targetVARpk: options.targetVARpk,
+			statusVARpk: options.statusVARpk,
 			target_temperature: options.initialTarget,
 			ambient_temperature: options.initialValue,
 			hvac_state: properties.hvac_states[0],
@@ -158,20 +165,20 @@ var thermostatDial = (function() {
 		 * Property getter / setters
 		 */
 		
-		Object.defineProperty(this,'hysteresis',{
+		Object.defineProperty(this,'statusVAR',{
 			get: function() {
-				return options.hysteresis;
+				return options.statusVAR;
 			},
 			set: function(val) {
-				options.hysteresis = val;
+				options.statusVAR = val;
 			}
 		});
-		Object.defineProperty(this,'operator',{
+		Object.defineProperty(this,'inverted',{
 			get: function() {
-				return options.operator;
+				return options.inverted;
 			},
 			set: function(val) {
-				options.operator = val;
+				options.inverted = val;
 			}
 		});
 		Object.defineProperty(this,'acknowledged',{
@@ -193,6 +200,14 @@ var thermostatDial = (function() {
 			set: function(val) {
 				state.tendency = val;
 				renderTendency();
+			}
+		});
+		Object.defineProperty(this,'statusVARpk',{
+			get: function() {
+				return state.statusVARpk;
+			},
+			set: function(val) {
+				state.statusVARpk = val;
 			}
 		});
 		Object.defineProperty(this,'valueVARpk',{
@@ -429,18 +444,18 @@ var thermostatDial = (function() {
 		
 		function checkIsTrue()
 		{
-			if (self.operator.includes("&lt"))
+			if (self.inverted=="True")
 			{
-				if (self.ambient_temperature<self.target_temperature-self.hysteresis)
-				{ state.is_true= true}
-				if (self.ambient_temperature>self.target_temperature+self.hysteresis)
-				{ state.is_true= false}
+				if (self.statusVAR)
+				{ state.is_true= false;}
+				else
+				{ state.is_true= true;}
 			}else
 			{
-				if (self.ambient_temperature>self.target_temperature+self.hysteresis)
-				{ state.is_true= true}
-				if (self.ambient_temperature<self.target_temperature-self.hysteresis)
-				{ state.is_true= false}
+				if (self.statusVAR)
+				{ state.is_true= true;}
+				else
+				{ state.is_true= false;}
 			}
 		}
 		/*

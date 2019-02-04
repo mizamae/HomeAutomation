@@ -42,8 +42,9 @@
 		initialValue:{{ THERM.RITM.Var1.getLatestValueString }},
 		targetVARpk: {{ THERM.RITM.Var2.pk }},	// pk for the setpoint AVAR 
 		valueVARpk: {{ THERM.RITM.Var1.pk }},	// pk for the value AVAR 
-		hysteresis: parseFloat("{{ THERM.RITM.Var2Hyst }}".split(",").join(".")),	// hysteresis for the setpoint
-		operator: "{{ THERM.RITM.Operator12 }}",
+		statusVARpk: {{ THERM.statusVAR.pk }},	// pk for the statusVAR AVAR 
+		statusVAR: {{ THERM.StatusVar.getLatestValue }},	// value for the status AVAR 
+		inverted: "{{ THERM.Inverted }}",
 		tendency:{{THERM.RITM.Var1.Tendency}}
 	});
 	ThermostatInstances.push(nest{{ forloop.counter }});
