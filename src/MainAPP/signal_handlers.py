@@ -6,11 +6,13 @@ import logging
 logger = logging.getLogger("project")
 from .models import AutomationVariables,Thermostats
 import DevicesAPP.signals
+from DevicesAPP.constants import DTYPE_DIGITAL
+from utils.dataMangling import localizeTimestamp,checkBit
 
 @receiver(DevicesAPP.signals.SignalVariableValueUpdated, dispatch_uid="SignalVariableValueUpdated_MainAPP_receiver")
 def AutomationVariablesValueUpdated_handler(sender, **kwargs):
-    from utils.dataMangling import localizeTimestamp,checkBit
-    from DevicesAPP.constants import DTYPE_DIGITAL
+    
+    
     timestamp=localizeTimestamp(timestamp=kwargs['timestamp'])
     Tags=kwargs['Tags']
     Values=kwargs['Values']
@@ -31,7 +33,7 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
                 AVARs.append(AVAR)
             for k,AVAR in enumerate(AVARs):
                 if Types[i]==DTYPE_DIGITAL:
-                    value=checkBit(number=Values[i],position=k)
+                    value=1 if checkBit(number=Values[i],position=k) else 0
                 else:
                     value=Values[i]
                 AVAR.executeAutomationRules()
@@ -42,17 +44,25 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
                 
                 AVAR.setTendency()
         except Exception as exc:
-            logger("Error on signals: " + str(exc))
+            logger.error("Error on signals: " + str(exc))
 
 @receiver(DevicesAPP.signals.SignalNewDataFromDevice, dispatch_uid="SignalNewDataFromDevice_MainAPP_receiver")
 def NewDataFromDevice_handler(sender, **kwargs):
     DV=kwargs['DV']
     DG=kwargs['DG']
-    Tags=DG.getStructure()['names']
-    for Tag in Tags:
+    structure=DG.getStructure()
+    Tags=structure['names']
+    Types=structure['types']
+    for i,Tag in enumerate(Tags):
         try:
-            AVAR=AutomationVariables.objects.get(Tag=Tag,Device=DV.pk)
-            AVAR.checkAdditionalCalculations()
+            AVARs=[]
+            if Types[i]==DTYPE_DIGITAL:
+                AVARs=AutomationVariables.objects.filter(Tag=Tag,Device=DV.pk)
+            else:
+                AVAR=AutomationVariables.objects.get(Tag=Tag,Device=DV.pk)
+                AVARs.append(AVAR)
+            for AVAR in AVARs:
+                AVAR.checkAdditionalCalculations()
         except Exception as exc:
-            logger("Error on signals: " + str(exc))
+            logger.error("Error on signals: " + str(exc))
     
