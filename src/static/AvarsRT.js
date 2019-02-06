@@ -27,7 +27,7 @@ $(function()
             console.log("Connected to avars socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from avars engine")
-            {label.innerHTML=='';}
+            {label.innerHTML="";}
     });
     AVARWebSocketBridge.socket.addEventListener('close', 
         function() { 
@@ -88,16 +88,32 @@ function updateAvar(data)
     if (rownum>=1)
     {
     	var valueSpan=row.querySelector("#value");
-    	elements=document.getElementsByName(valueSpan.attributes['name'].nodeValue);
-    	if (data.Type!='digital')
-    	{
-	    	if (data.Value>1 || data.Value<-1)
-	    	{valueSpan.innerHTML=data.Value.toFixed(1);}
-	    	else {valueSpan.innerHTML=data.Value.toFixed(2);}
-    	}else
+    	var tendencySpan=row.querySelector("#tendency");
+    	//elements=document.getElementsByName(valueSpan.attributes['name'].nodeValue);
+    	if (data.Value != null)
 		{
-    		valueSpan.innerHTML=data.Value.toFixed(0);
+	    	if (data.Type!='digital' && data.Type!='integer')
+	    	{
+	    		
+			    	if (data.Value>1 || data.Value<-1)
+			    	{valueSpan.innerHTML=data.Value.toFixed(1);}
+			    	else {valueSpan.innerHTML=data.Value.toFixed(2);}
+			    	if (data.Tendency==1)
+		    		{tendencySpan.innerHTML="&#8679;";}
+			    	else if (data.Tendency==-1)
+		    		{tendencySpan.innerHTML="&#8681;";}
+			    	else
+			    	{tendencySpan.innerHTML="";}
+	    	}else
+			{
+	    		valueSpan.innerHTML=data.Value.toFixed(0);
+			}
+		}else
+		{
+			valueSpan.innerHTML="Error";
+			tendencySpan.innerHTML="";
 		}
+    	
     	var timeSpan=row.querySelector("#timestamp");
     	var d = new Date(data.Timestamp);
     	timeSpan.innerHTML=d.toLocaleString();

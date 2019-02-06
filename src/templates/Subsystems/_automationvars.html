@@ -6,9 +6,11 @@
     <td class="hidden-sm hidden-xs"><span id="timestamp">{{ VARs_values|get_at_index:index|get_at_index:0 }}</span></td>
     {% if row.Units %}
     	{% if row.Tendency == 1 %}
-   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}  &#8679;</td>
+   	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }} <span id="tendency"> &#8679;</span></td>
+   		{% elif row.Tendency == -1 %}
+	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }} <span id="tendency"> &#8681;</span></td>
    		{% else %}
-	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}  &#8681;</td>
+	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span> {{ row.Units }}  <span id="tendency"> </span></td>
    		{% endif %}
    	{% else %}
    	<td style="text-align: center;"><span id="value" name="{{ row.Tag }}_value">{{ VARs_values|get_at_index:index|get_at_index:1 }}</span></td>

@@ -40,7 +40,7 @@ $(function()
             console.log("Connected to Events socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from Events engine")
-            {label.innerHTML=='';}
+            {label.innerHTML="";}
     });
     webSocketEventsBridge.socket.addEventListener('close', 
         function() { 
