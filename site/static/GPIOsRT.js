@@ -33,7 +33,7 @@ $(function () {
             console.log("Connected to GPIOs socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from GPIOs engine")
-            {label.innerHTML=='';}
+            {label.innerHTML="";}
     });
 	webSocketGPIOBridge.socket.addEventListener('close', 
         function() { 

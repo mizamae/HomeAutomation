@@ -164,7 +164,7 @@ def updateRelease(root,tag):
             process = Popen("python src/manage.py showmigrations --list", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
             stdout, err = process.communicate()
-            if err:
+            if err and (not 'UserWarning: ' in err):
                 logger.debug('MIGRATIONS CHECK ERROR: ' + str(err))
                 PublishEvent(Severity=5,Text=_("Error checking migrations: " + str(err)),Persistent=True,Code='MainAPPViews-4')
                  
@@ -177,7 +177,7 @@ def updateRelease(root,tag):
                 process = Popen("python src/manage.py migrate", cwd=root, shell=True,
                         stdout=PIPE, stderr=PIPE,universal_newlines=True)
                 stdout, err = process.communicate()
-                if ('UserWarning' in err) or (not err):
+                if (not err) or ('UserWarning' in err):
                     PublishEvent(Severity=0,Text=_("Django DB updated OK"),Persistent=False,Code='MainAPPViews-6')
                 else:
                     PublishEvent(Severity=4,Text=_("Error applying the migration: " + str(err)),
