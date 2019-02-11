@@ -177,8 +177,8 @@ class SiteSettings(SingletonModel):
                     if revision!=None:
                         self.VERSION_CODE=revision
                         self.save(update_fields=['VERSION_CODE',])
-                except:
-                    pass
+                except Exception as exc:
+                    logger.error('Error checking repository: ' + str(exc))
                 #process.resume()
     
     def addressInNetwork(self,ip2check):

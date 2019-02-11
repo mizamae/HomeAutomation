@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from django.core.cache import cache
 
 import json
 import urllib
@@ -1099,12 +1100,38 @@ class DHT22(object):
     _numberMeasures=1
     _MAX_RETRIES=3
     _CalnumberMeasures=10
+    _thread=None
+    _accumulators={}
     
     def __init__(self,DV):
         self.type = Adafruit_DHT.DHT22
         self.sensor=DV
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2degC per minute
     
+    @staticmethod
+    def runOnInit(DV):
+        DHT22.init_thread(DV=DV)
+        cache.set('DHT22_accumulators['+str(DV.IO.Pin)+']', {'T':0,'H':0,'n':0}, None)
+        
+    @classmethod
+    def init_thread(cls,DV):
+        try:
+            instance=cls(DV=DV)
+            from utils.asynchronous_tasks import BackgroundTimer
+            instance._thread=BackgroundTimer(callable=instance.read,threadName=str(instance.sensor)+'_thread',interval=instance.sensor.RTsampletime,
+                            callablekwargs={'type':instance.type,'pin':instance.sensor.IO.Pin},
+                            repeat=True,triggered=False,lifeSpan=None,onThreadInit=None,
+                            onInitkwargs={})
+        except Exception as ex:
+            logger.error(str(instance.sensor)+': thread failed : ' + str(ex))
+    
+    def kill_thread(self):
+        if self._thread!=None:
+            self._thread.kill()
+        self._thread=None
+        logger.error(str(self.sensor)+': Killed the thread')
+        
+        
     @staticmethod
     def convertCtoF(c):
       return c*1.8+32
@@ -1170,7 +1197,25 @@ class DHT22(object):
             self._lastTemp=None
             logger.error('Calibration of sensor ' + str(self.sensor.Name) + ' failed')
         
-                                
+    @staticmethod
+    def read(type,pin):
+        h, t = Adafruit_DHT.read_retry(type, pin)
+        
+        if (t > DHT22._maxT or t < DHT22._minT):
+            t=None
+                
+        if t != None and h != None:
+            DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
+            DHT22._accumulators['n']=DHT22._accumulators['n']+1
+            DHT22._accumulators['T']=DHT22._accumulators['T']+t
+            DHT22._accumulators['H']=DHT22._accumulators['H']+h
+            cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, None)
+            
+        return t,h
+    
+    def resetAccumulator(self):
+        cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':0,'H':0,'n':0}, None)
+        
     def __call__(self,datagramId = 'data'):
         """
         Read temperature and humidity from DHT sensor.
@@ -1182,7 +1227,13 @@ class DHT22(object):
         x=0
         Error=''
         while (x < self._numberMeasures):
-            h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
+            DHT22._accumulators=cache.get('DHT22_accumulators['+str(self.sensor.IO.Pin)+']')
+            if DHT22._accumulators['n']>0:
+                h=DHT22._accumulators['H']/DHT22._accumulators['n']
+                t=DHT22._accumulators['T']/DHT22._accumulators['n']
+                self.resetAccumulator()
+            else:
+                h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
             if t==None:
                 t=self._maxT
             if h==None:
