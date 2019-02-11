@@ -29,7 +29,10 @@ $(function()
             console.log("Connected to Devices socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from Devices engine")
-            {label.innerHTML="";}
+            {	
+            	label.innerHTML="";
+            	$("body").removeClass("loading");
+        	}
     });
     webSocketDevicesBridge.socket.addEventListener('close', 
         function() { 
@@ -37,6 +40,7 @@ $(function()
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from Devices engine";
+            $("body").addClass("loading");
     });
 });
 

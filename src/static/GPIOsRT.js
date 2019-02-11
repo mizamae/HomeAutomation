@@ -33,14 +33,18 @@ $(function () {
             console.log("Connected to GPIOs socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from GPIOs engine")
-            {label.innerHTML="";}
+            {
+            	label.innerHTML="";
+            	$("body").removeClass("loading");
+        	}
     });
 	webSocketGPIOBridge.socket.addEventListener('close', 
         function() { 
             console.log("Disconnected to GPIOs socket"); 
             label=document.getElementById('RT_status');
             label.style.color="Red";
-            label.innerHTML="Disconnected from GPIOs engine"
+            label.innerHTML="Disconnected from GPIOs engine";
+            $("body").addClass("loading");
     });
 });
 
