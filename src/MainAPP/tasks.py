@@ -122,6 +122,16 @@ def start_DailyTask():
     PublishEvent(Severity=0,Text='Task '+id+ ' is added to scheduler: ' + str(JOB),Persistent=False,Code='Tasks-D')
 
 ### HOURLY FUNCTIONS
+def updateDNS():
+    try:
+        # Switch to Python2
+        #os.system("sudo ln -sf /usr/bin/python2 /usr/bin/python")
+        os.system("sudo /usr/local/bin/noip2")
+    except Exception as e:
+        logger.error('Exception Tasks updateDNS: ' + str(e))
+    # Switch to Python3
+    #os.system("sudo ln -sf /usr/bin/python3 /usr/bin/python")
+    
 def checkCustomCalculations():
     '''THIS TASK IS RUN EVERY HOUR.
     '''
@@ -148,6 +158,7 @@ def HourlyTask():
     HourDay.updateValue(newValue=hourDay,writeDB=True)
     AutomationVarWeeklySchedules.checkAll(init=True)
     checkCustomCalculations()
+    updateDNS()
 
 def start_HourlyTask():
     id='HourlyTask'
