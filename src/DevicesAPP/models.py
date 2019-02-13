@@ -936,9 +936,9 @@ def request_callback(DV,DG,jobID,**kwargs):
         try:
             instance=class_(DV)
             status=instance(**kwargs)
-        except:
+        except Exception as exc:
             status['LastUpdated']=None
-            status['Error']=instance.Error
+            status['Error']=str(exc)
         
     elif DV.DVT.Connection==REMOTE_TCP_CONNECTION:
         status=DV.requestDatagram(DatagramId=DG.Identifier) 

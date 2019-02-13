@@ -1101,16 +1101,17 @@ class DHT22(object):
     _MAX_RETRIES=3
     _CalnumberMeasures=10
     _thread=None
+    _accumulators={}
     
     def __init__(self,DV):
         self.type = Adafruit_DHT.DHT22
         self.sensor=DV
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2degC per minute
-        cache.set('DHT22_accumulators['+str(DV.IO.Pin)+']', {'T':[],'H':[]}, None)
     
     @staticmethod
     def runOnInit(DV):
         DHT22.init_thread(DV=DV)
+        cache.set('DHT22_accumulators['+str(DV.IO.Pin)+']', {'T':[],'H':[],'n':0}, None)
         
     @classmethod
     def init_thread(cls,DV):
@@ -1202,37 +1203,35 @@ class DHT22(object):
         
         if (t > DHT22._maxT or t < DHT22._minT):
             t=None
-            h=None
                 
         if t != None and h != None:
-            _accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
-            _accumulators['T'].append(t)
-            _accumulators['H'].append(h)
-            cache.set('DHT22_accumulators['+str(pin)+']', _accumulators, None)
+            DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
+            DHT22._accumulators['n']=DHT22._accumulators['n']+1
+            DHT22._accumulators['T'].append(t)
+            DHT22._accumulators['H'].append(h)
+            cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, None)
             
         return t,h
     
     def resetAccumulator(self):
-        cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':[],'H':[]}, None)
+        cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':[],'H':[],'n':0}, None)
     
     def getAccumulatedValues(self):
         from utils.dataMangling import remove_outlier
         import pandas as pd
         _accumulators=cache.get('DHT22_accumulators['+str(self.sensor.IO.Pin)+']')
-        if len(_accumulators['T'])>0:
+        if _accumulators!= None and len(_accumulators['T'])>0:
             df = pd.DataFrame({'T':_accumulators['T'],'H':_accumulators['H']})
             df=remove_outlier(df_in=df, col_name='T')
             T=df['T'].mean()
             H=df['H'].mean()
-            logger.info('Accumulated values T: '+str(T) + "ºC")
+            #logger.info('Accumulated values T: '+str(T) + "degC")
         else:
-            T=None
-            H=None
+            H, T = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
             logger.error('No accumulated values!!')
-        self.resetAccumulator()
         
         return T,H
-            
+    
     def __call__(self,datagramId = 'data'):
         """
         Read temperature and humidity from DHT sensor.
@@ -1243,73 +1242,44 @@ class DHT22(object):
         retries=0
         x=0
         Error=''
-        while (x < self._numberMeasures):
-            t,h=self.getAccumulatedValues()
-            if t == None:
-                h, t = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
-            if t==None:
-                t=self._maxT
-            if h==None:
-                h=self._maxH
-            
-            if self._lastTemp!=None: 
-                if abs(self._lastTemp-t)>self._maxDT:
-                    logger.warning('Measure from ' + str(self.sensor.Name) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
-                    Error+=' - maxDT'
-                    t = self._maxT
-                
-            if (t < self._maxT and t > self._minT):
-                temperature=temperature+t
-            else:
-                logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Temperature: ' + str(t))
-                Error+=' - maxminT'
-                
-            if (h < self._maxH and h > self._minH):
-                humidity=humidity+h
-            else:
-                logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Humidity: '+ str(h))
-                Error+=' - maxminH'
-            
-            if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
-                break
-            else:
-                retries+=1
-                x=-1
-                
-            if retries>=self._MAX_RETRIES:
-                logger.error('Maximum number of retries reached!!!')
-                Error+=' - maxRetries'
-                break
-            x=x+1
-            
-            if (x < self._numberMeasures):
-                time.sleep(2)   # waiting 2 sec between measurements to release DHT sensor
+
+        t,h=self.getAccumulatedValues()
+        self.resetAccumulator()
+        if t==None:
+            t=self._maxT
+        if h==None:
+            h=self._maxH
         
-        if retries>=self._MAX_RETRIES:
-            if temperature>0:
-                temperature=round(temperature/self._numberMeasures,3)
-            else:
-                temperature=None
-            if humidity>0:
-                humidity=round(humidity/self._numberMeasures,3)
-            else:
-                humidity=None
-            dewpoint=None
-            hi=None
-            null=True
+        if self._lastTemp!=None: 
+            if abs(self._lastTemp-t)>self._maxDT:
+                logger.warning('Measure from ' + str(self.sensor.Name) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
+                Error+=' - maxDT'
+                t = self._maxT
+            
+        if (t < self._maxT and t > self._minT):
+            pass
         else:
-            temperature=round(temperature/self._numberMeasures,3)
-            humidity=round(humidity/self._numberMeasures,3)
-            dewpoint=round((humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112,3)
-            hi=round(self.computeHeatIndex(temperature=temperature, percentHumidity=humidity),3)
-            null=False
+            logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Temperature: ' + str(t))
+            Error+=' - maxminT'
+            
+        if (h < self._maxH and h > self._minH):
+            pass
+        else:
+            logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Humidity: '+ str(h))
+            Error+=' - maxminH'
         
-        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=(temperature,humidity,dewpoint,hi),NULL=False)
+        t=round(t,3)
+        h=round(h,3)
+        dewpoint=round((h/100)**(1/8)*(112+0.9*t)+0.1*t-112,3)
+        hi=round(self.computeHeatIndex(temperature=t, percentHumidity=h),3)
+        null=False
+        
+        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=(t,h,dewpoint,hi),NULL=False)
         
         reading={
             'timestamp':timestamp,
-            'temperature':temperature,
-            'humidity':humidity,
+            'temperature':t,
+            'humidity':h,
             'heat index':hi,
         }
         if null==False:
@@ -1327,14 +1297,14 @@ class DHT22(object):
         Read temperature and humidity from DHT sensor.
         """
         timestamp=timezone.now() #para hora con info UTC 
-        humidity, temperature = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
-        if temperature==None:
-            temperature=self._maxT
-        if humidity==None:
-            humidity=self._maxH
-        if (temperature < self._maxT and temperature > self._minT) and (humidity < self._maxH and humidity > self._minH):
-            dewpoint=(humidity/100)**(1/8)*(112+0.9*temperature)+0.1*temperature-112
-            hi=self.computeHeatIndex(temperature=temperature, percentHumidity=humidity)
+        t,h=self.getAccumulatedValues()
+        if t==None:
+            t=self._maxT
+        if h==None:
+            h=self._maxH
+        if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
+            dewpoint=(h/100)**(1/8)*(112+0.9*t)+0.1*t-112
+            hi=self.computeHeatIndex(temperature=t, percentHumidity=h)
         else:
             dewpoint=0
-        return (round(humidity,3), round(temperature,3), round(dewpoint,3))
+        return (round(h,3), round(t,3), round(dewpoint,3))
