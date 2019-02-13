@@ -1231,7 +1231,8 @@ class DHT22(object):
             H=df['H'].mean()
             #logger.info('Accumulated values T: '+str(T) + "degC")
         else:
-            H, T = Adafruit_DHT.read_retry(self.type, self.sensor.IO.Pin)
+            H=None
+            T = None
             logger.error('No accumulated values!!')
         
         return T,H
