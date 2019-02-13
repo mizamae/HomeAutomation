@@ -1107,11 +1107,12 @@ class DHT22(object):
         self.type = Adafruit_DHT.DHT22
         self.sensor=DV
         self._maxDT=0.2*self.sensor.Sampletime/60 # maximum delta T allowed 0.2degC per minute
+        
     
     @staticmethod
     def runOnInit(DV):
-        DHT22.init_thread(DV=DV)
         cache.set('DHT22_accumulators['+str(DV.IO.Pin)+']', {'T':[],'H':[],'n':0}, None)
+        DHT22.init_thread(DV=DV)
         
     @classmethod
     def init_thread(cls,DV):
@@ -1199,10 +1200,15 @@ class DHT22(object):
         
     @staticmethod
     def read(type,pin):
-        h, t = Adafruit_DHT.read_retry(type, pin)
+        try:
+            h, t = Adafruit_DHT.read_retry(type, pin)
+        except Exception as exc:
+            logger.error('Exception on DHT read ' + str(exc))
+            return
         
         if (t > DHT22._maxT or t < DHT22._minT):
             t=None
+            h=None
                 
         if t != None and h != None:
             DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
@@ -1210,8 +1216,6 @@ class DHT22(object):
             DHT22._accumulators['T'].append(t)
             DHT22._accumulators['H'].append(h)
             cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, None)
-            
-        return t,h
     
     def resetAccumulator(self):
         cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':[],'H':[],'n':0}, None)
@@ -1220,7 +1224,7 @@ class DHT22(object):
         from utils.dataMangling import remove_outlier
         import pandas as pd
         _accumulators=cache.get('DHT22_accumulators['+str(self.sensor.IO.Pin)+']')
-        if _accumulators!= None and len(_accumulators['T'])>0:
+        if _accumulators is not None and len(_accumulators['T'])>0:
             df = pd.DataFrame({'T':_accumulators['T'],'H':_accumulators['H']})
             df=remove_outlier(df_in=df, col_name='T')
             T=df['T'].mean()
@@ -1236,6 +1240,7 @@ class DHT22(object):
         """
         Read temperature and humidity from DHT sensor.
         """
+        DHT22.init_thread(DV=self.sensor)   # this relaunches the reading thread in case it died
         timestamp=timezone.now() #para hora con info UTC 
         humidity=0
         temperature=0
