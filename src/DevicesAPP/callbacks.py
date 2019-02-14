@@ -1215,21 +1215,22 @@ class DHT22(object):
             DHT22._accumulators['n']=DHT22._accumulators['n']+1
             DHT22._accumulators['T'].append(t)
             DHT22._accumulators['H'].append(h)
-            cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, None)
+            cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, timeout=None)
     
     def resetAccumulator(self):
-        cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':[],'H':[],'n':0}, None)
+        cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':[],'H':[],'n':0}, timeout=None)
     
     def getAccumulatedValues(self):
         from utils.dataMangling import remove_outlier
         import pandas as pd
         _accumulators=cache.get('DHT22_accumulators['+str(self.sensor.IO.Pin)+']')
+        #logger.info('Accumulated values T: '+str(_accumulators['T']) )
         if _accumulators is not None and len(_accumulators['T'])>0:
             df = pd.DataFrame({'T':_accumulators['T'],'H':_accumulators['H']})
             df=remove_outlier(df_in=df, col_name='T')
             T=df['T'].mean(skipna =True)
             H=df['H'].mean(skipna =True)
-            #logger.info('Accumulated values T: '+str(T) + "degC")
+            #logger.info('Accumulated values T: '+str(df['T']) )
         else:
             H=None
             T = None
@@ -1251,36 +1252,41 @@ class DHT22(object):
 
         t,h=self.getAccumulatedValues()
         self.resetAccumulator()
-        if t==None:
-            t=self._maxT
-        if h==None:
-            h=self._maxH
         
-        if self._lastTemp!=None: 
-            if abs(self._lastTemp-t)>self._maxDT:
-                logger.warning('Measure from ' + str(self.sensor.Name) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
-                Error+=' - maxDT'
-                t = self._maxT
-            
-        if (t < self._maxT and t > self._minT):
-            pass
+        
+        if t != None:
+            if t>=self._maxT:
+                t=self._maxT
+            if h>=self._maxH:
+                h=self._maxH
+            if self._lastTemp!=None: 
+                if abs(self._lastTemp-t)>self._maxDT:
+                    logger.warning('Measure from ' + str(self.sensor.Name) + ' exceded maxDT!! Last Temperature: ' + str(self._lastTemp) + ' and current is : '+ str(t))
+                    Error+=' - maxDT'
+                    t = self._maxT
+                
+            if (t < self._maxT and t > self._minT):
+                pass
+            else:
+                logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Temperature: ' + str(t))
+                Error+=' - maxminT'
+                
+            if (h < self._maxH and h > self._minH):
+                pass
+            else:
+                logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Humidity: '+ str(h))
+                Error+=' - maxminH'
+        
+            t=round(t,3)
+            h=round(h,3)
+            dewpoint=round((h/100)**(1/8)*(112+0.9*t)+0.1*t-112,3)
+            hi=round(self.computeHeatIndex(temperature=t, percentHumidity=h),3)
+            null=False
+            self._lastTemp=t
         else:
-            logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Temperature: ' + str(t))
-            Error+=' - maxminT'
-            
-        if (h < self._maxH and h > self._minH):
-            pass
-        else:
-            logger.warning('Measure from ' + str(self.sensor.Name) + ' out of bounds!! Humidity: '+ str(h))
-            Error+=' - maxminH'
-        
-        t=round(t,3)
-        h=round(h,3)
-        dewpoint=round((h/100)**(1/8)*(112+0.9*t)+0.1*t-112,3)
-        hi=round(self.computeHeatIndex(temperature=t, percentHumidity=h),3)
-        null=False
-        
-        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=(t,h,dewpoint,hi),NULL=False)
+            null=True
+            Error=str(self.sensor)+' - No valid measure has been obtained'
+        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=(t,h,dewpoint,hi),NULL=null)
         
         reading={
             'timestamp':timestamp,
@@ -1293,7 +1299,6 @@ class DHT22(object):
         else:
             LastUpdated=None
         
-        self._lastTemp=temperature
         return {'Error':Error,'LastUpdated':LastUpdated}
 
                 
