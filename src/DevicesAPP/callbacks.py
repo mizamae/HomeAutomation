@@ -1227,8 +1227,8 @@ class DHT22(object):
         if _accumulators is not None and len(_accumulators['T'])>0:
             df = pd.DataFrame({'T':_accumulators['T'],'H':_accumulators['H']})
             df=remove_outlier(df_in=df, col_name='T')
-            T=df['T'].mean()
-            H=df['H'].mean()
+            T=df['T'].mean(skipna =True)
+            H=df['H'].mean(skipna =True)
             #logger.info('Accumulated values T: '+str(T) + "degC")
         else:
             H=None
