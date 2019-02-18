@@ -1284,6 +1284,8 @@ class DHT22(object):
             null=False
             self._lastTemp=t
         else:
+            dewpoint=None
+            hi=None
             null=True
             Error=str(self.sensor)+' - No valid measure has been obtained'
         self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=(t,h,dewpoint,hi),NULL=null)
@@ -1315,7 +1317,6 @@ class DHT22(object):
             h=self._maxH
         if (t < self._maxT and t > self._minT) and (h < self._maxH and h > self._minH):
             dewpoint=(h/100)**(1/8)*(112+0.9*t)+0.1*t-112
-            hi=self.computeHeatIndex(temperature=t, percentHumidity=h)
         else:
             dewpoint=0
         return (round(h,3), round(t,3), round(dewpoint,3))

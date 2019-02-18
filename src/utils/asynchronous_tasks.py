@@ -101,7 +101,8 @@ class BackgroundTimer(object):
         for t in threading.enumerate():
             if t.name==self.threadName:
                 self.thread=t
-                logger.info("A thread with the name " + self.threadName + " and ident " + str(self.thread.ident) +" exists")
+                if self.log:
+                    logger.info("A thread with the name " + self.threadName + " and ident " + str(self.thread.ident) +" exists")
                 exists=True
                 break
         return exists
