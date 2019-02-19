@@ -80,16 +80,15 @@
             webSocketBridge.socket.addEventListener('open', 
                 function() { 
                     console.log("Connected to notification socket"); 
-                    label=document.getElementById('RT_status');
-                    label.style.color="LimeGreen";
-                    label.innerHTML="Connected to RT engine"
+                    $("body").removeClass("loading");
             });
             webSocketBridge.socket.addEventListener('close', 
                 function() { 
                     console.log("Disconnected to notification socket"); 
                     label=document.getElementById('RT_status');
                     label.style.color="Red";
-                    label.innerHTML="Disconnected from RT engine"
+                    label.innerHTML="Disconnected from GPIOs engine"
+                   	$("body").addClass("loading");
             });
         });
 
