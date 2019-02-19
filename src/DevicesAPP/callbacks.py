@@ -1205,17 +1205,17 @@ class DHT22(object):
         except Exception as exc:
             logger.error('Exception on DHT read ' + str(exc))
             return
-        
-        if (t > DHT22._maxT or t < DHT22._minT):
-            t=None
-            h=None
                 
         if t != None and h != None:
-            DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
-            DHT22._accumulators['n']=DHT22._accumulators['n']+1
-            DHT22._accumulators['T'].append(t)
-            DHT22._accumulators['H'].append(h)
-            cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, timeout=None)
+            if (t > DHT22._maxT or t < DHT22._minT):
+                t=None
+                h=None
+            else:
+                DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
+                DHT22._accumulators['n']=DHT22._accumulators['n']+1
+                DHT22._accumulators['T'].append(t)
+                DHT22._accumulators['H'].append(h)
+                cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, timeout=None)
     
     def resetAccumulator(self):
         cache.set('DHT22_accumulators['+str(self.sensor.IO.Pin)+']', {'T':[],'H':[],'n':0}, timeout=None)

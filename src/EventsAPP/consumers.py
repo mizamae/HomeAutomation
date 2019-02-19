@@ -26,7 +26,7 @@ def PublishEvent(Severity,Code,Text,Persistent=False,Webpush=False):
             
             from utils.web_notifications import NotificationManager
             NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Events',
-                                              tag='notifications-'+Code,message_body=Text,
+                                              tag='notifications-'+str(Code),message_body=Text,
                                               url='http://mizamae2.ddns.net')           
         except Exception as exc:
             logger.error('Error: ' + str(exc))

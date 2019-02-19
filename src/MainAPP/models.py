@@ -1261,9 +1261,8 @@ class AutomationRules(models.Model):
                 #logger.info("Rule evaluated True: Signal to set GPIO sent")
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(Action['IOValue']))
             text='The rule ' + self.Identifier + ' evaluated to True. Action executed.'
-            if result['ERROR']==[]:
-                webpush=not self.LastEval and Action.get('NotificationTrue')==True
-                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=webpush)
+            if result['ERROR']==[] and not self.LastEval and Action.get('NotificationTrue')==True:
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=True)
             
             self.setLastEval(value=True)
         elif (resultFALSE==True and (not self.EdgeExec or self.LastEval)):
@@ -1272,9 +1271,8 @@ class AutomationRules(models.Model):
                 #logger.info("Rule evaluated False: Signal to set GPIO sent")
                 MainAPP.signals.SignalSetGPIO.send(sender=None,pk=Action['IO'],Value=int(not int(Action['IOValue'])))
             text='The rule ' + self.Identifier + ' evaluated to False. Action executed.'
-            if result['ERROR']==[]:
-                webpush=self.LastEval and Action.get('NotificationFalse')==True
-                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=webpush)
+            if result['ERROR']==[] and self.LastEval and Action.get('NotificationFalse')==True:
+                PublishEvent(Severity=0,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=True)
             
             self.setLastEval(value=False)
     

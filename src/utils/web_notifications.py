@@ -20,7 +20,7 @@ class NotificationManager(object):
             
         try:
             for user in users:
-                if user.profile.notifications and user.profile.subscription_token!="":
+                if user.profile.notifications and user.profile.subscription_token!=None and user.profile.subscription_token!="":
                     from pywebpush import webpush, WebPushException
                     from django.conf import settings
                     
