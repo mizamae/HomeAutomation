@@ -21,12 +21,13 @@ def PublishEvent(Severity,Code,Text,Persistent=False,Webpush=False):
     localdate = localizeTimestamp(Timestamp.replace(tzinfo=None))
     if Webpush:
         try:
+            from utils.Telegram import TelegramManager
+            TelegramManager().sendMessage(text=Text)
+            
             from utils.web_notifications import NotificationManager
             NotificationManager.send_web_push(users=NotificationManager.getUsers(), title='DIY4dot0 - Events',
                                               tag='notifications-'+Code,message_body=Text,
-                                              url='http://mizamae2.ddns.net:8075')
-            from utils.Telegram import TelegramManager
-            TelegramManager().sendMessage(text=Text)
+                                              url='http://mizamae2.ddns.net')           
         except Exception as exc:
             logger.error('Error: ' + str(exc))
         

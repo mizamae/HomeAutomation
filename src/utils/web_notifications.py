@@ -30,7 +30,9 @@ class NotificationManager(object):
                     else:
                         token=user.profile.subscription_token
                         
+                    #logger.info("Token: " + str(token))
                     VAPID_PRIVATE_KEY = open(settings.WEBPUSH_SETTINGS["VAPID_PRIVATE_KEY_PATH"], "r+").readline().strip("\n")
+                    #logger.info("VAPID: " + str(VAPID_PRIVATE_KEY))
                     webpush(
                         subscription_info=token,
                         data=json.dumps({'body':message_body,'title':title,'timestamp':timestamp,'tag':tag,'url':url}),

@@ -274,7 +274,7 @@ def Notifications(request):
         user=request.user
         firstSubscription=user.profile.subscription_token==""
         
-        if user.profile.notifications and firstSubscription and data!="":
+        if user.profile.notifications and data!="":
             user.profile.set_subscriptionToken(token=data)
             subscribed=True
         else:
