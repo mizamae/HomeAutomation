@@ -75,7 +75,7 @@ class SiteSettings(SingletonModel):
     VERSION_AUTO_UPDATE=models.BooleanField(verbose_name=_('Apply automatically new software releases'),
                                 help_text=_('Automatically updates to (and applies) the latest software'),default=False)
     VERSION_CODE= models.CharField(verbose_name=_('Code of the version of the application framework'),
-                                max_length=100,default='')
+                                max_length=100,default='',blank=True)
     VERSION_DEVELOPER=models.BooleanField(verbose_name=_('Follow the beta development versions'),
                                 help_text=_('Tracks the development versions (may result in unstable behaviour)'),default=False)
     NTPSERVER_RESTART_TIMEDELTA=models.PositiveSmallIntegerField(verbose_name=_('NTP server restart time delta'),
