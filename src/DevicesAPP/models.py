@@ -176,7 +176,7 @@ class MainDeviceVars(models.Model):
                 else:
                     self.insertRegister(TimeStamp=timestamp)
             
-            SignalVariableValueUpdated.send(sender=None, timestamp=now,
+            SignalVariableValueUpdated.send(sender='MainVars', timestamp=now,
                                                             Tags=[self.getRegistersDBTag(),],
                                                             Values=[newValue,],Types=[None,],
                                                             DataTypes=[self.DataType,])
@@ -576,7 +576,7 @@ class MasterGPIOs(models.Model):
                 elif self.Value==0:
                     GPIO.output(int(self.Pin),GPIO.LOW)
             
-            SignalVariableValueUpdated.send(sender=None, timestamp=now,
+            SignalVariableValueUpdated.send(sender='MainGPIOs', timestamp=now,
                                                             Tags=[self.getRegistersDBTag(),],
                                                             Values=[newValue,],Types=[None,],
                                                             DataTypes=[DTYPE_DIGITAL,])
