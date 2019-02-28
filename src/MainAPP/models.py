@@ -745,12 +745,18 @@ class AutomationVariables(models.Model):
                 row[0]=row[0]+row[0].utcoffset() 
         return data_rows
     
-    def setTendency(self):
+    def setTendency(self,numberSamples=2):
+        
         if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs': #and self.UserEditable:   # the variable is not DIGITAL
-            values=self.getValues(number=4)
-            if len(values)==4:
-                last=round((values[0][1]+values[1][1])/2,1)
-                first=round((values[2][1]+values[3][1])/2,1)
+            values=self.getValues(number=numberSamples*2)
+            if len(values)==numberSamples*2:
+                last=0
+                first=0
+                for i in range(0,numberSamples):
+                    last=last+values[i][1]
+                    first=first+values[numberSamples+i][1]            
+                last=round(last/(numberSamples),1)
+                first=round(first/(numberSamples),1)
                 if last>first:
                     self.Tendency=1
                 elif first>last:
