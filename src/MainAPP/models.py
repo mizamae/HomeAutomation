@@ -747,13 +747,8 @@ class AutomationVariables(models.Model):
                 row[0]=row[0]+row[0].utcoffset() 
         return data_rows
     
-<<<<<<< HEAD
     def setTendency(self):
         numberSamples=self.numSamples
-=======
-    def setTendency(self,numberSamples=2):
-        
->>>>>>> branch 'redesign' of https://github.com/mizamae/HomeAutomation.git
         if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs': #and self.UserEditable:   # the variable is not DIGITAL
             values=self.getValues(number=numberSamples*2)
             if len(values)==numberSamples*2:
