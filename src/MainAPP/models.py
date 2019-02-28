@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.utils.functional import lazy
 from django.core.cache import cache
+from django.core.validators import MinValueValidator
 import datetime
 import sys
 import os
@@ -611,6 +612,7 @@ class AutomationVariables(models.Model):
     UserEditable = models.BooleanField(default=True)
     OverrideTime = models.PositiveSmallIntegerField(default=3600)
     Tendency = models.SmallIntegerField(null=True,blank=True,default=0)
+    numSamples = models.PositiveSmallIntegerField(default=2,validators=[MinValueValidator(1)])
     Subsystem = GenericRelation(Subsystems,related_query_name='automationvariables')
     
     def __str__(self):
@@ -746,11 +748,17 @@ class AutomationVariables(models.Model):
         return data_rows
     
     def setTendency(self):
+        numberSamples=self.numSamples
         if self.BitPos==None and self.Table!='inputs' and self.Table!='outputs': #and self.UserEditable:   # the variable is not DIGITAL
-            values=self.getValues(number=4)
-            if len(values)==4:
-                last=round((values[0][1]+values[1][1])/2,1)
-                first=round((values[2][1]+values[3][1])/2,1)
+            values=self.getValues(number=numberSamples*2)
+            if len(values)==numberSamples*2:
+                last=0
+                first=0
+                for i in range(0,numberSamples):
+                    last=last+values[i][1]
+                    first=first+values[numberSamples+i][1]            
+                last=round(last/(numberSamples),1)
+                first=round(first/(numberSamples),1)
                 if last>first:
                     self.Tendency=1
                 elif first>last:
