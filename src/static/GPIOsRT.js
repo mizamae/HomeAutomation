@@ -35,7 +35,7 @@ $(function () {
             if (label.innerHTML=="Disconnected from GPIOs engine")
             {
             	label.innerHTML="";
-            	$("body").removeClass("loading");
+            	$("body").removeClass("no_websockets");
         	}
     });
 	webSocketGPIOBridge.socket.addEventListener('close', 
@@ -44,7 +44,7 @@ $(function () {
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from GPIOs engine";
-            $("body").addClass("loading");
+            $("body").addClass("no_websockets");
     });
 });
 

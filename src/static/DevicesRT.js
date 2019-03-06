@@ -31,7 +31,7 @@ $(function()
             if (label.innerHTML=="Disconnected from Devices engine")
             {	
             	label.innerHTML="";
-            	$("body").removeClass("loading");
+            	$("body").removeClass("no_websockets");
         	}
     });
     webSocketDevicesBridge.socket.addEventListener('close', 
@@ -40,7 +40,7 @@ $(function()
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from Devices engine";
-            $("body").addClass("loading");
+            $("body").addClass("no_websockets");
     });
 });
 

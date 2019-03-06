@@ -80,7 +80,7 @@
             webSocketBridge.socket.addEventListener('open', 
                 function() { 
                     console.log("Connected to notification socket"); 
-                    $("body").removeClass("loading");
+                    $("body").removeClass("no_websockets");
             });
             webSocketBridge.socket.addEventListener('close', 
                 function() { 
@@ -88,7 +88,7 @@
                     label=document.getElementById('RT_status');
                     label.style.color="Red";
                     label.innerHTML="Disconnected from GPIOs engine"
-                   	$("body").addClass("loading");
+                   	$("body").addClass("no_websockets");
             });
         });
 

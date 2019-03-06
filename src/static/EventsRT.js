@@ -42,7 +42,7 @@ $(function()
             if (label.innerHTML=="Disconnected from Events engine")
             {
             	label.innerHTML="";
-            	$("body").removeClass("loading");
+            	$("body").removeClass("no_websockets");
         	}
     });
     webSocketEventsBridge.socket.addEventListener('close', 
@@ -51,7 +51,7 @@ $(function()
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from Events engine";
-            $("body").addClass("loading");
+            $("body").addClass("no_websockets");
     });
 });
 

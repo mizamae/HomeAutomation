@@ -29,7 +29,7 @@ $(function()
             if (label.innerHTML=="Disconnected from avars engine")
             {
             	label.innerHTML="";
-            	$("body").removeClass("loading");
+            	$("body").removeClass("no_websockets");
         	}
     });
     AVARWebSocketBridge.socket.addEventListener('close', 
@@ -38,7 +38,7 @@ $(function()
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from avars engine";
-            $("body").addClass("loading");
+            $("body").addClass("no_websockets");
     });
     }catch(err){}
 });

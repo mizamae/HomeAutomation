@@ -252,13 +252,13 @@
             webSocketSystemBridge.socket.addEventListener('open', 
                 function() { 
                     console.log("Connected to system socket"); 
-                    $("body").removeClass("loading");
+                    $("body").removeClass("no_websockets");
                     query_system_datetime();
             });
             webSocketSystemBridge.socket.addEventListener('close', 
                 function() { 
                     console.log("Disconnected to system socket"); 
-                    $("body").addClass("loading");
+                    $("body").addClass("no_websockets");
             });
             
         });
