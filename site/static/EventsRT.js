@@ -40,7 +40,10 @@ $(function()
             console.log("Connected to Events socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from Events engine")
-            {label.innerHTML="";}
+            {
+            	label.innerHTML="";
+            	$("body").removeClass("no_websockets");
+        	}
     });
     webSocketEventsBridge.socket.addEventListener('close', 
         function() { 
@@ -48,6 +51,7 @@ $(function()
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from Events engine";
+            $("body").addClass("no_websockets");
     });
 });
 

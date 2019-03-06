@@ -27,7 +27,10 @@ $(function()
             console.log("Connected to avars socket"); 
             label=document.getElementById('RT_status');
             if (label.innerHTML=="Disconnected from avars engine")
-            {label.innerHTML="";}
+            {
+            	label.innerHTML="";
+            	$("body").removeClass("no_websockets");
+        	}
     });
     AVARWebSocketBridge.socket.addEventListener('close', 
         function() { 
@@ -35,6 +38,7 @@ $(function()
             label=document.getElementById('RT_status');
             label.style.color="Red";
             label.innerHTML="Disconnected from avars engine";
+            $("body").addClass("no_websockets");
     });
     }catch(err){}
 });
