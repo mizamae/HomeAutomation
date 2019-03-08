@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-01 12:47+0200\n"
+"POT-Creation-Date: 2019-03-08 10:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,19 +22,23 @@ msgstr ""
 msgid "Description"
 msgstr "Descripción"
 
-#: admin.py:68 admin.py:135
+#: admin.py:24
+msgid "Periodicity"
+msgstr "Periodicidad"
+
+#: admin.py:73 admin.py:140
 msgid "Current value"
 msgstr "Valor actual"
 
-#: admin.py:83
+#: admin.py:88
 msgid "Current setpoint"
 msgstr "Consigna actual"
 
-#: admin.py:106
+#: admin.py:111
 msgid "Set as active schedule"
 msgstr "Establecer como programación activa"
 
-#: admin.py:151 forms.py:289
+#: admin.py:156 forms.py:311
 msgid "Activate the rule"
 msgstr "Activar la regla"
 
@@ -42,172 +46,206 @@ msgstr "Activar la regla"
 msgid "Automation APP"
 msgstr "APP de automatización"
 
-#: constants.py:28
+#: constants.py:37
 msgid "Activate output on Main"
 msgstr "Activar salida en la unidad Principal"
 
-#: constants.py:29
+#: constants.py:38
 msgid "Send command to a device"
 msgstr "Enviar orden a un dispositivo"
 
-#: constants.py:30
+#: constants.py:39
 msgid "Send an email"
 msgstr "Enviar un email"
 
-#: constants.py:31
+#: constants.py:40
 msgid "None"
 msgstr "Ninguno"
 
-#: constants.py:40
+#: constants.py:50
 msgid "Heating control"
 msgstr "Control de la calefacción"
 
-#: constants.py:41
+#: constants.py:51
 msgid "Garden control"
 msgstr "Control del jardín"
 
-#: constants.py:42
+#: constants.py:52
 msgid "Access control"
 msgstr "Control de accesos"
 
-#: forms.py:52
+#: constants.py:53
+msgid "Electric system"
+msgstr "Sistema eléctrico"
+
+#: forms.py:53
 msgid "General"
 msgstr ""
 
-#: forms.py:60
+#: forms.py:62
 msgid "Slaves WIFI network"
 msgstr "Red WIFI de los dispositivos"
 
-#: forms.py:67
+#: forms.py:69
 msgid "LAN network"
 msgstr "Red LAN"
 
-#: forms.py:72
+#: forms.py:74
 msgid "Security"
 msgstr "Seguridad"
 
-#: forms.py:81 forms.py:306
+#: forms.py:83
+msgid "Telegram Features"
+msgstr ""
+
+#: forms.py:87
+msgid "OpenWeatherMap Features"
+msgstr ""
+
+#: forms.py:90
+msgid "REE ESIOS Features"
+msgstr ""
+
+#: forms.py:93
+msgid "Iberdrola Features"
+msgstr ""
+
+#: forms.py:97 forms.py:330
 msgid "Save"
 msgstr "Guardar"
 
-#: forms.py:118
+#: forms.py:134
 msgid "Select the source variable"
 msgstr "Selecciona la variable origen"
 
-#: forms.py:119
+#: forms.py:135
+msgid "Select the time-span for the calculation"
+msgstr "Selecciona el marco temporal del cálculo"
+
+#: forms.py:136
 msgid "Select the calculation update frequency"
 msgstr "Selecciona la frecuencia de refresco del cálculo"
 
-#: forms.py:120
+#: forms.py:137
 msgid "Select the calculation"
 msgstr "Selecciona el cálculo"
 
-#: forms.py:127
+#: forms.py:144
 msgid "Submit"
 msgstr "Enviar"
 
-#: forms.py:224
+#: forms.py:242
 msgid "Execution order"
 msgstr "Orden de ejecución"
 
-#: forms.py:225
-msgid "Prefix for the value"
-msgstr "Prefijo para el valor"
+#: forms.py:243
+msgid "Prefix for the variable"
+msgstr "Prefijo para la variable"
 
-#: forms.py:226
-msgid "Value"
-msgstr "Valor"
+#: forms.py:244
+msgid "Variable"
+msgstr "Variable"
 
-#: forms.py:227
+#: forms.py:245
 msgid "Operator"
 msgstr "Operador"
 
-#: forms.py:228
+#: forms.py:246
 msgid "Prefix for the setpoint"
 msgstr "Prefijo para la consigna"
 
-#: forms.py:229
+#: forms.py:247
 msgid "Setpoint"
 msgstr "Consigna"
 
-#: forms.py:230
+#: forms.py:248
 msgid "Setpoint is a constant"
 msgstr "La consigna es una constante"
 
-#: forms.py:231
+#: forms.py:249
 msgid "Constant value"
 msgstr "Valor de la constante"
 
-#: forms.py:232
+#: forms.py:250
 msgid "Hysteresis value"
 msgstr "Valor de histéresis"
 
-#: forms.py:233
+#: forms.py:251
 msgid "Operator with the next rule"
 msgstr "Operador para la siguiente regla"
 
-#: forms.py:243
+#: forms.py:261
 msgid "This field cannot be left empty if 'IsConstant' has been selected"
 msgstr ""
 "Este campo no se puede dejar vacío si 'El segundo término es una constante' "
 "está seleccionado"
 
-#: forms.py:246
+#: forms.py:264
 msgid "This field cannot be left empty if 'IsConstant' is not selected"
 msgstr ""
 "Este campo no se puede dejar vacío si 'El segundo término es una constante' "
 "no está seleccionado"
 
-#: forms.py:256
+#: forms.py:274
 msgid "Select the action"
 msgstr "Selecciona la acción"
 
-#: forms.py:258
+#: forms.py:276
 msgid "Select the user to send the email to"
 msgstr "Selecciona el usuario al que enviar el email"
 
-#: forms.py:260
+#: forms.py:278
 msgid "Select the output"
 msgstr "Selecciona la salida"
 
-#: forms.py:262
+#: forms.py:280
 msgid "Select the output value when the rule is True"
 msgstr "Selecciona el valor de la salida cuando la regla sea Verdadera"
 
-#: forms.py:264
+#: forms.py:282
 msgid "Select the device to send the order to"
 msgstr "Selecciona el dispositivo al que enviar la orden"
 
-#: forms.py:266
+#: forms.py:284
 msgid "Select the order to send"
 msgstr "Selecciona la orden a enviar"
 
-#: forms.py:288
+#: forms.py:285
+msgid "Send notification when the rule evaluates to True"
+msgstr "Mandar una notificación cuando la regla se evalúa a True"
+
+#: forms.py:286
+msgid "Send notification when the rule evaluates to False"
+msgstr "Mandar una notificación cuando la regla se evalúa a False"
+
+#: forms.py:310
 msgid "Set the name for the automation rule"
 msgstr "Introduce el nombre de la regla de automatización"
 
-#: forms.py:290
+#: forms.py:312
 msgid "Select the rule evaluation in case of error"
 msgstr "Selecciona el valor de la evaluación en el caso de error"
 
-#: forms.py:291
+#: forms.py:313
 msgid "Execute rule only on the transitions from FALSE to TRUE and viceversa"
-msgstr "Ejecutar la regla solo en el caso de transiciones de FALSO a VERDADERO y viceversa"
+msgstr ""
+"Ejecutar la regla solo en el caso de transiciones de FALSO a VERDADERO y "
+"viceversa"
 
-#: forms.py:292
+#: forms.py:314
 msgid "Select the previous rule to be chained"
 msgstr "Selecciona la regla anterior a encadenar"
 
-#: forms.py:294
+#: forms.py:316
 msgid "Select the operator between the previous rule and this one"
 msgstr "Selecciona el operador entre la regla anterior y esta"
 
-#: forms.py:321
+#: forms.py:348
 msgid "This field cannot be left empty if a previous rule has been selected"
 msgstr ""
 "Este campo no se puede dejar vacío si se ha seleccionado una regla anterior"
 
-#: forms.py:326 forms.py:341
+#: forms.py:353 forms.py:368
 msgid ""
 "This field cannot be left empty if 'Activate output on Main' is selected as "
 "action"
@@ -215,7 +253,7 @@ msgstr ""
 "Este campo no se puede dejar vacío si 'Activar salida de la unidad "
 "Principal' está seleccionada como acción"
 
-#: forms.py:331 forms.py:334
+#: forms.py:358 forms.py:361
 msgid ""
 "This field cannot be left empty if Send command to a device is selected as "
 "action"
@@ -223,410 +261,514 @@ msgstr ""
 "Este campo no se puede dejar vacío si 'Mandar una orden a un dispositivo' "
 "está seleccionada como acción"
 
-#: models.py:57
+#: models.py:66
 msgid "Settings"
 msgstr "Parámetros"
 
-#: models.py:59
+#: models.py:68
 msgid "Name of the installation"
 msgstr "Nombre de la instalación"
 
-#: models.py:60
+#: models.py:69
 msgid "Descriptive name for the installation."
 msgstr "Descripción de la instalación."
 
-#: models.py:61
+#: models.py:70
 msgid "Name of the domain to access the application"
 msgstr "Nombre del dominio con el que se accede a la aplicación"
 
-#: models.py:62
+#: models.py:71
 msgid ""
 "This is the DNS address that gives access to the application from the "
 "internet."
 msgstr "Es la dirección DNS que redirecciona a la aplicación desde internet."
 
-#: models.py:65
+#: models.py:74
 msgid "Autodetect new software releases"
 msgstr "Detectar automáticamente nuevas versiones de la aplicación"
 
-#: models.py:66
+#: models.py:75
 msgid "Automatically checks the repository for new software"
 msgstr "Chequear automáticamente el repositorio en busqueda de nuevo software"
 
-#: models.py:67
+#: models.py:76
 msgid "Apply automatically new software releases"
 msgstr "Aplicar automáticamente las nuevas versiones de código"
 
-#: models.py:68
+#: models.py:77
 msgid "Automatically updates to (and applies) the latest software"
-msgstr "Se actualiza automáticamente a la última version de software disponible"
+msgstr ""
+"Se actualiza automáticamente a la última version de software disponible"
 
-#: models.py:69
+#: models.py:78
 msgid "Code of the version of the application framework"
 msgstr "Código de la versión de la aplicación"
 
-#: models.py:71
+#: models.py:80
+msgid "Follow the beta development versions"
+msgstr "Seguir las versiones beta de desarrollo"
+
+#: models.py:81
+msgid "Tracks the development versions (may result in unstable behaviour)"
+msgstr "Instala las versiones de desarrollo (puede resultar en funcionamiento erróneo)"
+
+#: models.py:82
 msgid "NTP server restart time delta"
 msgstr "Error de tiempo para reiniciar el servidor NTP"
 
-#: models.py:72
+#: models.py:83
 msgid ""
 "Time difference in minutes that will trigger a restart of the NTP server"
-msgstr "La diferencia de tiempo en minutos que lanzará la orden para reiniciar el servidor NTP"
+msgstr ""
+"La diferencia de tiempo en minutos que lanzará la orden para reiniciar el "
+"servidor NTP"
 
-#: models.py:74
+#: models.py:85
 msgid "WIFI network identificator"
 msgstr "Identificador de la red WIFI"
 
-#: models.py:75
+#: models.py:86
 msgid ""
 "This is the name of the WiFi network generated to communicate with the slaves"
-msgstr "El nombre de la red WIFI que se generará para comunicarse con los dispositivos"
+msgstr ""
+"El nombre de la red WIFI que se generará para comunicarse con los "
+"dispositivos"
 
-#: models.py:77
+#: models.py:88
 msgid "WIFI network passphrase"
 msgstr "Clave de la red WIFI"
 
-#: models.py:78
+#: models.py:89
 msgid "This is the encryption password for the WIFI network"
 msgstr "Es la contraseña de encriptación de la red WIFI"
 
-#: models.py:80
+#: models.py:91
 msgid "IP address for the WIFI network"
 msgstr "Dirección IP de la red WIFI"
 
-#: models.py:81
+#: models.py:92
 msgid ""
 "This is the IP address for the WiFi network generated to communicate with "
 "the slaves"
 msgstr "Es la dirección IP de la red WIFI de dispositivos"
 
-#: models.py:83
+#: models.py:94
 msgid "WIFI network mask"
 msgstr "Máscara de la red WIFI"
 
-#: models.py:84
+#: models.py:95
 msgid ""
 "This is the mask of the WiFi network generated to communicate with the slaves"
-msgstr ""
+msgstr "Máscara de la red WiFi generada para comunicarse con los dispositivos esclavos"
 
-#: models.py:86
+#: models.py:97
 msgid "WIFI network gateway"
 msgstr "Gateway de la red WIFI"
 
-#: models.py:87
+#: models.py:98
 msgid ""
 "This is the gateway for the WiFi network generated to communicate with the "
 "slaves"
-msgstr ""
+msgstr "Gateway de la red WiFi generada para comunicarse con los esclavos"
 
-#: models.py:90
+#: models.py:101
 msgid "IP address for the LAN network"
 msgstr "Dirección IP de la red LAN"
 
-#: models.py:91
+#: models.py:102
 msgid ""
 "This is the IP for the LAN network that is providing the internet access."
-msgstr ""
+msgstr "La dirección IP de la red LAN sobre la que se accede a internet."
 
-#: models.py:93
+#: models.py:104
 msgid "Mask for the LAN network"
 msgstr "Máscara de la red LAN"
 
-#: models.py:94
+#: models.py:105
 msgid ""
 "This is the mask for the LAN network that is providing the internet access."
-msgstr ""
+msgstr "Máscara de la red LAN sobre la que se accede a internet."
 
-#: models.py:96
+#: models.py:107
 msgid "Gateway of the LAN network"
 msgstr "Gateway de la red LAN"
 
-#: models.py:97
+#: models.py:108
 msgid ""
 "This is the gateway IP of the LAN network that is providing the internet "
 "access."
-msgstr ""
+msgstr "Dirección IP del gateway de la red LAN sobre la que se accede a internet."
 
-#: models.py:100
+#: models.py:111
 msgid "Enable automatic IP blocking"
 msgstr "Habilitar bloqueo automático de IPs"
 
-#: models.py:101
+#: models.py:112
 msgid ""
 "Feature that blocks automatically WAN IPs with more than certain denied "
 "attempts in 24 h."
-msgstr ""
+msgstr "Bloquea automáticamente IP de internet que traten de acceder ilegítimamente al servidor."
 
-#: models.py:102
+#: models.py:113
 msgid "Number of denied attempts needed to block an IP"
 msgstr "Número de intentos rechazados para bloquear una IP"
 
-#: models.py:103
+#: models.py:114
 msgid ""
 "The number of denied accesses in 24h that will result in an IP being blocked."
-msgstr ""
+msgstr "El número de accesos denegados en 24h que motivarán el bloqueo de una IP."
 
-#: models.py:104
+#: models.py:115
 msgid "Require credentials to access the server"
 msgstr "Requerir credenciales para acceder al servidor"
 
-#: models.py:105
+#: models.py:116
 msgid ""
 "Increased access security by including an additional barrier on the proxy."
-msgstr ""
+msgstr "Seguridad avanzada incluyendo una barrera adicional en el proxy."
 
-#: models.py:106
+#: models.py:117
 msgid "Username 1"
 msgstr ""
 
-#: models.py:107 models.py:111
+#: models.py:118 models.py:122
 msgid "First username enabled to get through the proxy barrier."
-msgstr ""
+msgstr "Primer usuario habilitado para atravesar la barrera del proxy."
 
-#: models.py:108
+#: models.py:119
 msgid "Password for username 1"
 msgstr ""
 
-#: models.py:109 models.py:113
+#: models.py:120 models.py:124
 msgid "First username password."
 msgstr ""
 
-#: models.py:110
+#: models.py:121
 msgid "Username 2"
 msgstr ""
 
-#: models.py:112
+#: models.py:123
 msgid "Password for username 2"
 msgstr ""
 
-#: models.py:173
+#: models.py:126
+msgid "Token for the telegram bot"
+msgstr ""
+
+#: models.py:127
+msgid "The token assigned by the BothFather"
+msgstr "El token generado por el BotFather de Telegram"
+
+#: models.py:129
+msgid "Chat ID"
+msgstr ""
+
+#: models.py:130
+msgid "The ID of the chat to use"
+msgstr ""
+
+#: models.py:132
+msgid "Iberdrola username"
+msgstr ""
+
+#: models.py:133
+msgid "Username registered into the Iberdrola Distribucion webpage"
+msgstr ""
+
+#: models.py:134
+msgid "Iberdrola password"
+msgstr ""
+
+#: models.py:135
+msgid "Password registered on the Iberdrola Distribucion webpage"
+msgstr ""
+
+#: models.py:137
+msgid "Token for the openweathermap page"
+msgstr ""
+
+#: models.py:138
+msgid ""
+"The token assigned by the OpenWeatherMap service. You should ask yours "
+"following https://openweathermap.org/appid"
+msgstr "Token generado por el servicio OpenWeatherMap. Solicita el tuyo en  https://openweathermap.org/appid"
+
+#: models.py:140
+msgid "Token for the ESIOS page"
+msgstr "Token para la página de ESIOS"
+
+#: models.py:141
+msgid ""
+"The token assigned by the ESIOS service. You should ask for yours to: "
+"Consultas Sios <consultasios@ree.es>"
+msgstr "El token generado por el servicio ESIOS. Solicita el tuyo a: Consultas Sios <consultasios@ree.es>"
+
+#: models.py:281 models.py:317
+msgid "Error opening the file "
+msgstr "Error abriendo el archivo "
+
+#: models.py:358
 msgid "Permission"
 msgstr "Permiso"
 
-#: models.py:174
+#: models.py:359
 msgid "Permissions"
 msgstr "Permisos"
 
-#: models.py:189
+#: models.py:375
 msgid "Subsystem"
 msgstr "Subsistema"
 
-#: models.py:190
+#: models.py:376
 msgid "Subsystems"
 msgstr "Subsistemas"
 
-#: models.py:209
+#: models.py:395
+msgid "Additional calculation"
+msgstr "Cálculo adicional"
+
+#: models.py:396
+msgid "Additional calculations"
+msgstr "Cálculos adicionales"
+
+#: models.py:399
+msgid "An hour"
+msgstr "Una hora"
+
+#: models.py:400
+msgid "A day"
+msgstr "Un dia"
+
+#: models.py:401
+msgid "A week"
+msgstr "Una semana"
+
+#: models.py:402
+msgid "A month"
+msgstr "Un mes"
+
+#: models.py:406
 msgid "With every new value"
 msgstr "Con cada nuevo valor"
 
-#: models.py:210
+#: models.py:407
 msgid "Every hour"
 msgstr "Cada hora"
 
-#: models.py:211
-msgid "Every day"
-msgstr "Cada dia"
+#: models.py:408
+msgid "Every day at 0h"
+msgstr "Cada dia a las 0h"
 
-#: models.py:212
+#: models.py:409
 msgid "Every week"
 msgstr "Cada semana"
 
-#: models.py:213
+#: models.py:410
 msgid "Every month"
 msgstr "Cada mes"
 
-#: models.py:217
+#: models.py:414
 msgid "Duty cycle OFF"
 msgstr "Ciclo de trabajo a OFF"
 
-#: models.py:218
+#: models.py:415
 msgid "Duty cycle ON"
 msgstr "Ciclo de trabajo a ON"
 
-#: models.py:219
+#: models.py:416
 msgid "Mean value"
 msgstr "Valor medio"
 
-#: models.py:220
+#: models.py:417
 msgid "Max value"
 msgstr "Valor máximo"
 
-#: models.py:221
+#: models.py:418
 msgid "Min value"
 msgstr "Valor mínimo"
 
-#: models.py:222
+#: models.py:419
 msgid "Cummulative sum"
 msgstr "Suma acumulada"
 
-#: models.py:223
+#: models.py:420
 msgid "Integral over time"
 msgstr "Integral temporal"
 
-#: models.py:228
+#: models.py:425
+msgid "What is the time span for the calculation"
+msgstr "El marco temporal para el cálculo"
+
+#: models.py:426
 msgid "How often the calculation will be updated"
 msgstr "Frecuencia con la que se actualizará el cálculo"
 
-#: models.py:399
+#: models.py:602
 msgid "Automation variable"
 msgstr "Variable de automatización"
 
-#: models.py:400
+#: models.py:603
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:408
+#: models.py:611
 msgid "Units of the variable."
 msgstr "Unidades de la variable"
 
-#: models.py:518
+#: models.py:790
 msgid "Automation var weekly schedule"
 msgstr "Programación semanal de variables de automatización"
 
-#: models.py:519
+#: models.py:791
 msgid "Automation var weekly schedules"
 msgstr "Programaciones semanales de variables de automatización"
 
-#: models.py:672
+#: models.py:949
 msgid "Automation var hourly schedule"
 msgstr "Programación horaria de variables de automatización"
 
-#: models.py:673
+#: models.py:950
 msgid "Automation var hourly schedules"
 msgstr "Programaciones horarias de variables de automatización"
 
-#: models.py:676
+#: models.py:953
 msgid "Monday"
 msgstr "Lunes"
 
-#: models.py:677
+#: models.py:954
 msgid "Tuesday"
 msgstr "Martes"
 
-#: models.py:678
+#: models.py:955
 msgid "Wednesday"
 msgstr "Miércoles"
 
-#: models.py:679
+#: models.py:956
 msgid "Thursday"
 msgstr "Jueves"
 
-#: models.py:680
+#: models.py:957
 msgid "Friday"
 msgstr "Viernes"
 
-#: models.py:681
+#: models.py:958
 msgid "Saturday"
 msgstr "Sábado"
 
-#: models.py:682
+#: models.py:959
 msgid "Sunday"
 msgstr "Domingo"
 
-#: models.py:685
+#: models.py:962
 msgid "LOW"
 msgstr "BAJO"
 
-#: models.py:686
+#: models.py:963
 msgid "HIGH"
 msgstr "ALTO"
 
-#: models.py:730
+#: models.py:1008
 msgid "Thermostat"
 msgstr "Termostato"
 
-#: models.py:731
+#: models.py:1009
 msgid "Thermostats"
 msgstr "Termostatos"
 
-#: models.py:733
+#: models.py:1011
 msgid "The rule item that the thermostat is linked to."
 msgstr "El item de automatización al que el termostato está ligado."
 
-#: models.py:753 models.py:845
+#: models.py:1036 models.py:1143
 msgid "AND"
 msgstr ""
 
-#: models.py:754 models.py:846
+#: models.py:1037 models.py:1144
 msgid "OR"
 msgstr ""
 
-#: models.py:757
+#: models.py:1040
 msgid "Order of execution"
 msgstr "Orden de ejecución"
 
-#: models.py:832
+#: models.py:1130
 msgid "Automation expression"
 msgstr "Expresión de automatización"
 
-#: models.py:833
+#: models.py:1131
 msgid "Automation expressions"
 msgstr "Expresiones de automatización"
 
-#: models.py:837
+#: models.py:1135
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:838
+#: models.py:1136
 msgid "Automation rules"
 msgstr "Reglas de automatización"
 
-#: models.py:849
+#: models.py:1147
 msgid "False"
 msgstr "Falso"
 
-#: models.py:850
+#: models.py:1148
 msgid "True"
 msgstr "Verdadero"
 
-#: settings/base.py:140
+#: settings/base.py:148
 msgid "Spanish"
 msgstr "Español"
 
-#: settings/base.py:141
+#: settings/base.py:149
 msgid "English"
 msgstr "Inglés"
 
-#: tasks.py:55
+#: tasks.py:71
 msgid "DBs uploaded to GDrive"
 msgstr "BBDD subidas a GDrive"
 
-#: tasks.py:57
+#: tasks.py:73
 msgid "Unable to autenticate to GDrive"
 msgstr "Imposible la autenticación con Google Drive"
 
-#: views.py:47 views.py:54
+#: views.py:48 views.py:55
 msgid " saved OK"
 msgstr " guardado OK"
 
-#: views.py:130
+#: views.py:140
 msgid "Changes updated OK"
 msgstr "Los cambios se han actualizado OK"
 
-#: views.py:132
+#: views.py:142
 msgid "Something is wrong with the data provided"
 msgstr "Algo está mal con los datos proporcionados"
 
-#: views.py:146
+#: views.py:162
 msgid "Timezone has been set to "
 msgstr "La zona horaria se ha cambiado a "
 
-#: views.py:250
+#: views.py:266
 msgid "Google Drive credentials have been stored"
 msgstr "Las credenciales de Google Drive se han almacenado"
 
-#: views.py:252
+#: views.py:268
 msgid "Google Drive permissions were not granted"
 msgstr "No se han otorgado los permisos de acceso de Google Drive"
 
-#: views.py:267
+#: views.py:303
 msgid "Google Drive credentials have been deleted"
 msgstr "Las credenciales de Google Drive se han eliminado"
 
-#: views.py:277
+#: views.py:321
 msgid "Gunicorn processes restarted"
 msgstr "Relanzados los procesos Gunicorn"
+
+#: views.py:336
+msgid "Sockets removed"
+msgstr ""
+
+#~ msgid "Value"
+#~ msgstr "Valor"
 
 #~ msgid "First term"
 #~ msgstr "Primer término"
@@ -653,9 +795,6 @@ msgstr "Relanzados los procesos Gunicorn"
 #~ msgstr ""
 #~ "Actualizando la BBDD con las nuevas migraciones. Relájate, puede llevarle "
 #~ "un rato"
-
-#~ msgid "Error applying the migration: "
-#~ msgstr "Error ejecutando la migración: "
 
 #~ msgid "Restart processes to apply the new changes"
 #~ msgstr "Reinicia los procesos para aplicar los nuevos cambios"
@@ -716,9 +855,6 @@ msgstr "Relanzados los procesos Gunicorn"
 
 #~ msgid "Main device vars"
 #~ msgstr "Variables de la unidad principal"
-
-#~ msgid "Variable "
-#~ msgstr "Variable "
 
 #~ msgid "The weekly schedule "
 #~ msgstr "La programación semanal "

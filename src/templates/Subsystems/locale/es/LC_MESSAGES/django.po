@@ -4,12 +4,13 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #: Subsystems/home.html:29 Subsystems/home.html:33 Subsystems/home.html:37
+#: Subsystems/home.html:41
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-01 12:47+0200\n"
+"POT-Creation-Date: 2019-03-08 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,7 +123,11 @@ msgstr "JARDIN"
 msgid "ACCESS"
 msgstr "ACCESOS"
 
-#: Subsystems/home.html:45 Subsystems/subsystem.html:76
+#: Subsystems/home.html:40
+msgid "ELECTRIC"
+msgstr ""
+
+#: Subsystems/home.html:49 Subsystems/subsystem.html:85
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor logueate si quieres hacer algo mas..."
 
@@ -135,13 +140,17 @@ msgid "VARIABLES"
 msgstr ""
 
 #: Subsystems/subsystem.html:46
+msgid "THERMOSTATS"
+msgstr ""
+
+#: Subsystems/subsystem.html:55
 msgid "SCHEDULES"
 msgstr "PROGRAMACIONES"
 
-#: Subsystems/subsystem.html:55
+#: Subsystems/subsystem.html:64
 msgid "MASTER UNIT I/Os"
 msgstr "ENTRADAS/SALIDAS"
 
-#: Subsystems/subsystem.html:63
+#: Subsystems/subsystem.html:72
 msgid "EVENTS AND ALARMS"
 msgstr "EVENTOS Y ALARMAS"

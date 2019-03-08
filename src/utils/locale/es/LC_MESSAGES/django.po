@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-01 12:47+0200\n"
+"POT-Creation-Date: 2019-03-08 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,63 +18,111 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: BBDD.py:136
+#: BBDD.py:143
 msgid "Error in compact_table: "
 msgstr ""
 
-#: GitHub.py:23
-msgid "There is a new version to download. Version code: "
+#: GitHub.py:12
+msgid "Checking-out to the development branch"
 msgstr ""
 
-#: GitHub.py:31
+#: GitHub.py:30
+msgid "There is a new development version to download."
+msgstr ""
+
+#: GitHub.py:33
+msgid "You are already on the latest development version "
+msgstr ""
+
+#: GitHub.py:49
+msgid "There is a new release version to download. Version code: "
+msgstr ""
+
+#: GitHub.py:52
+msgid "You are already on the latest release version: "
+msgstr ""
+
+#: GitHub.py:59
 msgid "Checking for updates..."
 msgstr ""
 
-#: GitHub.py:45
+#: GitHub.py:73
 #, python-format
-msgid "%s the latest source revision '%s'."
-msgstr ""
-
-#: GitHub.py:46
-msgid "Already at"
-msgstr ""
-
-#: GitHub.py:46
-msgid "Updated to"
-msgstr ""
-
-#: GitHub.py:55
-msgid "Error checking migrations: "
-msgstr ""
-
-#: GitHub.py:61
-msgid "Updating DB with new migrations. Relax, it may take a while"
-msgstr ""
-
-#: GitHub.py:67
-msgid "Django DB updated OK"
-msgstr ""
-
-#: GitHub.py:69
-msgid "Error applying the migration: "
+msgid "%s the latest development revision '%s'."
 msgstr ""
 
 #: GitHub.py:74
+msgid "Already at"
+msgstr ""
+
+#: GitHub.py:74
+msgid "Updated to"
+msgstr ""
+
+#: GitHub.py:83 GitHub.py:169
+msgid "Error checking migrations: "
+msgstr ""
+
+#: GitHub.py:89 GitHub.py:175
+msgid "Updating DB with new migrations. Relax, it may take a while"
+msgstr ""
+
+#: GitHub.py:95 GitHub.py:181
+msgid "Django DB updated OK"
+msgstr ""
+
+#: GitHub.py:97 GitHub.py:183
+msgid "Error applying the migration: "
+msgstr ""
+
+#: GitHub.py:106 GitHub.py:193
+msgid "Static files copied"
+msgstr ""
+
+#: GitHub.py:108 GitHub.py:195
+msgid "Error copying static files - "
+msgstr ""
+
+#: GitHub.py:110 GitHub.py:197
 msgid "Restart processes to apply the new changes"
 msgstr ""
 
-#: GitHub.py:79
+#: GitHub.py:114 GitHub.py:205
 msgid "Problem occurred while updating program."
 msgstr ""
 
-#: GitHub.py:120
-msgid "Attemping to run update again..."
+#: GitHub.py:131
+msgid "Attempting to run update again..."
 msgstr ""
 
-#: GitHub.py:123
+#: GitHub.py:134 GitHub.py:225
 msgid "Unable to reset local copy to current git branch."
 msgstr ""
 
-#: GitHub.py:129
+#: GitHub.py:140 GitHub.py:231
 msgid "Please make sure that you have a 'git' package installed. Error: "
+msgstr ""
+
+#: GitHub.py:148
+msgid "Downloading the release version "
+msgstr ""
+
+#: GitHub.py:156
+msgid "Checking-out to the release version "
+msgstr ""
+
+#: GitHub.py:201
+msgid "Error checking-out to "
+msgstr ""
+
+#: GitHub.py:222
+msgid "Attemping to run update again..."
+msgstr ""
+
+#: Nginx.py:60
+msgid "Error opening the file "
+msgstr ""
+
+#: Watchdogs.py:65
+msgid "Devices polling watchdog forced a reset"
 msgstr ""

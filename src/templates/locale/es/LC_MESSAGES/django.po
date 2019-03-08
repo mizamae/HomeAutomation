@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-01 12:47+0200\n"
+"POT-Creation-Date: 2019-03-08 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,14 +18,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#: DeviceGraph.html:104
-msgid "Graphs for the device "
-msgstr "Gr&aacute;ficas del dispositivo "
-
-#: DeviceGraph.html:106
-msgid "Graphs from a device"
-msgstr "Gr&aacute;ficas del dispositivo"
 
 #: GPIOs.html:36
 msgid "List of GPIOs"
@@ -318,15 +310,15 @@ msgstr "RESET"
 
 #: configuration.html:29
 msgid "Click to restart the Gunicorn processes."
-msgstr ""
+msgstr "Clicka para reiniciar los procesos"
 
 #: configuration.html:32
 msgid "SOFTWARE UPDATE"
-msgstr ""
+msgstr "ACTUALIZACION DE SOFTWARE"
 
 #: configuration.html:33
 msgid "Click to look for newer versions in the repository."
-msgstr ""
+msgstr "Clicka para buscar nuevas versiones en el repositorio"
 
 #: configuration.html:36
 msgid "DB BACKUP"
@@ -334,15 +326,15 @@ msgstr ""
 
 #: configuration.html:38
 msgid "Backup is configured. Click to remove it."
-msgstr ""
+msgstr "El Backup esta configurado. Clicka para eliminarlo."
 
 #: configuration.html:40
 msgid "Backup is not configured. Click to configure."
-msgstr ""
+msgstr "El Backup no esta configurado. Clicka para configurarlo."
 
 #: configuration.html:44
 msgid "TIMEZONE SET"
-msgstr ""
+msgstr "CONFIGURACION ZONA HORARIA"
 
 #: configuration.html:45
 msgid "Click to set the timezone for the system."
@@ -350,11 +342,11 @@ msgstr "Aqu&iacute; puedes cambiar la zona horaria"
 
 #: configuration.html:49
 msgid "SETTINGS"
-msgstr ""
+msgstr "CONFIGURACION"
 
 #: configuration.html:50
 msgid "Click to configure the site settings."
-msgstr ""
+msgstr "Clicka para configurar los ajustes basicos."
 
 #: home.html:31
 msgid "APPLICATION SERVER DASHBOARD"
@@ -598,6 +590,12 @@ msgstr "Precisi&oacute;n [m]"
 #: trackUsers.html:51
 msgid "Last update"
 msgstr "Ultima actualizaci&oacute;n"
+
+#~ msgid "Graphs for the device "
+#~ msgstr "Gr&aacute;ficas del dispositivo "
+
+#~ msgid "Graphs from a device"
+#~ msgstr "Gr&aacute;ficas del dispositivo"
 
 #~ msgid "Value"
 #~ msgstr "Valor"

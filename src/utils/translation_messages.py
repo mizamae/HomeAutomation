@@ -49,9 +49,9 @@ for app in dirs:
         print(bcolors.WARNING + locale_path + bcolors.ENDC)
         os.chdir(app_path)
         if command==0:
-            os.system("python3 /usr/local/lib/python3.4/dist-packages/django/bin/django-admin.py makemessages -l "+ language)
+            os.system("python3 /usr/local/lib/python3.5/dist-packages/django/bin/django-admin.py makemessages -l "+ language)
         elif command==1:
-            os.system("python3 /usr/local/lib/python3.4/dist-packages/django/bin/django-admin.py compilemessages")
+            os.system("python3 /usr/local/lib/python3.5/dist-packages/django/bin/django-admin.py compilemessages")
         os_app_dir=os.getcwd()
         os.chdir(os_base_dir)
 os.system("sudo chown -hR pi " + os_base_dir)
