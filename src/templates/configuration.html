@@ -49,6 +49,10 @@
 		{% trans "SETTINGS" as app_name %}
 		{% trans "Click to configure the site settings." as app_description %}
 		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.reset_system app_name=app_name app_description=app_description app_url="sitesettings" app_icon='site/img/settings.png' %}
+		
+		{% trans "GPS TRACK" as app_name %}
+		{% trans "Click to view the realtime position of the tracked users." as app_description %}
+		{% include "_appDashboard.html" with size="75" app_permission=perms.MainAPP.view_user_track app_name=app_name app_description=app_description app_url="viewUserUbication" app_icon='site/img/gps.png' %}
 	</div>
 	{% with panelID="accordion5" collapseID="collapse5" %}
 	{% with var_permission_main=perms.Events.view_events var_permission_view=perms.Events.view_events %}

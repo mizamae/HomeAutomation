@@ -361,6 +361,7 @@ class Permissions(models.Model):
             ("view_heating_subsystem", "Can view the Heating subsystem"),
             ("view_garden_subsystem", "Can view the Garden subsystem"),
             ("view_access_subsystem", "Can view the Access subsystem"),
+            ("view_user_track", "Can view the position of the tracked users"),
             ("reset_system", "Can force a reset of the system"),
             ("check_updates", "Can check for updates of the system"),
             ("view_devicesapp", "Can view the devicesAPP"),

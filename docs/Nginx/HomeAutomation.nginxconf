@@ -3,13 +3,6 @@ map $http_upgrade $connection_upgrade {
     '' close;
 }
 
-# Redirige de http://tudominio.com a https://tudominio.com
-#server {
-#        listen 80;
-#        server_name www.mizamae2.ddns.net mizamae2.ddns.net;
-#        rewrite ^ https://$server_name$request_uri? permanent;
-#}
-
 server{
     listen 80;
     server_name 192.168.0.160;
