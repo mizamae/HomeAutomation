@@ -34,6 +34,7 @@ def AutomationVariablesValueUpdated_handler(sender, **kwargs):
             for k,AVAR in enumerate(AVARs):
                 if Types[i]==DTYPE_DIGITAL:
                     value=1 if checkBit(number=Values[i],position=k) else 0
+                    AVAR.calculateDuty()
                 else:
                     value=Values[i]
                 AVAR.executeAutomationRules()

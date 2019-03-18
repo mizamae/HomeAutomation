@@ -178,7 +178,7 @@ class MainDeviceVars(models.Model):
             
             SignalVariableValueUpdated.send(sender='MainVars', timestamp=now,
                                                             Tags=[self.getRegistersDBTag(),],
-                                                            Values=[newValue,],Types=[None,],
+                                                            Values=[newValue,],Types=[self.DataType,],
                                                             DataTypes=[self.DataType,])
     
     def getEventsCode(self):
