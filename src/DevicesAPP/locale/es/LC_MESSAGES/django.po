@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-08 10:39+0100\n"
+"POT-Creation-Date: 2019-03-19 11:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -449,7 +449,8 @@ msgstr "El valor de la E/S \""
 
 #: models.py:590
 msgid "Only GPIOs defined as Input or Output can be registered to the DB"
-msgstr "Solo GPIOs definidos como Entrada o Salida pueden ser registradas en la BBDD"
+msgstr ""
+"Solo GPIOs definidos como Entrada o Salida pueden ser registradas en la BBDD"
 
 #: models.py:630
 msgid "Error in create_GPIO_table: "
@@ -458,7 +459,9 @@ msgstr ""
 #: models.py:878
 msgid ""
 "Unique identifier of the device type. Usually between 5 and 8 characters."
-msgstr "Identificador unico del tipo de dispositivo. Normalmente entre 5 y 8 caracteres."
+msgstr ""
+"Identificador unico del tipo de dispositivo. Normalmente entre 5 y 8 "
+"caracteres."
 
 #: models.py:880
 msgid ""
@@ -613,13 +616,17 @@ msgstr ". Debes registrarlo antes."
 msgid ""
 "Device did not responded OK to reset order. Reset it manually to apply the "
 "new configuration."
-msgstr "El dispositivo no ha respondido correctamente a la orden de reset. Resetéalo manualmente para aplicar la nueva configuración."
+msgstr ""
+"El dispositivo no ha respondido correctamente a la orden de reset. Resetéalo "
+"manualmente para aplicar la nueva configuración."
 
 #: models.py:1432
 msgid ""
 "Device did not acknowledge the \"SetConf\" order. Revise the Device source "
 "code."
-msgstr "El dispositivo no a confirmado la orden de SetConf. Revisa el código fuente del dispositivo."
+msgstr ""
+"El dispositivo no a confirmado la orden de SetConf. Revisa el código fuente "
+"del dispositivo."
 
 #: models.py:1508
 msgid "Order confirmed by device"
@@ -661,8 +668,8 @@ msgid ""
 "would trigger it every day."
 msgstr ""
 "Dias de la semana en los que se activará.  \"1-3\" lo activaría en Lun., "
-"Mar. y Mier. de la semana, \"1,3\" lo activaría solamente el Lun. y el Mier., "
-"\"*/2\" lo activaría cad ados dias, dejándolo en blanco o con \"*\" "
+"Mar. y Mier. de la semana, \"1,3\" lo activaría solamente el Lun. y el "
+"Mier., \"*/2\" lo activaría cad ados dias, dejándolo en blanco o con \"*\" "
 "lo activará todos los dias."
 
 #: models.py:1921
@@ -672,10 +679,9 @@ msgid ""
 "trigger every two months, leaving it blank or setting an \"*\" would trigger "
 "it every month."
 msgstr ""
-"Meses en los que se activará.  \"1-3\" lo activará en Ene., Febr. y "
-"Marz, \"1,3\" lo activará solamente en Ene. y Marz, \"*/2\" lo "
-"activará cada dos meses, dejándolo vacío o con \"*\" lo activará "
-"todos los meses."
+"Meses en los que se activará.  \"1-3\" lo activará en Ene., Febr. y Marz, "
+"\"1,3\" lo activará solamente en Ene. y Marz, \"*/2\" lo activará cada dos "
+"meses, dejándolo vacío o con \"*\" lo activará todos los meses."
 
 #: models.py:1927
 msgid ""
@@ -719,7 +725,9 @@ msgstr "Tramas"
 msgid ""
 "The cron expression that controls the polling. Only applies to cronned "
 "datagrams."
-msgstr "La expresión de temporización que controla el poleo. Solamente aplica a tramas de cron"
+msgstr ""
+"La expresión de temporización que controla el poleo. Solamente aplica a "
+"tramas de cron"
 
 #: models.py:1991
 msgid "Enables the datagram to be queried"

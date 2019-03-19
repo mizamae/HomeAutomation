@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-08 10:40+0100\n"
+"POT-Creation-Date: 2019-03-19 11:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -310,7 +310,9 @@ msgstr "Seguir las versiones beta de desarrollo"
 
 #: models.py:81
 msgid "Tracks the development versions (may result in unstable behaviour)"
-msgstr "Instala las versiones de desarrollo (puede resultar en funcionamiento erróneo)"
+msgstr ""
+"Instala las versiones de desarrollo (puede resultar en funcionamiento "
+"erróneo)"
 
 #: models.py:82
 msgid "NTP server restart time delta"
@@ -359,7 +361,9 @@ msgstr "Máscara de la red WIFI"
 #: models.py:95
 msgid ""
 "This is the mask of the WiFi network generated to communicate with the slaves"
-msgstr "Máscara de la red WiFi generada para comunicarse con los dispositivos esclavos"
+msgstr ""
+"Máscara de la red WiFi generada para comunicarse con los dispositivos "
+"esclavos"
 
 #: models.py:97
 msgid "WIFI network gateway"
@@ -397,7 +401,8 @@ msgstr "Gateway de la red LAN"
 msgid ""
 "This is the gateway IP of the LAN network that is providing the internet "
 "access."
-msgstr "Dirección IP del gateway de la red LAN sobre la que se accede a internet."
+msgstr ""
+"Dirección IP del gateway de la red LAN sobre la que se accede a internet."
 
 #: models.py:111
 msgid "Enable automatic IP blocking"
@@ -407,7 +412,9 @@ msgstr "Habilitar bloqueo automático de IPs"
 msgid ""
 "Feature that blocks automatically WAN IPs with more than certain denied "
 "attempts in 24 h."
-msgstr "Bloquea automáticamente IP de internet que traten de acceder ilegítimamente al servidor."
+msgstr ""
+"Bloquea automáticamente IP de internet que traten de acceder ilegítimamente "
+"al servidor."
 
 #: models.py:113
 msgid "Number of denied attempts needed to block an IP"
@@ -416,7 +423,8 @@ msgstr "Número de intentos rechazados para bloquear una IP"
 #: models.py:114
 msgid ""
 "The number of denied accesses in 24h that will result in an IP being blocked."
-msgstr "El número de accesos denegados en 24h que motivarán el bloqueo de una IP."
+msgstr ""
+"El número de accesos denegados en 24h que motivarán el bloqueo de una IP."
 
 #: models.py:115
 msgid "Require credentials to access the server"
@@ -491,7 +499,9 @@ msgstr ""
 msgid ""
 "The token assigned by the OpenWeatherMap service. You should ask yours "
 "following https://openweathermap.org/appid"
-msgstr "Token generado por el servicio OpenWeatherMap. Solicita el tuyo en  https://openweathermap.org/appid"
+msgstr ""
+"Token generado por el servicio OpenWeatherMap. Solicita el tuyo en  https://"
+"openweathermap.org/appid"
 
 #: models.py:140
 msgid "Token for the ESIOS page"
@@ -501,7 +511,9 @@ msgstr "Token para la página de ESIOS"
 msgid ""
 "The token assigned by the ESIOS service. You should ask for yours to: "
 "Consultas Sios <consultasios@ree.es>"
-msgstr "El token generado por el servicio ESIOS. Solicita el tuyo a: Consultas Sios <consultasios@ree.es>"
+msgstr ""
+"El token generado por el servicio ESIOS. Solicita el tuyo a: Consultas Sios "
+"<consultasios@ree.es>"
 
 #: models.py:281 models.py:317
 msgid "Error opening the file "
@@ -515,203 +527,218 @@ msgstr "Permiso"
 msgid "Permissions"
 msgstr "Permisos"
 
-#: models.py:375
+#: models.py:376
 msgid "Subsystem"
 msgstr "Subsistema"
 
-#: models.py:376
+#: models.py:377
 msgid "Subsystems"
 msgstr "Subsistemas"
 
-#: models.py:395
+#: models.py:396
 msgid "Additional calculation"
 msgstr "Cálculo adicional"
 
-#: models.py:396
+#: models.py:397
 msgid "Additional calculations"
 msgstr "Cálculos adicionales"
 
-#: models.py:399
+#: models.py:400
 msgid "An hour"
 msgstr "Una hora"
 
-#: models.py:400
+#: models.py:401
 msgid "A day"
 msgstr "Un dia"
 
-#: models.py:401
+#: models.py:402
 msgid "A week"
 msgstr "Una semana"
 
-#: models.py:402
+#: models.py:403
 msgid "A month"
 msgstr "Un mes"
 
-#: models.py:406
+#: models.py:407
 msgid "With every new value"
 msgstr "Con cada nuevo valor"
 
-#: models.py:407
+#: models.py:408
 msgid "Every hour"
 msgstr "Cada hora"
 
-#: models.py:408
+#: models.py:409
 msgid "Every day at 0h"
 msgstr "Cada dia a las 0h"
 
-#: models.py:409
+#: models.py:410
 msgid "Every week"
 msgstr "Cada semana"
 
-#: models.py:410
+#: models.py:411
 msgid "Every month"
 msgstr "Cada mes"
 
-#: models.py:414
+#: models.py:415
 msgid "Duty cycle OFF"
 msgstr "Ciclo de trabajo a OFF"
 
-#: models.py:415
+#: models.py:416
 msgid "Duty cycle ON"
 msgstr "Ciclo de trabajo a ON"
 
-#: models.py:416
+#: models.py:417
 msgid "Mean value"
 msgstr "Valor medio"
 
-#: models.py:417
+#: models.py:418
 msgid "Max value"
 msgstr "Valor máximo"
 
-#: models.py:418
+#: models.py:419
 msgid "Min value"
 msgstr "Valor mínimo"
 
-#: models.py:419
+#: models.py:420
 msgid "Cummulative sum"
 msgstr "Suma acumulada"
 
-#: models.py:420
+#: models.py:421
 msgid "Integral over time"
 msgstr "Integral temporal"
 
-#: models.py:425
+#: models.py:426
 msgid "What is the time span for the calculation"
 msgstr "El marco temporal para el cálculo"
 
-#: models.py:426
+#: models.py:427
 msgid "How often the calculation will be updated"
 msgstr "Frecuencia con la que se actualizará el cálculo"
 
-#: models.py:602
+#: models.py:603
 msgid "Automation variable"
 msgstr "Variable de automatización"
 
-#: models.py:603
+#: models.py:604
 msgid "Automation variables"
 msgstr "Variables de automatización"
 
-#: models.py:611
+#: models.py:612
 msgid "Units of the variable."
 msgstr "Unidades de la variable"
 
-#: models.py:790
+#: models.py:645
+#, python-format
+msgid "The variable \"%s\" has kept the value of %i during %ih, %im and %is"
+msgstr "La variable \"%s\" ha mantenido el valor %i durante %i h, %i min y %i seg"
+
+#: models.py:647
+#, python-format
+msgid "The variable \"%s\" has kept the value of %i during %im and %is"
+msgstr "La variable \"%s\" ha mantenido el valor %i durante %i min y %i seg"
+
+#: models.py:649
+#, python-format
+msgid "The variable \"%s\" has kept the value of %i during %is"
+msgstr "La variable \"%s\" ha mantenido el valor %i durante %i seg"
+
+#: models.py:817
 msgid "Automation var weekly schedule"
 msgstr "Programación semanal de variables de automatización"
 
-#: models.py:791
+#: models.py:818
 msgid "Automation var weekly schedules"
 msgstr "Programaciones semanales de variables de automatización"
 
-#: models.py:949
+#: models.py:976
 msgid "Automation var hourly schedule"
 msgstr "Programación horaria de variables de automatización"
 
-#: models.py:950
+#: models.py:977
 msgid "Automation var hourly schedules"
 msgstr "Programaciones horarias de variables de automatización"
 
-#: models.py:953
+#: models.py:980
 msgid "Monday"
 msgstr "Lunes"
 
-#: models.py:954
+#: models.py:981
 msgid "Tuesday"
 msgstr "Martes"
 
-#: models.py:955
+#: models.py:982
 msgid "Wednesday"
 msgstr "Miércoles"
 
-#: models.py:956
+#: models.py:983
 msgid "Thursday"
 msgstr "Jueves"
 
-#: models.py:957
+#: models.py:984
 msgid "Friday"
 msgstr "Viernes"
 
-#: models.py:958
+#: models.py:985
 msgid "Saturday"
 msgstr "Sábado"
 
-#: models.py:959
+#: models.py:986
 msgid "Sunday"
 msgstr "Domingo"
 
-#: models.py:962
+#: models.py:989
 msgid "LOW"
 msgstr "BAJO"
 
-#: models.py:963
+#: models.py:990
 msgid "HIGH"
 msgstr "ALTO"
 
-#: models.py:1008
+#: models.py:1035
 msgid "Thermostat"
 msgstr "Termostato"
 
-#: models.py:1009
+#: models.py:1036
 msgid "Thermostats"
 msgstr "Termostatos"
 
-#: models.py:1011
+#: models.py:1038
 msgid "The rule item that the thermostat is linked to."
 msgstr "El item de automatización al que el termostato está ligado."
 
-#: models.py:1036 models.py:1143
+#: models.py:1063 models.py:1170
 msgid "AND"
 msgstr ""
 
-#: models.py:1037 models.py:1144
+#: models.py:1064 models.py:1171
 msgid "OR"
 msgstr ""
 
-#: models.py:1040
+#: models.py:1067
 msgid "Order of execution"
 msgstr "Orden de ejecución"
 
-#: models.py:1130
+#: models.py:1157
 msgid "Automation expression"
 msgstr "Expresión de automatización"
 
-#: models.py:1131
+#: models.py:1158
 msgid "Automation expressions"
 msgstr "Expresiones de automatización"
 
-#: models.py:1135
+#: models.py:1162
 msgid "Automation rule"
 msgstr "Regla de automatización"
 
-#: models.py:1136
+#: models.py:1163
 msgid "Automation rules"
 msgstr "Reglas de automatización"
 
-#: models.py:1147
+#: models.py:1174
 msgid "False"
 msgstr "Falso"
 
-#: models.py:1148
+#: models.py:1175
 msgid "True"
 msgstr "Verdadero"
 

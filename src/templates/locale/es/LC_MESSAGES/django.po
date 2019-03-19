@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-08 10:39+0100\n"
+"POT-Creation-Date: 2019-03-19 11:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -280,7 +280,7 @@ msgstr "Reiniciar procesos"
 msgid "Events and alarms"
 msgstr "Eventos y alarmas"
 
-#: advanced_device.html:126 configuration.html:67 home.html:53
+#: advanced_device.html:126 configuration.html:71 home.html:53
 msgid "Please log in if you want to do something else..."
 msgstr "Por favor, logueate si quieres hacer algo mas..."
 
@@ -347,6 +347,16 @@ msgstr "CONFIGURACION"
 #: configuration.html:50
 msgid "Click to configure the site settings."
 msgstr "Clicka para configurar los ajustes basicos."
+
+#: configuration.html:53
+msgid "GPS TRACK"
+msgstr ""
+
+#: configuration.html:54
+#, fuzzy
+#| msgid "Click to set the timezone for the system."
+msgid "Click to view the realtime position of the tracked users."
+msgstr "Aqu&iacute; puedes cambiar la zona horaria"
 
 #: home.html:31
 msgid "APPLICATION SERVER DASHBOARD"
