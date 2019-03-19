@@ -578,7 +578,7 @@ class MasterGPIOs(models.Model):
             
             SignalVariableValueUpdated.send(sender='MainGPIOs', timestamp=now,
                                                             Tags=[self.getRegistersDBTag(),],
-                                                            Values=[newValue,],Types=[None,],
+                                                            Values=[newValue,],Types=[DTYPE_DIGITAL,],
                                                             DataTypes=[DTYPE_DIGITAL,])
                 
     def getRegistersDBTable(self):

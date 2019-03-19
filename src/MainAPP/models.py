@@ -625,6 +625,7 @@ class AutomationVariables(models.Model):
         super().save() 
     
     def calculateDuty(self):
+        #logger.info("Enters calculateDuty for var "+str(self))
         if self.CalculateDuty:
             values=self.getValues(number=3)
             now=values[0]
