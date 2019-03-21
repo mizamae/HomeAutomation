@@ -8,6 +8,27 @@ import logging
 
 logger = logging.getLogger("project")
 
+def getLatestRelease():
+    from requests import Session
+    
+    url='https://api.github.com/repos/mizamae/HomeAutomation/releases/latest'
+    
+    response = Session().request("GET", url, data=None)
+    result={'version':None,'description':None}
+    if response.status_code == 200:
+        if not response.text or response.text=='{}':
+            pass
+        else:
+            jsonresponse = response.json()
+            result['version']=jsonresponse['tag_name']
+            result['description']=""
+            #print("Version: " + jsonresponse['tag_name'] +" - "+jsonresponse['name'])
+            #print("Features:")
+            for line in jsonresponse['body'].splitlines():
+                if line!="":
+                    result['description']=result['description']+"    - " + line+"\n"
+    return result
+        
 def checkDeveloperUpdates(root):
     PublishEvent(Severity=0,Text=_("Checking-out to the development branch"),Persistent=False,Code='GitHub-1')
 
@@ -44,9 +65,12 @@ def checkReleaseUpdates(root,currentVersion):
     process = Popen(cmd, cwd=root, shell=True,
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
     stdout, err = process.communicate()
-
+    
+    result=getLatestRelease()
+    
     if not currentVersion in stdout:
-        PublishEvent(Severity=10,Text=_("There is a new release version to download. Version code: " + stdout),Persistent=True,Code='GitHub-1',Webpush=True)
+        PublishEvent(Severity=10,Text=_("There is a new release version to download. Version code: " + stdout+"\n"+"Features:\n"+result['description']),
+                     Persistent=True,Code='GitHub-1',Webpush=True)
         return {'update':True,'tag':stdout.replace('\n','')}
     else:
         PublishEvent(Severity=1,Text=_("You are already on the latest release version: " + stdout),Persistent=True,Code='GitHub-1')
