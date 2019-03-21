@@ -40,7 +40,7 @@ def checkReleaseUpdates(root,currentVersion):
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
     stdout, err = process.communicate()
     # GETS THE LAST EXISTING TAG
-    cmd='git describe --abbrev=0 --tags'
+    cmd='git describe --tags $(git rev-list --tags --max-count=1)'
     process = Popen(cmd, cwd=root, shell=True,
                     stdout=PIPE, stderr=PIPE,universal_newlines=True)
     stdout, err = process.communicate()
