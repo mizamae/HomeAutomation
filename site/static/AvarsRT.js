@@ -43,6 +43,24 @@ $(function()
     }catch(err){}
 });
 
+function send_AVARs_ordering()
+{
+	var pk_vector=[],j=0;
+	for (var i = 0, row; row = AVARstable.rows[i]; i++) {
+		if (!isNaN(parseInt(row.cells[0].innerHTML)))
+			{
+				pk_vector[j]=row.cells[0].innerHTML;
+				j=j+1;
+			}
+    }
+	console.log(pk_vector);
+	AVARWebSocketBridge.stream('AVAR_modify').send({
+        "pk": null,
+        "action": "reorder",
+        "data": {"newOrder":pk_vector}
+    });
+}
+
 function checkAvarsVisibility()
 {
     if (AVARstable.rows.length>=2)
@@ -83,7 +101,7 @@ function updateAvar(data)
     AVARstableContainer.className=AVARstableContainer.className.replace('hidden','');
     var rownum=-1;
     for (var i = 0, row; row = AVARstable.rows[i]; i++) {
-        if ((row.cells[0].innerHTML==data.Label))
+        if ((row.cells[1].innerHTML==data.Label))
         {
             rownum=i;
             break;
