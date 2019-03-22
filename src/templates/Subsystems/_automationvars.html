@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% load mainapp_tags %}
 <tr> 
+    <td class="hidden">{{ row.pk }}</td>
     <td>{{ row.Label }}</td>
     <td class="hidden-sm hidden-xs"><span id="timestamp">{{ VARs_values|get_at_index:index|get_at_index:0 }}</span></td>
     {% if row.Units %}

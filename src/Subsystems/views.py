@@ -22,6 +22,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
+from blaze.expr.reductions import var
 
 logger = logging.getLogger("project")
 
@@ -62,8 +63,15 @@ def generic(request,system):
             return render(request, APP_TEMPLATE_NAMESPACE+'/home.html') 
         
         DVs=DevicesAPP.models.Devices.objects.filter(Subsystem__Name=SUBSYSTEM)
-            
-        VARs=MainAPP.models.AutomationVariables.objects.filter(Subsystem__Name=SUBSYSTEM).exclude(Table='outputs')
+        
+        VARs_order=request.user.profile.get_general_feature('AVAR_order')
+        
+        if VARs_order!=None:
+            VARs = list(MainAPP.models.AutomationVariables.objects.filter(pk__in=VARs_order))
+            VARs.sort(key=lambda t: VARs_order.index(t.pk))
+        else:
+            VARs=MainAPP.models.AutomationVariables.objects.filter(Subsystem__Name=SUBSYSTEM).exclude(Table='outputs')
+
         VARs_values=[]
         for VAR in VARs:
             data=VAR.getCurrentData()[str(VAR.Tag)]

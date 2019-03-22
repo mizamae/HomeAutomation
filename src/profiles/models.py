@@ -4,6 +4,7 @@ from django.utils.translation import ugettext as _
 import uuid
 from channels.binding.websockets import WebsocketBinding
 import sys
+import json
 
 from django.utils import timezone
 from django.conf import settings
@@ -52,6 +53,8 @@ class BaseProfile(models.Model):
     notifications = models.BooleanField(_("Activate web-push notifications"), default=False)
     subscription_token = models.CharField(_("Web-push token"), max_length=500, blank=True, null=True)
     
+    general_features = models.CharField(_("General"), max_length=5000, blank=True,default="{}")
+    
     def updateLocationData(self,Latitude,Longitude,Accuracy):
         if self.tracking:
             timestamp=timezone.now()
@@ -65,6 +68,19 @@ class BaseProfile(models.Model):
     
     def set_subscriptionToken(self,token):
         self.subscription_token=token
+        self.save()
+    
+    def get_general_feature(self,key):
+        features=json.loads(self.general_features)
+        try:
+            return features[key]
+        except Exception as exc:
+            return None
+        
+    def set_general_feature(self,key,value):
+        features=json.loads(self.general_features)
+        features[key]=value
+        self.general_features=json.dumps(features)
         self.save()
         
     @staticmethod

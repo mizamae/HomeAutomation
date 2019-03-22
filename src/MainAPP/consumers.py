@@ -34,7 +34,6 @@ class System_consumers(WebsocketDemultiplexer):
     def connection_groups(self):
         return ["System",]
         
-
 def ws_add_avar(message):
     Group("AVAR-values").add(message.reply_channel)
 
@@ -42,24 +41,34 @@ def ws_disconnect_avar(message):
     Group("AVAR-values").discard(message.reply_channel)
     
 class avar_update(JsonWebsocketConsumer):
+    http_user = True
+    
     def receive(self, content, multiplexer, **kwargs):
-        from .models import AutomationVariables
-        logger.debug('Received WS!!: ' + str(content))
-        pk=content['pk']
-        newValue=content['data']['newValue']
-        #logger.debug(content['data']['overrideTime'])
-        try:
-            overrideTime=int(content['data']['overrideTime'])
-        except:
-            overrideTime=None
-        AVAR=AutomationVariables.objects.get(pk=pk)
-        AVAR.updateValue(newValue=newValue,overrideTime=overrideTime)
+        action=content['action']
+        
+        if action=="toggle":
+            from .models import AutomationVariables
+            logger.debug('Received WS!!: ' + str(content))
+            pk=content['pk']
+            newValue=content['data']['newValue']
+            #logger.debug(content['data']['overrideTime'])
+            try:
+                overrideTime=int(content['data']['overrideTime'])
+            except:
+                overrideTime=None
+            AVAR=AutomationVariables.objects.get(pk=pk)
+            AVAR.updateValue(newValue=newValue,overrideTime=overrideTime)
+        elif action=="reorder":
+            newOrder=list(map(int,content['data']['newOrder']))
+            user=self.message.user
+            user.profile.set_general_feature(key='AVAR_order',value=newOrder)
+            pass
         
     @classmethod
     def group_names(cls, *args, **kwargs):
         return ["AVAR-values",]
         
-   
+    
 class AVAR_consumers(WebsocketDemultiplexer):
     consumers = {
         'AVAR_modify':avar_update,

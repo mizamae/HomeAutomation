@@ -5,6 +5,7 @@
 <div id="avarsContainer" class="table-responsive">
 	<table id="avarsTable" class="table table-striped table-bordered table-responsive ">
 	    <colgroup>
+	      <col class="hidden"></col>
 	      <col class="col-lg-2"></col>
 	      <col class="col-lg-2"></col>
 	      <col class="col-lg-1"></col>
@@ -12,6 +13,7 @@
 	    </colgroup>
 	    <thead class="thead-inverse">
 	        <tr>
+	            <th class="hidden"></th>
 	            <th>{% trans "Label" %}</th>
 	            <th class="hidden-sm hidden-xs">{% trans "Timestamp" %}</th>
 	            <th style="text-align: center;">{% trans "Value" %}</th>
@@ -27,5 +29,21 @@
 	        {% endfor %}
 		</tbody>
 	</table>
+	
+	
+	<script type="text/javascript">
+	  
+      $("tbody").sortable(
+    	{
+    		stop: function( event, ui ) 
+    		{
+    			send_AVARs_ordering();
+    		}
+    		
+    	}	  
+      );
+      $("tbody").disableSelection();
+    </script>
+		    
 	<script src="{% static 'AvarsRT.js' %}"></script>	
 </div>
