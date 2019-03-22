@@ -22,7 +22,6 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
-from blaze.expr.reductions import var
 
 logger = logging.getLogger("project")
 
