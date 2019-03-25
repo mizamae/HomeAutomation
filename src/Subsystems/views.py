@@ -74,6 +74,8 @@ def generic(request,system):
             data=VAR.getCurrentData()[str(VAR.Tag)]
             if data['value']==None:
                 data=VAR.getLatestData()[str(VAR.Tag)]
+            if data['value']>-1 and data['value']<1:
+                data['value']=round(data['value'],3)
             VARs_values.append([data['timestamp'],data['value']])
         
         SCHs=MainAPP.models.AutomationVarWeeklySchedules.objects.filter(Subsystem__Name=SUBSYSTEM).order_by('Var','-Active')
