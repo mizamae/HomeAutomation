@@ -128,7 +128,7 @@ def updateDeveloper(root):
             
             if 'static files copied to' in stdout and stdout[0]!='0':
                 PublishEvent(Severity=0,Text=_("Static files copied"),Persistent=False,Code='MainAPPViews-9')
-            elif err:
+            elif not 'UserWarning' in err:
                 PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
             
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=True,Code='MainAPPViews-8')
@@ -215,7 +215,7 @@ def updateRelease(root,tag):
              
             if 'static files copied to' in stdout and stdout[0]!='0':
                 PublishEvent(Severity=0,Text=_("Static files copied"),Persistent=False,Code='MainAPPViews-9')
-            elif err:
+            elif not 'UserWarning' in err:
                 PublishEvent(Severity=3,Text=_("Error copying static files - ") + str(err),Persistent=True,Code='MainAPPViews-9')
              
             PublishEvent(Severity=0,Text=_("Restart processes to apply the new changes"),Persistent=True,Code='MainAPPViews-8')
