@@ -43,7 +43,7 @@ $(function()
     }catch(err){}
 });
 
-function send_AVARs_ordering()
+function send_AVARs_ordering(subsystem)
 {
 	var pk_vector=[],j=0;
 	for (var i = 0, row; row = AVARstable.rows[i]; i++) {
@@ -57,7 +57,7 @@ function send_AVARs_ordering()
 	AVARWebSocketBridge.stream('AVAR_modify').send({
         "pk": null,
         "action": "reorder",
-        "data": {"newOrder":pk_vector}
+        "data": {"newOrder":pk_vector,"subsystem":subsystem}
     });
 }
 

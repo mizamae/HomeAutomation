@@ -60,8 +60,9 @@ class avar_update(JsonWebsocketConsumer):
             AVAR.updateValue(newValue=newValue,overrideTime=overrideTime)
         elif action=="reorder":
             newOrder=list(map(int,content['data']['newOrder']))
+            subsystem=str(content['data']['subsystem'])
             user=self.message.user
-            user.profile.set_general_feature(key='AVAR_order',value=newOrder)
+            user.profile.set_general_feature(key='AVAR_order_'+subsystem,value=newOrder)
             pass
         
     @classmethod

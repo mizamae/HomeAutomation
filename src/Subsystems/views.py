@@ -63,13 +63,11 @@ def generic(request,system):
         
         DVs=DevicesAPP.models.Devices.objects.filter(Subsystem__Name=SUBSYSTEM)
         
-        VARs_order=request.user.profile.get_general_feature('AVAR_order')
+        VARs_order=request.user.profile.get_general_feature('AVAR_order_'+str(SUBSYSTEM))
+        VARs=list(MainAPP.models.AutomationVariables.objects.filter(Subsystem__Name=SUBSYSTEM).exclude(Table='outputs'))
         
         if VARs_order!=None:
-            VARs = list(MainAPP.models.AutomationVariables.objects.filter(pk__in=VARs_order))
-            VARs.sort(key=lambda t: VARs_order.index(t.pk))
-        else:
-            VARs=MainAPP.models.AutomationVariables.objects.filter(Subsystem__Name=SUBSYSTEM).exclude(Table='outputs')
+            VARs.sort(key=lambda t: VARs_order.index(t.pk))            
 
         VARs_values=[]
         for VAR in VARs:
@@ -124,4 +122,5 @@ def generic(request,system):
                                                                        'accordion4':accordion4,
                                                                        'GPIOs':GPIOs,
                                                                        'EVTs':EVTs,
+                                                                       'Subsystem':SUBSYSTEM,
                                                                        }) 
