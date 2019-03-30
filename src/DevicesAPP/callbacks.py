@@ -147,10 +147,19 @@ class IBERDROLA:
                   "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0",
                   ]
     __headers = {
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0",
-        'accept': "application/json; charset=utf-8",
-        'content-type': "application/json; charset=utf-8",
-        'cache-control': "no-cache"
+        'Host': 'www.iberdroladistribucionelectrica.com',
+        'Connection': 'keep-alive',
+        'Content-Length': '92',
+        'Origin': 'https://www.iberdroladistribucionelectrica.com',
+        'idioma': 'es',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'movilAPP': 'no',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://www.iberdroladistribucionelectrica.com/consumidores/inicio.html',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
     }
     
     _session=None
@@ -281,7 +290,7 @@ class IBERDROLA:
 
     @staticmethod
     def __logindata(user, password):
-        logindata = [user, password, "", "Windows -", "PC", "Firefox 54.0", "", "0", "0", "0", "", "s"]
+        logindata = [user, password, None, "Windows 10", "PC", "Chrome 72.0.3626.121", "0", "", "n"]
         return dumps(logindata)
             
 
