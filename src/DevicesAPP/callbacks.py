@@ -193,10 +193,11 @@ class IBERDROLA:
     
     @staticmethod
     def runOnInit(DV):
-        IBERDROLA.init_login_thread()
+        pass
+        #IBERDROLA.init_login_thread()
         
-        if IBERDROLA._loggedin:
-            PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=DV)
+        #if IBERDROLA._loggedin:
+            #PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=DV)
         
     @staticmethod
     def init_login_thread():
@@ -366,10 +367,11 @@ class IBERDROLA:
         else:
             logger.error('IBERDROLA: Error date. Date: ' + str(date))
             raise IBERDROLA._ResponseException
-        timestamp=date.timestamp()
+        timestamp=int(1000*timezone.now().timestamp())
         date=date.strftime('%d-%m-%Y%H:%M:%S')
         
-        response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), headers=self.__headers)
+        response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), 
+                                         params={'_':str(timestamp)},headers=self.__headers)
         
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for miconsumodiario. Code: ' + str(response.status_code))
