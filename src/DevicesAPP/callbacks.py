@@ -263,6 +263,7 @@ class IBERDROLA:
            Inicia la session con tus credenciales."""
         logger.error('IBERDROLA: Enters login')
         IBERDROLA._session = Session()
+        IBERDROLA._session.update(IBERDROLA.__headers)
         #IBERDROLA.setUserAgent()
         logindata = IBERDROLA.__logindata(user, password)
         try:
@@ -379,7 +380,7 @@ class IBERDROLA:
                                          params={'_':str(timestamp)},headers=self.__headers)
         
         try:
-            logger.info('Miconsumo headers after: ' + str(self._session.headers))
+            logger.info('Miconsumo headers after: ' + str(response.request.headers))
         except:
             pass
         
