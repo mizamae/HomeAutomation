@@ -370,8 +370,18 @@ class IBERDROLA:
         timestamp=int(1000*timezone.now().timestamp())
         date=date.strftime('%d-%m-%Y%H:%M:%S')
         
+        try:
+            logger.info('Miconsumo headers before: ' + str(self._session.headers))
+        except:
+            pass
+        
         response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), 
                                          params={'_':str(timestamp)},headers=self.__headers)
+        
+        try:
+            logger.info('Miconsumo headers after: ' + str(self._session.headers))
+        except:
+            pass
         
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for miconsumodiario. Code: ' + str(response.status_code))

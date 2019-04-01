@@ -217,11 +217,11 @@ def run_afterBoot():
                 for DV in DVs:
                     class_.runOnInit(DV=DV)
     
-    #import datetime
-    #from DevicesAPP.models import Devices
-    #DV=Devices.objects.filter(DVT__Code='IBERDROLA')
-    #instance=DevicesAPP.callbacks.IBERDROLA(DV[0])
+    import datetime
+    from DevicesAPP.models import Devices
+    DV=Devices.objects.filter(DVT__Code='IBERDROLA')
+    instance=DevicesAPP.callbacks.IBERDROLA(DV[0])
     #instance(date=datetime.datetime(year=2018,month=10,day=7),datagramId = 'dailyconsumption')
-    #instance.getSingleDay(date=datetime.datetime(year=2018,month=11,day=5),datagramId = 'dailyconsumption')
+    instance.getSingleDay(date=datetime.datetime(year=2019,month=3,day=5),datagramId = 'dailyconsumption')
     #instance.initializeDB(fromdate=datetime.datetime(year=2018,month=11,day=2),datagramId = 'dailyconsumption')
     
