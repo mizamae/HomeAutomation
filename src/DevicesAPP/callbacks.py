@@ -263,7 +263,7 @@ class IBERDROLA:
            Inicia la session con tus credenciales."""
         logger.error('IBERDROLA: Enters login')
         IBERDROLA._session = Session()
-        IBERDROLA._session.update(IBERDROLA.__headers)
+        #IBERDROLA._session.update(IBERDROLA.__headers)
         #IBERDROLA.setUserAgent()
         logindata = IBERDROLA.__logindata(user, password)
         try:
