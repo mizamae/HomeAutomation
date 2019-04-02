@@ -358,7 +358,9 @@ class IBERDROLA:
         #logger.error('IBERDROLA: Enters wattmeter')
         sleep(randint(0,10))
         self.__checkconnection()
-        response = self._session.request("GET", self.__watthourmeterurl, headers=self.__headers)
+        timestamp_query=int(timezone.now().replace(microsecond=0).timestamp())
+        response = self._session.request("GET", self.__watthourmeterurl, params={'_':timestamp_query},
+                                         headers={'cups':IBERDROLA._cups})
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for wattmeter. Code: ' + str(response.status_code))
             raise IBERDROLA._ResponseException
@@ -372,7 +374,9 @@ class IBERDROLA:
         """Returns the status of your ICP.
            Devuelve el estado de tu ICP."""
         self.__checkconnection()
-        response = self._session.request("POST", self.__icpstatusurl, headers=self.__headers)
+        timestamp_query=int(timezone.now().replace(microsecond=0).timestamp())
+        response = self._session.request("POST", self.__icpstatusurl, params={'_':timestamp_query},
+                                         headers={'cups':IBERDROLA._cups})
         if response.status_code != 200:
             raise IBERDROLA._ResponseException
         if not response.text or response.text=='{}':
@@ -397,11 +401,12 @@ class IBERDROLA:
         else:
             logger.error('IBERDROLA: Error date. Date: ' + str(date))
             raise IBERDROLA._ResponseException
-        timestamp=int(timezone.now().replace(microsecond=0).timestamp())
+        timestamp=date.timestamp()
+        timestamp_query=int(timezone.now().replace(microsecond=0).timestamp())
         date=date.strftime('%d-%m-%Y%H:%M:%S')
         
         response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), 
-                                         params={'_':timestamp},headers={'cups':IBERDROLA._cups})
+                                         params={'_':timestamp_query},headers={'cups':IBERDROLA._cups})
         
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for miconsumodiario. Code: ' + str(response.status_code))
