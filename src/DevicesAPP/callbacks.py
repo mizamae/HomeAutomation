@@ -118,6 +118,10 @@ class PENDING_DB(object):
             result=instance(date=date,datagramId = datagramId)
             if result['Error']=='':
                 PENDING_DB.__delete_pending_job(DV=DV,datagramId=datagramId,date=date)
+            else:
+                logger.info('Error executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk)+
+                            'Error: ' + str(result['Error']))
+                break
                 
     
     
@@ -129,6 +133,8 @@ class IBERDROLA:
     _MAX_RETRIES=3
                            
     __loginurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/login"
+    __keepSessionurl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/loginNew/mantenerSesion/"
+    __getCupsHeadurl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/detalleCto/cupsCabecera/?_="
     __miconsumourl="https://www.iberdroladistribucionelectrica.com/consumidores/rest/consumoNew/obtenerDatosConsumo/fechaInicio/dateini/colectivo/USU/frecuencia/horas/acumular/false"
     __watthourmeterurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/escenarioNew/obtenerMedicionOnline/12"
     __icpstatusurl = "https://www.iberdroladistribucionelectrica.com/consumidores/rest/rearmeICP/consultarEstado"
@@ -163,6 +169,7 @@ class IBERDROLA:
     }
     
     _session=None
+    _cups=None
     _disabled=False
     _login_thread=None
     _loggedin=False
@@ -193,11 +200,10 @@ class IBERDROLA:
     
     @staticmethod
     def runOnInit(DV):
-        pass
-        #IBERDROLA.init_login_thread()
+        IBERDROLA.init_login_thread()
         
-        #if IBERDROLA._loggedin:
-            #PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=DV)
+        if IBERDROLA._loggedin:
+            PENDING_DB.execute_pending_jobs(sender=IBERDROLA,DV=DV)
         
     @staticmethod
     def init_login_thread():
@@ -287,6 +293,30 @@ class IBERDROLA:
             logger.error('IBERDROLA: Login failure, not success')
             IBERDROLA.kill_login_thread()
             raise IBERDROLA._LoginException
+        try:
+            response = IBERDROLA._session.request("POST", IBERDROLA.__keepSessionurl,headers=IBERDROLA._session.headers)
+        except Exception as ex:
+            logger.error('Error in log in request: ' + str(ex))
+            IBERDROLA.Error='Error in log in request: ' + str(ex)
+            IBERDROLA.kill_login_thread()
+            raise IBERDROLA._LoginException
+        
+        if response.status_code != 200:
+            raise IBERDROLA._ResponseException
+        
+        try:
+            timestamp=int(timezone.now().replace(microsecond=0).timestamp())
+            response = IBERDROLA._session.request("GET", IBERDROLA.__getCupsHeadurl+str(timestamp),headers=IBERDROLA._session.headers)
+        except Exception as ex:
+            logger.error('Error in log in request: ' + str(ex))
+            IBERDROLA.Error='Error in log in request: ' + str(ex)
+            IBERDROLA.kill_login_thread()
+            raise IBERDROLA._LoginException
+        
+        if response.status_code != 200:
+            raise IBERDROLA._ResponseException
+        
+        IBERDROLA._cups=str(json.loads(response.text)['cups'])
         IBERDROLA._loggedin=True
         logger.info('Logged in to Iberdrola')
 
@@ -368,21 +398,11 @@ class IBERDROLA:
         else:
             logger.error('IBERDROLA: Error date. Date: ' + str(date))
             raise IBERDROLA._ResponseException
-        timestamp=int(1000*timezone.now().timestamp())
+        timestamp=int(timezone.now().replace(microsecond=0).timestamp())
         date=date.strftime('%d-%m-%Y%H:%M:%S')
         
-        try:
-            logger.info('Miconsumo headers before: ' + str(self._session.headers))
-        except:
-            pass
-        
         response = self._session.request("GET", self.__miconsumourl.replace('dateini',date), 
-                                         params={'_':str(timestamp)},headers=self.__headers)
-        
-        try:
-            logger.info('Miconsumo headers after: ' + str(response.request.headers))
-        except:
-            pass
+                                         params={'_':timestamp},headers={'cups':IBERDROLA._cups})
         
         if response.status_code != 200:
             logger.error('IBERDROLA: Error status_code for miconsumodiario. Code: ' + str(response.status_code))
