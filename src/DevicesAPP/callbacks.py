@@ -121,7 +121,6 @@ class PENDING_DB(object):
             else:
                 logger.info('Error executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk)+
                             'Error: ' + str(result['Error']))
-                break
                 
     
     
