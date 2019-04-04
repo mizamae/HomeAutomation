@@ -1,5 +1,8 @@
 import os
 import telepot
+from telepot.loop import MessageLoop
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+
 import logging
 logger = logging.getLogger("project")
 
@@ -32,6 +35,25 @@ class TelegramManager(object):
             from MainAPP.models import SiteSettings
             SETTINGS=SiteSettings.load()
             SETTINGS.set_TELEGRAM_CHATID(value=self.chatID)
+    
+    def initChatLoop(self):
+        MessageLoop(self.bot, {'chat': on_chat_message,
+                  'callback_query': on_callback_query}).run_as_thread()
+    
+    def on_chat_message(self,msg):
+        content_type, chat_type, chat_id = telepot.glance(msg)
+    
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+                       [InlineKeyboardButton(text='Press me', callback_data='press')],
+                   ])
+    
+        self.bot.sendMessage(chat_id, 'Use inline keyboard', reply_markup=keyboard)
+    
+    def on_callback_query(self,msg):
+        query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+        print('Callback Query:', query_id, from_id, query_data)
+    
+        self.bot.answerCallbackQuery(query_id, text='Got it')
     
     @staticmethod
     def getChatID():
