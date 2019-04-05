@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 11:20+0100\n"
+"POT-Creation-Date: 2019-04-05 20:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,27 +34,27 @@ msgstr "APP de Dispositivos"
 msgid "The datagram '"
 msgstr "La trama"
 
-#: callbacks.py:461 callbacks.py:472
+#: callbacks.py:507 callbacks.py:518
 msgid "Failed to execute order "
 msgstr ""
 
-#: callbacks.py:461 callbacks.py:472
+#: callbacks.py:507 callbacks.py:518
 msgid " on device "
 msgstr " en el dispositivo "
 
-#: callbacks.py:461 callbacks.py:472
+#: callbacks.py:507 callbacks.py:518
 msgid ". The parameters passed "
 msgstr ". Los parametros introducidos "
 
-#: callbacks.py:461 callbacks.py:472
+#: callbacks.py:507 callbacks.py:518
 msgid " are not adequate."
 msgstr " no son adecuados."
 
-#: callbacks.py:987 callbacks.py:989 views.py:263
+#: callbacks.py:1033 callbacks.py:1035 views.py:263
 msgid "The device "
 msgstr "El dispositivo"
 
-#: callbacks.py:987 callbacks.py:989
+#: callbacks.py:1033 callbacks.py:1035
 msgid " does not have any Beacon associated."
 msgstr " no tiene ningun Beacon asociado."
 

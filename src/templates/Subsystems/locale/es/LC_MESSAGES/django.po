@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 11:20+0100\n"
+"POT-Creation-Date: 2019-04-05 20:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,21 +20,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: Subsystems/_automationvars_table.html:15
+#: Subsystems/_automationvars_table.html:17
 #: Subsystems/_mastergpios_table.html:16
 msgid "Label"
 msgstr "Etiqueta"
 
-#: Subsystems/_automationvars_table.html:16
+#: Subsystems/_automationvars_table.html:18
 msgid "Timestamp"
 msgstr ""
 
-#: Subsystems/_automationvars_table.html:17
+#: Subsystems/_automationvars_table.html:19
 #: Subsystems/_mastergpios_table.html:17
 msgid "Value"
 msgstr "Valor"
 
-#: Subsystems/_automationvars_table.html:18
+#: Subsystems/_automationvars_table.html:20
 #: Subsystems/_mastergpios_table.html:18
 msgid "Action"
 msgstr "Accion"
