@@ -246,8 +246,8 @@ class IBERDROLA:
         logger.error('IBERDROLA: Disabled')
         if auto_enable:
             from utils.asynchronous_tasks import BackgroundTimer
-            enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=1*60*60,callablekwargs={},
-                                repeat=False,triggered=False,lifeSpan=None,onThreadInit=None,onInitkwargs={})
+            enable_thread=BackgroundTimer(callable=IBERDROLA.enable,threadName='iberdrola_enable',interval=1*60,callablekwargs={},
+                                repeat=False,triggered=False,lifeSpan=60,onThreadInit=None,onInitkwargs={})
     
     @staticmethod
     def enable():
