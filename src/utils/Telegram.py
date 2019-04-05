@@ -34,7 +34,7 @@ class TelegramManager(object):
     def initChatLoop(self):
         if self.chatID!=None:
             self.bot.sendMessage(self.chatID, 
-                                 str(_('SYSTEM RESET\n Available instructions:\n    - Commands\n    - Others')))
+                                 str(_('SYSTEM RESET\n Available instructions:\n    - "Commands"\n    - "Others"')))
 
         MessageLoop(self.bot, {'chat': self.on_chat_message,
                   'callback_query': self.on_callback_query}).run_as_thread()
@@ -53,7 +53,7 @@ class TelegramManager(object):
                 CMDs=DeviceCommands.objects.all()
                 inlinesCMD=[]
                 for CMD in CMDs:
-                     inlinesCMD.append([InlineKeyboardButton(text=str(CMD), callback_data=CMD.Identifier)])
+                     inlinesCMD.append([InlineKeyboardButton(text=str(CMD), callback_data={'identifier':CMD.Identifier,'payload':CMD.getPayload()})])
                 keyboard = InlineKeyboardMarkup(inline_keyboard=inlinesCMD)
                 
                 if len(inlinesCMD)>0:
@@ -65,7 +65,7 @@ class TelegramManager(object):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         logger.info('Callback Query:', query_id, from_id, query_data)
     
-        self.bot.answerCallbackQuery(query_id, text=str(_('Got it, executed '))+query_data)
+        self.bot.answerCallbackQuery(query_id, text=str(_('Got it, executed '))+query_data['identifier']+str(_(' with payload: '))+str(query_data['payload']))
     
     @staticmethod
     def getChatID():
