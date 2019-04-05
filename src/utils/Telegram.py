@@ -19,6 +19,8 @@ TELEGRAM_BOT_TOKEN = env('TELEGRAM_TOKEN')
 TELEGRAM_CHNID_VAR='TELEGRAM_CHANNEL_ID'
 
 class TelegramManager(object):
+    instructions=[_('Commands'),]
+    
     def __init__(self):
         #logger.info('Bot TOKEN: ' + str(TELEGRAM_BOT_TOKEN))
         self.bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
@@ -33,8 +35,10 @@ class TelegramManager(object):
     
     def initChatLoop(self):
         if self.chatID!=None:
-            self.bot.sendMessage(self.chatID, 
-                                 str(_('SYSTEM RESET\n Available instructions:\n    - "Commands"\n    - "Others"')))
+            msg=str(_('SYSTEM RESET\n Available instructions:\n'))
+            for instruction in TelegramManager.instructions:
+                msg=msg+'    - '+str(instruction)+'\n'
+            self.bot.sendMessage(self.chatID,msg)
 
         MessageLoop(self.bot, {'chat': self.on_chat_message,
                   'callback_query': self.on_callback_query}).run_as_thread()
@@ -48,7 +52,7 @@ class TelegramManager(object):
             receivedMSG=None
         
         if receivedMSG!=None:
-            if receivedMSG==_('Commands'):
+            if receivedMSG==str(TelegramManager.instructions[0]):
                 from DevicesAPP.models import DeviceCommands
                 CMDs=DeviceCommands.objects.all()
                 inlinesCMD=[]
@@ -60,6 +64,8 @@ class TelegramManager(object):
                     self.bot.sendMessage(chat_id, str(_('Select the command to execute')), reply_markup=keyboard)
                 else:
                     self.bot.sendMessage(chat_id, str(_('No available commands to execute')))
+            else:
+                self.bot.sendMessage(chat_id, str(_('Sorry but I do not understand you!')))
     
     def on_callback_query(self,msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
