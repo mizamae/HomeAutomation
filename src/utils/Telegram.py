@@ -2,6 +2,7 @@ import os
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+from django.utils.translation import ugettext_lazy as _
 
 import logging
 logger = logging.getLogger("project")
@@ -23,13 +24,7 @@ class TelegramManager(object):
         self.bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
         self.chatID=TelegramManager.getChatID()
         #logger.info('ChatID: ' + str(self.chatID))
-        if self.chatID==None:
-            response = self.bot.getUpdates()
-            #logger.info('Bot response: ' + str(response))
-            if response!=[]:
-                self.chatID=response[0]['channel_post']['chat']['id']
-            else:
-                self.chatID=None
+            
         if self.chatID!=None:
             cache.set(TELEGRAM_CHNID_VAR, self.chatID,None)
             from MainAPP.models import SiteSettings
@@ -37,23 +32,40 @@ class TelegramManager(object):
             SETTINGS.set_TELEGRAM_CHATID(value=self.chatID)
     
     def initChatLoop(self):
-        MessageLoop(self.bot, {'chat': on_chat_message,
-                  'callback_query': on_callback_query}).run_as_thread()
+        if self.chatID!=None:
+            self.bot.sendMessage(self.chatID, 
+                                 str(_('SYSTEM RESET\n Available instructions:\n    - Commands\n    - Others')))
+
+        MessageLoop(self.bot, {'chat': self.on_chat_message,
+                  'callback_query': self.on_callback_query}).run_as_thread()
     
     def on_chat_message(self,msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
-    
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                       [InlineKeyboardButton(text='Press me', callback_data='press')],
-                   ])
-    
-        self.bot.sendMessage(chat_id, 'Use inline keyboard', reply_markup=keyboard)
+        if msg!=[]:
+            self.chatID=msg['chat']['id']
+            receivedMSG=msg['text']
+        else:
+            receivedMSG=None
+        
+        if receivedMSG!=None:
+            if receivedMSG==_('Commands'):
+                from DevicesAPP.models import DeviceCommands
+                CMDs=DeviceCommands.objects.all()
+                inlinesCMD=[]
+                for CMD in CMDs:
+                     inlinesCMD.append([InlineKeyboardButton(text=str(CMD), callback_data=CMD.Identifier)])
+                keyboard = InlineKeyboardMarkup(inline_keyboard=inlinesCMD)
+                
+                if len(inlinesCMD)>0:
+                    self.bot.sendMessage(chat_id, str(_('Select the command to execute')), reply_markup=keyboard)
+                else:
+                    self.bot.sendMessage(chat_id, str(_('No available commands to execute')))
     
     def on_callback_query(self,msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
     
-        self.bot.answerCallbackQuery(query_id, text='Got it')
+        self.bot.answerCallbackQuery(query_id, text=str(_('Got it')))
     
     @staticmethod
     def getChatID():

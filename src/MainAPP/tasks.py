@@ -35,6 +35,10 @@ except BaseException as e:
 
 
 ### MONTHLY FUNCTIONS
+def startTelegramDaemon():
+    from utils.Telegram import TelegramManager
+    TelegramManager().initChatLoop()
+    
 def renewSSLCertificate():  
     try:
         # Switch to Python2
@@ -73,10 +77,13 @@ def MonthlyTask():
         PublishEvent(Severity=0,Text=_("Unable to autenticate to GDrive"),Persistent=True,Code='Tasks-M_1')
     
     renewSSLCertificate()
+    
             
 def start_MonthlyTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
-    '''  
+    '''
+    startTelegramDaemon()
+    
     id='MonthlyTask'
     scheduler.add_job(func=MonthlyTask,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
     JOB=scheduler.get_job(job_id=id)
