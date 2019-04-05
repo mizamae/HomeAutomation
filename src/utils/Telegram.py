@@ -63,9 +63,9 @@ class TelegramManager(object):
     
     def on_callback_query(self,msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-        print('Callback Query:', query_id, from_id, query_data)
+        logger.info('Callback Query:', query_id, from_id, query_data)
     
-        self.bot.answerCallbackQuery(query_id, text=str(_('Got it')))
+        self.bot.answerCallbackQuery(query_id, text=str(_('Got it, executed '))+query_data)
     
     @staticmethod
     def getChatID():
