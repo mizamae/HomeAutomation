@@ -1178,6 +1178,13 @@ class Devices(models.Model):
         self.LastUpdated=newValue
         self.save(update_fields=['LastUpdated','Error','NextUpdate'])
     
+    def getDeviceCommands(self):
+        CMDs=DeviceCommands.objects.filter(DVT=self.DVT)
+        if len(CMDs)>0:
+            return CMDs
+        else:
+            return []
+               
     @staticmethod
     def getNextUpdate(jobID):
         if jobID!=None:

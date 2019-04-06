@@ -1,5 +1,6 @@
 import os
 import telepot
+import json
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from django.utils.translation import ugettext_lazy as _
@@ -19,7 +20,7 @@ TELEGRAM_BOT_TOKEN = env('TELEGRAM_TOKEN')
 TELEGRAM_CHNID_VAR='TELEGRAM_CHANNEL_ID'
 
 class TelegramManager(object):
-    instructions=[_('Commands'),]
+    instructions=[{'id':'command','text':_('Commands')},]
     
     def __init__(self):
         #logger.info('Bot TOKEN: ' + str(TELEGRAM_BOT_TOKEN))
@@ -36,10 +37,14 @@ class TelegramManager(object):
     def initChatLoop(self):
         if self.chatID!=None:
             msg=str(_('SYSTEM RESET\n Available instructions:\n'))
-            for instruction in TelegramManager.instructions:
-                msg=msg+'    - '+str(instruction)+'\n'
             self.bot.sendMessage(self.chatID,msg)
-
+            
+            inlinesCMD=[]
+            for instruction in TelegramManager.instructions:
+                 inlinesCMD.append([InlineKeyboardButton(text=str(instruction['text']), callback_data=json.dumps({'id':instruction['id'],'payload':None,'pk':None}))])
+            keyboard = InlineKeyboardMarkup(inline_keyboard=inlinesCMD)
+            self.bot.sendMessage(self.chatID, str(_('Menu')), reply_markup=keyboard)
+                
         MessageLoop(self.bot, {'chat': self.on_chat_message,
                   'callback_query': self.on_callback_query}).run_as_thread()
     
@@ -51,28 +56,42 @@ class TelegramManager(object):
         else:
             receivedMSG=None
         
-        if receivedMSG!=None:
-            if receivedMSG==str(TelegramManager.instructions[0]):
-                from DevicesAPP.models import DeviceCommands
-                CMDs=DeviceCommands.objects.all()
-                inlinesCMD=[]
-                for CMD in CMDs:
-                     inlinesCMD.append([InlineKeyboardButton(text=str(CMD), callback_data={'identifier':CMD.Identifier,'payload':CMD.getPayload()})])
-                keyboard = InlineKeyboardMarkup(inline_keyboard=inlinesCMD)
-                
-                if len(inlinesCMD)>0:
-                    self.bot.sendMessage(chat_id, str(_('Select the command to execute')), reply_markup=keyboard)
-                else:
-                    self.bot.sendMessage(chat_id, str(_('No available commands to execute')))
-            else:
-                self.bot.sendMessage(chat_id, str(_('Sorry but I do not understand you!')))
+        if 'hola' in receivedMSG:
+            self.bot.sendMessage(chat_id, str(_('Hola caracola!')))
+        else:
+            self.bot.sendMessage(chat_id, str(_('Sorry but I do not understand you!')))
     
     def on_callback_query(self,msg):
+        from DevicesAPP.models import Devices,DeviceCommands
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+        
         logger.info('Callback Query:', query_id, from_id, query_data)
-    
-        self.bot.answerCallbackQuery(query_id, text=str(_('Got it, executed '))+query_data['identifier']+str(_(' with payload: '))+str(query_data['payload']))
-    
+        query_data=json.loads(query_data)
+        if query_data['id']==TelegramManager.instructions[0]['id']: # Ask for commands list            
+            DVs=Devices.objects.all()
+            inlinesCMD=[]
+            for DV in DVs:
+                CMDs=DV.getDeviceCommands()
+                for CMD in CMDs:
+                    inlinesCMD.append([InlineKeyboardButton(text=str(DV)+"\n"+str(CMD), callback_data=json.dumps({'id':None,'payload':None,'DVpk':DV.pk,'CMDpk':CMD.pk}))])
+            keyboard = InlineKeyboardMarkup(inline_keyboard=inlinesCMD)
+            
+            if len(inlinesCMD)>0:
+                self.bot.sendMessage(self.chatID, str(_('Select the command to execute')), reply_markup=keyboard)
+            else:
+                self.bot.sendMessage(self.chatID, str(_('No available commands to execute')))           
+            self.bot.answerCallbackQuery(query_id, text=str(_('Got it')))
+        elif query_data['DVpk']!=None and query_data['CMDpk']!=None:
+            DV=Devices.objects.get(pk=query_data['DVpk'])
+            CMD=DeviceCommands.objects.get(pk=query_data['CMDpk'])
+            data=DV.requestOrders(serverIP=DV.IP,order=CMD.Identifier,payload=CMD.getPayload(),timeout=1)
+            if data[0]==200:
+                self.bot.answerCallbackQuery(query_id, text=str(_('Got it, executed '))+str(CMD))
+            else:
+                self.bot.answerCallbackQuery(query_id, text=str(_('Error executing '))+str(CMD)+": "+str(data[1]))
+        else:
+            self.bot.answerCallbackQuery(query_id, text=str(_('Got it')))
+        
     @staticmethod
     def getChatID():
         chatID=cache.get(TELEGRAM_CHNID_VAR)
