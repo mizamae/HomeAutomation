@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 11:20+0100\n"
+"POT-Creation-Date: 2019-04-05 20:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,106 +22,138 @@ msgstr ""
 msgid "Error in compact_table: "
 msgstr ""
 
-#: GitHub.py:12
-msgid "Checking-out to the development branch"
-msgstr ""
-
-#: GitHub.py:30
-msgid "There is a new development version to download."
-msgstr ""
-
 #: GitHub.py:33
+msgid "Checking-out to the development branch"
+msgstr "Cambiando a la rama de desarrollo"
+
+#: GitHub.py:51
+msgid "There is a new development version to download."
+msgstr "Hay una nueva versión de desarrollo para descargar."
+
+#: GitHub.py:54
 msgid "You are already on the latest development version "
-msgstr ""
+msgstr "Ya estás en la última versión de desarrollo "
 
-#: GitHub.py:49
+#: GitHub.py:72
 msgid "There is a new release version to download. Version code: "
-msgstr ""
+msgstr "Hay una nueva versión para descargar. Versión código: "
 
-#: GitHub.py:52
+#: GitHub.py:76
 msgid "You are already on the latest release version: "
-msgstr ""
+msgstr "Ya estás en la última versión: "
 
-#: GitHub.py:59
+#: GitHub.py:83
 msgid "Checking for updates..."
-msgstr ""
+msgstr "Buscando actualizaciones..."
 
-#: GitHub.py:73
+#: GitHub.py:97
 #, python-format
 msgid "%s the latest development revision '%s'."
-msgstr ""
+msgstr "%s la última versión de desarrollo '%s'."
 
-#: GitHub.py:74
+#: GitHub.py:98
 msgid "Already at"
-msgstr ""
+msgstr "Ya estás en "
 
-#: GitHub.py:74
+#: GitHub.py:98
 msgid "Updated to"
-msgstr ""
+msgstr "Actualizado a "
 
-#: GitHub.py:83 GitHub.py:169
+#: GitHub.py:107 GitHub.py:193
 msgid "Error checking migrations: "
-msgstr ""
+msgstr "Error comprobando las migraciones: "
 
-#: GitHub.py:89 GitHub.py:175
+#: GitHub.py:113 GitHub.py:199
 msgid "Updating DB with new migrations. Relax, it may take a while"
-msgstr ""
+msgstr "Actualizando la BBDD con nuevas migraciones. Relájate, me puede llevar un rato"
 
-#: GitHub.py:95 GitHub.py:181
+#: GitHub.py:119 GitHub.py:205
 msgid "Django DB updated OK"
-msgstr ""
+msgstr "BBDD de Django actualizada OK"
 
-#: GitHub.py:97 GitHub.py:183
+#: GitHub.py:121 GitHub.py:207
 msgid "Error applying the migration: "
-msgstr ""
+msgstr "Error aplicando las migraciones: "
 
-#: GitHub.py:106 GitHub.py:193
+#: GitHub.py:130 GitHub.py:217
 msgid "Static files copied"
-msgstr ""
+msgstr "Archivos estáticos copiados"
 
-#: GitHub.py:108 GitHub.py:195
+#: GitHub.py:132 GitHub.py:219
 msgid "Error copying static files - "
-msgstr ""
+msgstr "Error copiando archivos estáticos - "
 
-#: GitHub.py:110 GitHub.py:197
+#: GitHub.py:134 GitHub.py:221
 msgid "Restart processes to apply the new changes"
-msgstr ""
+msgstr "Reinicia los procesos para aplicar los cambios"
 
-#: GitHub.py:114 GitHub.py:205
+#: GitHub.py:138 GitHub.py:229
 msgid "Problem occurred while updating program."
-msgstr ""
+msgstr "Ha ocurrido un problema mientras se actualizaba el programa."
 
-#: GitHub.py:131
+#: GitHub.py:155
 msgid "Attempting to run update again..."
-msgstr ""
+msgstr "Intentando actualizar de nuevo..."
 
-#: GitHub.py:134 GitHub.py:225
+#: GitHub.py:158 GitHub.py:249
 msgid "Unable to reset local copy to current git branch."
 msgstr ""
 
-#: GitHub.py:140 GitHub.py:231
+#: GitHub.py:164 GitHub.py:255
 msgid "Please make sure that you have a 'git' package installed. Error: "
 msgstr ""
 
-#: GitHub.py:148
+#: GitHub.py:172
 msgid "Downloading the release version "
-msgstr ""
+msgstr "Descargando la versión "
 
-#: GitHub.py:156
+#: GitHub.py:180
 msgid "Checking-out to the release version "
 msgstr ""
 
-#: GitHub.py:201
+#: GitHub.py:225
 msgid "Error checking-out to "
 msgstr ""
 
-#: GitHub.py:222
+#: GitHub.py:246
 msgid "Attemping to run update again..."
-msgstr ""
+msgstr "Intentando actualizar de nuevo..."
 
 #: Nginx.py:60
 msgid "Error opening the file "
 msgstr ""
+
+#: Telegram.py:22
+msgid "Commands"
+msgstr "Órdenes"
+
+#: Telegram.py:38
+msgid ""
+"SYSTEM RESET\n"
+" Available instructions:\n"
+msgstr ""
+"SISTEMA RESETEADO\n"
+" Comandos disponibles:\n"
+
+#: Telegram.py:64
+msgid "Select the command to execute"
+msgstr "Selecciona el comando a ejecutar"
+
+#: Telegram.py:66
+msgid "No available commands to execute"
+msgstr "No hay comandos disponibles"
+
+#: Telegram.py:68
+msgid "Sorry but I do not understand you!"
+msgstr "Lo siento pero no te entiendo!"
+
+#: Telegram.py:74
+msgid "Got it, executed "
+msgstr "Lo pillé, ejecutado "
+
+#: Telegram.py:74
+msgid " with payload: "
+msgstr " con parámetros: "
 
 #: Watchdogs.py:65
 msgid "Devices polling watchdog forced a reset"

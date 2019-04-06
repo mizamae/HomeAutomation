@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 11:20+0100\n"
+"POT-Creation-Date: 2019-04-05 20:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -630,7 +630,8 @@ msgstr "Unidades de la variable"
 #: models.py:645
 #, python-format
 msgid "The variable \"%s\" has kept the value of %i during %ih, %im and %is"
-msgstr "La variable \"%s\" ha mantenido el valor %i durante %i h, %i min y %i seg"
+msgstr ""
+"La variable \"%s\" ha mantenido el valor %i durante %i h, %i min y %i seg"
 
 #: models.py:647
 #, python-format
@@ -750,11 +751,11 @@ msgstr "Español"
 msgid "English"
 msgstr "Inglés"
 
-#: tasks.py:71
+#: tasks.py:75
 msgid "DBs uploaded to GDrive"
 msgstr "BBDD subidas a GDrive"
 
-#: tasks.py:73
+#: tasks.py:77
 msgid "Unable to autenticate to GDrive"
 msgstr "Imposible la autenticación con Google Drive"
 

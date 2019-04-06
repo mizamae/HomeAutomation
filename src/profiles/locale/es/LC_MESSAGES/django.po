@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 11:20+0100\n"
+"POT-Creation-Date: 2019-04-05 20:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,40 +18,44 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: models.py:40
+#: models.py:41
 msgid "Profile picture"
 msgstr "Foto de perfil"
 
-#: models.py:44
+#: models.py:45
 msgid "Short Bio"
 msgstr "Biografia"
 
-#: models.py:45
+#: models.py:46
 msgid "Email verified"
 msgstr "Email verificado"
 
-#: models.py:46
+#: models.py:47
 msgid "Location tracking"
 msgstr "Seguimiento de ubicación"
 
-#: models.py:47
+#: models.py:48
 msgid "Last known latitude"
 msgstr "Última latitud conocida"
 
-#: models.py:48
+#: models.py:49
 msgid "Last known longitude"
 msgstr "Última longitud conocida"
 
-#: models.py:49
+#: models.py:50
 msgid "Last known position accuracy"
 msgstr "Última precisión de ubicación conocida"
 
-#: models.py:52
+#: models.py:53
 msgid "Activate web-push notifications"
 msgstr ""
 
-#: models.py:53
+#: models.py:54
 msgid "Web-push token"
+msgstr ""
+
+#: models.py:56
+msgid "General"
 msgstr ""
 
 #~ msgid "Distance from "
