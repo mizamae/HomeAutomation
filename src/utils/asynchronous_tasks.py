@@ -37,7 +37,7 @@ class BackgroundTimer(object):
     
     def __init__(self, callable,threadName,interval=1,callablekwargs={},
                  repeat=False,triggered=False,lifeSpan=None,
-                 onThreadInit=None,onInitkwargs={},log=False):
+                 onThreadInit=None,onInitkwargs={},onThreadEnd=None,onEndkwargs={},log=False):
         """ Constructor
         :type interval: int
         :param interval: Check interval, in seconds
@@ -50,11 +50,13 @@ class BackgroundTimer(object):
             self.callable=self._dummycallable
             
         self.callablekwargs=callablekwargs
-        self.onInitkwargs=onInitkwargs
         self.threadName=threadName
         self.initiatedOn=datetime.datetime.now()
         self.lifeSpan=lifeSpan
         self.onThreadInit=onThreadInit
+        self.onInitkwargs=onInitkwargs
+        self.onThreadEnd=onThreadEnd
+        self.onEndkwargs=onEndkwargs
         
         exists=self.isAlive()
         if not exists: 
@@ -77,6 +79,10 @@ class BackgroundTimer(object):
         try:
             self.thread.kill()
             logger.info("A thread with the ident " + str(self.thread.ident) + " has been killed")
+
+            if hasattr(self.onThreadEnd, "__call__"):
+                self.onThreadEnd(**self.onEndkwargs)
+            
         except:
             pass
     
