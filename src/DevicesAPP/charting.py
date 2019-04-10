@@ -48,6 +48,27 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
             #chart['cols'].append(tempnameEmpty)
             df_temp=pd.DataFrame()
         
+        if not df_temp.empty:
+            nulls=df_temp.isnull().sum() # number of null elements per column
+            rows=df_temp.shape[0]    # total number of rows
+            for i,null in enumerate(nulls):
+                variable=vars.split(',')[i+1]
+                firstData=df_temp.iloc[0, df_temp.columns.get_loc(variable.replace('"',''))]
+                if null==rows: #or firstData==None or np.isnan(firstData):  # if all the rows are null or the first row is not numeric
+                    sql='SELECT timestamp,'+variable+' FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND '+variable +' not null ORDER BY timestamp DESC LIMIT 1'
+                    row=DB.executeTransaction(SQLstatement=sql,arg=[])
+                    if row != []:
+                        row=row[0][1]
+                    elif not df.empty: # if df already has data
+                        try: # try getting the last value from df
+                            row=df.iloc[-1, df.columns.get_loc(variable.replace('"',''))]
+                        except:
+                            row=None
+                    else:
+                        row=None
+                    df_temp.iloc[0, df_temp.columns.get_loc(variable.replace('"',''))]=row
+                    df_temp.iloc[-1, df_temp.columns.get_loc(variable.replace('"',''))]=row
+                
         for var in tempnameEmpty:
             df_temp[var['name']] = np.nan
         
@@ -58,8 +79,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
     chart['cols'].append(tempname + tempnameEmpty)
     
     if not df.empty:
-        nulls=df.isnull().sum() # number of null elements per column
-        rows=df.shape[0]    # total number of rows
+        
 #         # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
 #         addedtime=pd.to_datetime(arg=df.index.values[0])-fromDate.replace(tzinfo=None)
 #         if addedtime>datetime.timedelta(hours=1):
