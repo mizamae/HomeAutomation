@@ -212,7 +212,7 @@ class IBERDROLA:
             try:
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
-                                repeat=True,triggered=False,lifeSpan=8*60*60,onThreadInit=IBERDROLA.login,
+                                repeat=True,triggered=False,lifeSpan=3*60,onThreadInit=IBERDROLA.login,
                                 onInitkwargs={'user':user,'password':password})
                 from time import sleep
                 i=0
