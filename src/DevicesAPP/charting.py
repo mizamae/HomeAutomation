@@ -80,22 +80,22 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
     
     if not df.empty:
         
-#         # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
-#         addedtime=pd.to_datetime(arg=df.index.values[0])-fromDate.replace(tzinfo=None)
-#         if addedtime>datetime.timedelta(hours=1):
-#             ts = pd.to_datetime(fromDate.replace(tzinfo=None))
-#             new_row = pd.DataFrame([df.iloc[0].values], columns = df.columns, index=[ts])
-#             df=pd.concat([pd.DataFrame(new_row),df], ignore_index=False)
-#             
-#         # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
-#         addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=df.index.values[-1])
-#         if addedtime>datetime.timedelta(hours=1):
-#             ts = pd.to_datetime(toDate.replace(tzinfo=None))
-#             row_values=df.iloc[0].values
-#             for i,element in enumerate(row_values):
+        # TO FORCE THAT THE INITIAL ROW CONTAINS THE INITIAL DATE
+        addedtime=pd.to_datetime(arg=df.index.values[0])-fromDate.replace(tzinfo=None)
+        if addedtime>datetime.timedelta(hours=1):
+            ts = pd.to_datetime(fromDate.replace(tzinfo=None))
+            new_row = pd.DataFrame([df.iloc[0].values], columns = df.columns, index=[ts])
+            df=pd.concat([pd.DataFrame(new_row),df], ignore_index=False)
+             
+        # TO FORCE THAT THE LAST ROW CONTAINS THE END DATE
+        addedtime=toDate.replace(tzinfo=None)-pd.to_datetime(arg=df.index.values[-1])
+        if addedtime>datetime.timedelta(hours=1):
+            ts = pd.to_datetime(toDate.replace(tzinfo=None))
+            row_values=df.iloc[-1].values
+#             for i,element in enumerate(row_values): # this is to force Nan on missing data
 #                 row_values[i]=np.nan
-#             new_row = pd.DataFrame([row_values], columns = df.columns, index=[ts])
-#             df=pd.concat([pd.DataFrame(new_row),df], ignore_index=False)
+            new_row = pd.DataFrame([row_values], columns = df.columns, index=[ts])
+            df=pd.concat([pd.DataFrame(new_row),df], ignore_index=False)
         
         # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
         df_int=df.resample('1T').fillna(method='ffill').fillna(method='bfill')
