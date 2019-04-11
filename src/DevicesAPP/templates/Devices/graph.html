@@ -357,7 +357,8 @@
 				    			var item = document.createElement('li');
 			    				if (stats_labels[k].includes('on_') || stats_labels[k].includes('off_'))
 			    				{
-			    					if (stats_data[stats_labels[k]].length>0){var value=stats_data[stats_labels[k]][j-1][l];}
+			    					if (stats_data[stats_labels[k]].length>0 && stats_data[stats_labels[k]][j-1]!= null)
+			    					{var value=stats_data[stats_labels[k]][j-1][l];}
 			    					else{var value=null;}
 			    						
 		    						text=text.concat(stats_labels[k],' value: ',value,' [s] (',Math.round(value/totalTime*100*100)/100,'%)');
