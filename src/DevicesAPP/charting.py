@@ -68,7 +68,30 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                         row=None
                     df_temp.iloc[0, df_temp.columns.get_loc(variable.replace('"',''))]=row
                     df_temp.iloc[-1, df_temp.columns.get_loc(variable.replace('"',''))]=row
-                
+        else:
+            ts = pd.to_datetime(fromDate.replace(tzinfo=None))
+            values=[]
+            for i,col in enumerate(df_temp.columns):
+                variable=vars.split(',')[i+1]
+                sql='SELECT timestamp,'+variable+' FROM "'+table +'" WHERE timestamp < "' + str(fromDate).split('+')[0]+ '" AND '+variable +' not null ORDER BY timestamp DESC LIMIT 1'
+                row=DB.executeTransaction(SQLstatement=sql,arg=[])
+                if row != []:
+                    values.append(row[0][1])
+                elif not df.empty: # if df already has data
+                    try: # try getting the last value from df
+                        values.append(df.iloc[-1, df.columns.get_loc(variable.replace('"',''))])
+                    except:
+                        values.append(None)
+                else:
+                    values.append(None)
+
+            # inserts None values in the first and last rows with timestamp fromDate and toDate
+            new_row = pd.DataFrame(values, columns = df_temp.columns, index=[ts])
+            df_temp=pd.concat([pd.DataFrame(new_row),df_temp], ignore_index=False)
+            ts = pd.to_datetime(toDate.replace(tzinfo=None))
+            new_row = pd.DataFrame(values, columns = df_temp.columns, index=[ts])
+            df_temp=pd.concat([pd.DataFrame(new_row),df_temp], ignore_index=False)
+            
         for var in tempnameEmpty:
             df_temp[var['name']] = np.nan
         
