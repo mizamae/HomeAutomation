@@ -104,7 +104,7 @@ class MainDeviceVars(models.Model):
     SQLinsertRegister = ''' INSERT INTO %s(*) VALUES(?) ''' # the * will be replaced by the column names and the ? by the values 
     SQLupdateRegister = ''' UPDATE %s SET *=$ WHERE timestamp=? ''' # the * will be replaced by the column name,the ? by the pk and the $ by the value 
     
-    Label = models.CharField(max_length=50,unique=True,help_text=str(_('Unique identifier for the variable.')))
+    Label = models.CharField(max_length=150,unique=True,help_text=str(_('Unique identifier for the variable.')))
     Value = models.FloatField(null=True,help_text=str(_('Value of the variable.')))
     DataType= models.CharField(max_length=20,choices=DATATYPE_CHOICES,help_text=str(_('Type of data of the variable.')))
     PlotType= models.CharField(max_length=10,choices=PLOTTYPE_CHOICES,default=LINE_PLOT,help_text=str(_('The type of plot desired for the variable.')))
