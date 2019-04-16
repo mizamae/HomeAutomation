@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.utils.functional import lazy
 from django.core.cache import cache
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator,MaxValueValidator
 import datetime
 import sys
 import os
@@ -426,7 +426,7 @@ class AdditionalCalculations(models.Model):
     Timespan= models.PositiveSmallIntegerField(help_text=_('What is the time span for the calculation'),choices=TIMESPAN_CHOICES,default=1)
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
-    Delay= models.PositiveSmallIntegerField(help_text=_('What is the delay (in hours) for the calculation from 00:00 h'),default=0)
+    Delay= models.PositiveSmallIntegerField(help_text=_('What is the delay (in hours) for the calculation from 00:00 h'),default=0,validators=[MinValueValidator(0),MaxValueValidator(23)])
     
     def __init__(self,*args,**kwargs):
         try:
