@@ -426,6 +426,7 @@ class AdditionalCalculations(models.Model):
     Timespan= models.PositiveSmallIntegerField(help_text=_('What is the time span for the calculation'),choices=TIMESPAN_CHOICES,default=1)
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
+    Delay= models.PositiveSmallIntegerField(help_text=_('What is the delay (in hours) for the calculation from 00:00 h'),default=0)
     
     def __init__(self,*args,**kwargs):
         try:
@@ -470,7 +471,7 @@ class AdditionalCalculations(models.Model):
             now=datetime.datetime.now()
             if self.Periodicity==1 and now.minute==0: # hourly calculation launched at minute XX:00
                 return True
-            elif now.hour==0 and now.minute==0:
+            elif now.hour==self.Delay and now.minute==0:
                 if self.Periodicity==2: # daily calculation launched on next day at 00:00
                     return True
                 elif self.Periodicity==3 and now.weekday()==0: # weekly calculation launched on Monday at 00:00
