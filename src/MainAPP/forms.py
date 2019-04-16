@@ -119,7 +119,24 @@ class SiteSettingsForm(ModelForm):
         js = ('SiteSettingsFormAnimations.js',)
         
 class AdditionalCalculationsForm(ModelForm):
+    
+    SourceVar2=forms.ModelChoiceField(queryset=models.AutomationVariables.objects.all(),
+                                 label=_('Select the other variable'),required = False)
+    TwoVarsOperation=forms.ChoiceField(help_text=_('Select the operation between the two vars'),
+                                                     required=False)
+    Units = forms.CharField(help_text=_('Introduce the units for the resultant value'),
+                            max_length=10,required=False)
+    
     def __init__(self, *args, **kwargs):
+        initial_arguments = kwargs.get('initial', None)
+        updated_initial = {}
+        instance=kwargs.get('instance',None)
+        if instance!=None and instance.Miscelaneous!=None:
+            Misc=json.loads(instance.Miscelaneous)
+            updated_initial['SourceVar2']=Misc.get('SourceVar2',None)
+            updated_initial['TwoVarsOperation']=Misc.get('TwoVarsOperation',None)
+            updated_initial['Units']=Misc.get('Units',None)
+            kwargs.update(initial=updated_initial)
         super(AdditionalCalculationsForm, self).__init__(*args, **kwargs)
         # If you pass FormHelper constructor a form instance
         # It builds a default layout with all its fields
@@ -127,10 +144,10 @@ class AdditionalCalculationsForm(ModelForm):
         self.helper.labels_uppercase = True
         self.helper.label_class = 'col-sm-6'
         self.helper.field_class = 'col-sm-6'
-#         self.helper.form_id = 'id-DeviceForm'
         self.helper.form_class = 'form-horizontal'
         self.helper.form_method = 'post'
-         
+        
+        self.fields['TwoVarsOperation'].choices=models.AdditionalCalculations.TWOVARS_OPERATION_CHOICES
         self.fields['SourceVar'].label = _("Select the source variable")        
         self.fields['Timespan'].label = _("Select the time-span for the calculation")
         self.fields['Periodicity'].label = _("Select the calculation update frequency")
@@ -143,9 +160,13 @@ class AdditionalCalculationsForm(ModelForm):
             Field('Periodicity', css_class='input-sm'),
             Field('Calculation', css_class='input-sm'),
             Field('Delay', css_class='input-sm'),
-            Submit('submit', _('Submit'),css_class='btn-primary'),
             )
-     
+        
+        self.helper.layout.append(Field('SourceVar2', css_class='input-sm'))
+        self.helper.layout.append(Field('TwoVarsOperation', css_class='input-sm'))
+        self.helper.layout.append(Field('Units', css_class='input-sm'))
+        self.helper.layout.append(Submit('submit', _('Submit'),css_class='btn-primary'))
+        
     def save(self, *args, **kwargs):
         instance=super().save(commit=False)
         instance.store2DB()
@@ -157,11 +178,31 @@ class AdditionalCalculationsForm(ModelForm):
         Timespan = cleaned_data['Timespan']
         SourceVar = cleaned_data['SourceVar']
         Calculation = cleaned_data['Calculation']
+        if Calculation==7:
+            try:
+                SourceVar2_pk = cleaned_data['SourceVar2'].pk
+                TwoVarsOperation= cleaned_data['TwoVarsOperation']
+                Units= cleaned_data['Units']
+            except:
+                SourceVar2_pk=None
+                TwoVarsOperation= None
+                Units= None
+        else:
+            SourceVar2_pk=None
+            TwoVarsOperation= None
+            Units= None
+        misc={'SourceVar2':SourceVar2_pk,'TwoVarsOperation':TwoVarsOperation,'Units':Units}
+         
+        cleaned_data.update(Miscelaneous=json.dumps(misc))
         return cleaned_data
      
     class Meta:
         model = models.AdditionalCalculations
-        fields=['SourceVar','Timespan','Periodicity','Calculation','Delay']
+        fields=['SourceVar','Timespan','Periodicity','Calculation','Delay','Miscelaneous']
+        widgets = {'Miscelaneous': forms.HiddenInput()}
+    
+    class Media:
+        js = ('AdditionalCalculationFormAnimations.js',)
         
 class inlineDailyForm(ModelForm):  
     def __init__(self, *args, **kwargs):

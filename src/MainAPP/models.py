@@ -419,14 +419,28 @@ class AdditionalCalculations(models.Model):
         (4,_('Min value')),
         (5,_('Cummulative sum')),
         (6,_('Integral over time')),
+        (7,_('Operation with two variables')),
     )
-      
+    
+    TWOVARS_OPERATION_CHOICES=(
+        (0,_('Sum')),
+        (1,_('Substraction')),
+        (2,_('Product')),
+        (3,_('Division')),
+        (4,_('Sum then sum')),
+        (5,_('Cummulative sum')),
+        (6,_('Integral over time')),
+        (7,_('Operation with two variables')),
+    )
+    
     SinkVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sinkvar',blank=True,null=True) # variable that holds the calculation
     SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
     Timespan= models.PositiveSmallIntegerField(help_text=_('What is the time span for the calculation'),choices=TIMESPAN_CHOICES,default=1)
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
     Delay= models.PositiveSmallIntegerField(help_text=_('What is the delay (in hours) for the calculation from 00:00 h'),default=0,validators=[MinValueValidator(0),MaxValueValidator(23)])
+    
+    Miscelaneous = models.CharField(max_length=1000,blank=True,null=True) # field that gathers data in json for calculations on more variables
     
     def __init__(self,*args,**kwargs):
         try:
@@ -440,26 +454,37 @@ class AdditionalCalculations(models.Model):
       
     def store2DB(self):
         from DevicesAPP.constants import DTYPE_FLOAT
-        #import DevicesAPP.models
         label= str(self)
         try:
             sinkVAR=AutomationVariables.objects.get(Label=label)
+            if self.Calculation==7: # it is a two var calculation
+                Misc=json.loads(self.Miscelaneous)
+                sinkVAR.Units=Misc['Units']
+                sinkVAR.store2DB()
         except:
-            if self.Calculation>1: # it is not a duty calculation
+            if self.Calculation!=7: # it is not a duty calculation
                 #VAR=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=DTYPE_FLOAT,Units=self.SourceVar.Units,UserEditable=False)
                 data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':self.SourceVar.Units,'UserEditable':False}
+            elif self.Calculation==7: # it is a two var calculation
+                Misc=json.loads(self.Miscelaneous)
+                data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':Misc['Units'],'UserEditable':False}
             else:
                 #VAR=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=DTYPE_FLOAT,Units='%',UserEditable=False)
                 data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':'%','UserEditable':False}
             MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
-            #VAR.store2DB()
             sinkVAR=AutomationVariables.objects.get(Label=label)
         self.SinkVar=sinkVAR
         self.save()
          
     def __str__(self):
         try:
-            return str(self.get_Calculation_display())+'('+self.SourceVar.Label + ')'
+            if self.Calculation!=7:
+                return str(self.get_Calculation_display())+'('+self.SourceVar.Label + ')'
+            else:
+                Misc=json.loads(self.Miscelaneous)
+                AVAR=AutomationVariables.objects.get(pk=int(Misc['SourceVar2']))
+                operation=str(self.TWOVARS_OPERATION_CHOICES[int(Misc['TwoVarsOperation'])][1])
+                return operation+'('+self.SourceVar.Label +' vs ' +AVAR.Label+')'
         except:
             return self.key
       
@@ -604,7 +629,7 @@ class AutomationVariables(models.Model):
         verbose_name = _('Automation variable')
         verbose_name_plural = _('Automation variables')
         
-    Label = models.CharField(max_length=50)
+    Label = models.CharField(max_length=150)
     Tag = models.CharField(max_length=50)
     Device = models.CharField(max_length=50)
     Table = models.CharField(max_length=50)

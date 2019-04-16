@@ -40,8 +40,8 @@ def SignalCreateMainDeviceVars_handler(sender, **kwargs):
     Instance=MainDeviceVars(**data)
     try:
         Instance.store2DB()
-    except:
-        pass    # pass if the mainvar already exists
+    except Exception as exc:
+        print('Error:' + str(exc))
     
 @receiver(MainAPP.signals.SignalUpdateValueMainDeviceVars, dispatch_uid="SignalUpdateValueMainDeviceVars_DevicesAPP_receiver")
 def SignalUpdateValueMainDeviceVars_handler(sender, **kwargs):
