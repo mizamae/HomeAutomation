@@ -19,7 +19,10 @@ class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
     printCalculation.short_description = _("Description")
     
     def printPeriodicity(self,instance):
-        return instance.get_Periodicity_display()
+        if instance.Delay!=0:
+            return instance.get_Periodicity_display() + ' - Delay ' + str(instance.Delay)+' h'
+        else:
+            return instance.get_Periodicity_display()
      
     printPeriodicity.short_description = _("Periodicity")
     
