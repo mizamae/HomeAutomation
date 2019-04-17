@@ -141,15 +141,17 @@ class MainDeviceVars(models.Model):
         else:
             self.updateValue(newValue=newValue,**kwargs)
         
-    def updateLabel(self,newLabel):
+    def updateLabel(self,newLabel,updateAVARs=True):
         self.Label=newLabel
         self.save(update_fields=['Label'])
-        self.updateAutomationVars()
+        if updateAVARs:
+            self.updateAutomationVars()
     
-    def updateUnits(self,newUnits):
-        self.Label=newLabel
+    def updateUnits(self,newUnits,updateAVARs):
+        self.Label=newUnits
         self.save(update_fields=['Units'])
-        self.updateAutomationVars()
+        if updateAVARs:
+            self.updateAutomationVars()
         
     def updateValue(self,newValue,timestamp=None,writeDB=True,force=False):
         if newValue!=self.Value or force:

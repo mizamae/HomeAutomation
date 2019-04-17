@@ -428,13 +428,12 @@ class AdditionalCalculations(models.Model):
         (2,_('Product')),
         (3,_('Division')),
         (4,_('Sum then sum')),
-        (5,_('Cummulative sum')),
-        (6,_('Integral over time')),
-        (7,_('Operation with two variables')),
+        (5,_('Product then sum')),
     )
     
     SinkVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sinkvar',blank=True,null=True) # variable that holds the calculation
-    SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.CASCADE,related_name='sourcevar') # variable whose change triggers the calculation
+    SourceVar= models.ForeignKey('MainAPP.AutomationVariables',on_delete=models.DO_NOTHING,related_name='sourcevar') # variable whose change triggers the calculation
+    Scale=models.FloatField(help_text=_('Constant to multiply the result of the calculation'),default=1)
     Timespan= models.PositiveSmallIntegerField(help_text=_('What is the time span for the calculation'),choices=TIMESPAN_CHOICES,default=1)
     Periodicity= models.PositiveSmallIntegerField(help_text=_('How often the calculation will be updated'),choices=PERIODICITY_CHOICES)
     Calculation= models.PositiveSmallIntegerField(choices=CALCULATION_CHOICES)
@@ -455,21 +454,21 @@ class AdditionalCalculations(models.Model):
     def store2DB(self):
         from DevicesAPP.constants import DTYPE_FLOAT
         label= str(self)
-        try:
-            sinkVAR=AutomationVariables.objects.get(Label=label)
+        if self.SinkVar:
+            sinkVAR=self.SinkVar
             if self.Calculation==7: # it is a two var calculation
                 Misc=json.loads(self.Miscelaneous)
-                sinkVAR.Units=Misc['Units']
-                sinkVAR.store2DB()
-        except:
-            if self.Calculation!=7: # it is not a duty calculation
-                #VAR=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=DTYPE_FLOAT,Units=self.SourceVar.Units,UserEditable=False)
+                sinkVAR.updateLabel(label)
+                sinkVAR.updateUnits(Misc['Units'])
+            else:
+                sinkVAR.updateLabel(label)
+        else:
+            if not self.Calculation in [0,1,7]: # it is not a duty calculation nor a two var calc
                 data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':self.SourceVar.Units,'UserEditable':False}
             elif self.Calculation==7: # it is a two var calculation
                 Misc=json.loads(self.Miscelaneous)
                 data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':Misc['Units'],'UserEditable':False}
             else:
-                #VAR=DevicesAPP.models.MainDeviceVars(Label=label,Value=0,DataType=DTYPE_FLOAT,Units='%',UserEditable=False)
                 data={'Label':label,'Value':0,'DataType':DTYPE_FLOAT,'Units':'%','UserEditable':False}
             MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
             sinkVAR=AutomationVariables.objects.get(Label=label)
@@ -489,6 +488,8 @@ class AdditionalCalculations(models.Model):
             return self.key
       
     def checkTrigger(self):
+#         if self.Calculation==7:
+#             return True
         if self.Periodicity==0:
             return False
         else:
@@ -509,7 +510,9 @@ class AdditionalCalculations(models.Model):
         import datetime
         import calendar
         
-        toDate=timezone.now() 
+        toDate=timezone.now()-datetime.timedelta(hours=self.Delay)
+        
+        #toDate=datetime.datetime(year=2019,month=4,day=7)
         
         if self.Timespan==0: # Every hour
             offset=datetime.timedelta(hours=1)
@@ -552,20 +555,46 @@ class AdditionalCalculations(models.Model):
             self.df_interpolated=df_resampled.interpolate(method='zero')
                       
             if self.Calculation==0:     # Duty cycle OFF
-                result= self.duty(level=False)
+                result= self.duty(level=False)*self.Scale
             if self.Calculation==1:     # Duty cycle ON
-                result= self.duty(level=True)
+                result= self.duty(level=True)*self.Scale
             elif self.Calculation==2:   # Mean value
-                result= self.df_interpolated.mean()[0]
+                result= self.df_interpolated.mean()[0]*self.Scale
             elif self.Calculation==3:   # Max value
-                result= self.df.max()[0]
+                result= self.df.max()[0]*self.Scale
             elif self.Calculation==4:   # Min value
-                result= self.df.min()[0]
+                result= self.df.min()[0]*self.Scale
             elif self.Calculation==5:   # Cummulative sum
-                result= self.df[self.key].cumsum().iloc[-1]
+                result= self.df[self.key].cumsum().iloc[-1]*self.Scale
             elif self.Calculation==6:   # integral over time
                 from scipy import integrate
-                result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)
+                result=integrate.trapz(y=self.df_interpolated[self.key], x=self.df_interpolated[self.key].index.astype(np.int64) / 10**9)*self.Scale
+            elif self.Calculation==7:   # two var calculation
+                Misc=json.loads(self.Miscelaneous)
+                var2_pk=Misc['SourceVar2']
+                TwoVarsOperation=Misc['TwoVarsOperation']
+                VAR2=AutomationVariables.objects.get(pk=int(var2_pk))
+                query=VAR2.getQuery(fromDate=fromDate,toDate=toDate)
+                self.df[VAR2.Tag]=pd.read_sql_query(sql=query['sql'],con=query['conn'],index_col='timestamp')
+                self.df=self.df.fillna(method='ffill').fillna(method='bfill')
+                if int(TwoVarsOperation)==0: # sum
+                    self.df['result']=self.df[self.key]+self.df[VAR2.Tag]
+                    result=(self.df['result']*self.Scale).to_frame()
+                elif int(TwoVarsOperation)==1: # substraction
+                    self.df['result']=self.df[self.key]-self.df[VAR2.Tag]
+                    result=(self.df['result']*self.Scale).to_frame()
+                elif int(TwoVarsOperation)==2: # product
+                    self.df['result']=self.df[self.key]*self.df[VAR2.Tag]
+                    result=(self.df['result']*self.Scale).to_frame()
+                elif int(TwoVarsOperation)==3: # division
+                    self.df['result']=self.df[self.key]/self.df[VAR2.Tag]
+                    result=(self.df['result']*self.Scale).to_frame()
+                elif int(TwoVarsOperation)==4: # sum then sum
+                    self.df['result']=self.df[self.key]+self.df[VAR2.Tag]
+                    result=self.df['result'].sum()*self.Scale
+                elif int(TwoVarsOperation)==5: # product then sum
+                    self.df['result']=self.df[self.key]*self.df[VAR2.Tag]
+                    result=self.df['result'].sum()*self.Scale
         else:
             if self.Calculation<=1:     # Duty cycle OFF,ON
                 result=0
@@ -617,11 +646,16 @@ class AdditionalCalculations(models.Model):
         else:
             return None
   
+
 @receiver(post_save, sender=AdditionalCalculations, dispatch_uid="update_AdditionalCalculations")
 def update_AdditionalCalculations(sender, instance, update_fields,**kwargs):
-    if kwargs['created']:   # an instance has been created
-        logger.info('Se ha creado el calculo ' + str(instance))
-         
+    if not kwargs['created']:   # an instance has been modified
+        pass
+            
+@receiver(post_delete, sender=AdditionalCalculations, dispatch_uid="postdelete_AdditionalCalculations")
+def predelete_AdditionalCalculations(sender, instance, **kwargs):   
+    MainAPP.signals.SignalDeleteMainDeviceVars.send(sender=AdditionalCalculations,Tag=instance.SinkVar.Tag)
+
 
 class AutomationVariables(models.Model):
     class Meta:
@@ -650,6 +684,18 @@ class AutomationVariables(models.Model):
         self.full_clean()
         super().save() 
     
+    def updateLabel(self,newLabel):
+        self.Label=newLabel
+        self.save(update_fields=['Label'])
+        MainAPP.signals.SignalAutomationVariablesUpdated.send(sender=None,**{"Tag":self.Tag,"Label":self.Label,
+                                                                             "Device":self.Device,"Units":self.Units})
+    
+    def updateUnits(self,newUnits):
+        self.Units=newUnits
+        self.save(update_fields=['Units'])
+        MainAPP.signals.SignalAutomationVariablesUpdated.send(sender=None,**{"Tag":self.Tag,"Label":self.Label,
+                                                                             "Device":self.Device,"Units":self.Units})
+            
     def calculateDuty(self):
         #logger.info("Enters calculateDuty for var "+str(self))
         if self.CalculateDuty:
@@ -833,10 +879,7 @@ class AutomationVariables(models.Model):
             for rule in rules:
                 #if not '"ActionType": "z"' in rule.Rule.Action:
                 rule.Rule.execute()
-                    
-@receiver(post_save, sender=AutomationVariables, dispatch_uid="update_AutomationVariables")
-def update_AutomationVariables(sender, instance, update_fields,**kwargs):   
-    pass
+
 
 class AutomationVarWeeklySchedules(models.Model):
     class Meta:

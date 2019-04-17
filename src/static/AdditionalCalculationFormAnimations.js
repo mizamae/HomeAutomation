@@ -1,5 +1,5 @@
-var fieldSourceVar2,fieldTwoVarsOperation,fieldCalculation;
-var rowfieldSourceVar2,rowfieldTwoVarsOperation;
+var fieldUnits,fieldSourceVar2,fieldTwoVarsOperation,fieldCalculation;
+var rowfieldUnits,rowfieldSourceVar2,rowfieldTwoVarsOperation;
 
 var group;
 var fieldset;
@@ -21,6 +21,12 @@ $(function()
     	{
 			fieldTwoVarsOperation=document.getElementById("id_TwoVarsOperation");
 	    	rowfieldTwoVarsOperation=rows[i];
+    		rows[i].style.display = 'none';
+    	}
+		if (rows[i].getElementsByClassName("control-group  field-Units").length>0)
+    	{
+			fieldUnits=document.getElementById("id_Units");
+			rowfieldUnits=rows[i];
     		rows[i].style.display = 'none';
     	}
 		if (rows[i].getElementsByClassName("control-group  field-Calculation").length>0)
@@ -45,10 +51,12 @@ function CalculationTypeChange()
 	if (selectedAction=="7"){
 		rowfieldSourceVar2.style.display = 'block';
 		rowfieldTwoVarsOperation.style.display = 'block';
+		rowfieldUnits.style.display = 'block';
 	}
 	else{
 		rowfieldSourceVar2.style.display = 'none';
 		rowfieldTwoVarsOperation.style.display = 'none';
+		rowfieldUnits.style.display = 'none';
 	}
 	
 }

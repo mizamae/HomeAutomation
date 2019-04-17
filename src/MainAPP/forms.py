@@ -148,7 +148,8 @@ class AdditionalCalculationsForm(ModelForm):
         self.helper.form_method = 'post'
         
         self.fields['TwoVarsOperation'].choices=models.AdditionalCalculations.TWOVARS_OPERATION_CHOICES
-        self.fields['SourceVar'].label = _("Select the source variable")        
+        self.fields['SourceVar'].label = _("Select the source variable")
+        self.fields['Scale'].label = _("Enter a constant to scale the result")      
         self.fields['Timespan'].label = _("Select the time-span for the calculation")
         self.fields['Periodicity'].label = _("Select the calculation update frequency")
         self.fields['Calculation'].label = _("Select the calculation")
@@ -156,6 +157,7 @@ class AdditionalCalculationsForm(ModelForm):
          
         self.helper.layout = Layout(
             Field('SourceVar', css_class='input-sm'),
+            Field('Scale', css_class='input-sm'),
             Field('Timespan', css_class='input-sm'),
             Field('Periodicity', css_class='input-sm'),
             Field('Calculation', css_class='input-sm'),
@@ -198,7 +200,7 @@ class AdditionalCalculationsForm(ModelForm):
      
     class Meta:
         model = models.AdditionalCalculations
-        fields=['SourceVar','Timespan','Periodicity','Calculation','Delay','Miscelaneous']
+        fields=['SourceVar','Scale','Timespan','Periodicity','Calculation','Delay','Miscelaneous']
         widgets = {'Miscelaneous': forms.HiddenInput()}
     
     class Media:

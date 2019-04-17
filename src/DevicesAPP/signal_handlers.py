@@ -42,6 +42,27 @@ def SignalCreateMainDeviceVars_handler(sender, **kwargs):
         Instance.store2DB()
     except Exception as exc:
         print('Error:' + str(exc))
+
+@receiver(MainAPP.signals.SignalDeleteMainDeviceVars, dispatch_uid="SignalDeleteMainDeviceVars_DevicesAPP_receiver")
+def SignalDeleteMainDeviceVars_handler(sender, **kwargs):
+    Tag=kwargs['Tag']
+    Instance=MainDeviceVars.objects.get(pk=int(Tag))
+    try:
+        Instance.delete()
+    except Exception as exc:
+        print('Error:' + str(exc))
+        
+@receiver(MainAPP.signals.SignalAutomationVariablesUpdated, dispatch_uid="SignalAutomationVariablesUpdated_DevicesAPP_receiver")
+def SignalAutomationVariablesUpdated_handler(sender, **kwargs):
+    Tag=kwargs['Tag']
+    Label=kwargs['Label']
+    Units=kwargs['Units']
+    Device=kwargs['Device']
+    if Device=='MainVars':
+        Instance=MainDeviceVars.objects.get(pk=int(Tag))
+        Instance.updateLabel(Label,updateAVARs=False)
+        Instance.updateUnits(Units,updateAVARs=False)
+
     
 @receiver(MainAPP.signals.SignalUpdateValueMainDeviceVars, dispatch_uid="SignalUpdateValueMainDeviceVars_DevicesAPP_receiver")
 def SignalUpdateValueMainDeviceVars_handler(sender, **kwargs):
@@ -49,5 +70,5 @@ def SignalUpdateValueMainDeviceVars_handler(sender, **kwargs):
     timestamp=kwargs['timestamp']
     newValue=kwargs['newValue']
     force=kwargs['force']
-    Instance=MainDeviceVars.objects.get(pk=Tag)
+    Instance=MainDeviceVars.objects.get(pk=int(Tag))
     Instance.updateValue(newValue=newValue,timestamp=timestamp,writeDB=True,force=force)
