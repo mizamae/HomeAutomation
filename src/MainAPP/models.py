@@ -699,27 +699,43 @@ class AutomationVariables(models.Model):
     def calculateDuty(self):
         #logger.info("Enters calculateDuty for var "+str(self))
         if self.CalculateDuty:
-            values=self.getValues(number=3)
-            now=values[0]
-            prev=values[1]
-            prevprev=values[2]
-            seg=(now[0]-prevprev[0]).seconds
-            dias=(now[0]-prevprev[0]).days
-            horas=0
-            mins=0
-            if seg/60>=1:
-                mins=int(seg/60)
-                seg=seg-mins*60
-                if mins/60>=1:
-                    horas=int(mins/60)
-                    mins=mins-horas*60
-            if horas!=0 and mins!=0 and seg!=0:
-                text=str(_('The variable "%s" has kept the value of %i during %ih, %im and %is')) % (self.Label,prev[1],horas,mins,seg)
-            elif horas==0 and mins!=0:
-                text=str(_('The variable "%s" has kept the value of %i during %im and %is')) % (self.Label,prev[1],mins,seg)
-            else:
-                text=str(_('The variable "%s" has kept the value of %i during %is')) % (self.Label,prev[1],seg)
-            PublishEvent(Severity=0,Text=text,Code=str(self.pk)+'duty'+str(prev[1]),Webpush=True)
+            sql='SELECT a.* FROM "*table*" AS a WHERE a."*tag*" == *value* ORDER BY a.timestamp DESC LIMIT 1'
+            from utils.BBDD import getRegistersDBInstance
+            DB=getRegistersDBInstance()
+            now=DB.executeTransaction(SQLstatement=sql.replace("*table*",self.Table)
+                                                        .replace("*value*",self.getLatestValueString())
+                                                        .replace("*tag*",self.Tag)
+                                                        )
+            if now != []:
+                now=now[0][0]
+                prevValue=int(not self.getLatestValue())
+                prev=DB.executeTransaction(SQLstatement=sql.replace("*table*",self.Table)
+                                                        .replace("*value*",str(prevValue))
+                                                        .replace("*tag*",self.Tag)
+                                                        )
+                if prev != []:
+                    prev=prev[0][0]
+                
+
+                    seg=(now-prev).seconds
+                    dias=(now-prev).days
+                    horas=0
+                    mins=0
+                    if seg/60>=1:
+                        mins=int(seg/60)
+                        seg=seg-mins*60
+                        if mins/60>=1:
+                            horas=int(mins/60)
+                            mins=mins-horas*60
+                    if dias!=0:
+                        text=str(_('The variable "%s" has kept the value of %i during %id and %ih')) % (self.Label,prevValue,dias,horas)
+                    elif horas!=0 and mins!=0 and seg!=0:
+                        text=str(_('The variable "%s" has kept the value of %i during %ih, %im and %is')) % (self.Label,prevValue,horas,mins,seg)
+                    elif horas==0 and mins!=0:
+                        text=str(_('The variable "%s" has kept the value of %i during %im and %is')) % (self.Label,prevValue,mins,seg)
+                    else:
+                        text=str(_('The variable "%s" has kept the value of %i during %is')) % (self.Label,prev[1],seg)
+                    PublishEvent(Severity=0,Text=text,Code=str(self.pk)+'duty'+str(prevValue),Webpush=True)
         
     def checkAdditionalCalculations(self):
         ACALCs=AdditionalCalculations.objects.filter(SourceVar=self,Periodicity=0)
