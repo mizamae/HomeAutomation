@@ -734,7 +734,7 @@ class AutomationVariables(models.Model):
                     elif horas==0 and mins!=0:
                         text=str(_('The variable "%s" has kept the value of %i during %im and %is')) % (self.Label,prevValue,mins,seg)
                     else:
-                        text=str(_('The variable "%s" has kept the value of %i during %is')) % (self.Label,prev[1],seg)
+                        text=str(_('The variable "%s" has kept the value of %i during %is')) % (self.Label,prevValue,seg)
                     PublishEvent(Severity=0,Text=text,Code=str(self.pk)+'duty'+str(prevValue),Webpush=True)
         
     def checkAdditionalCalculations(self):
