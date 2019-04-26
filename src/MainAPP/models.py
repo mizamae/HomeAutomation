@@ -734,7 +734,7 @@ class AutomationVariables(models.Model):
                     elif horas==0 and mins!=0:
                         text=str(_('The variable "%s" has kept the value of %i during %im and %is')) % (self.Label,prevValue,mins,seg)
                     else:
-                        text=str(_('The variable "%s" has kept the value of %i during %is')) % (self.Label,prev[1],seg)
+                        text=str(_('The variable "%s" has kept the value of %i during %is')) % (self.Label,prevValue,seg)
                     PublishEvent(Severity=0,Text=text,Code=str(self.pk)+'duty'+str(prevValue),Webpush=True)
         
     def checkAdditionalCalculations(self):
@@ -1178,9 +1178,13 @@ class RuleItems(models.Model):
             units2=self.Var2.Units
         except:
             units2=None
-            
-        if (units1=='\u00baC' or units2=='\u00baC') and self.IsConstant==False and self.Var2.UserEditable:
-            THRMST,created=Thermostats.objects.get_or_create(RITM=self)
+        
+        import json
+        action=json.loads(self.Rule.Action)
+        if action['ActionType']=='a':
+            StatusVar=AutomationVariables.objects.get(Tag=action['IO'],Device='MainGPIOs')
+            if (units1=='\u00baC' or units2=='\u00baC') and self.IsConstant==False and self.Var2.UserEditable :
+                THRMST,created=Thermostats.objects.get_or_create(RITM=self,StatusVar=StatusVar)
         
     def evaluate(self):
         import datetime
