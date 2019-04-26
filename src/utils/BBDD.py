@@ -73,11 +73,11 @@ class Database(object):
             if DEBUGGING and many: logger.info('The instruction '+ SQLstatement+' executed OK')
             return COMMITED_OK
         except Exception as exc:
-            logger.info('Exception executing: ' + SQLstatement + '. Exc: ' + str(exc))
             cur.close()
             if type(exc) is sqlite3.IntegrityError:
                 return INTEGRITY_ERROR
             else:
+                logger.info('Exception executing: ' + SQLstatement + '. Exc: ' + str(exc))
                 return INTEGRITY_ERROR
                 
     def executeTransactionWithCommit(self,SQLstatement,arg=[],many=False):
