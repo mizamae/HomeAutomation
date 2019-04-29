@@ -96,8 +96,8 @@
   {% block container %}
   <div class="container-fluid">
 	  <div id="row1" class="row">
-	  {% if devicename %}
-	  <h1>{% trans "Graphs for the device " %} {{ devicename }}</h1>
+	  {% if DeviceName %}
+	  <h1>{% trans "Graphs for the device " %} {{ DeviceName }}</h1>
 	  {% else %}
 	  <h1>{% trans "Graphs from a device" %}</h1>
 	  {% endif %}
@@ -387,7 +387,7 @@
 
     function downloadData()
     {
-        var csvContent = 'Device;{{ devicename }} \n';
+        var csvContent = 'Device;{{ DeviceName }} \n';
         csvContent+='Initial date;{{ Form.fromDate.value }} \n';
         csvContent+='Final date;{{ Form.toDate.value }} \n';
         Date.prototype.ddmmyyyy = function() {
@@ -458,7 +458,7 @@
         var a         = document.createElement('a');
         a.href        = 'data:attachment/csv,' +  encodeURIComponent(csvContent);
         a.target      = '_blank';
-        a.download    = '{{ devicename }}_{{ Form.fromDate.value|date:"d-m-Y H-i" }}_{{ Form.toDate.value|date:"d-m-Y H-i" }}'+'.csv';
+        a.download    = '{{ DeviceName }}_{{ Form.fromDate.value|date:"d-m-Y H-i" }}_{{ Form.toDate.value|date:"d-m-Y H-i" }}'+'.csv';
 
         document.body.appendChild(a);
         a.click();

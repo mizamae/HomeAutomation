@@ -237,7 +237,7 @@ def viewGraphs(request,model):
         
         #logger.debug(str(request.POST))
         if form.is_valid():
-            devicename=form.cleaned_data['DeviceName']
+            DeviceName=form.cleaned_data['DeviceName']
             fromDate=form.cleaned_data['fromDate']
             toDate=form.cleaned_data['toDate']
             
@@ -247,7 +247,7 @@ def viewGraphs(request,model):
             toDate=toDate-toDate.utcoffset()                 
 
             try:
-                DV=models.Devices.objects.get(Name=devicename)
+                DV=models.Devices.objects.get(Name=DeviceName)
             except models.Devices.DoesNotExist: 
                 DV='MainUnit'
             
@@ -265,7 +265,7 @@ def viewGraphs(request,model):
                         _('gather some data to be plotted.')
             else:
                 message=''
-            return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html', {'devicename':devicename.replace('_',' '),
+            return render(request, APP_TEMPLATE_NAMESPACE+'/graph.html', {'DeviceName':DeviceName.replace('_',' '),
                                                                           'chart': json.dumps(charts),
                                                                           'message':message,
                                                                           'Form':form_clean})
