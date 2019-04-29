@@ -86,10 +86,10 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
                     values.append(None)
 
             # inserts None values in the first and last rows with timestamp fromDate and toDate
-            new_row = pd.DataFrame(values, columns = df_temp.columns, index=[ts])
+            new_row = pd.DataFrame([values], columns = df_temp.columns, index=[ts])
             df_temp=pd.concat([pd.DataFrame(new_row),df_temp], ignore_index=False)
             ts = pd.to_datetime(toDate.replace(tzinfo=None))
-            new_row = pd.DataFrame(values, columns = df_temp.columns, index=[ts])
+            new_row = pd.DataFrame([values], columns = df_temp.columns, index=[ts])
             df_temp=pd.concat([pd.DataFrame(new_row),df_temp], ignore_index=False)
             
         for var in tempnameEmpty:
