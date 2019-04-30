@@ -40,7 +40,7 @@ class NotificationManager(object):
                         vapid_claims={"sub":"mailto:"+settings.WEBPUSH_SETTINGS["VAPID_ADMIN_EMAIL"]},
                     )
         except WebPushException as ex:
-            logger.debug("I'm sorry honey, but I can't do that: "+str(ex))
+            #logger.debug("I'm sorry honey, but I can't do that: "+str(ex))
             # Mozilla returns additional information in the body of the response.
             if ex.response and ex.response.json():
                 extra = ex.response.json()
