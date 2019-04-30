@@ -1257,10 +1257,14 @@ class DHT22(object):
                 t=None
                 h=None
             else:
+                
                 DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
-                DHT22._accumulators['n']=DHT22._accumulators['n']+1
-                DHT22._accumulators['T'].append(t)
-                DHT22._accumulators['H'].append(h)
+                if isinstance(DHT22._accumulators,dict):
+                    DHT22._accumulators['n']=DHT22._accumulators['n']+1
+                    DHT22._accumulators['T'].append(t)
+                    DHT22._accumulators['H'].append(h)
+                else:
+                    DHT22._accumulators={'n':1,'T':[t,],'H':[h,]}
                 cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, timeout=None)
     
     def resetAccumulator(self):
