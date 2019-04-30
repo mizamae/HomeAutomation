@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-05 20:23+0200\n"
+"POT-Creation-Date: 2019-04-30 13:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,7 +65,9 @@ msgstr "Error comprobando las migraciones: "
 
 #: GitHub.py:113 GitHub.py:199
 msgid "Updating DB with new migrations. Relax, it may take a while"
-msgstr "Actualizando la BBDD con nuevas migraciones. Relájate, me puede llevar un rato"
+msgstr ""
+"Actualizando la BBDD con nuevas migraciones. Relájate, me puede llevar un "
+"rato"
 
 #: GitHub.py:119 GitHub.py:205
 msgid "Django DB updated OK"
@@ -123,11 +125,11 @@ msgstr "Intentando actualizar de nuevo..."
 msgid "Error opening the file "
 msgstr ""
 
-#: Telegram.py:22
+#: Telegram.py:23
 msgid "Commands"
 msgstr "Órdenes"
 
-#: Telegram.py:38
+#: Telegram.py:39
 msgid ""
 "SYSTEM RESET\n"
 " Available instructions:\n"
@@ -135,26 +137,41 @@ msgstr ""
 "SISTEMA RESETEADO\n"
 " Comandos disponibles:\n"
 
-#: Telegram.py:64
-msgid "Select the command to execute"
-msgstr "Selecciona el comando a ejecutar"
+#: Telegram.py:46
+msgid "Menu"
+msgstr ""
 
-#: Telegram.py:66
-msgid "No available commands to execute"
-msgstr "No hay comandos disponibles"
+#: Telegram.py:60
+msgid "Hola caracola!"
+msgstr ""
 
-#: Telegram.py:68
+#: Telegram.py:62
 msgid "Sorry but I do not understand you!"
 msgstr "Lo siento pero no te entiendo!"
 
-#: Telegram.py:74
+#: Telegram.py:80
+msgid "Select the command to execute"
+msgstr "Selecciona el comando a ejecutar"
+
+#: Telegram.py:82
+msgid "No available commands to execute"
+msgstr "No hay comandos disponibles"
+
+#: Telegram.py:83 Telegram.py:93
+msgid "Got it"
+msgstr ""
+
+#: Telegram.py:89
 msgid "Got it, executed "
 msgstr "Lo pillé, ejecutado "
 
-#: Telegram.py:74
-msgid " with payload: "
-msgstr " con parámetros: "
+#: Telegram.py:91
+msgid "Error executing "
+msgstr ""
 
 #: Watchdogs.py:65
 msgid "Devices polling watchdog forced a reset"
 msgstr ""
+
+#~ msgid " with payload: "
+#~ msgstr " con parámetros: "
