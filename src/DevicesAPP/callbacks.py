@@ -213,7 +213,7 @@ class IBERDROLA:
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
                                 repeat=True,triggered=False,lifeSpan=3*60,onThreadInit=IBERDROLA.login,
-                                onInitkwargs={'user':user,'password':password},onThreadEnd=IBERDROLA.kill_login_thread,onEndkwargs={})
+                                onInitkwargs={'user':user,'password':password},onThreadEnd=IBERDROLA.restore,onEndkwargs={})
                 from time import sleep
                 i=0
                 while IBERDROLA._loggedin==False and i<15:
@@ -233,11 +233,16 @@ class IBERDROLA:
     def kill_login_thread():
         if IBERDROLA._login_thread!=None:
             IBERDROLA._login_thread.kill()
+        IBERDROLA.restore()
+        logger.error('IBERDROLA: Killed the thread')
+    
+    @staticmethod
+    def restore():
         IBERDROLA._login_thread=None
         IBERDROLA._session =None
         IBERDROLA._loggedin=False
         IBERDROLA.enable()
-        logger.error('IBERDROLA: Killed the thread')
+        logger.error('IBERDROLA: Restored')
         
     @staticmethod
     def disable(auto_enable=False):
