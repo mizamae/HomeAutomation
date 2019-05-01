@@ -213,10 +213,10 @@ class IBERDROLA:
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
                                 repeat=True,triggered=False,lifeSpan=3*60,onThreadInit=IBERDROLA.login,
-                                onInitkwargs={'user':user,'password':password})
+                                onInitkwargs={'user':user,'password':password},onThreadEnd=IBERDROLA.kill_login_thread,onEndkwargs={})
                 from time import sleep
                 i=0
-                while IBERDROLA._loggedin==False and i<10:
+                while IBERDROLA._loggedin==False and i<15:
                     sleep(1)    # to allow to initialize the thread properly
                     i=i+1
                 if not IBERDROLA._loggedin:
