@@ -699,7 +699,7 @@ class AutomationVariables(models.Model):
     def calculateDuty(self):
         #logger.info("Enters calculateDuty for var "+str(self))
         if self.CalculateDuty:
-            sql='SELECT a.* FROM "*table*" AS a WHERE a."*tag*" == *value* ORDER BY a.timestamp DESC LIMIT 1'
+            sql='SELECT a.* FROM "*table*" AS a WHERE a."*tag*" == *value* ORDER BY a.timestamp DESC LIMIT 2'
             from utils.BBDD import getRegistersDBInstance
             DB=getRegistersDBInstance()
             now=DB.executeTransaction(SQLstatement=sql.replace("*table*",self.Table)
@@ -714,9 +714,11 @@ class AutomationVariables(models.Model):
                                                         .replace("*tag*",self.Tag)
                                                         )
                 if prev != []:
-                    prev=prev[0][0]
+                    try:
+                        prev=prev[1][0]
+                    except:
+                        prev=prev[0][0]
                 
-
                     seg=(now-prev).seconds
                     dias=(now-prev).days
                     horas=0

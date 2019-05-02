@@ -213,10 +213,10 @@ class IBERDROLA:
                 from utils.asynchronous_tasks import BackgroundTimer
                 IBERDROLA._login_thread=BackgroundTimer(callable=None,threadName='iberdrola_login',interval=1,callablekwargs={},
                                 repeat=True,triggered=False,lifeSpan=3*60,onThreadInit=IBERDROLA.login,
-                                onInitkwargs={'user':user,'password':password})
+                                onInitkwargs={'user':user,'password':password},onThreadEnd=IBERDROLA.restore,onEndkwargs={})
                 from time import sleep
                 i=0
-                while IBERDROLA._loggedin==False and i<10:
+                while IBERDROLA._loggedin==False and i<15:
                     sleep(1)    # to allow to initialize the thread properly
                     i=i+1
                 if not IBERDROLA._loggedin:
@@ -233,11 +233,16 @@ class IBERDROLA:
     def kill_login_thread():
         if IBERDROLA._login_thread!=None:
             IBERDROLA._login_thread.kill()
+        IBERDROLA.restore()
+        logger.error('IBERDROLA: Killed the thread')
+    
+    @staticmethod
+    def restore():
         IBERDROLA._login_thread=None
         IBERDROLA._session =None
         IBERDROLA._loggedin=False
         IBERDROLA.enable()
-        logger.error('IBERDROLA: Killed the thread')
+        logger.error('IBERDROLA: Restored')
         
     @staticmethod
     def disable(auto_enable=False):
@@ -1257,10 +1262,14 @@ class DHT22(object):
                 t=None
                 h=None
             else:
+                
                 DHT22._accumulators=cache.get('DHT22_accumulators['+str(pin)+']')
-                DHT22._accumulators['n']=DHT22._accumulators['n']+1
-                DHT22._accumulators['T'].append(t)
-                DHT22._accumulators['H'].append(h)
+                if isinstance(DHT22._accumulators,dict):
+                    DHT22._accumulators['n']=DHT22._accumulators['n']+1
+                    DHT22._accumulators['T'].append(t)
+                    DHT22._accumulators['H'].append(h)
+                else:
+                    DHT22._accumulators={'n':1,'T':[t,],'H':[h,]}
                 cache.set('DHT22_accumulators['+str(pin)+']', DHT22._accumulators, timeout=None)
     
     def resetAccumulator(self):

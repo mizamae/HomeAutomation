@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-05 20:23+0200\n"
+"POT-Creation-Date: 2019-04-30 13:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -253,7 +253,7 @@ msgstr "El parametro accion del formulario no es correcto. Accion="
 msgid "Enter the name for the device"
 msgstr "Introduce el nombre del dispositivo"
 
-#: forms.py:293 models.py:901 templates/Devices/_devices_table.html:9
+#: forms.py:293 models.py:903 templates/Devices/_devices_table.html:9
 msgid "Device type"
 msgstr "Tipo de dispositivo"
 
@@ -389,81 +389,81 @@ msgstr "Unidades de la variable"
 msgid "Can the user modify the value??"
 msgstr "¿Puede modificar el valor el usuario?"
 
-#: models.py:168
+#: models.py:170
 msgid "The value of the MainDeviceVar \""
 msgstr "El valor de la variable \""
 
-#: models.py:168 models.py:564
+#: models.py:170 models.py:566
 msgid "\" has changed. Now it is "
 msgstr "\" ha cambiado. Ahora se vale "
 
-#: models.py:251
+#: models.py:253
 msgid "Error in create_MainVars_table: "
 msgstr ""
 
-#: models.py:435
+#: models.py:437
 msgid "Input/Output"
 msgstr "Entrada/Salida"
 
-#: models.py:436
+#: models.py:438
 msgid "Inputs/Outputs"
 msgstr "Entradas/Salidas"
 
-#: models.py:451
+#: models.py:453
 msgid "The number of the pin following BCM notation."
 msgstr "El número del pin siguiendo la numeración BCM."
 
-#: models.py:452
+#: models.py:454
 msgid "Label describing the GPIO functional meaning."
 msgstr "Etiqueta descriptiva del funcionamiento de la E/S"
 
-#: models.py:453
+#: models.py:455
 msgid ""
 "Choose wether the GPIO is to be an output, an input or a sensor interface."
 msgstr ""
 "Selecciona si la E/S es una salida, una entrada, o un interface con sensores."
 
-#: models.py:454
+#: models.py:456
 msgid "Set the value of the GPIO (only applies to outputs)"
 msgstr "introduce el valor de la E/S (solo aplica a salidas)"
 
-#: models.py:456
+#: models.py:458
 msgid "Send notification when the rule evaluates to True"
 msgstr "Mandar notificación cuando la regla se evalúa a True"
 
-#: models.py:457
+#: models.py:459
 msgid "Label for the notification when the IO is True."
 msgstr "Texto de la notificación cuando la IO es True"
 
-#: models.py:458
+#: models.py:460
 msgid "Send notification when the rule evaluates to False"
 msgstr "Mandar notificación cuando la regla se evalúa a False"
 
-#: models.py:459
+#: models.py:461
 msgid "Label for the notification when the IO is False."
 msgstr "Texto de la notificación cuando la IO es False"
 
-#: models.py:564
+#: models.py:566
 msgid "The value of the GPIO \""
 msgstr "El valor de la E/S \""
 
-#: models.py:590
+#: models.py:592
 msgid "Only GPIOs defined as Input or Output can be registered to the DB"
 msgstr ""
 "Solo GPIOs definidos como Entrada o Salida pueden ser registradas en la BBDD"
 
-#: models.py:630
+#: models.py:632
 msgid "Error in create_GPIO_table: "
 msgstr ""
 
-#: models.py:878
+#: models.py:880
 msgid ""
 "Unique identifier of the device type. Usually between 5 and 8 characters."
 msgstr ""
 "Identificador unico del tipo de dispositivo. Normalmente entre 5 y 8 "
 "caracteres."
 
-#: models.py:880
+#: models.py:882
 msgid ""
 "Minimum accepted time between two polls. Refer to the device type "
 "documentation."
@@ -471,7 +471,7 @@ msgstr ""
 "Tiempo minimo entre dos peticiones consecutivas. Ver documentacion del tipo "
 "de dispositivo"
 
-#: models.py:881
+#: models.py:883
 msgid ""
 "The connection can be: \n"
 "                                                                    - LOCAL "
@@ -488,27 +488,27 @@ msgstr ""
 " -MEMORIA: para dispositivos que residen en la memoria de la unidad "
 "principal."
 
-#: models.py:902
+#: models.py:904
 msgid "Device types"
 msgstr "Tipos de dispositivos"
 
-#: models.py:964
+#: models.py:966
 msgid "Slave Device"
 msgstr "Dispositivo"
 
-#: models.py:965
+#: models.py:967
 msgid "Slave Devices"
 msgstr "Dispositivos"
 
-#: models.py:967
+#: models.py:969
 msgid "Unique identifier of the device. Limited to 50 characters."
 msgstr "Identificador del dispositivo. Limitado a 50 caracteres."
 
-#: models.py:968
+#: models.py:970
 msgid "Invalid device name - This name already exists in the DB."
 msgstr "Nombre del dispositivo erróneo - Este nombre ya existe en la BBDD."
 
-#: models.py:969
+#: models.py:971
 msgid ""
 "The pin of the Master unit to which the device is connected. Only applies to "
 "locally connected devices."
@@ -516,7 +516,7 @@ msgstr ""
 "El pin de la unidad principal al que se conecta el dispositivo. Sólo aplica "
 "a dispositivos locales."
 
-#: models.py:971
+#: models.py:973
 msgid ""
 "Unique byte-type identifier of the device. It is used to identify the device "
 "within the communication frames."
@@ -524,95 +524,95 @@ msgstr ""
 "Identificador único tipo-byte del dispositivo. Se usa para identificarlo en "
 "las tramas de comunicación."
 
-#: models.py:972
+#: models.py:974
 msgid "Invalid device code - This code already exists in the DB."
 msgstr "Código de dispositivo erróneo - El código ya existe en la BBDD."
 
-#: models.py:973
+#: models.py:975
 msgid "Invalid IP - This IP already exists in the DB."
 msgstr "Dirección IP errónea - Esta IP ya existe en la BBDD."
 
-#: models.py:975
+#: models.py:977
 msgid "Polling state of the device. STOPPED = no polling."
 msgstr "Estado de pool del dispositivo. PARADO = sin pooling."
 
-#: models.py:977
+#: models.py:979
 msgid "Elapsed time between two polls to the device."
 msgstr "Tiempo entre dos peticiones al dispositivo."
 
-#: models.py:978
+#: models.py:980
 msgid "Elapsed time between two polls to the device on realtime polling."
 msgstr "Tiempo entre dos peticiones al dispositivo en tiempo real."
 
-#: models.py:1005
+#: models.py:1007
 msgid "A locally connected device needs to have a GPIO defined"
 msgstr "Un dispositivo local necesita tener una E/S definida"
 
-#: models.py:1008
+#: models.py:1010
 msgid "The GPIO selected is not configured as sensor"
 msgstr "La GPIO seleccionada no está configurada como sensor"
 
-#: models.py:1010
+#: models.py:1012
 msgid "The sample time selected is too low for the "
 msgstr "El tiempo de sampleo introducido es demasiado bajo para "
 
-#: models.py:1119
+#: models.py:1121
 msgid "Polling "
 msgstr ""
 
-#: models.py:1119
+#: models.py:1121
 msgid " for the device "
 msgstr " para el dispositivo "
 
-#: models.py:1119
+#: models.py:1121
 msgid " is started with sampletime= "
 msgstr " ha empezado con una frecuencia= "
 
-#: models.py:1119
+#: models.py:1121
 msgid " [s]. Next request at "
 msgstr " [s]. La próxima petición será "
 
-#: models.py:1131
+#: models.py:1133
 msgid "Polling for device "
 msgstr "El muestreo del dispositivo"
 
-#: models.py:1131
+#: models.py:1133
 msgid " could not be started. It has no Datagrams defined "
 msgstr " no se pudo iniciar. No tiene Datagramas definidos "
 
-#: models.py:1153
+#: models.py:1155
 msgid "Job "
 msgstr ""
 
-#: models.py:1153
+#: models.py:1155
 msgid " did not exist. The device "
 msgstr " no existe. El dispositivo "
 
-#: models.py:1153
+#: models.py:1155
 msgid " was already stopped."
 msgstr " ya estaba detenido."
 
-#: models.py:1170
+#: models.py:1172
 msgid "Datagram \""
 msgstr "Trama \""
 
-#: models.py:1170
+#: models.py:1172
 msgid "\" for device \""
 msgstr "\" para el dispositivo \""
 
-#: models.py:1170
+#: models.py:1172
 msgid "\" updated OK"
 msgstr "\" actualizado OK"
 
-#: models.py:1411
+#: models.py:1420
 msgid "Unknown Device type: "
 msgstr "Tipo de dispositivo desconocido: "
 
-#: models.py:1411
+#: models.py:1420
 msgid ". You should firstly register the Device type."
 msgstr ". Debes registrarlo antes."
 
-#: models.py:1425
+#: models.py:1434
 msgid ""
 "Device did not responded OK to reset order. Reset it manually to apply the "
 "new configuration."
@@ -620,7 +620,7 @@ msgstr ""
 "El dispositivo no ha respondido correctamente a la orden de reset. Resetéalo "
 "manualmente para aplicar la nueva configuración."
 
-#: models.py:1432
+#: models.py:1441
 msgid ""
 "Device did not acknowledge the \"SetConf\" order. Revise the Device source "
 "code."
@@ -628,39 +628,39 @@ msgstr ""
 "El dispositivo no a confirmado la orden de SetConf. Revisa el código fuente "
 "del dispositivo."
 
-#: models.py:1508
+#: models.py:1517
 msgid "Order confirmed by device"
 msgstr "Órden confirmada por el dispositivo"
 
-#: models.py:1512
+#: models.py:1521
 msgid "Device responded with HTTP code "
 msgstr "El dispositivo respondió con el codigo HTTP "
 
-#: models.py:1517
+#: models.py:1526
 msgid "The device did not respond. Check connections and retry."
 msgstr "El dispositivo no respondió. Comprueba las conexiones y reinténtalo."
 
-#: models.py:1578
+#: models.py:1587
 msgid "Error in create_datagram_table: "
 msgstr ""
 
-#: models.py:1872
+#: models.py:1881
 msgid "Datagram item"
 msgstr "Elemento de trama"
 
-#: models.py:1873
+#: models.py:1882
 msgid "Datagram items"
 msgstr "Elementos de trama"
 
-#: models.py:1909
+#: models.py:1918
 msgid "Cron expression"
 msgstr ""
 
-#: models.py:1910
+#: models.py:1919
 msgid "Cron expressions"
 msgstr ""
 
-#: models.py:1915
+#: models.py:1924
 msgid ""
 "Days in the week that it would trigger.  \"1-3\" would trigger it on Mon., "
 "Tue. and Wed. of the week, \"1,3\" would trigger it only on Mon. and Wed., "
@@ -672,7 +672,7 @@ msgstr ""
 "Mier., \"*/2\" lo activaría cad ados dias, dejándolo en blanco o con \"*\" "
 "lo activará todos los dias."
 
-#: models.py:1921
+#: models.py:1930
 msgid ""
 "Months that it would trigger.  \"1-3\" would trigger it on Jan., Febr. and "
 "March, \"1,3\" would trigger it only on Jan. and March, \"*/2\" would "
@@ -683,7 +683,7 @@ msgstr ""
 "\"1,3\" lo activará solamente en Ene. y Marz, \"*/2\" lo activará cada dos "
 "meses, dejándolo vacío o con \"*\" lo activará todos los meses."
 
-#: models.py:1927
+#: models.py:1936
 msgid ""
 "Days that it would trigger.  \"1-3\" would trigger it on the 1st, 2nd and "
 "3rd day of the month, \"1,3\" would trigger it only on 1st and 3rd, \"*/2\" "
@@ -691,14 +691,14 @@ msgid ""
 "trigger it every day."
 msgstr ""
 
-#: models.py:1933
+#: models.py:1942
 msgid ""
 "Hours that it would trigger.  \"1-3\" would trigger it at 1, 2 and 3 a.m., "
 "\"1,3\" would trigger it only at 1 and 3 p.m., \"*/2\" would trigger every "
 "two hours, leaving it blank or setting an \"*\" would trigger it every hour."
 msgstr ""
 
-#: models.py:1939
+#: models.py:1948
 msgid ""
 "Minutes that it would trigger.  \"1-3\" would trigger it at minutes 1, 2 and "
 "3, \"1,3\" would trigger it only at minutes 1 and 3 , \"*/2\" would trigger "
@@ -706,22 +706,22 @@ msgid ""
 "every minute."
 msgstr ""
 
-#: models.py:1945
+#: models.py:1954
 msgid ""
 "Seconds that it would trigger.  \"1-3\" would trigger it at seconds 1, 2 and "
 "3, \"1,3\" would trigger it only at seconds 1 and 3 , \"*/2\" would trigger "
 "every two seconds, Setting an \"*\" would trigger it every second."
 msgstr ""
 
-#: models.py:1979
+#: models.py:1988
 msgid "Datagram"
 msgstr "Trama"
 
-#: models.py:1980
+#: models.py:1989
 msgid "Datagrams"
 msgstr "Tramas"
 
-#: models.py:1986
+#: models.py:1995
 msgid ""
 "The cron expression that controls the polling. Only applies to cronned "
 "datagrams."
@@ -729,47 +729,47 @@ msgstr ""
 "La expresión de temporización que controla el poleo. Solamente aplica a "
 "tramas de cron"
 
-#: models.py:1991
+#: models.py:2000
 msgid "Enables the datagram to be queried"
 msgstr "Habilita el poleo de la trama"
 
-#: models.py:2027 models.py:2029
+#: models.py:2036 models.py:2038
 msgid "The datagram item name "
 msgstr ""
 
-#: models.py:2027
+#: models.py:2036
 msgid " raised exception when getting its info."
 msgstr ""
 
-#: models.py:2029
+#: models.py:2038
 msgid " does not have the proper structure \"Item.pk_NumItem_Datagram.pk\""
 msgstr ""
 
-#: models.py:2090
+#: models.py:2099
 msgid "Item"
 msgstr "Elemento"
 
-#: models.py:2091
+#: models.py:2100
 msgid "Items"
 msgstr "Elementos"
 
-#: models.py:2103
+#: models.py:2112
 msgid "Parameter"
 msgstr "Parámetro"
 
-#: models.py:2104
+#: models.py:2113
 msgid "Parameters"
 msgstr "Parámetros"
 
-#: models.py:2131
+#: models.py:2140
 msgid "Command"
 msgstr "Orden"
 
-#: models.py:2132 templates/Devices/_devices_data.html:24
+#: models.py:2141 templates/Devices/_devices_data.html:24
 msgid "Commands"
 msgstr "Órdenes"
 
-#: models.py:2135
+#: models.py:2144
 msgid "Invalid Beacon name - This name already exists in the DB."
 msgstr "Nombre de baliza erróneo - Este nombre ya existe en la BBDD."
 

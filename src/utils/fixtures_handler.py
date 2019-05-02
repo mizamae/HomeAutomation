@@ -17,8 +17,8 @@ class bcolors:
 command_args = { 'dump': 0,
                 'load': 1}
 
-# sys.argv[0]=  HomeAutomation/src/migrations_handler.py
-# sys.argv[1]=  make|migrate
+# sys.argv[0]=  HomeAutomation/src/fixtures_handler.py
+# sys.argv[1]=  dump|load
 # sys.argv[2]=  app_name
 
 literals=[]  
@@ -29,22 +29,24 @@ if sys.argv[1]=='dump':
         target_app = sys.argv[2]
     elif len(sys.argv)>3:
         target_app = sys.argv[2]
-        for arg in sys.argv[2:]:    
+        for arg in sys.argv[3:]:    
             literals.append(arg)
     elif len(sys.argv) == 2:
         target_app = '*'
 elif sys.argv[1]=='load':
     command = command_args[sys.argv[1]]
-    if len(sys.argv) == 2 :
+    if len(sys.argv) == 3 :
         literals=[]
     else:
-        for arg in sys.argv[2:]:    
+        for arg in sys.argv[3:]:    
             literals.append(arg)
                 
 else:
-    print('usage: python HomeAutomation/src/fixtures_handler.py [dump|load] [app] #')
-    print('example: python HomeAutomation/src/fixtures_handler.py dump - Dumps the DB of all the apps')
-    print('example: python HomeAutomation/src/fixtures_handler.py load flush - Dumps the DB of all the apps')
+    print('usage: python HomeAutomation/src/utils/fixtures_handler.py [dump|load] [app] #')
+    print('example: python HomeAutomation/src/utils/fixtures_handler.py dump - Dumps the DB of all the apps')
+    print('example: python HomeAutomation/src/utils/fixtures_handler.py dump APP - Dumps the DB of for the app APP')
+    print('example: python HomeAutomation/src/utils/fixtures_handler.py dump APP APP.model1 APP.model2 - Dumps the DB of for the app APP only models model1 and model2')
+    print('example: python HomeAutomation/src/utils/fixtures_handler.py load flush [APP] - Flushes the DB and loads data from app APP')
     sys.exit(1)
     
 
@@ -73,10 +75,13 @@ if command==0:  # dump
         fixtures_root=join(BASE_DIR,app_name ,'fixtures')
         if not os.path.isdir(fixtures_root):
             os.makedirs(fixtures_root)
-        cmd="python manage.py dumpdata "+ app_name + " --format=json --indent=4 -o " + \
-                     fixtures_root +'\\'+app_name+'.json '
+        cmd_literal=""
         for literal in literals:
-            cmd+= literal+ ' ' 
+            cmd_literal+= literal+ ' ' 
+            
+        cmd="python manage.py dumpdata "+ cmd_literal + " --format=json --indent=4 -o " + \
+                     fixtures_root +'\\'+app_name+'.json '
+        
         os.system(cmd)
 elif command==1:
     if 'flush' in literals:
