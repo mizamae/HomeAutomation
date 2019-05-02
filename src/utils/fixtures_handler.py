@@ -35,10 +35,10 @@ if sys.argv[1]=='dump':
         target_app = '*'
 elif sys.argv[1]=='load':
     command = command_args[sys.argv[1]]
-    if len(sys.argv) == 2 :
+    if len(sys.argv) == 3 :
         literals=[]
     else:
-        for arg in sys.argv[2:]:    
+        for arg in sys.argv[3:]:    
             literals.append(arg)
                 
 else:
