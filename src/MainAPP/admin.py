@@ -13,6 +13,19 @@ class SubsystemsInline(GenericStackedInline):
     model = Subsystems
 
 class AdditionalCalculationsModelAdmin(admin.ModelAdmin):
+    actions=['initializeDB',]
+    def initializeDB(self,request, queryset):
+        ACALCs_selected=queryset.count()
+        if ACALCs_selected>1:
+            self.message_user(request, "Only one calculation can be selected for this action")
+        else:
+            selected_pk = int(request.POST.getlist(admin.ACTION_CHECKBOX_NAME)[0])           
+            ACALC=AdditionalCalculations.objects.get(pk=selected_pk)
+            ACALC.initializeDB()
+            return HttpResponseRedirect('/admin/MainAPP/additionalcalculations/')
+          
+    initializeDB.short_description = _("Initializes the DB from 1st January")
+    
     def printCalculation(self,instance):
         return str(instance)
      
