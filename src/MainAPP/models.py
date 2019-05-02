@@ -510,6 +510,10 @@ class AdditionalCalculations(models.Model):
         import datetime
         import calendar
         import pytz
+        from tzlocal import get_localzone
+        local_tz=get_localzone()
+        localdate = local_tz.localize(datetime.datetime.now())
+                    
         now=datetime.datetime.now()
         start_date = '01-01-' + str(now.year)+' 00:00:00'
         date_format = '%d-%m-%Y %H:%M:%S'
@@ -525,7 +529,7 @@ class AdditionalCalculations(models.Model):
         else:
             return
         
-        toDate=pytz.utc.localize(datetime.datetime.strptime(start_date, date_format))+offset
+        toDate=pytz.utc.localize(datetime.datetime.strptime(start_date, date_format))+offset-localdate.utcoffset() 
         
         while toDate<=pytz.utc.localize(datetime.datetime.now()):
             now=toDate
