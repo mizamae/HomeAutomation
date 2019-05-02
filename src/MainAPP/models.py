@@ -505,13 +505,55 @@ class AdditionalCalculations(models.Model):
                 elif self.Periodicity==4 and now.day==1: # monthly calculation launched on 1st day at 00:00
                     return True
         return False
-      
-    def calculate(self,DBDate=None):
+    
+    def initializeDB(self):
         import datetime
         import calendar
+        import pytz
+        now=datetime.datetime.now()
+        start_date = '01-01-' + str(now.year)+' 00:00:00'
+        date_format = '%d-%m-%Y %H:%M:%S'
+        if self.Timespan==0: # Every hour
+            offset=datetime.timedelta(hours=1)        
+        elif self.Timespan==1: # Every day
+            offset=datetime.timedelta(hours=24)
+        elif self.Timespan==2: # Every week
+            offset=datetime.timedelta(weeks=1)
+        elif self.Timespan==3: # Every month
+            days=calendar.monthrange(now.year, 1)[1]
+            offset=datetime.timedelta(hours=days*24)
+        else:
+            return
         
-        toDate=timezone.now()-datetime.timedelta(hours=self.Delay)
+        toDate=pytz.utc.localize(datetime.datetime.strptime(start_date, date_format))+offset
         
+        while toDate<=pytz.utc.localize(datetime.datetime.now()):
+            now=toDate
+            if self.Timespan==0: # Every hour
+                offset=datetime.timedelta(hours=1)   
+            elif self.Timespan==1: # Every day
+                offset=datetime.timedelta(hours=24)
+            elif self.Timespan==2: # Every week
+                offset=datetime.timedelta(weeks=1)
+            elif self.Timespan==3: # Every month
+                days=calendar.monthrange(now.year, now.month)[1]
+                offset=datetime.timedelta(hours=days*24)
+            try:
+                self.calculate(toDate=toDate)
+            except Exception as exc:
+                logger.error(str(exc))
+                return
+            toDate=toDate+offset
+        
+    def calculate(self,DBDate=None,toDate=None):
+        import datetime
+        import calendar
+
+        if toDate==None:
+            toDate=timezone.now()-datetime.timedelta(hours=self.Delay)
+            now=datetime.datetime.now()
+        else:
+            now=toDate
         #toDate=datetime.datetime(year=2019,month=4,day=7)
         
         if self.Timespan==0: # Every hour
@@ -520,8 +562,7 @@ class AdditionalCalculations(models.Model):
             offset=datetime.timedelta(hours=24)
         elif self.Timespan==2: # Every week
             offset=datetime.timedelta(weeks=1)
-        elif self.Timespan==3: # Every month
-            now=datetime.datetime.now()
+        elif self.Timespan==3: # Every month           
             days=calendar.monthrange(now.year, now.month)[1]
             offset=datetime.timedelta(hours=days*24)
         else:
