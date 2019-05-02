@@ -35,10 +35,10 @@ if sys.argv[1]=='dump':
         target_app = '*'
 elif sys.argv[1]=='load':
     command = command_args[sys.argv[1]]
-    if len(sys.argv) == 3 :
+    if len(sys.argv) == 2 :
         literals=[]
     else:
-        for arg in sys.argv[3:]:    
+        for arg in sys.argv[2:]:    
             literals.append(arg)
                 
 else:
@@ -68,7 +68,18 @@ if command==0:  # dump
                      fixtures_root +'\\'+'FullDB.json '
         for literal in literals:
             cmd+= literal+ ' ' 
-        os.system(cmd)
+    elif target_app=="initialFixture": # dump fixtures for initial state:
+        app_name=target_app
+        print(bcolors.BOLD +'##### DUMPING FIXTURE FOR APP ' + app_name + ' #####'+bcolors.ENDC)
+        fixtures_root=join(BASE_DIR,'fixtures')
+        if not os.path.isdir(fixtures_root):
+            os.makedirs(fixtures_root)
+        cmd_literal=""
+        for literal in literals:
+            cmd_literal+= literal+ ' ' 
+            
+        cmd="python manage.py dumpdata "+ cmd_literal + " --format=json --indent=4 -o " + \
+                     fixtures_root +'\\'+app_name+'.json '
     else:
         app_name=target_app
         print(bcolors.BOLD +'##### DUMPING FIXTURE FOR APP ' + app_name + ' #####'+bcolors.ENDC)
@@ -82,7 +93,7 @@ if command==0:  # dump
         cmd="python manage.py dumpdata "+ cmd_literal + " --format=json --indent=4 -o " + \
                      fixtures_root +'\\'+app_name+'.json '
         
-        os.system(cmd)
+    os.system(cmd)
 elif command==1:
     if 'flush' in literals:
         literals.remove('flush')
