@@ -858,7 +858,7 @@ class ESIOS(object):
 
             name = self.__indicators_name__[indicators[i]]
             names.append(name)
-            logger.info('Parsing ' + name)
+            #logger.info('Parsing ' + name)
             if i == 0:
                 # Assign the first indicator
                 df = self.get_data(indicators[i], start, end)
@@ -878,8 +878,17 @@ class ESIOS(object):
         return df, df_list, names
 
     def initializeDB(self,fromdate,datagramId = 'energy_cost'):
-        self.__call__(date=fromdate,datagramId = datagramId)
-        print('Obtained data from ' + str(fromdate) + ' to tomorrow')
+        i=0
+        while fromdate+datetime.timedelta(days=i)<datetime.datetime.now().replace(hour=0)-datetime.timedelta(days=1):
+            date=fromdate+datetime.timedelta(days=i)
+            returned=self.__call__(date=date,datagramId = datagramId)
+            i=i+1
+            if returned['Error']=='':
+                texto='Initializing data for '+str(self.sensor)+'. Obtained data for ' + str(date)
+            else:
+                texto='Error getting data for '+str(self.sensor)+'. Error ' + returned['Error']
+            PublishEvent(Severity=0,Text=texto,
+                             Code=self.sensor.getEventsCode()+'init',Persistent=True)
             
     def __call__(self,datagramId = 'energy_cost',date=None):
         Error=''
