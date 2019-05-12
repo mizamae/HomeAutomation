@@ -653,7 +653,7 @@ msgstr "Sumar dato a dato y luego sumar"
 
 #: models.py:431
 msgid "Product then sum"
-msgstr "Multiplicar dato a dato y luego multiplicar"
+msgstr "Multiplicar dato a dato y luego sumar"
 
 #: models.py:436
 msgid "Constant to multiply the result of the calculation"
@@ -930,7 +930,7 @@ msgstr ""
 #~ msgstr "Columnas"
 
 #~ msgid "Area"
-#~ msgstr "Área"
+#~ msgstr "Area"
 
 #~ msgid "The value of the MainVAR \""
 #~ msgstr "El valor de la variable \""
