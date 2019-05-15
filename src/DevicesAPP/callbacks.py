@@ -897,7 +897,7 @@ class ESIOS(object):
         if datagramId =='energy_cost':
             # gets the hourly cost for the energy for the next day
             retries=self._MAX_RETRIES
-            indicators_ = [10229, 10230, 10231]
+            indicators_ = [10229, 10230, 10231, 1739]
             names = self.get_names(indicators_)
             if type(date) is datetime.datetime:
                 start_=date.replace(hour=23,minute=59,second=59)
