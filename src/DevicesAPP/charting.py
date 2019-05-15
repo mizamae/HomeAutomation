@@ -4,7 +4,7 @@ import datetime
 from utils.BBDD import getRegistersDBInstance
 from .constants import DTYPE_DIGITAL,PLOTTYPE_CHOICES
 
-def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime):
+def generateChart(table,fromDate,toDate,names,types,labels,plottypes,units,sampletime):
     
     df=pd.DataFrame()
     #df['timestamp']=[fromDate.replace(tzinfo=None),toDate.replace(tzinfo=None)]
@@ -20,21 +20,21 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,sampletime)
         tempnameEmpty=[]
         vars=''
         tempStats={'number':5,'num_rows':[],'mean':[],'max':[],'min':[],'on_time':[],'off_time':[]}
-        for name,type,label,plottype in zip(names,types,labels,plottypes):
+        for name,type,label,plottype,unit in zip(names,types,labels,plottypes,units):
             if DB.checkIfColumnExist(table=table,column=name):
                 vars+='"'+str(name)+'"'+','
                 if type!=DTYPE_DIGITAL:
-                    tempname.append({'name':name,'label':label,'type':type,'plottype':plottype})
+                    tempname.append({'name':name,'label':label,'type':type,'plottype':plottype,'units':unit})
                 else:
                     labelx=label.split('$')
-                    tempname.append({'name':name,'label':labelx,'type':type,'plottype':plottype})
+                    tempname.append({'name':name,'label':labelx,'type':type,'plottype':plottype,'units':unit})
                 
             else:
                 if type!=DTYPE_DIGITAL:
-                    tempnameEmpty.append({'name':name,'label':label,'type':type,'plottype':plottype})
+                    tempnameEmpty.append({'name':name,'label':label,'type':type,'plottype':plottype,'units':unit})
                 else:
                     labelx=label.split('$')
-                    tempnameEmpty.append({'name':name,'label':labelx,'type':type,'plottype':plottype})
+                    tempnameEmpty.append({'name':name,'label':labelx,'type':type,'plottype':plottype,'units':unit})
     
         if vars!='' and vars!='"timestamp",':
             vars=vars[:-1]

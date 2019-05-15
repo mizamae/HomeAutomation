@@ -274,9 +274,15 @@
 			    	{			
 			    		var label=	djangoData[i].cols[0][j].label; // j+1 to avoid the timestamp col
 			    		var type=	djangoData[i].cols[0][j].type; // j+1 to avoid the timestamp col
+			    		var units=	djangoData[i].cols[0][j].units;
 			    		var variable = document.createElement('li');
 			    		var stats_list = document.createElement('ul');
-
+						
+			    		if (units!=null)
+			    		{
+			    			label+="_"+units;
+			    		}else{units="";}
+			    		
 		    			label=parseLabel(label);
 		    			variable.appendChild(document.createTextNode(label));
 			    		for (k = 0; k < stats_labels.length; k++) // iterates over the number of statistic fields
@@ -288,13 +294,13 @@
                                    {
                                 	   if (stats_data[stats_labels[k]][j-1]>=10)
                                 	   {
-                            				text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2));
+                            				text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(2),' ',units);
                                 	   }else
                                 		{
-                                			text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(3));
+                                			text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j-1].toFixed(3),' ',units);
                                 		}
                                    }
-                                   else {text=text.concat(stats_labels[k],' value: ',null)}
+                                   else {text=text.concat(stats_labels[k],' value: ',null,' ',units)}
 		    					item.appendChild(document.createTextNode(text));
 		    					stats_list.appendChild(item);
 		    					text='';

@@ -394,22 +394,25 @@ class MainDeviceVars(models.Model):
             types=[]
             labels=[]
             plottypes=[]
+            units=[]
             for instance in VARs:
                 names.append(instance.getRegistersDBTag())
                 types.append(instance.DataType)
                 labels.append(instance.Label)
                 plottypes.append(instance.PlotType)
                 table=instance.getRegistersDBTable()
+                units.append(instance.Units)
             
             names.insert(0,'timestamp')
             types.insert(0,'datetime')
             labels.insert(0,'timestamp')
             plottypes.insert(0,'timestamp')
+            units.insert(0,'timestamp')
             
             from .charting import generateChart
             
             chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
-                                labels=labels,plottypes=plottypes,sampletime=0)
+                                labels=labels,plottypes=plottypes,units=units,sampletime=0)
         return chart
     
 @receiver(post_save, sender=MainDeviceVars, dispatch_uid="update_MainDeviceVars")
@@ -765,22 +768,25 @@ class MasterGPIOs(models.Model):
                 types=[]
                 labels=[]
                 plottypes=[]
+                units=[]
                 for IO in IOs:
                     names.append(IO.getRegistersDBTag())
                     types.append('digital')
                     labels.append(IO.Label)
                     plottypes.append('line')
                     table=IO.getRegistersDBTable()
+                    units.append(None)
                 
                 names.insert(0,'timestamp')
                 types.insert(0,'datetime')
                 labels.insert(0,'timestamp')
                 plottypes.insert(0,'timestamp')
+                units.insert(0,'units')
                 
                 from .charting import generateChart
                 
                 chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
-                                    labels=labels,plottypes=plottypes,sampletime=0)
+                                    labels=labels,plottypes=plottypes,units=units,sampletime=0)
                 charts.append(chart)
         return charts
         
@@ -1837,9 +1843,11 @@ class Devices(models.Model):
                 labels.insert(0,'timestamp')
                 plottypes=datagram_info['plottypes']
                 plottypes.insert(0,'timestamp')
+                units=datagram_info['units']
+                units.insert(0,'timestamp')
                 from .charting import generateChart
                 chart=generateChart(table=table,fromDate=fromDate,toDate=toDate,names=names,types=types,
-                                    labels=labels,plottypes=plottypes,sampletime=sampletime)  
+                                    labels=labels,plottypes=plottypes,units=units,sampletime=sampletime)  
                  
                 charts.append(chart)
         return charts
