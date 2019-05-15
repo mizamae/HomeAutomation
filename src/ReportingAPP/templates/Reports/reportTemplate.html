@@ -220,8 +220,13 @@
 			    	{			
 			    		var label=	djangoData[i].cols[j].label; // j+1 to avoid the timestamp col	
                         var datatype=	djangoData[i].cols[j].type;
+                        var units=	djangoData[i].cols[j].units;
 			    		var variable = document.createElement('li');
 			    		var stats_list = document.createElement('ul');
+			    		if (units!=null)
+			    		{
+			    			label+="_"+units;
+			    		}else{units="";}
 			    		if (!label.includes('_bits'))
 			    		{
 			    			label=parseLabel(label);
@@ -234,8 +239,8 @@
 			    			{
 			    				if (!stats_labels[k].includes('on_') && !stats_labels[k].includes('off_'))
 			    				{
-                                    if (stats_data[stats_labels[k]][j]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j].toFixed(2));}
-                                    else {text=text.concat(stats_labels[k],' value: ',null)}
+                                    if (stats_data[stats_labels[k]][j]!=null){text=text.concat(stats_labels[k],' value: ',stats_data[stats_labels[k]][j].toFixed(2),' ',units);}
+                                    else {text=text.concat(stats_labels[k],' value: ',null,' ',units)}
 			    					item.appendChild(document.createTextNode(text));
 			    					stats_list.appendChild(item);
 			    					text='';

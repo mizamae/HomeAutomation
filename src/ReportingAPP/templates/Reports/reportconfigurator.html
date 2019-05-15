@@ -168,7 +168,8 @@ $(document).ready(function() {
       				values=JSON.parse(values);
       				var num=parseInt(ID.replace('var-options',''));
 	      			variablesToPlot[num].push({'device':values.device,'table':values.table,'name':values.tag,'bitPos':values.bitPos,
-	      										'label':values.label,'extrapolate':values.extrapolate,'type':values.type,'plottype':values.plottype});
+	      										'label':values.label,'extrapolate':values.extrapolate,'type':values.type,
+	      										'plottype':values.plottype,'units':values.units});
 	      			$('#submit-id-edit').prop( "disabled", false );
 	    		    }
     			,
@@ -214,6 +215,7 @@ $(document).ready(function() {
                 value.extrapolate=djangoData[i].variables[j].extrapolate;
                 value.type=djangoData[i].variables[j].type;
                 value.plottype=djangoData[i].variables[j].plottype;
+                value.units=djangoData[i].variables[j].units;
                 if (djangoData[i].variables[j].bitpos!=null){
                     value.bitPos=djangoData[i].variables[j].bitpos.toString();}
                 else{value.bitPos=djangoData[i].variables[j].bitpos;}
