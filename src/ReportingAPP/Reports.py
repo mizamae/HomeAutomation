@@ -47,6 +47,10 @@ def get_report(title,fromDate,toDate,aggregation):
             name=variables['name']
             label=variables['label']
             try:
+                units=variables['units']
+            except:
+                units=None
+            try:
                 bitPos=variables['bitPos']
             except:
                 bitPos=None
@@ -65,14 +69,18 @@ def get_report(title,fromDate,toDate,aggregation):
                 
             if label==None:
                 if type=='analog':
-                    temp['cols'].insert(0,{'table':table,'name':name,'label':name,'type':type,'bitPos':None,'extrapolate':extrapolate,'plottype':plottype})   
+                    temp['cols'].insert(0,{'table':table,'name':name,'label':name,'type':type,
+                                           'bitPos':None,'extrapolate':extrapolate,'plottype':plottype,'units':units})   
                 else:
-                    temp['cols'].append({'table':table,'name':name,'label':name,'type':type,'bitPos':None,'extrapolate':extrapolate,'plottype':plottype})   
+                    temp['cols'].append({'table':table,'name':name,'label':name,'type':type,
+                                         'bitPos':None,'extrapolate':extrapolate,'plottype':plottype,'units':units})   
             else:
                 if type=='analog':
-                    temp['cols'].insert(0,{'table':table,'name':name,'label':label,'type':type,'bitPos':bitPos,'extrapolate':extrapolate,'plottype':plottype}) 
+                    temp['cols'].insert(0,{'table':table,'name':name,'label':label,'type':type,
+                                           'bitPos':bitPos,'extrapolate':extrapolate,'plottype':plottype,'units':units}) 
                 else:
-                    temp['cols'].append({'table':table,'name':name,'label':label,'type':type,'bitPos':bitPos,'extrapolate':extrapolate,'plottype':plottype}) 
+                    temp['cols'].append({'table':table,'name':name,'label':label,'type':type,
+                                         'bitPos':bitPos,'extrapolate':extrapolate,'plottype':plottype,'units':units}) 
                     
         #Reports.print('temp '+str(temp)) 
         charts.append(temp)
