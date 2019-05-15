@@ -53,7 +53,8 @@ def getAllVariables():
             if IO.Direction==GPIO_INPUT or IO.Direction==GPIO_OUTPUT:
                 table=IO.getRegistersDBTable()
                 tempvars.append({'device':device,'table':table,'tag':IO.getRegistersDBTag(),
-                                'label':[IO.Label,],'extrapolate':0,'type':'digital','plottype':'line','bitpos':0})# this is to tell the template that it is a boolean value
+                                'label':[IO.Label,],'extrapolate':0,'type':'digital','plottype':'line',
+                                'bitpos':0,'units':None})# this is to tell the template that it is a boolean value
                                 
         info.append({'deviceName':device,'variables':tempvars})
     tempvars=[]
@@ -63,10 +64,12 @@ def getAllVariables():
             table=VAR.getRegistersDBTable()
             if VAR.DataType!=DTYPE_DIGITAL:
                 tempvars.append({'device':device,'table':table,'tag':VAR.getRegistersDBTag(),
-                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog','plottype':VAR.PlotType,'bitpos':None})
+                            'label':VAR.Label,'extrapolate':'keepPrevious','type':'analog','plottype':VAR.PlotType,
+                            'bitpos':None,'units':VAR.Units})
             else:
                 tempvars.append({'device':device,'table':table,'tag':VAR.getRegistersDBTag(),
-                            'label':[VAR.Label,],'extrapolate':0,'type':'digital','plottype':VAR.PlotType,'bitpos':0})
+                            'label':[VAR.Label,],'extrapolate':0,'type':'digital','plottype':VAR.PlotType,
+                            'bitpos':0,'units':None})
                                 
         info.append({'deviceName':device,'variables':tempvars})
         
@@ -80,10 +83,10 @@ def getAllVariables():
                 ITM=DatagramItems.objects.get(pk=varinfo['itempk'])
                 if var['bit']!=None:    # its a digital variable
                     tempvars.append({'device':DV.Name,'table':var['table'],'tag':var['name'],'type':'digital','label':var['label'],
-                                'plottype':ITM.PlotType,'extrapolate':0,'bitpos':var['bit']})
+                                'plottype':ITM.PlotType,'extrapolate':0,'bitpos':var['bit'],'units':None})
                 else:
                     tempvars.append({'device':DV.Name,'table':var['table'],'tag':var['name'],'type':'analog','label':var['label'],
-                                'plottype':ITM.PlotType,'extrapolate':0,'bitpos':var['bit']})
+                                'plottype':ITM.PlotType,'extrapolate':0,'bitpos':var['bit'],'units':var['units']})
                     
         info.append({'deviceName':DV.Name,'variables':tempvars})
     return info
