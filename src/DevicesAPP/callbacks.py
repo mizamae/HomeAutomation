@@ -611,6 +611,9 @@ class IBERDROLA:
         return {'Error':IBERDROLA.Error,'LastUpdated':LastUpdated}
     
 class ESIOS(object):
+    """
+    EACH TIME A NEW INDICATOR IS INCLUDED, ONE NEEDS TO DELETE THE INDICATORS.PICKLE FILE TO MAKE SURE THE FIL EIS UP TO DATE
+    """
     _MAX_RETRIES=3
     
     def __init__(self,DV):
