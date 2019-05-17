@@ -102,15 +102,15 @@ class DatagramsAdmin(admin.ModelAdmin):
         
     def save_related(self, request, form, formsets, change):
         super(DatagramsAdmin, self).save_related(request, form, formsets, change)
-        if not change:
-            from utils.BBDD import getRegistersDBInstance
-            DVT=form.cleaned_data['DVT']
-            DVs=Devices.objects.filter(DVT=DVT)
-            for DV in DVs:
+        from utils.BBDD import getRegistersDBInstance
+        DVT=form.cleaned_data['DVT']
+        DVs=Devices.objects.filter(DVT=DVT)
+        for DV in DVs:
+            if not change:
                 DV.setCustomLabels()
                 DV.updateAutomationVars()
-                DB=getRegistersDBInstance()
-                DV.checkRegistersDB(Database=DB)
+            DB=getRegistersDBInstance()
+            DV.checkRegistersDB(Database=DB)
             
 class CronExpressionsAdmin(admin.ModelAdmin):
     def printExpression(self,instance):
