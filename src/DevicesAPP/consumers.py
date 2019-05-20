@@ -58,6 +58,25 @@ class Devices_command(JsonWebsocketConsumer):
         pass
         
 
+class Device_pendingjob(JsonWebsocketConsumer):
+    def connect(self, message, **kwargs):
+        pass
+    
+    def disconnect(self, message, **kwargs):
+        pass
+        
+    def receive(self, content, multiplexer, **kwargs):
+        import datetime
+        try:
+            DV=Devices.objects.get(pk=int(content['pk']))
+            DG=Datagrams.objects.get(pk=int(content['data']['DG_pk']))
+            date=datetime.datetime.strptime(content['data']['date'], '%Y-%m-%d').date()
+            from .callbacks import PENDING_DB
+            PENDING_DB.add_pending_job(DV=DV,datagramId=DG.Identifier,date=date)
+            multiplexer.send({"action":"confirmed"})
+        except Exception as exc:
+            multiplexer.send({"action":"not confirmed",'error':str(exc)})
+    
 
 class GPIO_updater(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
@@ -70,6 +89,7 @@ class DevicesAPP_consumers(WebsocketDemultiplexer):
     consumers = {
         "Device_params": DevicesBinding.consumer,
         "Device_update": Devices_updater,
+        "Device_pendingjob": Device_pendingjob,
         "Device_delete": Devices_delete,
         "Device_query": Devices_query,
         "Device_command": Devices_command,

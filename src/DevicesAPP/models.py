@@ -2012,7 +2012,10 @@ class Datagrams(models.Model):
     
     def __str__(self):
         return self.Identifier
-        
+    
+    def serialize(self):
+        return {'pk':self.pk,'id':self.Identifier}
+    
     def store2DB(self,update_fields=[]):
         self.full_clean()
         if self.pk:
