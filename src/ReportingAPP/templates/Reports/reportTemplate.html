@@ -161,21 +161,21 @@
 	    	buttonINCHeight.className="btn btn-default btn-xl";
 	    	buttonINCHeight.role="button";
 	    	buttonINCHeight.innerHTML="+";
-	    	buttonINCHeight.id="incHeight"
+	    	buttonINCHeight.id="incHeight";
 	    	buttonINCHeight.addEventListener("click", function(){ ChartsHeight+=ChartsHeightStep;resizePlots(ChartsHeight); });
 			base.appendChild(buttonINCHeight);
 			var buttonDECHeight=document.createElement('a');
 			buttonDECHeight.className="btn btn-default btn-xl";
 			buttonDECHeight.role="button";
 			buttonDECHeight.innerHTML="-";
-			buttonDECHeight.id="decHeight"
+			buttonDECHeight.id="decHeight";
 			buttonDECHeight.addEventListener("click", function(){ ChartsHeight-=ChartsHeightStep;resizePlots(ChartsHeight); });
 			base.appendChild(buttonDECHeight);
             var buttonDownload=document.createElement('a');
 			buttonDownload.className="btn btn-default btn-xl";
 			buttonDownload.role="button";
 			buttonDownload.innerHTML="Download data";
-			buttonDownload.id="downloadData"
+			buttonDownload.id="downloadData";
 			buttonDownload.addEventListener("click", function(){ downloadData(); });
 			base.appendChild(buttonDownload);
 	    	for (i = 0; i < djangoData.length; i++) 
