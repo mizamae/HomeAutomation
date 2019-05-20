@@ -3,11 +3,11 @@
     "model": "DevicesAPP.devicetypes",
     "pk": 1,
     "fields": {
-        "Code": "GAPQv1",
-        "Description": "Remote device",
-        "MinSampletime": 10,
+        "Code": "3xDHT22",
+        "Description": "Dispositivo que recoge la informaci\u00f3n de hasta 3 sensores ambientales tipo DHT22.",
+        "MinSampletime": 30,
         "Connection": 1,
-        "Picture": ""
+        "Picture": "3xDHT22/thumbnail.png"
     }
 },
 {
@@ -15,8 +15,8 @@
     "pk": 2,
     "fields": {
         "Code": "DHT22",
-        "Description": "Local device",
-        "MinSampletime": 60,
+        "Description": "Sensor ambiental con conexi\u00f3n a un hilo.",
+        "MinSampletime": 20,
         "Connection": 0,
         "Picture": ""
     }
@@ -26,190 +26,214 @@
     "pk": 3,
     "fields": {
         "Code": "OpenWeatherMap",
-        "Description": "Memory device",
+        "Description": "Estimacion y medidas de tiempo en un lugar",
+        "MinSampletime": 60,
+        "Connection": 2,
+        "Picture": "OpenWeatherMap/thumbnail.png"
+    }
+},
+{
+    "model": "DevicesAPP.devicetypes",
+    "pk": 4,
+    "fields": {
+        "Code": "ESIOS",
+        "Description": "Dispositivo que se conecta a la API de REE y extrae informaci\u00f3n sobre el sistema el\u00e9ctrico",
         "MinSampletime": 60,
         "Connection": 2,
         "Picture": ""
     }
 },
 {
-    "model": "DevicesAPP.devices",
-    "pk": 1,
+    "model": "DevicesAPP.devicetypes",
+    "pk": 5,
     "fields": {
-        "Name": "Remote Device",
-        "IO": null,
-        "Code": 1,
-        "IP": "10.10.10.1",
-        "DVT": 1,
-        "State": 0,
-        "Sampletime": 10,
-        "RTsampletime": 10,
-        "LastUpdated": "2018-01-23T14:53:06.921Z",
-        "NextUpdate": null,
-        "Connected": false,
-        "CustomLabels": "{\"1\": {\"1_1_1\": \"Error 0$Error 1$Error 2$Error 3$Error 4$Error 5$Error 6$Error 7\", \"2_1_1\": \"Activa\", \"3_1_1\": \"Reactiva\", \"4_1_1\": \"Aparente\"}, \"2\": {\"5_1_2\": \"Tension_V\"}}",
-        "Error": "The device did not acknowledge the resetStatics order on datagram powers"
+        "Code": "IBERDROLA",
+        "Description": "Consulta los datos de consumo de una instalaci\u00f3n con contador inteligente de Iberdrola Distribuci\u00f3n",
+        "MinSampletime": 3600,
+        "Connection": 2,
+        "Picture": ""
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 1,
     "fields": {
-        "Tag": "Status",
-        "DataType": "digital",
-        "PlotType": 1,
-        "Units": "bits"
+        "Tag": "Temperatura",
+        "DataType": "float",
+        "PlotType": "spline",
+        "Units": "\u00baC"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 2,
     "fields": {
-        "Tag": "Potencia activa",
+        "Tag": "Humedad relativa",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "kW"
+        "PlotType": "spline",
+        "Units": "%"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 3,
     "fields": {
-        "Tag": "Potencia reactiva",
-        "DataType": "float",
-        "PlotType": 1,
-        "Units": "kVAr"
+        "Tag": "Status",
+        "DataType": "digital",
+        "PlotType": "line",
+        "Units": "bits"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 4,
     "fields": {
-        "Tag": "Potencia aparente",
+        "Tag": "Punto de roc\u00edo",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "KVAs"
+        "PlotType": "spline",
+        "Units": "\u00baC"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 5,
     "fields": {
-        "Tag": "Tension",
+        "Tag": "Heat index",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "V"
+        "PlotType": "spline",
+        "Units": "\u00baC"
     }
 },
-
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 6,
     "fields": {
-        "Tag": "Temperatura",
+        "Tag": "Precipitaciones",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "degC"
+        "PlotType": "spline",
+        "Units": "mm"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 7,
     "fields": {
-        "Tag": "Humedad",
+        "Tag": "Velocidad de viento",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "percent"
+        "PlotType": "spline",
+        "Units": "km/h"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 8,
     "fields": {
-        "Tag": "Punto de rocio",
+        "Tag": "Nubosidad",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "degC"
+        "PlotType": "spline",
+        "Units": "%"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 9,
     "fields": {
-        "Tag": "Indice de calor",
+        "Tag": "Coste energia activa",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "degC"
+        "PlotType": "column",
+        "Units": "\u20ac/kWh"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 10,
     "fields": {
-        "Tag": "Windspeed",
+        "Tag": "Energia Activa",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "m/s"
+        "PlotType": "column",
+        "Units": "Wh"
     }
 },
 {
     "model": "DevicesAPP.datagramitems",
     "pk": 11,
     "fields": {
-        "Tag": "Rain",
+        "Tag": "Potencia Activa",
         "DataType": "float",
-        "PlotType": 1,
-        "Units": "mm"
-    }
-},
-{
-    "model": "DevicesAPP.datagramitems",
-    "pk": 12,
-    "fields": {
-        "Tag": "Clouds",
-        "DataType": "float",
-        "PlotType": 1,
-        "Units": "percent"
+        "PlotType": "spline",
+        "Units": "W"
     }
 },
 {
     "model": "DevicesAPP.datagrams",
     "pk": 1,
     "fields": {
-        "Identifier": "powers",
+        "Identifier": "data",
         "Code": 0,
         "Type": 0,
-        "DVT": 1
+        "Cron": null,
+        "DVT": 1,
+        "Enable": true
     }
 },
 {
     "model": "DevicesAPP.datagrams",
     "pk": 2,
     "fields": {
-        "Identifier": "instant",
-        "Code": 1,
+        "Identifier": "data",
+        "Code": 0,
         "Type": 0,
-        "DVT": 1
+        "Cron": null,
+        "DVT": 2,
+        "Enable": true
     }
 },
 {
     "model": "DevicesAPP.datagrams",
     "pk": 3,
     "fields": {
-        "Identifier": "data",
-        "Code": 1,
+        "Identifier": "observation",
+        "Code": 0,
         "Type": 0,
-        "DVT": 2
+        "Cron": null,
+        "DVT": 3,
+        "Enable": true
     }
 },
 {
     "model": "DevicesAPP.datagrams",
     "pk": 4,
     "fields": {
-        "Identifier": "observation",
+        "Identifier": "energy_cost",
+        "Code": 0,
+        "Type": 2,
+        "Cron": 1,
+        "DVT": 4,
+        "Enable": true
+    }
+},
+{
+    "model": "DevicesAPP.datagrams",
+    "pk": 5,
+    "fields": {
+        "Identifier": "dailyconsumption",
+        "Code": 0,
+        "Type": 2,
+        "Cron": 7,
+        "DVT": 5,
+        "Enable": true
+    }
+},
+{
+    "model": "DevicesAPP.datagrams",
+    "pk": 6,
+    "fields": {
+        "Identifier": "instantpower",
         "Code": 1,
-        "Type": 0,
-        "DVT": 3
+        "Type": 2,
+        "Cron": 5,
+        "DVT": 5,
+        "Enable": false
     }
 },
 {
@@ -217,125 +241,382 @@
     "pk": 1,
     "fields": {
         "DG": 1,
+        "ITM": 3,
+        "Order": 1
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 2,
+    "fields": {
+        "DG": 1,
+        "ITM": 1,
+        "Order": 2
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 3,
+    "fields": {
+        "DG": 1,
+        "ITM": 2,
+        "Order": 3
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 4,
+    "fields": {
+        "DG": 1,
+        "ITM": 1,
+        "Order": 4
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 5,
+    "fields": {
+        "DG": 1,
+        "ITM": 2,
+        "Order": 5
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 6,
+    "fields": {
+        "DG": 1,
+        "ITM": 1,
+        "Order": 6
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 7,
+    "fields": {
+        "DG": 1,
+        "ITM": 2,
+        "Order": 7
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 8,
+    "fields": {
+        "DG": 2,
         "ITM": 1,
         "Order": 1
     }
 },
 {
     "model": "DevicesAPP.itemordering",
-    "pk": 2,
+    "pk": 9,
     "fields": {
-        "DG": 1,
+        "DG": 2,
         "ITM": 2,
         "Order": 2
     }
 },
 {
     "model": "DevicesAPP.itemordering",
-    "pk": 3,
-    "fields": {
-        "DG": 1,
-        "ITM": 3,
-        "Order": 3
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
-    "pk": 4,
-    "fields": {
-        "DG": 1,
-        "ITM": 4,
-        "Order": 4
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
-    "pk": 5,
-    "fields": {
-        "DG": 2,
-        "ITM": 5,
-        "Order": 1
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
-    "pk": 6,
-    "fields": {
-        "DG": 3,
-        "ITM": 6,
-        "Order": 1
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
-    "pk": 7,
-    "fields": {
-        "DG": 3,
-        "ITM": 7,
-        "Order": 2
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
-    "pk": 8,
-    "fields": {
-        "DG": 3,
-        "ITM": 8,
-        "Order": 3
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
-    "pk": 9,
-    "fields": {
-        "DG": 3,
-        "ITM": 9,
-        "Order": 4
-    }
-},
-{
-    "model": "DevicesAPP.itemordering",
     "pk": 10,
     "fields": {
-        "DG": 4,
-        "ITM": 6,
-        "Order": 1
+        "DG": 2,
+        "ITM": 4,
+        "Order": 3
     }
 },
 {
     "model": "DevicesAPP.itemordering",
     "pk": 11,
     "fields": {
-        "DG": 4,
-        "ITM": 7,
-        "Order": 2
+        "DG": 2,
+        "ITM": 5,
+        "Order": 4
     }
 },
 {
     "model": "DevicesAPP.itemordering",
     "pk": 12,
     "fields": {
-        "DG": 4,
-        "ITM": 10,
-        "Order": 3
+        "DG": 3,
+        "ITM": 1,
+        "Order": 1
     }
 },
 {
     "model": "DevicesAPP.itemordering",
     "pk": 13,
     "fields": {
-        "DG": 4,
-        "ITM": 11,
-        "Order": 4
+        "DG": 3,
+        "ITM": 2,
+        "Order": 2
     }
 },
 {
     "model": "DevicesAPP.itemordering",
     "pk": 14,
     "fields": {
-        "DG": 4,
-        "ITM": 12,
+        "DG": 3,
+        "ITM": 7,
+        "Order": 3
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 15,
+    "fields": {
+        "DG": 3,
+        "ITM": 6,
+        "Order": 4
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 16,
+    "fields": {
+        "DG": 3,
+        "ITM": 8,
         "Order": 5
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 17,
+    "fields": {
+        "DG": 4,
+        "ITM": 9,
+        "Order": 1
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 18,
+    "fields": {
+        "DG": 4,
+        "ITM": 9,
+        "Order": 2
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 19,
+    "fields": {
+        "DG": 4,
+        "ITM": 9,
+        "Order": 3
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 20,
+    "fields": {
+        "DG": 5,
+        "ITM": 10,
+        "Order": 1
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 21,
+    "fields": {
+        "DG": 6,
+        "ITM": 11,
+        "Order": 1
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 22,
+    "fields": {
+        "DG": 5,
+        "ITM": 10,
+        "Order": 2
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 23,
+    "fields": {
+        "DG": 5,
+        "ITM": 10,
+        "Order": 3
+    }
+},
+{
+    "model": "DevicesAPP.commandparameters",
+    "pk": 1,
+    "fields": {
+        "Tag": "REL"
+    }
+},
+{
+    "model": "DevicesAPP.commandparameters",
+    "pk": 2,
+    "fields": {
+        "Tag": "VAL"
+    }
+},
+{
+    "model": "DevicesAPP.devicecommands",
+    "pk": 1,
+    "fields": {
+        "DVT": 1,
+        "Label": "Activar rele 1",
+        "Identifier": "setrelay"
+    }
+},
+{
+    "model": "DevicesAPP.devicecommands",
+    "pk": 2,
+    "fields": {
+        "DVT": 1,
+        "Label": "Desactivar rele 1",
+        "Identifier": "setrelay"
+    }
+},
+{
+    "model": "DevicesAPP.devicecommands",
+    "pk": 3,
+    "fields": {
+        "DVT": 1,
+        "Label": "Activar rele 2",
+        "Identifier": "setrelay"
+    }
+},
+{
+    "model": "DevicesAPP.devicecommands",
+    "pk": 4,
+    "fields": {
+        "DVT": 1,
+        "Label": "Desactivar rele 2",
+        "Identifier": "setrelay"
+    }
+},
+{
+    "model": "DevicesAPP.devicecommands",
+    "pk": 5,
+    "fields": {
+        "DVT": 1,
+        "Label": "Activar rele 3",
+        "Identifier": "setrelay"
+    }
+},
+{
+    "model": "DevicesAPP.devicecommands",
+    "pk": 6,
+    "fields": {
+        "DVT": 1,
+        "Label": "Desactivar rele 3",
+        "Identifier": "setrelay"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 1,
+    "fields": {
+        "Command": 1,
+        "Parameter": 1,
+        "Value": "1"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 2,
+    "fields": {
+        "Command": 1,
+        "Parameter": 2,
+        "Value": "1"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 3,
+    "fields": {
+        "Command": 2,
+        "Parameter": 1,
+        "Value": "1"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 4,
+    "fields": {
+        "Command": 2,
+        "Parameter": 2,
+        "Value": "0"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 5,
+    "fields": {
+        "Command": 3,
+        "Parameter": 1,
+        "Value": "2"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 6,
+    "fields": {
+        "Command": 3,
+        "Parameter": 2,
+        "Value": "1"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 7,
+    "fields": {
+        "Command": 4,
+        "Parameter": 1,
+        "Value": "2"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 8,
+    "fields": {
+        "Command": 4,
+        "Parameter": 2,
+        "Value": "0"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 9,
+    "fields": {
+        "Command": 5,
+        "Parameter": 1,
+        "Value": "3"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 10,
+    "fields": {
+        "Command": 5,
+        "Parameter": 2,
+        "Value": "1"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 11,
+    "fields": {
+        "Command": 6,
+        "Parameter": 1,
+        "Value": "3"
+    }
+},
+{
+    "model": "DevicesAPP.parametervalues",
+    "pk": 12,
+    "fields": {
+        "Command": 6,
+        "Parameter": 2,
+        "Value": "0"
     }
 }
 ]

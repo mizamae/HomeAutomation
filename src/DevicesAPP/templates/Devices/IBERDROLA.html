@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+
+
+{% block title %}{{ block.super }}Home{% endblock %}
+
+{% block navbar-left %}
+  {% include "_navbar.html" with active_link="downloads" %}
+{% endblock %}
+
+
+{% block splash %}
+
+{% get_current_language as LANGUAGE_CODE %}
+<!-- Current language: {{ LANGUAGE_CODE }} -->
+
+
+{% endblock splash %}
+
+{% block extrahead %}
+    <style>
+    .container{
+    	position:relative;
+    	top:2em;
+    }
+    </style>
+{% endblock extrahead %}
+
+{% block container %}
+<!-- Benefits of the Django application -->
+
+<div class="container">
+		<h1>{{ Device.Name }}</h1>
+		<p></p>
+		{% trans "Device pk" as first_header %}
+		{% trans "Type" as second_header %}
+       	{% with first_col=Device.pk second_col=Device.DVT.Code CMDs=0 FMWR=0 logo='site/logos/IBERDROLA.png' %}
+        {% include "Devices/_devices_data.html" %}
+        {% endwith%}        
+        <p></p>
+        <div class="tab-content">
+          <div class="table-responsive">
+            <table id="tab_pending" class="table" >
+				<thead>
+					<tr>
+						<th data-align="center" colspan=3>{% trans "Insert pending jobs" %}</th>
+					</tr>
+					<tr>
+						<th data-align="left" >{% trans "Date" %}</th>
+						<th data-align="center">{% trans "Datagram" %}</th>
+						<th data-align="center"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td	width="30%" ><input type="date" id="datePicker"></td>
+						<td	width="30%" ><div id="cmbDG"></div></td>
+						<td	width="30%" ><div class="btn btn-primary"	id="insertPending"	onclick="insertPending({{ Device.pk }})">{% trans "Insert" %}</div></td>
+					</tr>
+                </tbody>
+            </table>
+          </div>
+        </div>
+		<h3 class="alert-warning" id="error_row"><span id="error"></span></h3>
+		<p></p>
+	    <div class="col-lg-8 col-md-10 col-sm-12 col-xs-12">
+	    {% include "_back.html" with back_to='Devices:home' %}
+	    </div>
+</div><!-- /.container -->
+
+
+
+
+{% endblock container %}
+
+{% block scripts %}
+<script src="{% static 'site/js/site.js' %}"></script>	
+
+<script>
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+		var ws_path =  "/stream/DevicesAPP/";
+		console.log("Connecting to " + ws_path);
+        
+        var DeviceName="{{ Device.Name }}";
+        
+		var webSocketBridge = new channels.WebSocketBridge();
+		webSocketBridge.connect(ws_path);
+		webSocketBridge.listen();
+		
+        
+        $(function () {
+            
+        	var Labels = JSON.parse('{{ Device.CustomLabels|safe }}');
+            var Values = JSON.parse('{{ Latest|safe }}');
+            var Order = JSON.parse('{{ Order|safe }}');
+            var DGs = JSON.parse('{{ DGs|safe }}');
+            
+			var divDGs=document.getElementById("cmbDG");
+			var iSel = document.createElement('select');
+			iSel.id="DG_selection";
+			divDGs.appendChild(iSel);
+			DGs.forEach(function(DG)
+			{
+				var iOpt = document.createElement('option');
+				iOpt.value=DG.pk;
+				iOpt.innerHTML=DG.id;
+				iSel.appendChild(iOpt);
+			});
+			
+            webSocketBridge.demultiplex('Device_pendingjob', function(payload, streamName) {
+                // Handle different actions
+                var error=document.getElementById('error');
+                var error_row=document.getElementById('error_row');
+                if (payload.action == "confirmed") 
+                {
+                	var today=new Date().toISOString().slice(0,10);
+                	document.getElementById("datePicker").value= today;
+                	$(error_row).removeClass("alert-warning");
+                	$(error_row).addClass("alert-success");
+                	error.innerHTML="DB updated OK";
+                }else if (payload.action == "not confirmed") 
+                {
+                	description=payload.error;
+                	$(error_row).addClass("alert-warning");
+                	$(error_row).removeClass("alert-success");
+                	error.innerHTML="Something failed: " + description;
+                }
+                else {
+                    console.log("Unknown action " + payload.action);
+                }
+            });
+            // Helpful debugging
+            webSocketBridge.socket.addEventListener('open', 
+                function() { 
+                    console.log("Connected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="LimeGreen";
+                    label.innerHTML="Connected to RT engine"
+            });
+            webSocketBridge.socket.addEventListener('close', 
+                function() { 
+                    console.log("Disconnected to notification socket"); 
+                    label=document.getElementById('RT_status');
+                    label.style.color="Red";
+                    label.innerHTML="Disconnected from RT engine"
+            });
+        });
+        
+        
+        function insertPending(DV_pk)
+        {
+        	document.getElementById('error').innerHTML="";
+            var date=document.getElementById("datePicker").value;
+        	var DG_pk=document.getElementById("DG_selection").value;
+        	webSocketBridge.stream('Device_pendingjob').send({
+                "pk": DV_pk,
+                "action": "add",
+                "data": {"date":date,"DG_pk":DG_pk}
+            });     	
+        }
+        
+    </script>
+	
+{% endblock scripts %}
+

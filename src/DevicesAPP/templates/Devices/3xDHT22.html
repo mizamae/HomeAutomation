@@ -37,7 +37,7 @@
 		<p></p>
 		{% trans "IP" as first_header %}
 		{% trans "Type" as second_header %}
-       	{% with first_col=Device.IP second_col=Device.DVT.Code logo='site/logos/3xDHT22.png' %}
+       	{% with first_col=Device.IP second_col=Device.DVT.Code CMDs=1 FRMW=1 logo='site/logos/3xDHT22.png' %}
         {% include "Devices/_devices_data.html" %}
         {% endwith%}        
         <p></p>

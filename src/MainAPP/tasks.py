@@ -82,7 +82,7 @@ def MonthlyTask():
 def start_MonthlyTask(): 
     '''COMPACTS THE REGISTER'S TABLE MONTHLY ON THE LAST DAY OF THE MONTH AT 00:00:00
     '''
-    startTelegramDaemon()
+    #startTelegramDaemon()
     
     id='MonthlyTask'
     scheduler.add_job(func=MonthlyTask,trigger='cron',id=id,day='last',hour=0,minute=0,max_instances=1,coalesce=True,misfire_grace_time=600,replace_existing=True)
@@ -199,9 +199,10 @@ def run_afterBoot():
 #     DV=Devices.objects.filter(DVT__Code='ESIOS')
 #     instance=ESIOS(DV[0])
 #     import datetime
-#     instance(datagramId = 'energy_cost',date=datetime.datetime(year=2018,month=10,day=8))
-#     instance.initializeDB(fromdate=datetime.datetime(year=2017,month=12,day=31),datagramId = 'energy_cost')
-#      
+    #instance.save_indicators_table()
+    #instance(datagramId = 'energy_cost',date=datetime.datetime(year=2019,month=5,day=17))
+    #instance.initializeDB(fromdate=datetime.datetime(year=2017,month=12,day=31),datagramId = 'energy_cost')
+      
 
 #     SCRIPT TO INITIALIZE THE DB WITH DATA FROM BEGINING OF THE YEAR
     import DevicesAPP.callbacks
