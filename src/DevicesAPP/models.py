@@ -1475,7 +1475,18 @@ class Devices(models.Model):
                 return "Device did not respond to firmware update feature"
             else:
                 return "Exception: "+ str(ex)
-        
+    
+    def getPendingJobs(self):
+        if self.DVT.Connection==MEMORY_CONNECTION:
+            from .callbacks import PENDING_DB
+            PJOBs= PENDING_DB.retrieve_pending_jobs(DV=self) 
+            returned=[]
+            for PJOB in PJOBs:
+                returned.append({'date':PJOB[0].strftime("%Y-%m-%d"),'datagram':PJOB[1]})
+            return returned
+        else:
+            return []
+         
     def getFirmwareWeb(self,timeout=1):
         """
         ARDUINO RESPONSE: "<html><body><form method='POST' action='' enctype='multipart/form-data'>

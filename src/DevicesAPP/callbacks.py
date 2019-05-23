@@ -78,7 +78,7 @@ class PENDING_DB(object):
             logger.error(DV.Error)
             
     @staticmethod
-    def __retrieve_pending_jobs(DV):
+    def retrieve_pending_jobs(DV):
         from .constants import POLLING_PENDING_DB
         from utils.BBDD import Database
         DB=Database(location=POLLING_PENDING_DB,DB_id=str(DV)+'_pending')
@@ -107,20 +107,23 @@ class PENDING_DB(object):
             logger.error(DV.Error)
     
     @staticmethod
-    def execute_pending_jobs(sender,DV):
+    def execute_pending_jobs(sender,DV,dated=None,datagramID=None):
         from .models import Devices
-        jobs=PENDING_DB.__retrieve_pending_jobs(DV=DV)
-        for job in jobs:
+        jobs=PENDING_DB.retrieve_pending_jobs(DV=DV)  
+        for job in jobs:          
             date=job[0]
             datagramId=job[1]
-            logger.info('Executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk))
-            instance=sender(DV=DV)
-            result=instance(date=date,datagramId = datagramId)
-            if result['Error']=='':
-                PENDING_DB.__delete_pending_job(DV=DV,datagramId=datagramId,date=date)
-            else:
-                logger.info('Error executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk)+
-                            'Error: ' + str(result['Error']))
+            if dated==None or (dated==date and datagramID==datagramId):
+                logger.info('Executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk))
+                instance=sender(DV=DV)
+                result=instance(date=date,datagramId = datagramId)
+                if result['Error']=='':
+                    PENDING_DB.__delete_pending_job(DV=DV,datagramId=datagramId,date=date)
+                else:
+                    logger.info('Error executing pending requests: '+str(date)+'-'+str(datagramId)+'-'+str(DV.pk)+
+                                'Error: ' + str(result['Error']))
+                if dated==date and datagramID==datagramId:
+                    break
                 
     
     
@@ -927,8 +930,10 @@ class ESIOS(object):
                             temp.insert(0,timestamp.to_pydatetime())
                             values.append(temp)
                         #logger.info("returned values: " + str(values))
-                        self.sensor.insertManyRegisters(DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
-
+                        returned=self.sensor.insertManyRegisters(DatagramId=datagramId,year=timestamp.year,values=values,NULL=False)
+                        logger.info('Insert many registers returned code : ' + str(returned))
+                        if returned==None or returned!=0:
+                            Error="Error storing data to DB"
                     else:
                         null=True
                         Error='Empty dataframe'

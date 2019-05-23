@@ -37,6 +37,26 @@
                      </tbody>
 		    </table>
 		    {% endif %}
+		    {% if PJOBs and pendingJobs|length > 0 %}
+		    <table id="devicepjobs_table" class="table table-striped table-bordered table-responsive ">
+					<thead class="thead-inverse">
+					    <tr>
+					        <th colspan=3>{% trans "Pending jobs" %}</th>
+					    </tr>
+					 </thead>
+					 <tbody>
+					 	{% for PJOB in pendingJobs %}
+                        <tr> 
+                            <td style="width:25%;">{{ PJOB.date }}</td>
+                            <td style="width:25%;">{{ PJOB.datagram }}</td>
+                            <td style="width:15%;">
+                            	<div class="btn btn-primary" style="width:100%;" onclick="sendPJOB({{ Device.pk }},'{{ PJOB.date }}','{{ PJOB.datagram }}')" role="button">{% trans "Execute" %}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                     </tbody>
+		    </table>
+		    {% endif %}
 	    </div>
 	</div>
     <div class="col-md-4">

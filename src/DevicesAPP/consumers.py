@@ -68,12 +68,20 @@ class Device_pendingjob(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         import datetime
         try:
-            DV=Devices.objects.get(pk=int(content['pk']))
-            DG=Datagrams.objects.get(pk=int(content['data']['DG_pk']))
-            date=datetime.datetime.strptime(content['data']['date'], '%Y-%m-%d').date()
             from .callbacks import PENDING_DB
-            PENDING_DB.add_pending_job(DV=DV,datagramId=DG.Identifier,date=date)
-            multiplexer.send({"action":"confirmed"})
+            DV=Devices.objects.get(pk=int(content['pk']))           
+            date=datetime.datetime.strptime(content['data']['date'], '%Y-%m-%d').date()
+            action=content['action']
+            if action=="add":
+                DG=Datagrams.objects.get(pk=int(content['data']['DG_pk']))
+                PENDING_DB.add_pending_job(DV=DV,datagramId=DG.Identifier,date=date)
+                multiplexer.send({"action":"confirmed"})
+            elif action=="execute":
+                DG=Datagrams.objects.get(DVT=DV.DVT,Identifier=content['data']['DG_id'])
+                import DevicesAPP.callbacks
+                sender=getattr(DevicesAPP.callbacks, DV.DVT.Code)            
+                PENDING_DB.execute_pending_jobs(sender=sender,DV=DV,dated=date,datagramID=DG.Identifier)
+                multiplexer.send({"action":"confirmed"})
         except Exception as exc:
             multiplexer.send({"action":"not confirmed",'error':str(exc)})
     

@@ -418,6 +418,7 @@ def AdvancedDevicePage(request,pk):
     import datetime
     import json
     DV=models.Devices.objects.get(pk=pk)
+    pendingJobs=DV.getPendingJobs()
     firmware=DV.getFirmwareWeb()
     LatestData=DV.getLatestData()
     COMMANDS=models.DeviceCommands.objects.filter(DVT=DV.DVT)
@@ -439,7 +440,7 @@ def AdvancedDevicePage(request,pk):
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
                                                         {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order),
                                                          'Commands':COMMANDS,'Firmware':firmware,'DGs':json.dumps(DGs),
-                                                         'firmware_data':firmware_data})
+                                                         'pendingJobs':pendingJobs,'firmware_data':firmware_data})
 
 def handle_uploaded_file(f):
     import os
