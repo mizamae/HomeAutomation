@@ -906,14 +906,14 @@ class ESIOS(object):
             indicators_ = [10229, 10230, 10231, 1739]
             names = self.get_names(indicators_)
             if type(date) is datetime.datetime:
-                start_=date.replace(hour=23,minute=59,second=59)
+                start_=date.replace(hour=0,minute=0,second=0)
             elif type(date) is datetime.date:
-                start_=datetime.datetime(day=date.day,month=date.month,year=date.year).replace(hour=23,minute=59,second=59)
+                start_=datetime.datetime(day=date.day,month=date.month,year=date.year).replace(hour=0,minute=0,second=0)
             elif date==None:
-                start_=timezone.now().replace(hour=23,minute=59,second=59)
+                start_=timezone.now().replace(hour=0,minute=0,second=0)
             
             #logger.info('start_ '+str(start_))
-            end_=(start_+datetime.timedelta(days=1)).replace(hour=23,minute=59,second=59)
+            end_=(start_+datetime.timedelta(hours=23))
             #logger.info('end_ '+str(end_))
             while retries>0:
                 try:
