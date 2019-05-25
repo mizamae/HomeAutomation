@@ -18,11 +18,15 @@ function init (DGs) {
         var error_row=document.getElementById('error_row');
         if (payload.action == "confirmed") 
         {
+        	setTimeout(function(){
+        		location.reload(true);
+        	}, 1500);
         	var today=new Date().toISOString().slice(0,10);
         	document.getElementById("datePicker").value= today;
         	$(error_row).removeClass("alert-warning");
         	$(error_row).addClass("alert-success");
         	error.innerHTML="DB updated OK";
+        	
         }else if (payload.action == "not confirmed") 
         {
         	description=payload.error;
