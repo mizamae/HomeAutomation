@@ -544,12 +544,15 @@ class IBERDROLA:
             add2pending=False
         if type(date) is datetime.datetime:
             date=date.date()
+        datas=None
         while retries>0:
             try:
                 if datagramId =='dailyconsumption':
                     if date==None:
                         date=(datetime.datetime.now()+datetime.timedelta(days=-1)).date()
-                    datas = self.miconsumodiario(date=date)
+                    if datas==None:
+                        datas = self.miconsumodiario(date=date)
+                        
                     if datas!=None:
                         values=[]
                         for data in datas:
@@ -915,9 +918,11 @@ class ESIOS(object):
             #logger.info('start_ '+str(start_))
             end_=(start_+datetime.timedelta(hours=23))
             #logger.info('end_ '+str(end_))
+            dfmul=None
             while retries>0:
                 try:
-                    dfmul, df_list, names = self.get_multiple_series(indicators_, start_, end_)
+                    if dfmul==None:
+                        dfmul, df_list, names = self.get_multiple_series(indicators_, start_, end_)
                     #logger.info("returned: " + str(dfmul))
                     if dfmul is not None:
                         null=False
