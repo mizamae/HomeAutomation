@@ -1814,6 +1814,7 @@ class Devices(models.Model):
                     else:
                         Error="Finished retrying request to " + self.Name
                 else:
+                    logger.error('Unknown error: ' + str(sys.exc_info()[1]))
                     raise DevicesAppException('Unknown error: ' + str(sys.exc_info()[1]))
                 
                 if retries==0 and writeToDB:

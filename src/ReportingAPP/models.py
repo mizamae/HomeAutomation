@@ -55,6 +55,7 @@ class Reports(models.Model):
     def getReportData(self,toDate=None):
         from .Reports import get_report
         import datetime
+        import calendar
         if self.Periodicity==DAILY_PERIODICITY: # daily report
             offset=datetime.timedelta(hours=24)
         elif self.Periodicity==WEEKLY_PERIODICITY: # weekly report
