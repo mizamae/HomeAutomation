@@ -296,9 +296,9 @@ class DevicesForm(ModelForm):
         self.fields['IO'].label = _("Enter the GPIO for the device")
         self.fields['Code'].label = _("Code for the device")
         #self.fields['Code'].widget.attrs['disabled'] = True
-        self.fields['Code'].widget.attrs['readonly'] = True
+        #self.fields['Code'].widget.attrs['readonly'] = True
         self.fields['IP'].label = _("IP address for the device")
-        self.fields['IP'].widget.attrs['readonly'] = True
+        #self.fields['IP'].widget.attrs['readonly'] = True
         #self.fields['IP'].widget.attrs['disabled'] = True
         self.fields['Sampletime'].label = _("Enter the sample time for the device")
         self.fields['RTsampletime'].label = _("Enter the real-time sample time for the device")
@@ -336,7 +336,7 @@ class DevicesForm(ModelForm):
      
     def save(self, *args, **kwargs):
         instance=super().save(commit=False)
-        instance.store2DB()
+        #instance.store2DB()
         return instance
     
     class Meta:

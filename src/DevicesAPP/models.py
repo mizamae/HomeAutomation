@@ -25,7 +25,7 @@ import MainAPP.models
 
 
 from .signals import SignalVariableValueUpdated,SignalNewDataFromDevice
-from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,\
+from .constants import CONNECTION_CHOICES,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,REMOTE_RS485_CONNECTION,MEMORY_CONNECTION,\
                         STATE_CHOICES,DEVICES_PROTOCOL,DEVICES_SUBNET,DEVICES_SCAN_IP4BYTE,\
                         DEVICES_CONFIG_FILE,DEVICES_FIRMWARE_WEB,IP_OFFSET,POLLING_SCHEDULER_URL,\
                         STOPPED_STATE,RUNNING_STATE,\
@@ -983,7 +983,7 @@ class Devices(models.Model):
     IO = models.OneToOneField(MasterGPIOs,help_text=str(_('The pin of the Master unit to which the device is connected. Only applies to locally connected devices.')),
                             on_delete=models.CASCADE,related_name='pin2device',unique=True,null=True,blank=True,limit_choices_to={'Direction': GPIO_SENSOR})
     Code = models.PositiveSmallIntegerField(help_text=str(_('Unique byte-type identifier of the device. It is used to identify the device within the communication frames.')),
-                            unique=True,blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
+                            blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
     IP = models.GenericIPAddressField(protocol='IPv4', unique=True,blank=True,null=True,error_messages={'unique':_("Invalid IP - This IP already exists in the DB.")})
     DVT = models.ForeignKey(DeviceTypes,related_name="deviceType",on_delete=models.CASCADE)#limit_choices_to={'Connection': 'LOCAL'}
     State= models.PositiveSmallIntegerField(help_text=str(_('Polling state of the device. STOPPED = no polling.')),
@@ -999,6 +999,20 @@ class Devices(models.Model):
     
     Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='devices')
     
+    def validate_unique(self,exclude=None,*args, **kwargs):
+        super(Devices, self).validate_unique(*args, **kwargs)
+        if self.DVT.Connection==REMOTE_TCP_CONNECTION:
+            DVs=Devices.objects.filter(DVT__Connection=REMOTE_TCP_CONNECTION)
+            for DV in DVs:
+                if self.IP==DV.IP:
+                    raise ValidationError({'IP':_("A device with the same IP already exists on the WiFi network")})
+        elif self.DVT.Connection==REMOTE_RS485_CONNECTION:
+            DVs=Devices.objects.filter(DVT__Connection=REMOTE_RS485_CONNECTION)
+            for DV in DVs:
+                if self.Code==DV.Code:
+                    raise ValidationError({'Code':_("A device with the same Code already exists on the RS485 network")})
+        
+    
     def _deviceType2Binding(self):
         '''THIS IS TO SEND ON THE DTATABINDING SOCKET THE CODE OF THE DEVICE TYPE. ON DEFAULT, IT SENDS THE pk '''
         return self.DVT.Code
@@ -1011,17 +1025,22 @@ class Devices(models.Model):
             return 'IP'+str(self.IP)+'-'
         elif self.DVT.Connection==MEMORY_CONNECTION:
             return self.Name+'-'
+        elif self.DVT.Connection==REMOTE_RS485_CONNECTION:
+            return 'Code'+str(self.Code)+'-'
         else:
             return None
     
     def clean(self):
+        
         if self.DVT.Connection==LOCAL_CONNECTION and self.IO==None:
             raise ValidationError(_('A locally connected device needs to have a GPIO defined'))
         if self.IO!=None:
             if self.IO.Direction!=GPIO_SENSOR:
                 raise ValidationError(_('The GPIO selected is not configured as sensor'))
-        if self.Sampletime<self.DVT.MinSampletime or self.RTsampletime<self.DVT.MinSampletime:
-            raise ValidationError(_('The sample time selected is too low for the '+self.DVT.Code+' sensors. It should be greater than '+str(self.DVT.MinSampletime)+' sec.'))
+        if self.Sampletime<self.DVT.MinSampletime:
+            raise ValidationError({'Sampletime':_('The sample time selected is too low for the '+self.DVT.Code+' sensors. It should be greater than '+str(self.DVT.MinSampletime)+' sec.')})
+        if self.RTsampletime<self.DVT.MinSampletime:
+            raise ValidationError({'RTsampletime':_('The RT sample time selected is too low for the '+self.DVT.Code+' sensors. It should be greater than '+str(self.DVT.MinSampletime)+' sec.')})
         
     def __str__(self):
         return self.Name

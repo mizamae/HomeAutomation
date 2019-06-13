@@ -109,6 +109,8 @@ def add(request,model):
         form=FormModel(request.POST,**FormKwargs)
         if form.is_valid():
             instance=form.save()
+            if instance.pk==None:
+                instance.store2DB()
             if lastAction!='add':
                 FormKwargs['action']=lastAction
                 ShowForm=True

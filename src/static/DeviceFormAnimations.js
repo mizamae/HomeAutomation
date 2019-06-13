@@ -84,7 +84,7 @@ function TypeChange()
 		    dataType: "html",
 		    success: function(result){
 		    	var response=JSON.parse(result);
-		    	if (response.Connection == 0)
+		    	if (response.Connection == 0) // local connection
 		    	{
 		    		rowfieldIO.style.display = 'block';
 		    		rowfieldDeviceIP.style.display = 'none';
@@ -92,14 +92,14 @@ function TypeChange()
 		    		rowfieldDeviceCode.style.display = 'none';
 		    		fieldDeviceCode.value=null;
 		    	}
-		    	else if (response.Connection == 1)
+		    	else if (response.Connection == 1) // REMOTE_TCP_CONNECTION
 	    		{
 		    		rowfieldIO.style.display = 'none';
 		    		fieldIO.value=null;
 		    		rowfieldDeviceIP.style.display = 'block';
 		    		rowfieldDeviceCode.style.display = 'block';
 	    		}
-		    	else if (response.Connection == 2)
+		    	else if (response.Connection == 2) // MEMORY_CONNECTION
 	    		{
 		    		rowfieldIO.style.display = 'none';
 		    		fieldIO.value=null;
@@ -107,6 +107,15 @@ function TypeChange()
 		    		fieldDeviceIP.value=null;
 		    		rowfieldDeviceCode.style.display = 'none';
 		    		fieldDeviceCode.value=null;
+	    		}
+		    	else if (response.Connection == 3) // REMOTE_RS485_CONNECTION
+	    		{
+		    		rowfieldIO.style.display = 'none';
+		    		fieldIO.value=null;
+		    		rowfieldDeviceIP.style.display = 'none';
+		    		fieldDeviceIP.value=null;
+		    		rowfieldDeviceCode.style.display = 'block';
+		    		fieldDeviceCode.value=0;
 	    		}
 		    	else{}
 		        console.log(response)
