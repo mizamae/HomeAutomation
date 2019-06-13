@@ -892,7 +892,10 @@ class DeviceTypes(models.Model):
     Connection= models.PositiveSmallIntegerField(help_text=str(_('''The connection can be: 
                                                                     - LOCAL for devices that connect to a pin of the Master unit.
                                                                     - REMOTE OVER TCP for devices communicating through the WiFi interface.
-                                                                    - MEMORY for devices that reside in the memory of the Master unit.''')),choices=CONNECTION_CHOICES)
+                                                                    - REMOTE OVER RS485 for devices communicating through the RS485 interface.
+                                                                    - MEMORY for devices that reside in the memory of the Master unit.
+                                                                    ''')),
+                                                 choices=CONNECTION_CHOICES)
     Picture = models.ImageField('DeviceType picture',
                                 upload_to=path_file_name,
                                 null=True,
@@ -940,7 +943,7 @@ def initialize_polling_devices():
             DV.updateRequests()
                         
 def request_callback(DV,DG,jobID,**kwargs): 
-    if (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
+    if (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION or DV.DVT.Connection==REMOTE_RS485_CONNECTION):
         import DevicesAPP.callbacks
         class_=getattr(DevicesAPP.callbacks, DV.DVT.Code)
         status={}
