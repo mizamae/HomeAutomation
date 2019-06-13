@@ -7,6 +7,7 @@ TOTESTS:
 
 TODOs:
 	- Comparison and update of Device's and Register's DB when new configuration.xml file is introduced.
+	- Analize Telegraf, InfluxDB and Grafana
     
 sudo systemctl restart daphne gunicorn worker
 
