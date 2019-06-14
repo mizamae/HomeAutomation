@@ -55,6 +55,17 @@
     }
 },
 {
+    "model": "DevicesAPP.devicetypes",
+    "pk": 6,
+    "fields": {
+        "Code": "SDM120",
+        "Description": "Analizador de red monof\u00e1sico",
+        "MinSampletime": 1,
+        "Connection": 3,
+        "Picture": ""
+    }
+},
+{
     "model": "DevicesAPP.datagramitems",
     "pk": 1,
     "fields": {
@@ -441,6 +452,15 @@
         "DG": 5,
         "ITM": 10,
         "Order": 3
+    }
+},
+{
+    "model": "DevicesAPP.itemordering",
+    "pk": 25,
+    "fields": {
+        "DG": 4,
+        "ITM": 9,
+        "Order": 4
     }
 },
 {
