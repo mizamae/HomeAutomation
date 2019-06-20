@@ -1,6 +1,7 @@
 import os
 import sys
 from django.db import models
+from django.db.utils import OperationalError
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -132,8 +133,14 @@ class MainDeviceVars(models.Model):
     def store2DB(self):
         '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
         '''
+        
         self.full_clean()
-        super().save()
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         self.updateAutomationVars()
         self.updateValue(newValue=self.Value,timestamp=timezone.now(),writeDB=True,force=True)
     
@@ -484,7 +491,12 @@ class MasterGPIOs(models.Model):
         '''STORES THE OBJECT AND CREATES THE REGISTER DB TABLES IF NEEDED
         '''
         self.full_clean()
-        super().save()
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         now=timezone.now()
         if self.Direction==GPIO_INPUT:
             GPIO.setup(int(self.Pin), GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
@@ -906,7 +918,12 @@ class DeviceTypes(models.Model):
     
     def store2DB(self):
         self.full_clean()
-        super().save() 
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         
     class Meta:
         permissions = (
@@ -1055,7 +1072,12 @@ class Devices(models.Model):
         
     def store2DB(self):
         self.full_clean()
-        super().save() 
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         from utils.BBDD import getRegistersDBInstance
         DB=getRegistersDBInstance(year=None)
         self.createRegistersTables(Database=DB)
@@ -1938,7 +1960,12 @@ class DatagramItems(models.Model):
 
     def store2DB(self):
         self.full_clean()
-        super().save() 
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         
     def __str__(self):
         return self.Tag
@@ -2022,7 +2049,12 @@ class CronExpressions(models.Model):
         
     def store2DB(self):
         self.full_clean()
-        super().save() 
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
     
     def getCronExpression(self):
         return {'seconds':self.Seconds,'minutes':self.Minutes,'hours':self.Hours,'dayofmonth':self.DayOfMonth,'month':self.Month,'dayofweek':self.DayOfWeek}
@@ -2052,10 +2084,16 @@ class Datagrams(models.Model):
     
     def store2DB(self,update_fields=[]):
         self.full_clean()
-        if self.pk:
-            super().save(update_fields=update_fields) 
-        else:
-            super().save() 
+        try:
+            if self.pk:
+                super().save(update_fields=update_fields) 
+            else:
+                super().save() 
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
+        
     
     def isAsynchronous(self):
         return self.Type==DG_ASYNCHRONOUS

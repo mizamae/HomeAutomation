@@ -1,6 +1,7 @@
 import os
 import sys
 from django.db import models
+from django.db.utils import OperationalError
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -24,7 +25,12 @@ class Reports(models.Model):
     
     def store2DB(self):
         self.full_clean()
-        super().save()
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         
     def checkTrigger(self):
         import datetime

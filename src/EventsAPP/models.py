@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.utils import OperationalError
 from channels.binding.websockets import WebsocketBinding
 from django.dispatch import receiver
 from django.db.models.signals import post_save,post_delete,pre_delete
@@ -14,12 +15,22 @@ class Events(models.Model):
     def store2DB(self):
         EVT=Events.checkIfExist(event=self)
         if EVT==None:
-            super().save()
+            try:
+                super().save()
+            except OperationalError:
+                logger.error("Operational error on Django. System restarted")
+                import os
+                os.system("sudo reboot")
         else:
             EVT.Timestamp=self.Timestamp
             EVT.Text=self.Text
             EVT.Severity=self.Severity
-            EVT.save()
+            try:
+                EVT.save()
+            except OperationalError:
+                logger.error("Operational error on Django. System restarted")
+                import os
+                os.system("sudo reboot")
     
     @classmethod
     def checkIfExist(cls,event):

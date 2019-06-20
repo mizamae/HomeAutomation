@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.db import models
+from django.db.utils import OperationalError
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.utils.functional import lazy
@@ -141,7 +142,13 @@ class SiteSettings(SingletonModel):
                                 max_length=100,help_text=_('The token assigned by the ESIOS service. You should ask for yours to: Consultas Sios <consultasios@ree.es>'),default='')
     
     def store2DB(self,update_fields=None):
-        self.save(update_fields=update_fields)
+        try:
+            self.save(update_fields=update_fields)
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
+        
         if update_fields!=None:
             self.applyChanges(update_fields=update_fields)
     
@@ -473,7 +480,13 @@ class AdditionalCalculations(models.Model):
             MainAPP.signals.SignalCreateMainDeviceVars.send(sender=None,Data=data)
             sinkVAR=AutomationVariables.objects.get(Label=label)
         self.SinkVar=sinkVAR
-        self.save()
+        try:
+            self.save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
+        
          
     def __str__(self):
         try:
@@ -727,7 +740,12 @@ class AutomationVariables(models.Model):
     
     def store2DB(self):
         self.full_clean()
-        super().save() 
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot") 
     
     def updateLabel(self,newLabel):
         self.Label=newLabel
@@ -969,7 +987,12 @@ class AutomationVarWeeklySchedules(models.Model):
     
     def store2DB(self): 
         self.full_clean() 
-        super().save() 
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         if self.Active:
             self.checkThis()
             
@@ -1335,7 +1358,12 @@ class AutomationRules(models.Model):
         
     def store2DB(self):
         self.full_clean()
-        super().save()
+        try:
+            super().save()
+        except OperationalError:
+            logger.error("Operational error on Django. System restarted")
+            import os
+            os.system("sudo reboot")
         
     def printEvaluation(self):
         result=self.evaluate()

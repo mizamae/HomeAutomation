@@ -154,6 +154,19 @@ class DevicesModelTests(TestCase):
         newDict=editDict(keys=['IO','DVT'],newValues=[IOfake,self.localDVT],Dictionary=DeviceDict)
         instance=Devices(**newDict)
         self.assertRaises(ValidationError,instance.clean)
+    
+    def test_errors_on_validate_unique(self):
+        '''
+        CHECKS THE ASSERTION OF VALIDATION ERROR WHEN IMPROPER VALUES ARE INTRODUCED
+        '''
+        print('## TESTING THE OPERATION OF THE validate_unique METHOD ##')
+        print('    --> Test_errors_on_validate_unique test 0.1: Validation error due to duplicated IP')
+        newDict=editDict(keys=['IP','DVT'],newValues=["10.10.0.4",self.remoteDVT],Dictionary=DeviceDict)
+        instance=Devices(**newDict)
+        instance.store2DB()
+        newDict=editDict(keys=['IP','DVT'],newValues=["10.10.0.4",self.remoteDVT],Dictionary=DeviceDict)
+        instance=Devices(**newDict)
+        self.assertRaises(ValidationError,instance.validate_unique)
      
     def test_store2DB(self):
         '''
