@@ -28,7 +28,7 @@ logger = logging.getLogger("project")
 from . import forms
 from . import models
 
-from .constants import APP_TEMPLATE_NAMESPACE,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION, \
+from .constants import APP_TEMPLATE_NAMESPACE,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,REMOTE_RS485_CONNECTION,MEMORY_CONNECTION, \
                         FORM_FIRST_RENDER_MSG,FORM_ISVALID_MSG,FORM_ISNOTVALID_MSG,SCAN_DEVICENOFOUND,SCAN_DEVICEFOUND,TESTS_USER_AGENT,\
                         GPIO_INPUT,GPIO_OUTPUT,GPIO_SENSOR
 
@@ -295,8 +295,9 @@ def viewList(request,model):
         return HttpResponseNotFound('<h1>No Page Here</h1>') 
     else:
         if Model == models.Devices:
+            from django.db.models import Q
             DVs=Model.objects.all()
-            remote_DVs=DVs.filter(DVT__Connection=REMOTE_TCP_CONNECTION)
+            remote_DVs=DVs.filter(Q(DVT__Connection=REMOTE_TCP_CONNECTION) | Q(DVT__Connection=REMOTE_RS485_CONNECTION))
             numrows_remote=remote_DVs.count()
             local_DVs=DVs.filter(DVT__Connection=LOCAL_CONNECTION)
             numrows_local=local_DVs.count()
