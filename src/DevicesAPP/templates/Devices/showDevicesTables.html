@@ -215,13 +215,13 @@
                 if (typeof DeviceState != "undefined") {
                     row.cells[3].innerHTML=((DeviceState>0) ? '{% trans " RUNNING " %}' : '{% trans " STOPPED " %}' );
                     row.cells[3].innerHTML+=" " + Error;
-                    buttonToggle=document.getElementById(prefix+'toggle'+(rownum-1).toString());
-                    buttonDel=document.getElementById(prefix+'delete'+(rownum-1).toString());
+                    //buttonToggle=document.getElementById(prefix+'toggle'+(rownum-1).toString());
+                    //buttonDel=document.getElementById(prefix+'delete'+(rownum-1).toString());
                     if (DeviceState==0)
                     {
                         row.cells[3].style.backgroundColor= "#FF0000";
-                        buttonToggle.innerHTML='{% trans " Start " %} >>';
-                        buttonDel.style.visibility='visible';
+                        //buttonToggle.innerHTML='{% trans " Start " %} >>';
+                        //buttonDel.style.visibility='visible';
                     }
                     else{
                         if (Error == '')
@@ -231,8 +231,8 @@
                         {
                             row.cells[3].style.backgroundColor= "#FACC2E";
                         }
-                        buttonToggle.innerHTML='{% trans " Stop " %} >>';
-                        buttonDel.style.visibility='hidden';
+                        //buttonToggle.innerHTML='{% trans " Stop " %} >>';
+                        //buttonDel.style.visibility='hidden';
                     }
                 }
                 if (typeof LastUpdated != "undefined") {
