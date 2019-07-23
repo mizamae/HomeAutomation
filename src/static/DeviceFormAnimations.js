@@ -1,7 +1,7 @@
 var rows = document.getElementsByClassName("row");
 var i;
-var fieldIO,fieldDeviceCode,fieldType,fieldDeviceIP,fieldSampletime,fieldRTSampletime;
-var rowfieldIO,rowfieldDeviceCode,rowfieldType,rowfieldDeviceIP,rowfieldSampletime,rowfieldRTSampletime;
+var fieldIO,fieldDeviceCode,fieldType,fieldDeviceIP,fieldSampletime,fieldRTSampletime,fieldPort,fieldBaudrate,fieldParity,fieldStopbit;
+var rowfieldIO,rowfieldDeviceCode,rowfieldType,rowfieldDeviceIP,rowfieldSampletime,rowfieldRTSampletime,rowfieldPort,rowfieldBaudrate,rowfieldParity,rowfieldStopbit;
 // this function is executed on load
 $(function()
 {
@@ -47,6 +47,30 @@ $(function()
 		    	rowfieldRTSampletime=rows[i];
 		    	rowfieldRTSampletime.style.display = 'block';
 	    	}
+		    if (rows[i].getElementsByClassName("control-group  field-Port").length>0)
+	    	{
+		    	fieldPort=document.getElementById("id_Port");
+		    	rowfieldPort=rows[i];
+		    	rowfieldPort.style.display = 'none';
+	    	}
+		    if (rows[i].getElementsByClassName("control-group  field-Baudrate").length>0)
+	    	{
+		    	fieldBaudrate=document.getElementById("id_Baudrate");
+		    	rowfieldBaudrate=rows[i];
+		    	rowfieldBaudrate.style.display = 'none';
+	    	}
+		    if (rows[i].getElementsByClassName("control-group  field-Parity").length>0)
+	    	{
+		    	fieldParity=document.getElementById("id_Parity");
+		    	rowfieldParity=rows[i];
+		    	rowfieldParity.style.display = 'none';
+	    	}
+		    if (rows[i].getElementsByClassName("control-group  field-Stopbits").length>0)
+	    	{
+		    	fieldStopbits=document.getElementById("id_Stopbits");
+		    	rowfieldStopbits=rows[i];
+		    	rowfieldStopbits.style.display = 'none';
+	    	}
 		    
 		}
 	}else
@@ -67,6 +91,19 @@ $(function()
 		fieldDeviceIP.readOnly = true;
 		rowfieldDeviceIP=document.getElementById("div_id_IP");
 		rowfieldDeviceIP.style.display = 'none';
+		
+		fieldPort=document.getElementById("id_Port");
+		rowfieldPort=document.getElementById("div_id_Port");
+		rowfieldPort.style.display = 'none';
+		fieldBaudrate=document.getElementById("id_Baudrate");
+		rowfieldBaudrate=document.getElementById("div_id_Baudrate");
+		rowfieldBaudrate.style.display = 'none';
+		fieldParity=document.getElementById("id_Parity");
+		rowfieldParity=document.getElementById("div_id_Parity");
+		rowfieldParity.style.display = 'none';
+		fieldStopbits=document.getElementById("id_Stopbits");
+		rowfieldStopbits=document.getElementById("div_id_Stopbits");
+		rowfieldStopbits.style.display = 'none';
 	}
 	TypeChange();
 });
@@ -91,13 +128,28 @@ function TypeChange()
 		    		fieldDeviceIP.value=null;
 		    		rowfieldDeviceCode.style.display = 'none';
 		    		fieldDeviceCode.value=null;
+		    		
+		    		rowfieldPort.style.display = 'none';
+		    		rowfieldParity.style.display = 'none';
+		    		rowfieldBaudrate.style.display = 'none';
+		    		fieldBaudrate.value=9600;
+		    		rowfieldStopbits.style.display = 'none';
+		    		fieldStopbits.value=1;
+		    		
 		    	}
 		    	else if (response.Connection == 1) // REMOTE_TCP_CONNECTION
 	    		{
 		    		rowfieldIO.style.display = 'none';
 		    		fieldIO.value=null;
 		    		rowfieldDeviceIP.style.display = 'block';
-		    		rowfieldDeviceCode.style.display = 'block';
+		    		rowfieldDeviceCode.style.display = 'none';
+		    		
+		    		rowfieldPort.style.display = 'none';
+		    		rowfieldParity.style.display = 'none';
+		    		rowfieldBaudrate.style.display = 'none';
+		    		fieldBaudrate.value=9600;
+		    		rowfieldStopbits.style.display = 'none';
+		    		fieldStopbits.value=1;
 	    		}
 		    	else if (response.Connection == 2) // MEMORY_CONNECTION
 	    		{
@@ -107,6 +159,13 @@ function TypeChange()
 		    		fieldDeviceIP.value=null;
 		    		rowfieldDeviceCode.style.display = 'none';
 		    		fieldDeviceCode.value=null;
+		    		
+		    		rowfieldPort.style.display = 'none';
+		    		rowfieldParity.style.display = 'none';
+		    		rowfieldBaudrate.style.display = 'none';
+		    		fieldBaudrate.value=9600;
+		    		rowfieldStopbits.style.display = 'none';
+		    		fieldStopbits.value=1;
 	    		}
 		    	else if (response.Connection == 3) // REMOTE_RS485_CONNECTION
 	    		{
@@ -116,13 +175,17 @@ function TypeChange()
 		    		fieldDeviceIP.value=null;
 		    		rowfieldDeviceCode.style.display = 'block';
 		    		fieldDeviceCode.value=0;
+		    		
+		    		rowfieldPort.style.display = 'block';
+		    		rowfieldParity.style.display = 'block';
+		    		rowfieldBaudrate.style.display = 'block';
+		    		rowfieldStopbits.style.display = 'block';
 	    		}
 		    	else{}
 		        console.log(response)
 		    },
 		    error: function(jqXHR, textStatus, errorThrown) {
-		    	rowfieldOrder.style.display = 'none';
-		    	console.log(errorThrown);
+		    	 console.log(errorThrown);
 		    }
 		});
 	}

@@ -14,7 +14,7 @@ from django.forms import inlineformset_factory
 import json
 import utils.BBDD
 import MainAPP.models
-from .constants import APP_TEMPLATE_NAMESPACE,DTYPE_DIGITAL
+from .constants import APP_TEMPLATE_NAMESPACE,DTYPE_DIGITAL,LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,REMOTE_RS485_CONNECTION
 from . import  models
 from .apps import DevicesAppException
 
@@ -326,13 +326,31 @@ class DevicesForm(ModelForm):
             AppendedText('Sampletime', 's',type=fieldtype),
             AppendedText('RTsampletime', 's',type=fieldtype),
             Field('State',type=fieldtype),
+            Field('Port',type=fieldtype),
+            Field('Baudrate',type=fieldtype),
+            Field('Parity',type=fieldtype),
+            Field('Stopbits',type=fieldtype),
             buttons
             
             )
     
     def clean(self):
         cleaned_data = super(DevicesForm, self).clean()
+        DVT = cleaned_data.get('DVT')
+        IP = cleaned_data.get('IP')
+        Port = cleaned_data.get('Port')
+        Baudrate= cleaned_data.get('Baudrate')
+        Parity= cleaned_data.get('Parity')
+        Stopbits= cleaned_data.get('Stopbits')
+        if DVT.Connection==REMOTE_TCP_CONNECTION:
+            Code=IP.split('.')[3]
+            cleaned_data.update(Code=Code)
+        if DVT.Connection !=REMOTE_RS485_CONNECTION:
+            cleaned_data.update(Port=None,Baudrate=None,Parity=None,Stopbits=None)
+        if DVT.Connection==LOCAL_CONNECTION or DVT.Connection==MEMORY_CONNECTION:
+            cleaned_data.update(Code=None)
         return cleaned_data
+     
      
     def save(self, *args, **kwargs):
         instance=super().save(commit=False)
@@ -341,7 +359,7 @@ class DevicesForm(ModelForm):
     
     class Meta:
         model = models.Devices
-        fields=['Name','DVT','IO','Code','IP','Sampletime','RTsampletime','State']
+        fields=['Name','DVT','IO','Code','IP','Sampletime','RTsampletime','State','Port','Baudrate','Parity','Stopbits']
         
     class Media:
         js = ('DeviceFormAnimations.js',)

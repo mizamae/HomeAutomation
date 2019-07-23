@@ -976,6 +976,17 @@ def request_callback(DV,DG,jobID,**kwargs):
     NextUpdate=DV.getNextUpdate(jobID=jobID) 
     DV.updatePollingStatus(DG=DG,LastUpdated=status['LastUpdated'],Error=status['Error'],NextUpdate=NextUpdate)
 
+def get_list_serialports():
+    from utils.USB_mangler import list_serial_ports
+    listports=list_serial_ports()
+    choices=[]
+    for port in listports:
+        choices.append((port,port))
+    if len(choices)==0:
+        choices.append(('No serial port',_('No serial port detected')))
+    return choices
+        
+    
 class Devices(models.Model):
                                     
     SQLcreateRegisterTable = ''' 
@@ -999,7 +1010,7 @@ class Devices(models.Model):
                             max_length=50,unique=True,error_messages={'unique':_("Invalid device name - This name already exists in the DB.")})
     IO = models.OneToOneField(MasterGPIOs,help_text=str(_('The pin of the Master unit to which the device is connected. Only applies to locally connected devices.')),
                             on_delete=models.CASCADE,related_name='pin2device',unique=True,null=True,blank=True,limit_choices_to={'Direction': GPIO_SENSOR})
-    Code = models.PositiveSmallIntegerField(help_text=str(_('Unique byte-type identifier of the device. It is used to identify the device within the communication frames.')),
+    Code = models.PositiveSmallIntegerField(help_text=str(_('Identifier of the device. It is used to identify the device within the communication frames.')),
                             blank=True,null=True,error_messages={'unique':_("Invalid device code - This code already exists in the DB.")})
     IP = models.GenericIPAddressField(protocol='IPv4', unique=True,blank=True,null=True,error_messages={'unique':_("Invalid IP - This IP already exists in the DB.")})
     DVT = models.ForeignKey(DeviceTypes,related_name="deviceType",on_delete=models.CASCADE)#limit_choices_to={'Connection': 'LOCAL'}
@@ -1014,6 +1025,12 @@ class Devices(models.Model):
     CustomLabels = models.CharField(max_length=1500,default='',blank=True) # json string containing the user-defined labels for each of the items in the datagrams
     Error= models.CharField(max_length=100,default='',blank=True)
     
+    Port=models.CharField(max_length=100,null=True,blank=True,choices=get_list_serialports())
+    Baudrate=models.PositiveSmallIntegerField(help_text=str(_('Baudrate for the communication.')),null=True,blank=True,choices=[(110,'110'), (300,'300'), (600,'600'), (1200,'1200'), (2400,'2400'), (4800,'4800'), (9600,'9600'), 
+                                                                                                                                (14400,'14400'), (19200,'19200'), (38400,'38400'), (57600,'57600'), (115200,'115200'), (128000,'128000'), (256000,'256000')])
+    Parity=models.CharField(max_length=1,null=True,blank=True,choices=[('N',_('None')),('O',_('Odd')),('E',_('Even'))])
+    Stopbits=models.PositiveSmallIntegerField(help_text=str(_('Number of stopbits on the frame.')),null=True,blank=True,choices=[(0,'0'),(1,'1'),(2,'2')])
+                                                                  
     Subsystem = GenericRelation(MainAPP.models.Subsystems,related_query_name='devices')
     
     def validate_unique(self,exclude=None,*args, **kwargs):
@@ -1021,12 +1038,12 @@ class Devices(models.Model):
         if self.DVT.Connection==REMOTE_TCP_CONNECTION:
             DVs=Devices.objects.filter(DVT__Connection=REMOTE_TCP_CONNECTION)
             for DV in DVs:
-                if self.IP==DV.IP:
+                if self.pk!=DV.pk and self.IP==DV.IP:
                     raise ValidationError({'IP':_("A device with the same IP already exists on the WiFi network")})
         elif self.DVT.Connection==REMOTE_RS485_CONNECTION:
             DVs=Devices.objects.filter(DVT__Connection=REMOTE_RS485_CONNECTION)
             for DV in DVs:
-                if self.Code==DV.Code:
+                if self.pk!=DV.pk and self.Code==DV.Code and self.Port==DV.Port:
                     raise ValidationError({'Code':_("A device with the same Code already exists on the RS485 network")})
         
     
