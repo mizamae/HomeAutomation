@@ -4,6 +4,8 @@ from django.core.cache import cache
 
 import json
 import urllib
+import pymodbus.client.sync
+
 import pandas as pd
 import numpy as np
 import datetime
@@ -14,6 +16,7 @@ import os
 from EventsAPP.consumers import PublishEvent
 
 import logging
+
 logger = logging.getLogger("project")
 
 import Adafruit_DHT
@@ -126,6 +129,136 @@ class PENDING_DB(object):
                     break
                 
     
+
+class SDM120:
+    registers = {   0: 'Voltage (V)',
+
+                    6: 'Current (A)',
+
+                    12: 'Active Power (W)',
+
+                    18: 'Apparent Power (VA)',
+
+                    24: 'Reactive Power (VAr)',
+
+                    30: u'Power Factor (cosPhi)',
+
+                    36: 'Phase Angle (degrees)',
+
+                    70: 'Frequency (Hz)',
+
+                    72: 'Import Active Energy (kWh)',
+
+                    74: 'Export Active Energy (kWh)',
+
+                    76: 'Import Reactive Energy (kVARh)',
+
+                    78: 'Export Reactive Energy (kVARh)',
+
+                    84: 'Total system power demand (W)',
+
+                    86: 'Maximum total system power demand (W)',
+
+                    88: 'Current system positive power demand (W)',
+
+                    90: 'Maximum system positive power demand (W)',
+
+                    92: 'Current system reverse power demand (W)',
+
+                    94: 'Maximum system reverse power demand (W)',
+
+                    258: 'Current demand (A)',
+
+                    264: 'Maximum current demand (A)',
+
+                    342: 'Total Active Energy (kWh)',
+
+                    344: 'Total Reactive Energy (kVARh)',
+
+                    384: 'Current resettable total active energy (kWh)',
+
+                    386: 'Current resettable total reactive energy (kVARh)',
+
+                }
+
+
+    class _RS485AdapterException(Exception):
+        def __init__(self,msg):
+            if msg is None:
+                msg="Undescribed error on RS485 adapter"
+            super(_RS485AdapterException, self).__init__(msg)
+            logger.error(msg, exc_info=True)
+    
+    def __init__(self,DV): 
+        self._sensor=DV
+        self._port=self.sensor.Port
+        self._baudrate=self.sensor.Baudrate
+        self._parity=self.sensor.Parity
+        self._stopbits=self.sensor.Stopbits
+        
+        self.client = pymodbus.client.sync.ModbusSerialClient('rtu',
+                                                                  port=self._port,
+                                                                  baudrate=self._baudrate,
+                                                                  parity=self._parity,
+                                                                  stopbits=self._stopbits,
+                                                                  timeout=0.5)
+        self.client.connect()
+        
+    def read_inputregister(self, register,numbytes=2):
+        res = self.client.read_input_registers(address=register, count=numbytes, unit=self.sensor.Code)
+        
+        if type(res) != pymodbus.register_read_message.ReadInputRegistersResponse:
+            logger.error('got type %s !!!', type(res))
+            return None
+        else:
+            value = struct.unpack('>f',struct.pack('>HH',*res.registers))[0]
+            return value
+
+    def write_holdingregister(self,register,value):
+        rq = self.client.write_register(address=register, value, unit=self.sensor.Code)
+        if rq.function_code < 0x80:     # test that we are not an error
+            return True
+        else:
+            return False
+        
+    def read_holdingregister(self, register,numbytes=2):
+        res = self.client.read_holding_registers(address=register, count=numbytes, unit=self.sensor.Code)
+        return res.registers[0]
+        
+    def get_inputenergy(self):
+        value = self.read_inputregister(register=72) # Active Energy (kWh)
+        return value
+    
+    def get_activepower(self):
+        value = self.read_inputregister(register=12) # Active Power (W)
+        return value
+    
+    def get_voltage(self):
+        value = self.read_inputregister(register=0) # Voltage (V)
+        return value
+    
+    @property
+    def paritystop(self):
+        value=self.read_holdingregister(register=0x12,numbytes=2)
+        return value
+    
+    @paritystop.setter
+    def paritystop(self,value):
+        return self.write_holdingregister(register=0x12, value=value)
+    
+    @property
+    def networknode(self):
+        value=self.read_holdingregister(register=0x14,numbytes=2)
+        return value
+    
+    @networknode.setter
+    def networknode(self,value):
+        return self.write_holdingregister(register=0x14, value=value)
+        
+    def close(self):    
+        self.client.close()
+
+
     
 IBERDROLA_USER = env('IBERDROLA_USER')
 IBERDROLA_PASSW=env('IBERDROLA_PASSW')
@@ -422,7 +555,7 @@ class IBERDROLA:
         if not response.text or response.text=='{}':
             raise IBERDROLA._NoResponseException
         jsonresponse = response.json()
-        logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
+        #logger.error('IBERDROLA: Data received: ' + str(jsonresponse))
         try:
             datas=jsonresponse["y"]["data"][0]
         except:
