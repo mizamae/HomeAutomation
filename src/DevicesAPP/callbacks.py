@@ -180,8 +180,13 @@ class SDM120:
                     386: 'Current resettable total reactive energy (kVARh)',
 
                 }
+#    MODBUS DEFAULT CONFIGURATION
+#    baudrate = 2400
+#    stopbits = 1
+#    bytesize = 8
+#    parity = "N"
 
-
+   
     class _RS485AdapterException(Exception):
         def __init__(self,msg):
             if msg is None:
@@ -195,17 +200,20 @@ class SDM120:
         self._baudrate=self.sensor.Baudrate
         self._parity=self.sensor.Parity
         self._stopbits=self.sensor.Stopbits
-        
-        self.client = pymodbus.client.sync.ModbusSerialClient('rtu',
+        self._id=self.sensor.Code
+        self.client = pymodbus.client.sync.ModbusSerialClient(method='rtu',
                                                                   port=self._port,
                                                                   baudrate=self._baudrate,
                                                                   parity=self._parity,
                                                                   stopbits=self._stopbits,
-                                                                  timeout=0.5)
+                                                                  bytesize=8,
+                                                                  timeout=1,
+                                                                  retries=2
+                                                                  )
         self.client.connect()
         
-    def read_inputregister(self, register,numbytes=2):
-        res = self.client.read_input_registers(address=register, count=numbytes, unit=self.sensor.Code)
+    def _read_inputregister(self, register,numbytes=2):
+        res = self.client.read_input_registers(address=register, count=numbytes, unit=self._id)
         
         if type(res) != pymodbus.register_read_message.ReadInputRegistersResponse:
             logger.error('got type %s !!!', type(res))
@@ -214,46 +222,49 @@ class SDM120:
             value = struct.unpack('>f',struct.pack('>HH',*res.registers))[0]
             return value
 
-    def write_holdingregister(self,register,value):
-        rq = self.client.write_register(address=register, value, unit=self.sensor.Code)
+    def _write_holdingregister(self,register,value):
+        rq = self.client.write_register(address=register, value, unit=self._id)
         if rq.function_code < 0x80:     # test that we are not an error
             return True
         else:
             return False
         
-    def read_holdingregister(self, register,numbytes=2):
-        res = self.client.read_holding_registers(address=register, count=numbytes, unit=self.sensor.Code)
+    def _read_holdingregister(self, register,numbytes=2):
+        res = self.client.read_holding_registers(address=register, count=numbytes, unit=self._id)
         return res.registers[0]
-        
-    def get_inputenergy(self):
-        value = self.read_inputregister(register=72) # Active Energy (kWh)
+    
+    @property
+    def inputenergy(self):
+        value = self._read_inputregister(register=72) # Active Energy (kWh)
         return value
     
-    def get_activepower(self):
-        value = self.read_inputregister(register=12) # Active Power (W)
+    @property
+    def activepower(self):
+        value = self._read_inputregister(register=12) # Active Power (W)
         return value
     
-    def get_voltage(self):
-        value = self.read_inputregister(register=0) # Voltage (V)
+    @property
+    def voltage(self):
+        value = self._read_inputregister(register=0) # Voltage (V)
         return value
     
     @property
     def paritystop(self):
-        value=self.read_holdingregister(register=0x12,numbytes=2)
+        value=self._read_holdingregister(register=0x12,numbytes=2)
         return value
     
     @paritystop.setter
     def paritystop(self,value):
-        return self.write_holdingregister(register=0x12, value=value)
+        return self._write_holdingregister(register=0x12, value=value)
     
     @property
     def networknode(self):
-        value=self.read_holdingregister(register=0x14,numbytes=2)
+        value=self._read_holdingregister(register=0x14,numbytes=2)
         return value
     
     @networknode.setter
     def networknode(self,value):
-        return self.write_holdingregister(register=0x14, value=value)
+        return self._write_holdingregister(register=0x14, value=value)
         
     def close(self):    
         self.client.close()
