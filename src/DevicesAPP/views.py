@@ -433,13 +433,14 @@ def AdvancedDevicePage(request,pk):
             firmware_data=message.message
     Order={}
     DGs=[]
-    for datagram in LatestData:
-        DG=models.Datagrams.objects.get(pk=datagram)
-        DGs.append(DG.serialize())
-        Order[datagram]=DG.getStructure()['names']
-        for element in LatestData[datagram]:
-            if isinstance(LatestData[datagram][element],datetime.datetime):
-                LatestData[datagram][element]=LatestData[datagram][element].timestamp()
+    if LatestData:
+        for datagram in LatestData:
+            DG=models.Datagrams.objects.get(pk=datagram)
+            DGs.append(DG.serialize())
+            Order[datagram]=DG.getStructure()['names']
+            for element in LatestData[datagram]:
+                if isinstance(LatestData[datagram][element],datetime.datetime):
+                    LatestData[datagram][element]=LatestData[datagram][element].timestamp()
     return render(request, APP_TEMPLATE_NAMESPACE + '/'+DV.DVT.Code+'.html',
                                                         {'Device':DV,'Latest':json.dumps(LatestData),'Order':json.dumps(Order),
                                                          'Commands':COMMANDS,'Firmware':firmware,'DGs':json.dumps(DGs),

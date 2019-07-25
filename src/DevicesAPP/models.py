@@ -1556,9 +1556,12 @@ class Devices(models.Model):
                            </form>
                          </body></html>"
         """
-        from .forms import FileUpload
-        FORM=FileUpload(DV=self)
-        return FORM
+        if self.DVT.Connection==REMOTE_TCP_CONNECTION:
+            from .forms import FileUpload
+            FORM=FileUpload(DV=self)
+            return FORM
+        else:
+            return ''
         if self.DVT.Connection==REMOTE_TCP_CONNECTION:
             import requests
             import random

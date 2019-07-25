@@ -2,7 +2,7 @@ import os
 from channels.generic.websockets import WebsocketDemultiplexer,JsonWebsocketConsumer
 from .models import Devices,Datagrams,DevicesBinding,MasterGPIOs,MasterGPIOsBinding,DeviceCommands
 from . import signals
-from .constants import LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,MEMORY_CONNECTION,DG_SYNCHRONOUS
+from .constants import LOCAL_CONNECTION,REMOTE_TCP_CONNECTION,REMOTE_RS485_CONNECTION,MEMORY_CONNECTION,DG_SYNCHRONOUS
 import logging
 logger = logging.getLogger("project")
 
@@ -35,7 +35,7 @@ class Devices_query(JsonWebsocketConsumer):
                 status=DV.requestDatagram(DatagramId=DG.Identifier,writeToDB=False,resetOrder=False)
                 data=status['values']
                 multiplexer.send({"action":"query","DeviceName":DV.Name,"Datagram":DG.Identifier,"data":status})
-        elif (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION):
+        elif (DV.DVT.Connection==LOCAL_CONNECTION or DV.DVT.Connection==MEMORY_CONNECTION or DV.DVT.Connection==REMOTE_RS485_CONNECTION):
             import DevicesAPP.callbacks
             data = getattr(DevicesAPP.callbacks, DV.DVT.Code)(DV).query_sensor()
             multiplexer.send({"action":"query","DeviceName":DV.Name,"data":data})

@@ -132,53 +132,29 @@ class PENDING_DB(object):
 
 class SDM120:
     registers = {   0: 'Voltage (V)',
-
                     6: 'Current (A)',
-
                     12: 'Active Power (W)',
-
                     18: 'Apparent Power (VA)',
-
                     24: 'Reactive Power (VAr)',
-
                     30: u'Power Factor (cosPhi)',
-
                     36: 'Phase Angle (degrees)',
-
                     70: 'Frequency (Hz)',
-
                     72: 'Import Active Energy (kWh)',
-
                     74: 'Export Active Energy (kWh)',
-
                     76: 'Import Reactive Energy (kVARh)',
-
                     78: 'Export Reactive Energy (kVARh)',
-
                     84: 'Total system power demand (W)',
-
                     86: 'Maximum total system power demand (W)',
-
                     88: 'Current system positive power demand (W)',
-
                     90: 'Maximum system positive power demand (W)',
-
                     92: 'Current system reverse power demand (W)',
-
                     94: 'Maximum system reverse power demand (W)',
-
                     258: 'Current demand (A)',
-
                     264: 'Maximum current demand (A)',
-
                     342: 'Total Active Energy (kWh)',
-
                     344: 'Total Reactive Energy (kVARh)',
-
                     384: 'Current resettable total active energy (kWh)',
-
                     386: 'Current resettable total reactive energy (kVARh)',
-
                 }
 #    MODBUS DEFAULT CONFIGURATION
 #    baudrate = 2400
@@ -196,11 +172,11 @@ class SDM120:
     
     def __init__(self,DV): 
         self._sensor=DV
-        self._port=self.sensor.Port
-        self._baudrate=self.sensor.Baudrate
-        self._parity=self.sensor.Parity
-        self._stopbits=self.sensor.Stopbits
-        self._id=self.sensor.Code
+        self._port=self._sensor.Port
+        self._baudrate=self._sensor.Baudrate
+        self._parity=self._sensor.Parity
+        self._stopbits=self._sensor.Stopbits
+        self._id=self._sensor.Code
         self.client = pymodbus.client.sync.ModbusSerialClient(method='rtu',
                                                                   port=self._port,
                                                                   baudrate=self._baudrate,
@@ -211,6 +187,28 @@ class SDM120:
                                                                   retries=2
                                                                   )
         self.client.connect()
+        
+    @staticmethod
+    def runOnInit(DV):
+        cache.set('SDM120_RTaccumulators['+str(DV.Code)+']', {'V':[],'I':[],'P':[],'n':0}, None)
+        SDM120.init_thread(DV=DV)
+        
+    @classmethod
+    def init_thread(cls,DV):
+        try:
+            instance=cls(DV=DV)
+            from utils.asynchronous_tasks import BackgroundTimer
+            instance._thread=BackgroundTimer(callable=instance.read,threadName=str(instance._sensor)+'_thread',interval=instance._sensor.RTsampletime,
+                            callablekwargs={'instance':instance},repeat=True,triggered=False,lifeSpan=None,onThreadInit=None,
+                            onInitkwargs={})
+        except Exception as ex:
+            logger.error(str(instance._sensor)+': thread failed : ' + str(ex))
+    
+    def kill_thread(self):
+        if self._thread!=None:
+            self._thread.kill()
+        self._thread=None
+        logger.error(str(self._sensor)+': Killed the thread')
         
     def _read_inputregister(self, register,numbytes=2):
         res = self.client.read_input_registers(address=register, count=numbytes, unit=self._id)
@@ -223,7 +221,7 @@ class SDM120:
             return value
 
     def _write_holdingregister(self,register,value):
-        rq = self.client.write_register(address=register, value, unit=self._id)
+        rq = self.client.write_register(address=register, value=value, unit=self._id)
         if rq.function_code < 0x80:     # test that we are not an error
             return True
         else:
@@ -249,6 +247,11 @@ class SDM120:
         return value
     
     @property
+    def current(self):
+        value = self._read_inputregister(register=6) # Voltage (V)
+        return value
+    
+    @property
     def paritystop(self):
         value=self._read_holdingregister(register=0x12,numbytes=2)
         return value
@@ -269,7 +272,84 @@ class SDM120:
     def close(self):    
         self.client.close()
 
+    @staticmethod
+    def read(instance):
+        try:
+            V=instance.voltage
+            I=instance.current
+            P=instance.activepower
+        except Exception as exc:
+            logger.error('Exception on SDM120 read ' + str(exc))
+            return
+                
+        if V != None and I != None:                
+                SDM120._accumulators=cache.get('SDM120_RTaccumulators['+str(instance._id)+']')
+                if isinstance(SDM120._accumulators,dict):
+                    SDM120._accumulators['n']=SDM120._accumulators['n']+1
+                    SDM120._accumulators['V'].append(V)
+                    SDM120._accumulators['I'].append(I)
+                    SDM120._accumulators['P'].append(P)
+                else:
+                    SDM120._accumulators={'n':1,'V':[V,],'I':[I,],'P':[P,]}
+                cache.set('SDM120_RTaccumulators['+str(instance._id)+']', SDM120._accumulators, timeout=None)
+    
+    def resetRTAccumulator(self):
+        cache.set('SDM120_RTaccumulators['+str(self._id)+']', {'V':[],'I':[],'P':[],'n':0}, timeout=None)
+    
+    def getRTAccumulatedValues(self):
+        #from utils.dataMangling import remove_outlier
+        import pandas as pd
+        _accumulators=cache.get('SDM120_RTaccumulators['+str(self._id)+']')
+        #logger.info('Accumulated values T: '+str(_accumulators['T']) )
+        if _accumulators is not None and len(_accumulators['T'])>0:
+            df = pd.DataFrame({'V':_accumulators['V'],'I':_accumulators['I'],'P':_accumulators['P']})
+            #df=remove_outlier(df_in=df, col_name='T')
+            Vmean=df['V'].mean(skipna =True)
+            Imean=df['I'].mean(skipna =True)
+            Pmean=df['P'].mean(skipna =True)
+            Vmax=df['V'].max(skipna =True)
+            Imax=df['I'].max(skipna =True)
+            Pmax=df['P'].max(skipna =True)
+            Vmin=df['V'].min(skipna =True)
+            Imin=df['I'].min(skipna =True)
+            Pmin=df['P'].min(skipna =True)
+            #logger.info('Accumulated values T: '+str(df['T']) )
+        else:
+            Vmean = None
+            Imean = None
+            Pmean = None
+            Vmax = None
+            Imax = None
+            Pmax = None
+            Vmin = None
+            Imin = None
+            Pmin = None
+            logger.error('No accumulated values!!')
+        
+        return {'Pmean':Pmean,'Imean':Imean,'Vmean':Vmean,'Pmax':Pmax,'Imax':Imax,'Vmax':Vmax,'Pmin':Pmin,'Imin':Imin,'Vmin':Vmin}
 
+    def __call__(self,datagramId = 'realtime'):
+        Error=''
+        null=False
+        if datagramId=='realtime':
+            values=self.getRTAccumulatedValues()
+            self.resetRTAccumulator()
+            
+        timestamp=timezone.now() #para hora con info UTC 
+        
+        if null==False:
+            LastUpdated=timestamp
+        else:
+            LastUpdated=None
+            
+        return {'Error':Error,'LastUpdated':LastUpdated}
+    
+    def query_sensor(self,**kwargs):
+        """
+        Read Voltage, current and Power from sensor.
+        """
+        values=self.getRTAccumulatedValues()
+        return (round(values['Pmean'],3), round(values['Imean'],3), round(values['Vmean'],3))
     
 IBERDROLA_USER = env('IBERDROLA_USER')
 IBERDROLA_PASSW=env('IBERDROLA_PASSW')
