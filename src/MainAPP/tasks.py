@@ -76,7 +76,8 @@ def MonthlyTask():
     else:
         PublishEvent(Severity=0,Text=_("Unable to autenticate to GDrive"),Persistent=True,Code='Tasks-M_1')
     
-    renewSSLCertificate()
+    #renewSSLCertificate() # it is no longer needed on Raspbian Stretch since the certbot plugin creates a cron to update the certs
+    # https://certbot.eff.org/lets-encrypt/debianstretch-other
     
             
 def start_MonthlyTask(): 
