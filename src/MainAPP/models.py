@@ -1414,7 +1414,7 @@ class AutomationRules(models.Model):
                             
                     if result['ERROR']!='':
                         text='The evaluation of rule ' + self.Identifier + ' evaluated to Error on item ' + str(item)+'. Error: ' + str(result['ERROR'])
-                        PublishEvent(Severity=3,Text=text,Persistent=True,Code=self.getEventsCode())
+                        PublishEvent(Severity=3,Text=text,Persistent=True,Code=self.getEventsCode(),Webpush=True)
                         errors.append(result['ERROR'])
                 
                 evaluableTRUE=evaluableTRUE.strip()
