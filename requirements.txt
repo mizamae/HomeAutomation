@@ -128,7 +128,7 @@ virtualenv-clone==0.2.6
 virtualenvwrapper==4.7.2
 webencodings==0.5.1
 websocket-client==0.44.0
-Werkzeug==0.12.2
+Werkzeug==0.15.3
 zope.component==4.2.1
 zope.event==4.0.3
 zope.hookable==4.0.4
