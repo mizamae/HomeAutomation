@@ -156,6 +156,10 @@ def HourlyTask():
     from DevicesAPP.models import MainDeviceVars
     from MainAPP.models import AutomationVarWeeklySchedules
     from DevicesAPP.constants import DTYPE_INTEGER
+    from MainAPP.models import SiteSettings
+    SETTINGS=SiteSettings.load()
+    SETTINGS.hourlyTasks()
+    
     timestamp=datetime.datetime.now()
     hourDay=timestamp.hour
     try:
