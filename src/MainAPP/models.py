@@ -154,8 +154,11 @@ class SiteSettings(SingletonModel):
     
     def dailyTasks(self):
         self.checkRepository()
-        self.checkDeniableIPs()
+        self.checkDeniableIPs(attempts=self.AUTODENY_ATTEMPTS,hours=24)
     
+    def hourlyTasks(self):
+        self.checkDeniableIPs(attempts=self.AUTODENY_ATTEMPTS/10,hours=1)
+        
     def set_TELEGRAM_CHATID(self,value):
         self.TELEGRAM_CHATID=str(value)
         self.store2DB()
@@ -196,20 +199,21 @@ class SiteSettings(SingletonModel):
         host = ipaddress.ip_interface(self.ETH_IP+'/'+str(CIDR))
         return ipaddress.ip_address(ip2check) in host.network.hosts()
 
-    def checkDeniableIPs(self):
+    def checkDeniableIPs(self,attempts,hours):
         if self.PROXY_AUTO_DENYIP:
             from utils.combinedLog import CombinedLogParser
             updated=False
             instance=CombinedLogParser()
-            for element in instance.getNginxAccessIPs(hours=24,codemin=400):
-                if element['trials']>=self.AUTODENY_ATTEMPTS and not self.addressInNetwork(ip2check=element['IP']):
+            for element in instance.getNginxAccessIPs(hours=int(hours),codemin=400):
+                if element['trials']>=attempts and not self.addressInNetwork(ip2check=element['IP']):
                     from utils.Nginx import NginxManager
                     NGINX=NginxManager()
                     if NGINX.blockIP(IP=element['IP'])!=-1:
                         updated=True
             if updated:
                 NGINX.reload()
-        
+    
+               
     def applyChanges(self,update_fields):
         for field in update_fields:
             if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
