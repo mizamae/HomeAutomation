@@ -152,6 +152,10 @@ class SiteSettings(SingletonModel):
         if update_fields!=None:
             self.applyChanges(update_fields=update_fields)
     
+    @classmethod
+    def onBootTasks(cls):
+        cls.checkInternetConnection()
+    
     def dailyTasks(self):
         self.checkRepository()
         self.checkDeniableIPs(attempts=self.AUTODENY_ATTEMPTS,hours=24)
@@ -162,6 +166,18 @@ class SiteSettings(SingletonModel):
     def set_TELEGRAM_CHATID(self,value):
         self.TELEGRAM_CHATID=str(value)
         self.store2DB()
+    
+    @staticmethod
+    def checkInternetConnection():
+        import requests
+        try:
+            r = requests.get('http://google.com',timeout=1)
+            if r.status_code==200:
+                return True
+            else:
+                return False
+        except: 
+            return False
         
     def checkRepository(self,force=False):
         if self.VERSION_AUTO_DETECT or force:

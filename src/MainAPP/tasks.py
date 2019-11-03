@@ -184,7 +184,8 @@ def start_HourlyTask():
 def run_afterBoot():
     id='afterBoot'
     scheduler.remove_job(id)
-    from MainAPP.models import AutomationRules,AutomationVarWeeklySchedules
+    from MainAPP.models import AutomationRules,AutomationVarWeeklySchedules,SiteSettings
+    SiteSettings.onBootTasks()
     AutomationRules.initAll()
     AutomationVarWeeklySchedules.initialize()
     from DevicesAPP.models import initialize_polling_devices,MasterGPIOs
