@@ -287,6 +287,12 @@ def Notifications(request):
         return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
     else:
         return HttpResponseNotFound() 
+
+def DIY4dot0AutoDiscoverProbe(request):
+    if request.method == 'GET': # the probe has been received
+        return HttpResponse(status=204) #The server successfully processed the request and is not returning any content
+    else:
+        return HttpResponseNotFound() 
     
 @user_passes_test(lambda u: u.is_superuser)
 def DBBackup(request):

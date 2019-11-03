@@ -64,7 +64,7 @@ urlpatterns = [
     
     url(r'^', include(accounts.urls, namespace='accounts')),
     url(r'^set_notifications/$', views.Notifications, name='notifications'),
-    
+    url(r'^DIY4dot0AutoDiscoverProbe/$', views.DIY4dot0AutoDiscoverProbe, name='diy4dot0autodiscoverprobe'),
 ]
 
 handler500 = 'MainAPP.views.custom_error500_view'
