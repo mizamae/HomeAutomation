@@ -223,67 +223,114 @@ class SiteSettings(SingletonModel):
             for element in instance.getNginxAccessIPs(hours=int(hours),codemin=400):
                 if element['trials']>=attempts and not self.addressInNetwork(ip2check=element['IP']):
                     from utils.Nginx import NginxManager
-                    NGINX=NginxManager()
-                    if NGINX.blockIP(IP=element['IP'])!=-1:
+                    if NginxManager.blockIP(IP=element['IP'])!=-1:
                         updated=True
             if updated:
-                NGINX.reload()
-    
-               
+                NginxManager.reload()
+    @staticmethod
+    def update_hostapd(WIFI_SSID,WIFI_PASSW,updated):
+        from .constants import HOSTAPD_CONF_PATH,HOSTAPD_GENERIC_CONF_PATH
+        try:
+            f1 = open(HOSTAPD_GENERIC_CONF_PATH, 'r') 
+            open(HOSTAPD_CONF_PATH, 'w').close()  # deletes the contents
+            f2 = open(HOSTAPD_CONF_PATH, 'w')    
+        except:
+            text=_('Error opening the file ') + HOSTAPD_CONF_PATH
+            PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
+            return
+           
+        for line in f1:
+            f2.write(line.replace('WIFI_SSID', WIFI_SSID)
+                            .replace('WIFI_PASSW', WIFI_PASSW))
+            
+        f1.close()
+        f2.close()
+        
+        if 'WIFI_SSID' in updated:
+            text='Modified Hostapd field WIFI_SSID to ' + str(WIFI_SSID)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Hostapd-WIFI_SSID')
+        if 'WIFI_PASSW' in updated:
+            text='Modified Hostapd field WIFI_PASSW to ' + str(WIFI_PASSW)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Hostapd-WIFI_PASSW')
+
+    @staticmethod
+    def update_interfaces(ETH_IP,ETH_MASK,ETH_GATE,WIFI_IP,WIFI_MASK,WIFI_GATE,updated):
+        from .constants import INTERFACES_CONF_PATH,INTERFACES_GENERIC_CONF_PATH
+        try:
+            f1 = open(INTERFACES_GENERIC_CONF_PATH, 'r') 
+            open(INTERFACES_CONF_PATH, 'w').close()  # deletes the contents
+            f2 = open(INTERFACES_CONF_PATH, 'w')    
+        except:
+            text=_('Error opening the file ') + INTERFACES_CONF_PATH
+            PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
+            return
+           
+        for line in f1:
+            f2.write(line.replace('ETH_IP', ETH_IP)
+                            .replace('ETH_MASK', ETH_MASK)
+                            .replace('ETH_GATE', ETH_GATE)
+                            .replace('WIFI_IP', WIFI_IP)
+                            .replace('WIFI_MASK', WIFI_MASK)
+                            .replace('WIFI_GATE', WIFI_GATE))
+            
+        f1.close()
+        f2.close()
+        
+        if 'ETH_IP' in updated:
+            text='Modified Interfaces field ETH_IP to ' + str(ETH_IP)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-ETH_IP')
+        if 'ETH_MASK' in updated:
+            text='Modified Interfaces field ETH_MASK to ' + str(ETH_MASK)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-ETH_MASK')
+        if 'ETH_GATE' in updated:
+            text='Modified Interfaces field ETH_GATE to ' + str(ETH_GATE)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-ETH_GATE')
+        if 'WIFI_IP' in updated:
+            text='Modified Interfaces field WIFI_IP to ' + str(WIFI_IP)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-WIFI_IP')
+        if 'WIFI_MASK' in updated:
+            text='Modified Interfaces field WIFI_MASK to ' + str(WIFI_MASK)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-WIFI_MASK')
+        if 'WIFI_GATE' in updated:
+            text='Modified Interfaces field WIFI_GATE to ' + str(WIFI_GATE)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-WIFI_GATE')
+            
     def applyChanges(self,update_fields):
+        if ('SITE_DNS' in update_fields) or ('ETH_IP' in update_fields):
+            # update /etc/nginx/sites-available/HomeAutomation.nginxconf
+            from utils.Nginx import NginxManager
+            NginxManager.editConfigFile(SITE_DNS=getattr(self,'SITE_DNS'),ETH_IP=getattr(self,'ETH_IP')) # yet does not work, it does not write the file
+            NginxManager.reload()
+        
+        if (('ETH_IP' in update_fields) or ('ETH_MASK' in update_fields) or ('ETH_GATE' in update_fields) or
+            ('WIFI_IP' in update_fields) or ('WIFI_MASK' in update_fields) or ('WIFI_GATE' in update_fields)):
+            SiteSettings.update_interfaces(ETH_IP=getattr(self,'ETH_IP'),ETH_MASK=getattr(self,'ETH_MASK'),
+                                           ETH_GATE=getattr(self,'ETH_GATE'),WIFI_IP=getattr(self,'WIFI_IP'),
+                                           WIFI_MASK=getattr(self,'WIFI_MASK'),WIFI_GATE=getattr(self,'WIFI_GATE'),
+                                           update=update_fields)
+        
+        if ('WIFI_SSID' in update_fields) or ('WIFI_PASSW' in update_fields):
+            SiteSettings.update_hostapd(WIFI_SSID=getattr(self,'WIFI_SSID'),WIFI_PASSW=getattr(self,'WIFI_PASSW')
+                                    ,updated=update_fields)
         for field in update_fields:
             if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
-                # update /etc/nginx/sites-available/HomeAutomation.nginxconf
-                from utils.Nginx import NginxManager
-                NGINX=NginxManager()
-                NGINX.editConfigFile(key='#'+field,delimiter=' ',newValue=getattr(self,field),endChar=';') # yet does not work, it does not write the file
-                NGINX.reload()
+                
                 # update allowed_hosts in settings.local.env
                 from .constants import LOCALENV_PATH
                 self.editUniqueKeyedFile(path=LOCALENV_PATH,key='ALLOWED_HOSTS',delimiter='=',
                                          newValue=getattr(self,'SITE_DNS')+','+getattr(self,'ETH_IP')+',127.0.0.1',
                                          endChar='\n',addKey=True)
-                # update /etc/network/interfaces
-                from .constants import INTERFACES_CONF_PATH
-                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#ETH_IP',
-                                         newValue='    address '+getattr(self,'ETH_IP'),
-                                         endChar='\n',nextLine=True)
-                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#ETH_MASK',
-                                         newValue='    netmask '+getattr(self,'ETH_MASK'),
-                                         endChar='\n',nextLine=True)
-                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#ETH_GATE',
-                                         newValue='    gateway '+getattr(self,'ETH_GATE'),
-                                         endChar='\n',nextLine=True)
-            if field in ['WIFI_IP','WIFI_MASK','WIFI_GATE']:
-                # update /etc/network/interfaces
-                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#WIFI_IP',
-                                         newValue='    address '+getattr(self,'WIFI_IP'),
-                                         endChar='\n',nextLine=True)
-                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#WIFI_MASK',
-                                         newValue='    netmask '+getattr(self,'WIFI_MASK'),
-                                         endChar='\n',nextLine=True)
-                self.editKeyedFile(path=INTERFACES_CONF_PATH,key='#WIFI_GATE',
-                                         newValue='    gateway '+getattr(self,'WIFI_GATE'),
-                                         endChar='\n',nextLine=True)
-            if field in ['WIFI_SSID','WIFI_PASSW']:
-                # update /etc/hostapd/hostapd.conf
-                from .constants import WIFI_CONF_PATH
-                self.editKeyedFile(path=WIFI_CONF_PATH,key='#WIFI_SSID',
-                                         newValue='ssid='+getattr(self,'WIFI_SSID'),
-                                         endChar='\n',nextLine=True)
-                self.editKeyedFile(path=WIFI_CONF_PATH,key='#WIFI_PASSW',
-                                         newValue='wpa_passphrase='+getattr(self,'WIFI_PASSW'),
-                                         endChar='\n',nextLine=True)
             if field in ['PROXY_CREDENTIALS',]:
-                pass
+                from utils.Nginx import NginxManager
+                NginxManager.setProxyCredential(PROXY_CREDENTIALS=getattr(self,'PROXY_CREDENTIALS'))
+                NginxManager.reload()
                 # update /etc/nginx/sites-available/HomeAutomation.nginxconf
             if field in ['PROXY_USER1','PROXY_PASSW1','PROXY_USER2','PROXY_PASSW2']:
                 if self.PROXY_CREDENTIALS:
                     from utils.Nginx import NginxManager
-                    NGINX=NginxManager()
-                    NGINX.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
-                    NGINX.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
-                    NGINX.reload()
+                    NginxManager.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
+                    NginxManager.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
+                    NginxManager.reload()
             if field in ['VERSION_DEVELOPER',]:
                 self.checkRepository(force=True)
                 

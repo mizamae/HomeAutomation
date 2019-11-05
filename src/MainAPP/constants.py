@@ -21,10 +21,14 @@ SOCKETS_PATH = [os.path.join(PROJECT_PATH,'..','..','..','run','HomeAutomation_R
                 os.path.join(PROJECT_PATH,'..','..','..','run','HomeAutomation.sock')]
 BLOCK_IPS_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','blockips.conf'))
 NGINX_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','sites-available','HomeAutomation.nginxconf'))
+NGINX_GENERIC_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','nginx','sites-available','generic.conf'))
 APACHE_HTPASSWD_PATH=os.path.abspath(os.path.join(os.sep,'etc','apache2','.htpasswd'))
 LOCALENV_PATH=os.path.join(PROJECT_PATH,'settings','local.env')
 WIFI_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd.conf'))
 INTERFACES_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','network','interfaces'))
+INTERFACES_GENERIC_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','network','interfaces_generic'))
+HOSTAPD_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd.conf'))
+HOSTAPD_GENERIC_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd_generic.conf'))
 # APPLICATION DATABASES
 DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..','db.sqlite3')
 REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqlite3')
