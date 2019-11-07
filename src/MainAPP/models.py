@@ -256,7 +256,7 @@ class SiteSettings(SingletonModel):
             PublishEvent(Severity=0,Text=text,Persistent=True,Code='Hostapd-WIFI_PASSW')
 
     @staticmethod
-    def update_interfaces(ETH_IP,ETH_MASK,ETH_GATE,WIFI_IP,WIFI_MASK,WIFI_GATE,updated):
+    def update_interfaces(ETH_DHCP,ETH_IP,ETH_MASK,ETH_GATE,WIFI_IP,WIFI_MASK,WIFI_GATE,updated):
         from .constants import INTERFACES_CONF_PATH,INTERFACES_GENERIC_CONF_PATH
         try:
             f1 = open(INTERFACES_GENERIC_CONF_PATH, 'r') 
@@ -266,18 +266,47 @@ class SiteSettings(SingletonModel):
             text=_('Error opening the file ') + INTERFACES_CONF_PATH
             PublishEvent(Severity=2,Text=text,Persistent=True,Code='FileIOError-0')
             return
-           
-        for line in f1:
-            f2.write(line.replace('ETH_IP', ETH_IP)
-                            .replace('ETH_MASK', ETH_MASK)
-                            .replace('ETH_GATE', ETH_GATE)
-                            .replace('WIFI_IP', WIFI_IP)
-                            .replace('WIFI_MASK', WIFI_MASK)
-                            .replace('WIFI_GATE', WIFI_GATE))
-            
+        
+        if not ETH_DHCP:
+            for line in f1:
+                f2.write(line.replace('ETH_IP', ETH_IP)
+                                .replace('ETH_MASK', ETH_MASK)
+                                .replace('ETH_GATE', ETH_GATE)
+                                .replace('WIFI_IP', WIFI_IP)
+                                .replace('WIFI_MASK', WIFI_MASK)
+                                .replace('WIFI_GATE', WIFI_GATE))
+        else:
+            for line in f1:
+                f2.write(line.replace('iface eth0 inet static', 'iface eth0 inet dhcp')
+                                .replace('address ETH_IP', '')
+                                .replace('netmask ETH_MASK', '')
+                                .replace('gateway ETH_GATE', '')
+                                .replace('WIFI_IP', WIFI_IP)
+                                .replace('WIFI_MASK', WIFI_MASK)
+                                .replace('WIFI_GATE', WIFI_GATE))
+                    
         f1.close()
         f2.close()
         
+        if ('ETH_DHCP' in updated) or ('ETH_IP' in updated) or ('ETH_MASK' in updated) or ('ETH_GATE' in updated):
+            text='Reconfiguring LAN interface eth0'
+            PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_ETH0')
+            # checkout how this interface reset should be performed
+            #os.system('sudo ip link set eth0 down')
+            #os.system('sudo ip link set eth0 up')
+        if ('WIFI_IP' in updated) or ('WIFI_MASK' in updated) or ('WIFI_GATE' in updated):
+            text='Reconfiguring WIFI interface wlan0'
+            PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_WLAN0')
+            #os.system('sudo ip link set wlan0 down')
+            #os.system('sudo ip link set wlan0 up')
+            
+        if ('WIFI_IP' in updated) or ('WIFI_MASK' in updated) or ('WIFI_GATE' in updated):
+            text='Reconfiguring WIFI interface wlan0'
+            PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_WLAN0')
+             
+        if 'ETH_DHCP' in updated:
+            text='Modified Interfaces field ETH_DHCP to ' + str(ETH_DHCP)
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-ETH_DHCP')
         if 'ETH_IP' in updated:
             text='Modified Interfaces field ETH_IP to ' + str(ETH_IP)
             PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-ETH_IP')
@@ -304,9 +333,10 @@ class SiteSettings(SingletonModel):
             NginxManager.editConfigFile(SITE_DNS=getattr(self,'SITE_DNS'),ETH_IP=getattr(self,'ETH_IP')) # yet does not work, it does not write the file
             NginxManager.reload()
         
-        if (('ETH_IP' in update_fields) or ('ETH_MASK' in update_fields) or ('ETH_GATE' in update_fields) or
+        if (('ETH_DHCP' in update_fields) or ('ETH_IP' in update_fields) or ('ETH_MASK' in update_fields) or ('ETH_GATE' in update_fields) or
             ('WIFI_IP' in update_fields) or ('WIFI_MASK' in update_fields) or ('WIFI_GATE' in update_fields)):
-            SiteSettings.update_interfaces(ETH_IP=getattr(self,'ETH_IP'),ETH_MASK=getattr(self,'ETH_MASK'),
+            SiteSettings.update_interfaces(ETH_DHCP=getattr(self,'ETH_DHCP'),
+                                            ETH_IP=getattr(self,'ETH_IP'),ETH_MASK=getattr(self,'ETH_MASK'),
                                            ETH_GATE=getattr(self,'ETH_GATE'),WIFI_IP=getattr(self,'WIFI_IP'),
                                            WIFI_MASK=getattr(self,'WIFI_MASK'),WIFI_GATE=getattr(self,'WIFI_GATE'),
                                            update=update_fields)
