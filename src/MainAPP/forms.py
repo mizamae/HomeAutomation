@@ -67,6 +67,7 @@ class SiteSettingsForm(ModelForm):
                      Field('WIFI_GATE'),
                 ),
             Fieldset(_('LAN network'),
+                     Field('ETH_DHCP'),
                      Field('ETH_IP'),
                      Field('ETH_MASK'),
                      Field('ETH_GATE'),

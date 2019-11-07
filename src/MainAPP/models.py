@@ -99,15 +99,17 @@ class SiteSettings(SingletonModel):
                                 help_text=_('This is the gateway for the WiFi network generated to communicate with the slaves'),
                                 protocol='IPv4', default='10.10.10.1')
     
+    ETH_DHCP=models.BooleanField(verbose_name=_('Enable DHCP on the LAN network'),
+                                help_text=_('Includes the server in the DHCP pool'),default=True)
     ETH_IP= models.GenericIPAddressField(verbose_name=_('IP address for the LAN network'),
                                 help_text=_('This is the IP for the LAN network that is providing the internet access.'),
-                                protocol='IPv4', default='192.168.0.160')
+                                protocol='IPv4', default='1.1.1.2')
     ETH_MASK= models.GenericIPAddressField(verbose_name=_('Mask for the LAN network'),
                                 help_text=_('This is the mask for the LAN network that is providing the internet access.'),
                                 protocol='IPv4', default='255.255.255.0')
     ETH_GATE= models.GenericIPAddressField(verbose_name=_('Gateway of the LAN network'),
                                 help_text=_('This is the gateway IP of the LAN network that is providing the internet access.'),
-                                protocol='IPv4', default='192.168.0.1')
+                                protocol='IPv4', default='1.1.1.1')
     
     PROXY_AUTO_DENYIP=models.BooleanField(verbose_name=_('Enable automatic IP blocking'),
                                 help_text=_('Feature that blocks automatically WAN IPs with more than certain denied attempts in 24 h.'),default=True)
