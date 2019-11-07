@@ -339,7 +339,7 @@ class SiteSettings(SingletonModel):
                                             ETH_IP=getattr(self,'ETH_IP'),ETH_MASK=getattr(self,'ETH_MASK'),
                                            ETH_GATE=getattr(self,'ETH_GATE'),WIFI_IP=getattr(self,'WIFI_IP'),
                                            WIFI_MASK=getattr(self,'WIFI_MASK'),WIFI_GATE=getattr(self,'WIFI_GATE'),
-                                           update=update_fields)
+                                           updated=update_fields)
         
         if ('WIFI_SSID' in update_fields) or ('WIFI_PASSW' in update_fields):
             SiteSettings.update_hostapd(WIFI_SSID=getattr(self,'WIFI_SSID'),WIFI_PASSW=getattr(self,'WIFI_PASSW')
