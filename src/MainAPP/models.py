@@ -26,6 +26,7 @@ import pandas as pd
 import numpy as np
 
 import logging
+from abc import abstractstaticmethod
 
 logger = logging.getLogger("project")
                                            
@@ -256,6 +257,18 @@ class SiteSettings(SingletonModel):
             PublishEvent(Severity=0,Text=text,Persistent=True,Code='Hostapd-WIFI_PASSW')
 
     @staticmethod
+    def execute_certbot():
+        from subprocess import Popen, PIPE
+        cmd='sudo /home/pi/certbot-auto --nginx --no-self-upgrade'
+        process = Popen(cmd, shell=True,
+                        stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
+        stdout, err = process.communicate(input='1')
+
+        if 'Some challenges have failed.' in err:
+            text=_('Some challenge failed. Check that the domain is directed to the WAN IP and the port 80 is directed to the DIY4dot0 server')
+            PublishEvent(Severity=0,Text=text,Persistent=True,Code='Certbot-Fail')
+            
+    @staticmethod
     def update_interfaces(ETH_DHCP,ETH_IP,ETH_MASK,ETH_GATE,WIFI_IP,WIFI_MASK,WIFI_GATE,updated):
         from .constants import INTERFACES_CONF_PATH,INTERFACES_GENERIC_CONF_PATH
         try:
@@ -327,6 +340,9 @@ class SiteSettings(SingletonModel):
             PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-WIFI_GATE')
             
     def applyChanges(self,update_fields):
+        if ('SITE_DNS' in update_fields):
+            SiteSettings.execute_certbot()
+            
         if ('SITE_DNS' in update_fields) or ('ETH_IP' in update_fields):
             # update /etc/nginx/sites-available/HomeAutomation.nginxconf
             from utils.Nginx import NginxManager
