@@ -158,6 +158,11 @@ class SiteSettings(SingletonModel):
     @classmethod
     def onBootTasks(cls):
         cls.checkInternetConnection()
+        IP=cls.getMyLANIP()
+        SETTINGS=cls.load()
+        if IP != SETTINGS.ETH_IP:
+            SETTINGS.applyChanges(update_fields=['ETH_IP',])
+        
     
     def dailyTasks(self):
         self.checkRepository()
@@ -170,6 +175,16 @@ class SiteSettings(SingletonModel):
         self.TELEGRAM_CHATID=str(value)
         self.store2DB()
     
+    @staticmethod
+    def getMyLANIP():
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(('192.0.0.8', 1027))
+        except socket.error:
+            return None
+        return s.getsockname()[0]
+
     @staticmethod
     def checkInternetConnection():
         import requests
@@ -304,18 +319,13 @@ class SiteSettings(SingletonModel):
         if ('ETH_DHCP' in updated) or ('ETH_IP' in updated) or ('ETH_MASK' in updated) or ('ETH_GATE' in updated):
             text='Reconfiguring LAN interface eth0'
             PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_ETH0')
-            # checkout how this interface reset should be performed
-            #os.system('sudo ip link set eth0 down')
-            #os.system('sudo ip link set eth0 up')
+            os.system('sudo ip addr flush eth0')
+            os.system('sudo systemctl restart networking')
         if ('WIFI_IP' in updated) or ('WIFI_MASK' in updated) or ('WIFI_GATE' in updated):
             text='Reconfiguring WIFI interface wlan0'
             PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_WLAN0')
-            #os.system('sudo ip link set wlan0 down')
-            #os.system('sudo ip link set wlan0 up')
-            
-        if ('WIFI_IP' in updated) or ('WIFI_MASK' in updated) or ('WIFI_GATE' in updated):
-            text='Reconfiguring WIFI interface wlan0'
-            PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_WLAN0')
+            os.system('sudo ip addr flush wlan0')
+            os.system('sudo systemctl restart networking')
              
         if 'ETH_DHCP' in updated:
             text='Modified Interfaces field ETH_DHCP to ' + str(ETH_DHCP)
