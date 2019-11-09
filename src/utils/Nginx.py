@@ -1,6 +1,7 @@
 import os
 from subprocess import Popen, PIPE
 from EventsAPP.consumers import PublishEvent
+from django.utils.translation import ugettext_lazy as _
 
 class NginxManager(object):
     

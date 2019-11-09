@@ -358,6 +358,11 @@ class SiteSettings(SingletonModel):
             from utils.Nginx import NginxManager
             NginxManager.editConfigFile(SITE_DNS=getattr(self,'SITE_DNS'),ETH_IP=getattr(self,'ETH_IP')) # yet does not work, it does not write the file
             NginxManager.reload()
+            # update allowed_hosts in settings.local.env
+            from .constants import LOCALENV_PATH
+            self.editUniqueKeyedFile(path=LOCALENV_PATH,key='ALLOWED_HOSTS',delimiter='=',
+                                     newValue=getattr(self,'SITE_DNS')+','+getattr(self,'ETH_IP')+',127.0.0.1',
+                                     endChar='\n',addKey=True)
         
         if (('ETH_DHCP' in update_fields) or ('ETH_IP' in update_fields) or ('ETH_MASK' in update_fields) or ('ETH_GATE' in update_fields) or
             ('WIFI_IP' in update_fields) or ('WIFI_MASK' in update_fields) or ('WIFI_GATE' in update_fields)):
@@ -370,28 +375,24 @@ class SiteSettings(SingletonModel):
         if ('WIFI_SSID' in update_fields) or ('WIFI_PASSW' in update_fields):
             SiteSettings.update_hostapd(WIFI_SSID=getattr(self,'WIFI_SSID'),WIFI_PASSW=getattr(self,'WIFI_PASSW')
                                     ,updated=update_fields)
-        for field in update_fields:
-            if field in ['SITE_DNS','ETH_IP','ETH_MASK','ETH_GATE']:
+        # update /etc/nginx/sites-available/HomeAutomation.nginxconf
+        if ('PROXY_CREDENTIALS' in update_fields):
+            from utils.Nginx import NginxManager
+            NginxManager.setProxyCredential(PROXY_CREDENTIALS=getattr(self,'PROXY_CREDENTIALS'))
+            NginxManager.reload()
                 
-                # update allowed_hosts in settings.local.env
-                from .constants import LOCALENV_PATH
-                self.editUniqueKeyedFile(path=LOCALENV_PATH,key='ALLOWED_HOSTS',delimiter='=',
-                                         newValue=getattr(self,'SITE_DNS')+','+getattr(self,'ETH_IP')+',127.0.0.1',
-                                         endChar='\n',addKey=True)
-            if field in ['PROXY_CREDENTIALS',]:
+        if (('PROXY_USER1' in update_fields) or ('PROXY_PASSW1' in update_fields) or
+            ('PROXY_USER2' in update_fields) or ('PROXY_PASSW2' in update_fields)):
+            if getattr(self,'PROXY_CREDENTIALS'):
                 from utils.Nginx import NginxManager
-                NginxManager.setProxyCredential(PROXY_CREDENTIALS=getattr(self,'PROXY_CREDENTIALS'))
+                NginxManager.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
+                NginxManager.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
                 NginxManager.reload()
-                # update /etc/nginx/sites-available/HomeAutomation.nginxconf
-            if field in ['PROXY_USER1','PROXY_PASSW1','PROXY_USER2','PROXY_PASSW2']:
-                if self.PROXY_CREDENTIALS:
-                    from utils.Nginx import NginxManager
-                    NginxManager.createUser(user=self.PROXY_USER1,passw=self.PROXY_PASSW1,firstUser=True)
-                    NginxManager.createUser(user=self.PROXY_USER2,passw=self.PROXY_PASSW2,firstUser=False)
-                    NginxManager.reload()
-            if field in ['VERSION_DEVELOPER',]:
-                self.checkRepository(force=True)
-                
+        
+        if ('VERSION_DEVELOPER' in update_fields):
+            self.checkRepository(force=True)
+        
+        for field in update_fields:
             if field in ['TELEGRAM_TOKEN','IBERDROLA_USER','IBERDROLA_PASSW','OWM_TOKEN','ESIOS_TOKEN']:
                 value=getattr(self,field).strip()
                 if value!='':
