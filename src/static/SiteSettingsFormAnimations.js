@@ -27,14 +27,14 @@ function checkSettings()
 {
 	if (field_ETH_DHCP.checked)
 	{
-		row_ETH_IP.style.display='block';
-		row_ETH_MASK.style.display='block';
-		row_ETH_GATE.style.display='block';
-	}else
-	{
 		row_ETH_IP.style.display='none';
 		row_ETH_MASK.style.display='none';
 		row_ETH_GATE.style.display='none';
+	}else
+	{
+		row_ETH_IP.style.display='block';
+		row_ETH_MASK.style.display='block';
+		row_ETH_GATE.style.display='block';
 	}
 	if (field_PROXY_AUTO_DENYIP.checked)
 	{
