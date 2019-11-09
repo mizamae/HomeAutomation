@@ -6,6 +6,7 @@ var currentValues,originalFontColor;
 $(function()
 {
 	field_ETH_DHCP=document.getElementById("id_ETH_DHCP");
+	field_ETH_DHCP.addEventListener("click", checkSettings);
 	row_ETH_IP=document.getElementById("div_id_ETH_IP");
 	row_ETH_MASK=document.getElementById("div_id_ETH_MASK");
 	row_ETH_GATE=document.getElementById("div_id_ETH_GATE");

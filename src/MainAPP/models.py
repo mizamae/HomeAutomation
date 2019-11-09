@@ -319,13 +319,13 @@ class SiteSettings(SingletonModel):
         if ('ETH_DHCP' in updated) or ('ETH_IP' in updated) or ('ETH_MASK' in updated) or ('ETH_GATE' in updated):
             text='Reconfiguring LAN interface eth0'
             PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_ETH0')
-            os.system('sudo ip addr flush eth0')
-            os.system('sudo systemctl restart networking')
+            #os.system('sudo ip addr flush eth0')
+            #os.system('sudo systemctl restart networking')
         if ('WIFI_IP' in updated) or ('WIFI_MASK' in updated) or ('WIFI_GATE' in updated):
             text='Reconfiguring WIFI interface wlan0'
             PublishEvent(Severity=0,Text=text,Persistent=False,Code='Interfaces-ETH_WLAN0')
-            os.system('sudo ip addr flush wlan0')
-            os.system('sudo systemctl restart networking')
+            #os.system('sudo ip addr flush wlan0')
+            #os.system('sudo systemctl restart networking')
              
         if 'ETH_DHCP' in updated:
             text='Modified Interfaces field ETH_DHCP to ' + str(ETH_DHCP)
