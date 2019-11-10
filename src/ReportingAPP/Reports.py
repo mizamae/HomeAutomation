@@ -79,7 +79,7 @@ def get_report(title,fromDate,toDate,aggregation):
                     temp['cols'].insert(0,{'table':table,'name':name,'label':label,'type':type,
                                            'bitPos':bitPos,'extrapolate':extrapolate,'plottype':plottype,'units':units}) 
                 else:
-                    temp['cols'].append({'table':table,'name':name,'label':label,'type':type,
+                    temp['cols'].append({'table':table,'name':name,'label':label[0],'type':type,
                                          'bitPos':bitPos,'extrapolate':extrapolate,'plottype':plottype,'units':units}) 
                     
         #Reports.print('temp '+str(temp)) 
