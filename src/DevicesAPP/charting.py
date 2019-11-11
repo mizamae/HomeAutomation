@@ -118,7 +118,7 @@ def generateChart(table,fromDate,toDate,names,types,labels,plottypes,units,sampl
 #             for i,element in enumerate(row_values): # this is to force Nan on missing data
 #                 row_values[i]=np.nan
             new_row = pd.DataFrame([row_values], columns = df.columns, index=[ts])
-            df=pd.concat([pd.DataFrame(new_row),df], ignore_index=False)
+            df=pd.concat([df,pd.DataFrame(new_row)], ignore_index=False)
         
         # RESAMPLING DATA TO 1 MINUTE RESOLUTION AND INTERPOLATING VALUES
         df_int=df.resample('1T').fillna(method='ffill').fillna(method='bfill')
