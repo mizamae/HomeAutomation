@@ -5,7 +5,7 @@ html, body{
     height:100%;		/* For full height images */
 }
 
-.modal {
+.modal_nowebsockets {
     display:    none;
     position:   fixed;
     z-index:    1000;
@@ -19,15 +19,35 @@ html, body{
                 no-repeat;
 }
 
-/* When the body has the no_websockets class, we turn
+.modal_loading {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('loading.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the no_websockets or loading class, we turn
    the scrollbar off with overflow:hidden */
-body.no_websockets {
+body.no_websockets, body.loading {
     overflow: hidden;   
 }
 
 /* Anytime the body has the no_websockets class, our
-   modal element will be visible */
-body.no_websockets .modal {
+   modal_nowebsockets element will be visible */
+body.no_websockets .modal_nowebsockets {
+    display: block;
+}
+
+/* Anytime the body has the loading class, our
+   modal_loading element will be visible */
+body.loading .modal_loading {
     display: block;
 }
 
