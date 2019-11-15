@@ -29,6 +29,8 @@ INTERFACES_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','network','interf
 INTERFACES_GENERIC_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','network','interfaces_generic'))
 HOSTAPD_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd.conf'))
 HOSTAPD_GENERIC_CONF_PATH=os.path.abspath(os.path.join(os.sep,'etc','hostapd','hostapd_generic.conf'))
+CERTBOT_PATH = os.path.join(PROJECT_PATH,'..','utils', 'certbot-auto')
+
 # APPLICATION DATABASES
 DJANGO_DB_PATH = os.path.join(PROJECT_PATH,'..','db.sqlite3')
 REGISTERS_DB_PATH = os.path.join(PROJECT_PATH,'..','..', 'Registers_XYEARX_.sqlite3')

@@ -274,7 +274,8 @@ class SiteSettings(SingletonModel):
     @staticmethod
     def execute_certbot():
         from subprocess import Popen, PIPE
-        cmd='sudo /home/pi/certbot-auto --nginx --no-self-upgrade'
+        from .constants import CERTBOT_PATH
+        cmd='sudo ' + CERTBOT_PATH + ' --nginx --no-self-upgrade'
         process = Popen(cmd, shell=True,
                         stdout=PIPE,stdin=PIPE, stderr=PIPE,universal_newlines=True)
         stdout, err = process.communicate(input='1')
