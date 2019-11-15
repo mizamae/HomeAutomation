@@ -246,7 +246,11 @@
                     	restart_NTP();
                     }
                     else{label.innerHTML="";}
-                } else {
+                }else if (payload.action == "loading_status") { 
+                	var loading = payload.loading;
+                	if (loading){$("body").addClass("loading");}
+                	else{$("body").removeClass("loading");}
+                }else {
                     console.log("Unknown action " + payload.action);
                 }
             });
@@ -264,14 +268,20 @@
             });
             
         });
+		function query_system_status() {
+			webSocketSystemBridge.stream('system_status').send({
+	                        "action": "loading_status",
+	                        "data": {}
+	                    });
+				}
 		function query_system_datetime() {
-			webSocketSystemBridge.stream('datetime_query').send({
+			webSocketSystemBridge.stream('system_status').send({
 	                        "action": "query_datetime",
 	                        "data": {}
 	                    });
 				}
 		function restart_NTP() {
-			webSocketSystemBridge.stream('datetime_reset').send({
+			webSocketSystemBridge.stream('system_status').send({
 		                    "action": "reset_datetime",
 		                    "data": {}
 		                });

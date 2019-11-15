@@ -198,6 +198,8 @@ class SiteSettings(SingletonModel):
             return False
         
     def checkRepository(self,force=False):
+        from django.core.cache import cache
+        cache.set(key='loading',value=True,timeout=60)
         if self.VERSION_AUTO_DETECT or force:
             from utils.GitHub import checkDeveloperUpdates,checkReleaseUpdates,updateDeveloper,updateRelease
             from .constants import GIT_PATH
@@ -225,6 +227,7 @@ class SiteSettings(SingletonModel):
                 except Exception as exc:
                     logger.error('Error checking repository: ' + str(exc))
                 #process.resume()
+        cache.set(key='loading',value=False,timeout=None)
     
     def addressInNetwork(self,ip2check):
         import ipaddress
@@ -351,6 +354,8 @@ class SiteSettings(SingletonModel):
             PublishEvent(Severity=0,Text=text,Persistent=True,Code='Interfaces-WIFI_GATE')
             
     def applyChanges(self,update_fields):
+        from django.core.cache import cache
+        cache.set(key='loading',value=True,timeout=60)
         if ('SITE_DNS' in update_fields):
             SiteSettings.execute_certbot()
             
@@ -402,7 +407,9 @@ class SiteSettings(SingletonModel):
                     self.editUniqueKeyedFile(path=LOCALENV_PATH,key=field,delimiter='=',
                                              newValue=value,
                                              endChar='\n',addKey=True)
-            
+        
+        cache.set('loading',False,None)
+        
     @staticmethod
     def editKeyedFile(path,key,newValue,endChar=' ',nextLine=True):
         '''

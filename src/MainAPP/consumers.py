@@ -11,6 +11,26 @@ def ws_message(message):
     # both have a "text" key for their textual data.
     print(message.content['text'])
 
+class system_status(JsonWebsocketConsumer):
+    def receive(self, content, multiplexer, **kwargs):
+        action=content['action']
+        if action=='loading_status':
+            from django.core.cache import cache
+            loading=cache.get(key='loading',default=False)
+            multiplexer.send({"action":"loading_status",
+                              "loading":loading,
+                              })
+        elif action=='query_datetime':
+            now = timezone.now().replace(microsecond=0)
+            multiplexer.send({"action":"query_datetime",
+                              "date":now.strftime('%d/%m/%Y'),
+                              "time":now.strftime('%H:%M'),
+                              })
+        elif action=='reset_datetime':
+            from utils.NTPServer import restart
+            restart()
+            PublishEvent(Severity=2,Text="NTP server restarted",Persistent=True,Code='MainAPP0')
+        
 class system_datetime_query(JsonWebsocketConsumer):
     def receive(self, content, multiplexer, **kwargs):
         now = timezone.now().replace(microsecond=0)
@@ -29,6 +49,7 @@ class System_consumers(WebsocketDemultiplexer):
     consumers = {
         "datetime_query": system_datetime_query,
         "datetime_reset": system_datetime_reset,
+        "system_status": system_status,
     }
 
     def connection_groups(self):
