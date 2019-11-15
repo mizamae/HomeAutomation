@@ -232,7 +232,7 @@
 			
 		$(function () {
             
-			webSocketSystemBridge.demultiplex('datetime_query', function(payload, streamName) {
+			webSocketSystemBridge.demultiplex('system_status', function(payload, streamName) {
                 // Handle different actions
                 if (payload.action == "query_datetime") {
                 	console.log("System UTC datetime is " + payload.date + " " + payload.time);
