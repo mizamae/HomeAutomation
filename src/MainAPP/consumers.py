@@ -31,24 +31,9 @@ class system_status(JsonWebsocketConsumer):
             restart()
             PublishEvent(Severity=2,Text="NTP server restarted",Persistent=True,Code='MainAPP0')
         
-class system_datetime_query(JsonWebsocketConsumer):
-    def receive(self, content, multiplexer, **kwargs):
-        now = timezone.now().replace(microsecond=0)
-        multiplexer.send({"action":"query_datetime",
-                          "date":now.strftime('%d/%m/%Y'),
-                          "time":now.strftime('%H:%M'),
-                          })
-
-class system_datetime_reset(JsonWebsocketConsumer):
-    def receive(self, content, multiplexer, **kwargs):
-        from utils.NTPServer import restart
-        restart()
-        PublishEvent(Severity=2,Text="NTP server restarted",Persistent=True,Code='MainAPP0')
         
 class System_consumers(WebsocketDemultiplexer):
     consumers = {
-        "datetime_query": system_datetime_query,
-        "datetime_reset": system_datetime_reset,
         "system_status": system_status,
     }
 

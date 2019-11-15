@@ -224,15 +224,15 @@
 {% block system_scripts %}
 
 <script>
-		var ws_path =  "/stream/System/";
-		console.log("Connecting to " + ws_path);
+		var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 		var webSocketSystemBridge = new channels.WebSocketBridge();
-		webSocketSystemBridge.connect(ws_path);
+		webSocketSystemBridge.connect(ws_scheme + '://' + window.location.host + "/stream/System/");
+		console.log("Connecting to /stream/System/");
 		webSocketSystemBridge.listen();
 			
 		$(function () {
             
-			webSocketSystemBridge.demultiplex('datetime_query', function(payload, streamName) {
+			webSocketSystemBridge.demultiplex('system_status', function(payload, streamName) {
                 // Handle different actions
                 if (payload.action == "query_datetime") {
                 	console.log("System UTC datetime is " + payload.date + " " + payload.time);
