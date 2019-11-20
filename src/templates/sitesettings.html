@@ -45,5 +45,7 @@
     					$('.has-popover').popover({'trigger':'hover'});
     					currentValues = JSON.parse('{{ CurrentValues | safe }}')[0];
 						});
+  
+  window.setInterval(function(){query_system_status();}, 1000);
   </script>
 {% endblock scripts %}

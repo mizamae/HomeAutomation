@@ -408,7 +408,7 @@ class SiteSettings(SingletonModel):
                                              newValue=value,
                                              endChar='\n',addKey=True)
         
-        cache.set('loading',False,None)
+        cache.set(key='loading',value=False,timeout=None)
         
     @staticmethod
     def editKeyedFile(path,key,newValue,endChar=' ',nextLine=True):
