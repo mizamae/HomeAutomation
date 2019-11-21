@@ -25,4 +25,5 @@ class AutomationConfig(AppConfig):
             MainAPP.tasks.start_MonthlyTask()
             MainAPP.tasks.start_DailyTask()
             MainAPP.tasks.start_HourlyTask()
+            cache.set(key='loading',value=True,timeout=60)
             logger.info('Initializing management tasks on the process ' + str(os.getpid()))
