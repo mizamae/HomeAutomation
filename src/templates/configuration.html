@@ -72,3 +72,9 @@
 	</div>
 {% endif %}
 {% endblock container %}
+
+{% block scripts %}
+  <script>
+  window.setInterval(function(){query_system_status();}, 1000);
+  </script>
+{% endblock scripts %}

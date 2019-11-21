@@ -239,3 +239,4 @@ def run_afterBoot():
     #instance.getSingleDay(date=datetime.datetime(year=2019,month=3,day=5),datagramId = 'dailyconsumption')
     #instance.initializeDB(fromdate=datetime.datetime(year=2019,month=1,day=12),datagramId = 'dailyconsumption')
     
+    cache.set(key='loading',value=False,timeout=None)
