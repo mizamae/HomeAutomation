@@ -248,7 +248,7 @@ class SDM120:
     
     @property
     def current(self):
-        value = self._read_inputregister(register=6) # Voltage (V)
+        value = self._read_inputregister(register=6) # Current (A)
         return value
     
     @property
@@ -304,15 +304,16 @@ class SDM120:
         if _accumulators is not None and len(_accumulators['T'])>0:
             df = pd.DataFrame({'V':_accumulators['V'],'I':_accumulators['I'],'P':_accumulators['P']})
             #df=remove_outlier(df_in=df, col_name='T')
-            Vmean=df['V'].mean(skipna =True)
-            Imean=df['I'].mean(skipna =True)
-            Pmean=df['P'].mean(skipna =True)
-            Vmax=df['V'].max(skipna =True)
-            Imax=df['I'].max(skipna =True)
-            Pmax=df['P'].max(skipna =True)
-            Vmin=df['V'].min(skipna =True)
-            Imin=df['I'].min(skipna =True)
-            Pmin=df['P'].min(skipna =True)
+            Vmean=df['V'].mean(skipna =True).round(decimals=2)
+            Imean=df['I'].mean(skipna =True).round(decimals=2)
+            Pmean=df['P'].mean(skipna =True).round(decimals=2)
+            Vmax=df['V'].max(skipna =True).round(decimals=2)
+            Imax=df['I'].max(skipna =True).round(decimals=2)
+            Pmax=df['P'].max(skipna =True).round(decimals=2)
+            Vmin=df['V'].min(skipna =True).round(decimals=2)
+            Imin=df['I'].min(skipna =True).round(decimals=2)
+            Pmin=df['P'].min(skipna =True).round(decimals=2)
+            null=False
             #logger.info('Accumulated values T: '+str(df['T']) )
         else:
             Vmean = None
@@ -324,15 +325,18 @@ class SDM120:
             Vmin = None
             Imin = None
             Pmin = None
+            null=True
             logger.error('No accumulated values!!')
         
-        return {'Pmean':Pmean,'Imean':Imean,'Vmean':Vmean,'Pmax':Pmax,'Imax':Imax,'Vmax':Vmax,'Pmin':Pmin,'Imin':Imin,'Vmin':Vmin}
+        return {'Pmean':Pmean,'Imean':Imean,'Vmean':Vmean,
+                'Pmax':Pmax,'Imax':Imax,'Vmax':Vmax,
+                'Pmin':Pmin,'Imin':Imin,'Vmin':Vmin},null
 
     def __call__(self,datagramId = 'realtime'):
         Error=''
         null=False
         if datagramId=='realtime':
-            values=self.getRTAccumulatedValues()
+            values,null=self.getRTAccumulatedValues()
             self.resetRTAccumulator()
             
         timestamp=timezone.now() #para hora con info UTC 
@@ -342,6 +346,9 @@ class SDM120:
         else:
             LastUpdated=None
             
+        self.sensor.insertRegister(TimeStamp=timestamp,DatagramId=datagramId,year=timestamp.year,values=[values['Pmean'],values['Pmax'],values['Pmin'],
+                                                                                                         values['Vmean'],values['Vmax'],values['Vmin'],
+                                                                                                         values['Imean'],values['Imax'],values['Imin']],NULL=null)
         return {'Error':Error,'LastUpdated':LastUpdated}
     
     def query_sensor(self,**kwargs):
@@ -349,7 +356,9 @@ class SDM120:
         Read Voltage, current and Power from sensor.
         """
         values=self.getRTAccumulatedValues()
-        return (round(values['Pmean'],3), round(values['Imean'],3), round(values['Vmean'],3))
+        return ({'Pmean':values['Pmean'],'Pmax':values['Pmax'],'Pmin':values['Pmin'],
+                 'Vmean':values['Vmean'],'Vmax':values['Vmax'],'Vmin':values['Vmin'],
+                 'Imean':values['Imean'],'Imax':values['Imax'],'Imin':values['Imin']})
     
 IBERDROLA_USER = env('IBERDROLA_USER')
 IBERDROLA_PASSW=env('IBERDROLA_PASSW')
