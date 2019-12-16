@@ -19,13 +19,28 @@ if os.path.exists(ENVIRON_FILE):
 TELEGRAM_BOT_TOKEN = env('TELEGRAM_TOKEN')
 TELEGRAM_CHNID_VAR='TELEGRAM_CHANNEL_ID'
 
+list_greetings=['hola','buenos dias','buenas tardes','buenas noches',
+                  'hello','good morning','good afternoon','good night']
+
+def night_out():
+    return _('Have a nice night')
+
+def evening_out():
+    return _('Have a nice evening')
+
+def afternoon_out():
+    return _('Have a nice afternoon')
+
+list_information={'comemos fuera':afternoon_out,'cenamos fuera':evening_out,'dormimos fuera':night_out,
+                'eat away':afternoon_out, 'dinner away':evening_out,'sleep away':night_out}
+
 class TelegramManager(object):
     instructions=[{'id':'command','text':_('Commands')},]
     
     def __init__(self):
         #logger.info('Bot TOKEN: ' + str(TELEGRAM_BOT_TOKEN))
         self.bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
-        self.chatID=TelegramManager.getChatID()
+        self.chatID=TelegramManager.getChatID(bot=self.bot)
         #logger.info('ChatID: ' + str(self.chatID))
             
         if self.chatID!=None:
@@ -56,10 +71,51 @@ class TelegramManager(object):
         else:
             receivedMSG=None
         
-        if 'hola' in receivedMSG:
+        analyzed_msg=self.analyze_msg(msg=receivedMSG)
+        
+        if 'hola' in receivedMSG.lower():
             self.bot.sendMessage(chat_id, str(_('Hola caracola!')))
         else:
             self.bot.sendMessage(chat_id, str(_('Sorry but I do not understand you!')))
+    
+    @staticmethod
+    def get_greeting(list_msg):
+        has_greeting =  any(elem in list_msg for elem in list_greetings)
+        greeting=None
+        if has_greeting:
+            for elem in list_msg:
+                if elem in list_greetings:
+                    greeting=elem.capitalize()
+                    break
+        return {'has_greeting':has_greeting,'greeting':greeting}
+    
+    @staticmethod
+    def get_information(list_msg):
+        has_info=False
+        prev_elem=''
+        for elem in list_msg:
+            key=prev_elem+' '+elem
+            if key in list_information:
+                info=list_information[key]()
+                has_info=True
+                break
+            prev_elem=elem
+        return {'has_info':has_info,'info':info}
+    
+    @staticmethod
+    def analyze_msg(msg):
+        list_msg=msg.lower().split(' ')
+        
+        msg_greeting=TelegramManager.get_greeting(list_msg=list_msg)
+        msg_information = TelegramManager.get_information(list_msg=list_msg)
+        
+        analyzed_msg=''
+        if msg_greeting['has_greeting']:
+            analyzed_msg=msg_greeting['greeting']+'\n'
+        if msg_information['has_info']:
+            analyzed_msg=analyzed_msg+msg_information['info']+'\n'
+        
+        return analyzed_msg
     
     def on_callback_query(self,msg):
         from DevicesAPP.models import Devices,DeviceCommands
@@ -93,13 +149,20 @@ class TelegramManager(object):
             self.bot.answerCallbackQuery(query_id, text=str(_('Got it')))
         
     @staticmethod
-    def getChatID():
+    def getChatID(bot):
         chatID=cache.get(TELEGRAM_CHNID_VAR)
         if chatID==None:
             from MainAPP.models import SiteSettings
             SETTINGS=SiteSettings.load()
             chatID=getattr(SETTINGS,'TELEGRAM_CHATID')
             if chatID.strip()=='':
+                chatID=None
+        if chatID==None:
+            response = bot.getUpdates()
+            #logger.info('Bot response: ' + str(response))
+            if response!=[]:
+                chatID=response[0]['channel_post']['chat']['id']
+            else:
                 chatID=None
         return chatID
         
