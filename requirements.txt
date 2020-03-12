@@ -74,7 +74,7 @@ parsedatetime==1.4
 pbr==3.0.1
 Pillow==4.1.1
 ply==3.4
-psutil==5.4.3
+psutil==5.6.6
 py-vapid==1.4.0
 pyasn1==0.4.2
 pyasn1-modules==0.2.1
