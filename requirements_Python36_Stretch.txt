@@ -54,7 +54,7 @@ gunicorn==19.9.0
 hiredis==1.0.0
 html5lib==0.999999999
 http-ece==1.0.5
-httplib2==0.11.3
+httplib2==0.18.0
 hyperlink==19.0.0
 idna==2.5
 image==1.5.5
