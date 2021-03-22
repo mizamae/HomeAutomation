@@ -126,7 +126,7 @@ Twisted==19.2.1
 txaio==2.8.1
 tzlocal==1.4
 uritemplate==3.0.0
-urllib3==1.21.1
+urllib3==1.24.2
 virtualenv==15.1.0
 virtualenv-clone==0.2.6
 virtualenvwrapper==4.7.2
