@@ -34,7 +34,7 @@ django-authtools==1.6.0
 django-braces==1.11.0
 django-channels==0.7.0
 django-crispy-forms==1.6.1
-django-debug-toolbar==1.8
+django-debug-toolbar==1.11.1
 django-environ==0.4.3
 django-redis==4.10.0
 dnspython==1.15.0
