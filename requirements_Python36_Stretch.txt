@@ -12,7 +12,7 @@ asgiref==1.1.2
 asn1crypto==0.24.0
 async-timeout==3.0.1
 attrs==19.1.0
-autobahn==17.7.1
+autobahn==20.12.3
 Automat==0.7.0
 beautifulsoup4==4.5.3
 bootstrap3-datetime==2.4
