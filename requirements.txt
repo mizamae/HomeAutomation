@@ -105,7 +105,7 @@ requests==2.18.1
 requests-oauthlib==1.0.0
 requests-toolbelt==0.7.0
 RPi.GPIO==0.6.3
-rsa==3.4.2
+rsa==4.7
 s3transfer==0.1.13
 scipy==0.18.1
 SecretStorage==2.3.1
