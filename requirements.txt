@@ -118,7 +118,7 @@ sqlparse==0.2.3
 ssh-import-id==5.6
 stevedore==1.23.0
 tables==3.3.0
-Twisted==17.5.0
+Twisted==22.1.0
 txaio==2.8.1
 tzlocal==1.4
 uritemplate==3.0.0
