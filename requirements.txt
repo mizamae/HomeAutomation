@@ -65,7 +65,7 @@ mock==2.0.0
 msgpack-python==0.4.8
 ndg-httpsclient==0.4.2
 numexpr==2.6.1
-numpy==1.12.1
+numpy==1.21.0
 oauth2client==4.1.2
 oauthlib==2.1.0
 olefile==0.44
