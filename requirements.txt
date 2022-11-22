@@ -72,7 +72,7 @@ olefile==0.44
 pandas==0.19.2
 parsedatetime==1.4
 pbr==3.0.1
-Pillow==4.1.1
+Pillow==9.3.0
 ply==3.4
 psutil==5.4.3
 py-vapid==1.4.0
